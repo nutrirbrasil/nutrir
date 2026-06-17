@@ -1,6 +1,9 @@
 /** Segunda=1, Sexta=5 */
 const COMBO_WEEKDAYS = new Set([1, 5]);
 
+/** Segunda=1 … Sexta=5 — marmitas avulsas */
+const REGULAR_WEEKDAYS = new Set([1, 2, 3, 4, 5]);
+
 const MS_HOUR = 60 * 60 * 1000;
 export const LEAD_COMBO_MS = 48 * MS_HOUR;
 export const LEAD_REGULAR_MS = 24 * MS_HOUR;
@@ -89,6 +92,10 @@ export function isComboWeekday(day: Date): boolean {
   return COMBO_WEEKDAYS.has(day.getDay());
 }
 
+export function isRegularWeekday(day: Date): boolean {
+  return REGULAR_WEEKDAYS.has(day.getDay());
+}
+
 /** Pedido no domingo não pode retirar na segunda imediatamente seguinte. */
 export function isComboDayBlocked(day: Date, now: Date): boolean {
   if (now.getDay() !== 0 || day.getDay() !== 1) return false;
@@ -102,7 +109,10 @@ export function isDayEligible(rule: PickupRule, day: Date, now: Date): boolean {
     if (!isComboWeekday(day)) return false;
     if (isComboDayBlocked(day, now)) return false;
   }
-  if (rule === "regular" && isSameCalendarDay(day, now)) return false;
+  if (rule === "regular") {
+    if (!isRegularWeekday(day)) return false;
+    if (isSameCalendarDay(day, now)) return false;
+  }
   return getAvailableSlotsForDay(rule, day, now).length > 0;
 }
 
@@ -111,8 +121,10 @@ export function getAvailableSlotsForDay(
   day: Date,
   now: Date
 ): PickupSlotId[] {
-  if (rule === "regular" && isSameCalendarDay(day, now)) {
-    return [];
+  if (rule === "regular") {
+    if (!isRegularWeekday(day) || isSameCalendarDay(day, now)) {
+      return [];
+    }
   }
 
   const minTime =
@@ -168,6 +180,14 @@ export function formatPickupDayLabel(d: Date): { day: number; weekday: string } 
 export function formatMonthYear(d: Date): string {
   const month = d.toLocaleDateString("pt-BR", { month: "long" });
   return `${month.charAt(0).toUpperCase()}${month.slice(1)} de ${d.getFullYear()}`;
+}
+
+export function formatPickupShort(selection: PickupSelection): string {
+  const day = parseISODate(selection.date);
+  const slot = PICKUP_SLOTS.find((s) => s.id === selection.slot)!;
+  const dd = String(day.getDate()).padStart(2, "0");
+  const mm = String(day.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm} - ${slot.label}`;
 }
 
 export function formatPickupSummary(selection: PickupSelection): string {

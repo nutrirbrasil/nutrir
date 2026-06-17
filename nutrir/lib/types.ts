@@ -25,12 +25,18 @@ export interface OrderItem {
   size?: "P" | "G";
 }
 
+export type PaymentMethod = "pix" | "cash" | "card";
+export type PaymentStatus = "pending" | "confirmed";
+
 export interface CreateOrderPayload {
   customer_name: string;
   customer_phone: string;
   customer_email?: string;
   delivery_address: string;
   delivery_date: string;
+  pickup_display?: string;
+  payment_method?: PaymentMethod;
+  user_notes?: string;
   notes?: string;
   items: OrderItem[];
 }
@@ -38,5 +44,7 @@ export interface CreateOrderPayload {
 export interface Order extends CreateOrderPayload {
   id: string;
   status: string;
+  payment_status: PaymentStatus;
   total_cents: number;
+  created_at: string;
 }

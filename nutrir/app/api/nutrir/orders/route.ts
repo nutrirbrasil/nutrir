@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { formatOrderTelegramMessage, sendTelegramMessage } from "@/lib/telegram";
 import type { CreateOrderPayload, Order } from "@/lib/types";
 
 const orders: Order[] = [];
@@ -45,14 +46,21 @@ export async function POST(request: Request) {
   }
 
   const total_cents = body.items.reduce((sum, item) => sum + item.price_cents * item.quantity, 0);
+  const created_at = new Date().toISOString();
   const order: Order = {
     ...body,
     id: `order-${Date.now()}`,
     status: "pending",
+    payment_method: body.payment_method ?? "pix",
+    payment_status: "pending",
     total_cents,
+    created_at,
   };
 
   orders.push(order);
 
-  return NextResponse.json({ order, notified: false });
+  const message = formatOrderTelegramMessage(order, new Date(created_at));
+  const notified = await sendTelegramMessage(message);
+
+  return NextResponse.json({ order, notified });
 }

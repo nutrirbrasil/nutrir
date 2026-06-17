@@ -12,6 +12,7 @@ module.exports = {
       cwd: "/home/zeedo/nutrir/nutrir",
       env: {
         NODE_ENV: "production",
+        // Telegram: crie nutrir/.env.local no VPS ou defina aqui via pm2 ecosystem
       },
     },
   ],

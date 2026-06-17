@@ -1,11 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { formatPrice } from "@/lib/api";
+import { useCart } from "@/lib/cart-context";
+import { getRecentOrdersForPhone, type SavedOrder } from "@/lib/order-history";
 import { useProfile, SOCIAL_LOGIN_HINT } from "@/lib/profile-context";
+import type { PaymentMethod } from "@/lib/types";
+
+const PAYMENT_LABELS: Record<PaymentMethod, string> = {
+  pix: "Pix",
+  cash: "Dinheiro",
+  card: "Cartão",
+};
 
 export function ProfilePage() {
+  const router = useRouter();
+  const { replaceItems } = useCart();
   const { isLoggedIn, profile, login, register, logout, updateProfile, socialLoginHint } =
     useProfile();
   const [mode, setMode] = useState<"login" | "register">("register");
@@ -15,6 +28,18 @@ export function ProfilePage() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [recentOrders, setRecentOrders] = useState<SavedOrder[]>([]);
+
+  useEffect(() => {
+    setRecentOrders(getRecentOrdersForPhone(profile.phone, 2));
+  }, [profile.phone, isLoggedIn]);
+
+  function handleReorder(orderId: string) {
+    const order = recentOrders.find((o) => o.id === orderId);
+    if (!order) return;
+    replaceItems(order.items.map((item) => ({ ...item })));
+    router.push("/agendar");
+  }
 
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault();
@@ -111,6 +136,63 @@ export function ProfilePage() {
             Sair da conta
           </button>
         </form>
+
+        {profile.phone && (
+          <section className="card mt-8">
+            <h2 className="font-display text-lg font-bold text-nutrir-emerald">Últimos pedidos</h2>
+            {recentOrders.length === 0 ? (
+              <p className="mt-3 text-sm text-nutrir-emerald/60">
+                Nenhum pedido encontrado para este telefone.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-4">
+                {recentOrders.map((order) => {
+                  const date = new Date(order.created_at);
+                  const dateStr = date.toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  });
+                  return (
+                    <li
+                      key={order.id}
+                      className="rounded-xl border border-nutrir-nude-dark/50 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs text-nutrir-emerald/60">{dateStr}</p>
+                          <p className="mt-1 font-semibold text-nutrir-emerald">
+                            {formatPrice(order.total_cents)}
+                          </p>
+                          <p className="text-xs text-nutrir-emerald/60">
+                            Retirada: {order.pickup_display}
+                          </p>
+                          <p className="text-xs text-nutrir-emerald/60">
+                            {PAYMENT_LABELS[order.payment_method]}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleReorder(order.id)}
+                          className="btn-secondary shrink-0 px-3 py-2 text-xs font-bold"
+                        >
+                          Pedir novamente
+                        </button>
+                      </div>
+                      <ul className="mt-3 space-y-1 border-t border-nutrir-nude-dark/30 pt-3 text-sm text-nutrir-emerald/80">
+                        {order.items.map((item, i) => (
+                          <li key={`${order.id}-${i}`}>
+                            {item.quantity}x {item.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        )}
       </div>
     );
   }

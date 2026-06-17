@@ -8,11 +8,13 @@ import { useProfile } from "@/lib/profile-context";
 import { PickupScheduler } from "@/components/PickupScheduler";
 import {
   analyzeCartItems,
+  formatPickupShort,
   formatPickupSummary,
   type MixedPickupMode,
   type PickupSelection,
 } from "@/lib/pickup-schedule";
-import type { CreateOrderPayload } from "@/lib/types";
+import { saveOrderToHistory } from "@/lib/order-history";
+import type { CreateOrderPayload, PaymentMethod } from "@/lib/types";
 
 interface Props {
   mode?: "pickup" | "legacy";
@@ -33,6 +35,7 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
   const [pickupUnified, setPickupUnified] = useState<PickupSelection | null>(null);
   const [pickupCombo, setPickupCombo] = useState<PickupSelection | null>(null);
   const [pickupRegular, setPickupRegular] = useState<PickupSelection | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
 
   const cartAnalysis = useMemo(() => analyzeCartItems(items), [items]);
 
@@ -79,6 +82,20 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
 
   const total = items.reduce((sum, i) => sum + i.price_cents * i.quantity, 0);
 
+  function buildPickupDisplay(): string {
+    if (mode !== "pickup") return form.delivery_date;
+
+    if (cartAnalysis.isMixed && mixedMode === "separate") {
+      const parts: string[] = [];
+      if (pickupCombo) parts.push(`Combo: ${formatPickupShort(pickupCombo)}`);
+      if (pickupRegular) parts.push(`Marmitas: ${formatPickupShort(pickupRegular)}`);
+      return parts.join(" · ");
+    }
+
+    if (pickupUnified) return formatPickupShort(pickupUnified);
+    return form.delivery_date;
+  }
+
   function buildPickupNotes(): string | undefined {
     if (mode !== "pickup") return form.notes || undefined;
 
@@ -96,6 +113,13 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     parts.push("Retirada na loja");
 
     return parts.filter(Boolean).join(" · ") || undefined;
+  }
+
+  function buildUserNotes(): string | undefined {
+    const parts: string[] = [];
+    if (form.notes.trim()) parts.push(form.notes.trim());
+    if (cart.coupon) parts.push(`Cupom: ${cart.coupon}`);
+    return parts.length ? parts.join(" · ") : undefined;
   }
 
   function getPrimaryDeliveryDate(): string {
@@ -148,14 +172,30 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     setError("");
     try {
       const delivery_date = mode === "pickup" ? getPrimaryDeliveryDate() : form.delivery_date;
+      const pickup_display = buildPickupDisplay();
+      const userNotes = buildUserNotes();
 
       const payload: CreateOrderPayload = {
         ...form,
         delivery_date,
-        notes: buildPickupNotes(),
+        pickup_display,
+        payment_method: paymentMethod,
+        user_notes: userNotes,
+        notes: mode === "pickup" ? buildPickupNotes() : userNotes,
         items,
       };
-      await nutrirApi.createOrder(payload);
+      const { order } = await nutrirApi.createOrder(payload);
+      saveOrderToHistory({
+        id: order.id,
+        customer_phone: order.customer_phone,
+        customer_name: order.customer_name,
+        created_at: order.created_at,
+        items: order.items,
+        total_cents: order.total_cents,
+        payment_method: order.payment_method ?? paymentMethod,
+        pickup_display: order.pickup_display ?? pickup_display,
+        notes: userNotes,
+      });
       setSuccess(true);
       if (useCartItems) cart.clearCart();
     } catch (err) {
@@ -238,7 +278,7 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
             )}
             {!cartAnalysis.hasCombo && cartAnalysis.hasRegular && (
               <p className="mt-2 text-xs text-nutrir-emerald/60">
-                Marmitas avulsas: pedido até 19h retira amanhã à tarde; após 19h, a partir de depois de amanhã. Sem retirada no mesmo dia.
+                Marmitas avulsas: retirada seg a sex. Pedido até 19h retira amanhã à tarde; após 19h, a partir de depois de amanhã. Sem retirada no mesmo dia.
               </p>
             )}
           </div>
@@ -371,6 +411,34 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
             placeholder="Alergias, preferências, etc."
           />
+        </div>
+        <div className="md:col-span-2">
+          <label className="mb-2 block text-sm font-medium">Forma de pagamento</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                { id: "pix" as const, label: "Pix" },
+                { id: "cash" as const, label: "Dinheiro" },
+                { id: "card" as const, label: "Cartão" },
+              ] as const
+            ).map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setPaymentMethod(option.id)}
+                className={`rounded-xl border-2 px-3 py-2.5 text-sm font-bold transition ${
+                  paymentMethod === option.id
+                    ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                    : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-nutrir-emerald/60">
+            Valores promocionais para Pix ou Dinheiro.
+          </p>
         </div>
       </div>
 
