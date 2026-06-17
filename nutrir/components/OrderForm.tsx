@@ -238,7 +238,7 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
             )}
             {!cartAnalysis.hasCombo && cartAnalysis.hasRegular && (
               <p className="mt-2 text-xs text-nutrir-emerald/60">
-                Marmitas avulsas: mínimo de 12h de antecedência, sem retirada no mesmo dia.
+                Marmitas avulsas: pedido até 19h retira amanhã à tarde; após 19h, a partir de depois de amanhã. Sem retirada no mesmo dia.
               </p>
             )}
           </div>

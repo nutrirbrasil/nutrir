@@ -3,7 +3,11 @@ const COMBO_WEEKDAYS = new Set([1, 5]);
 
 const MS_HOUR = 60 * 60 * 1000;
 export const LEAD_COMBO_MS = 48 * MS_HOUR;
-export const LEAD_REGULAR_MS = 12 * MS_HOUR;
+export const LEAD_REGULAR_MS = 24 * MS_HOUR;
+
+/** Pedidos de marmita avulsa até este horário podem retirar amanhã à tarde; depois disso, só depois de amanhã. */
+const REGULAR_ORDER_CUTOFF_HOUR = 19;
+const REGULAR_ORDER_CUTOFF_MINUTE = 0;
 
 export type PickupRule = "combo" | "regular";
 export type PickupSlotId = "morning" | "afternoon";
@@ -58,6 +62,29 @@ export function getLeadMs(rule: PickupRule): number {
   return rule === "combo" ? LEAD_COMBO_MS : LEAD_REGULAR_MS;
 }
 
+/** Retirada avulsa: antes das 19h → amanhã à tarde; após 19h → depois de amanhã (qualquer turno). */
+export function getRegularEarliestSlotStart(now: Date): Date {
+  const cutoff = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    REGULAR_ORDER_CUTOFF_HOUR,
+    REGULAR_ORDER_CUTOFF_MINUTE,
+    0,
+    0
+  );
+
+  if (now.getTime() >= cutoff.getTime()) {
+    const day = startOfDay(now);
+    day.setDate(day.getDate() + 2);
+    return getSlotDateTime(day, "morning");
+  }
+
+  const day = startOfDay(now);
+  day.setDate(day.getDate() + 1);
+  return getSlotDateTime(day, "afternoon");
+}
+
 export function isComboWeekday(day: Date): boolean {
   return COMBO_WEEKDAYS.has(day.getDay());
 }
@@ -84,8 +111,14 @@ export function getAvailableSlotsForDay(
   day: Date,
   now: Date
 ): PickupSlotId[] {
-  const leadMs = getLeadMs(rule);
-  const minTime = now.getTime() + leadMs;
+  if (rule === "regular" && isSameCalendarDay(day, now)) {
+    return [];
+  }
+
+  const minTime =
+    rule === "regular"
+      ? getRegularEarliestSlotStart(now).getTime()
+      : now.getTime() + getLeadMs(rule);
 
   return PICKUP_SLOTS.filter((slot) => {
     const slotStart = getSlotDateTime(day, slot.id);
