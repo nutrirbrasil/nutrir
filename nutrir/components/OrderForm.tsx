@@ -257,16 +257,13 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
                     setPickupRegular(null);
                     setPickupUnified(null);
                   }}
-                  className={`rounded-xl border-2 px-4 py-3 text-left text-sm transition ${
+                  className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
                     mixedMode === "together"
-                      ? "border-nutrir-emerald bg-nutrir-emerald/10"
-                      : "border-nutrir-burgundy/30 bg-nutrir-nude hover:border-nutrir-burgundy"
+                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
                   }`}
                 >
-                  <span className="block font-bold text-nutrir-emerald">Tudo junto</span>
-                  <span className="mt-1 block text-xs text-nutrir-emerald/60">
-                    Mesma data — dias seg ou sex (regra do combo)
-                  </span>
+                  Tudo junto
                 </button>
                 <button
                   type="button"
@@ -276,16 +273,13 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
                     setPickupCombo(null);
                     setPickupRegular(null);
                   }}
-                  className={`rounded-xl border-2 px-4 py-3 text-left text-sm transition ${
+                  className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
                     mixedMode === "separate"
-                      ? "border-nutrir-emerald bg-nutrir-emerald/10"
-                      : "border-nutrir-burgundy/30 bg-nutrir-nude hover:border-nutrir-burgundy"
+                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
                   }`}
                 >
-                  <span className="block font-bold text-nutrir-emerald">Separado</span>
-                  <span className="mt-1 block text-xs text-nutrir-emerald/60">
-                    Combo e marmitas em datas diferentes
-                  </span>
+                  Separado
                 </button>
               </div>
             </div>

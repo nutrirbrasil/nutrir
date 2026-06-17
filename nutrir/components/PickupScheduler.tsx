@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import {
-  formatMonthYear,
   formatPickupDayLabel,
   getAvailableSlotsForDay,
   getNextAvailablePickupDates,
@@ -27,8 +26,6 @@ export function PickupScheduler({ rule, title, value, onChange, now = new Date()
 
   const selectedDate = value?.date ? parseISODate(value.date) : null;
   const slots = selectedDate ? getAvailableSlotsForDay(rule, selectedDate, now) : [];
-
-  const monthLabel = dates[0] ?? selectedDate ?? now;
 
   function selectDate(iso: string) {
     const day = parseISODate(iso);
@@ -64,9 +61,6 @@ export function PickupScheduler({ rule, title, value, onChange, now = new Date()
 
       <div>
         <p className="text-sm font-medium text-nutrir-emerald">Selecione a data da retirada</p>
-        <div className="mt-2 flex items-center justify-between">
-          <p className="text-xs text-nutrir-emerald/50">{formatMonthYear(monthLabel)}</p>
-        </div>
 
         <div className="mt-3 grid grid-cols-5 gap-2">
           {dates.map((d) => {
