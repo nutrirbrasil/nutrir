@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { nutrirApi, formatPrice } from "@/lib/api";
+import { formatPrice } from "@/lib/api";
+import { formatPhoneBR, phoneValidationMessage } from "@/lib/br-fields";
 import { useCart } from "@/lib/cart-context";
+import { useCheckout } from "@/lib/checkout-context";
 import { useProfile } from "@/lib/profile-context";
 import { PickupScheduler } from "@/components/PickupScheduler";
 import {
@@ -13,8 +15,6 @@ import {
   type MixedPickupMode,
   type PickupSelection,
 } from "@/lib/pickup-schedule";
-import { saveOrderToHistory } from "@/lib/order-history";
-import type { CreateOrderPayload, PaymentMethod } from "@/lib/types";
 
 interface Props {
   mode?: "pickup" | "legacy";
@@ -25,17 +25,15 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
   const router = useRouter();
   const cart = useCart();
   const { profile } = useProfile();
+  const { setDraft } = useCheckout();
   const useCartItems = mode === "pickup";
 
   const [items, setItems] = useState(useCartItems ? cart.items : initialItems);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [mixedMode, setMixedMode] = useState<MixedPickupMode | null>(null);
   const [pickupUnified, setPickupUnified] = useState<PickupSelection | null>(null);
   const [pickupCombo, setPickupCombo] = useState<PickupSelection | null>(null);
   const [pickupRegular, setPickupRegular] = useState<PickupSelection | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
 
   const cartAnalysis = useMemo(() => analyzeCartItems(items), [items]);
 
@@ -96,7 +94,7 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     return form.delivery_date;
   }
 
-  function buildPickupNotes(): string | undefined {
+  function buildInternalNotes(): string | undefined {
     if (mode !== "pickup") return form.notes || undefined;
 
     const parts: string[] = [];
@@ -109,17 +107,9 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     }
 
     if (form.notes) parts.push(form.notes);
-    if (cart.coupon) parts.push(`Cupom: ${cart.coupon}`);
     parts.push("Retirada na loja");
 
     return parts.filter(Boolean).join(" · ") || undefined;
-  }
-
-  function buildUserNotes(): string | undefined {
-    const parts: string[] = [];
-    if (form.notes.trim()) parts.push(form.notes.trim());
-    if (cart.coupon) parts.push(`Cupom: ${cart.coupon}`);
-    return parts.length ? parts.join(" · ") : undefined;
   }
 
   function getPrimaryDeliveryDate(): string {
@@ -155,7 +145,7 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     return null;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleContinue(e: React.FormEvent) {
     e.preventDefault();
     if (items.length === 0) {
       setError("Adicione pelo menos um item ao pedido.");
@@ -168,41 +158,33 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
       return;
     }
 
-    setLoading(true);
-    setError("");
-    try {
-      const delivery_date = mode === "pickup" ? getPrimaryDeliveryDate() : form.delivery_date;
-      const pickup_display = buildPickupDisplay();
-      const userNotes = buildUserNotes();
-
-      const payload: CreateOrderPayload = {
-        ...form,
-        delivery_date,
-        pickup_display,
-        payment_method: paymentMethod,
-        user_notes: userNotes,
-        notes: mode === "pickup" ? buildPickupNotes() : userNotes,
-        items,
-      };
-      const { order } = await nutrirApi.createOrder(payload);
-      saveOrderToHistory({
-        id: order.id,
-        customer_phone: order.customer_phone,
-        customer_name: order.customer_name,
-        created_at: order.created_at,
-        items: order.items,
-        total_cents: order.total_cents,
-        payment_method: order.payment_method ?? paymentMethod,
-        pickup_display: order.pickup_display ?? pickup_display,
-        notes: userNotes,
-      });
-      setSuccess(true);
-      if (useCartItems) cart.clearCart();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao enviar pedido");
-    } finally {
-      setLoading(false);
+    const phoneErr = phoneValidationMessage(form.customer_phone);
+    if (phoneErr) {
+      setError(phoneErr);
+      return;
     }
+
+    const delivery_date = mode === "pickup" ? getPrimaryDeliveryDate() : form.delivery_date;
+    const phone = formatPhoneBR(form.customer_phone);
+
+    setDraft({
+      items: [...items],
+      customer_name: form.customer_name.trim(),
+      customer_phone: phone,
+      customer_email: form.customer_email?.trim() || undefined,
+      customer_cpf: profile.cpf || undefined,
+      delivery_address: form.delivery_address,
+      delivery_date,
+      pickup_display: buildPickupDisplay(),
+      user_notes: form.notes.trim() || undefined,
+      internal_notes: buildInternalNotes(),
+      mixed_mode: mixedMode,
+      pickup_unified: pickupUnified,
+      pickup_combo: pickupCombo,
+      pickup_regular: pickupRegular,
+    });
+
+    router.push("/checkout/pagamento");
   }
 
   function updateQty(index: number, delta: number) {
@@ -219,25 +201,8 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     );
   }
 
-  if (success) {
-    return (
-      <div className="card text-center">
-        <p className="text-4xl">✅</p>
-        <h2 className="mt-4 font-display text-xl font-bold text-nutrir-emerald">
-          Retirada agendada!
-        </h2>
-        <p className="mt-2 text-nutrir-emerald/70">
-          Recebemos seu pedido e você será contactado em breve para confirmar a retirada.
-        </p>
-        <button type="button" onClick={() => router.push("/")} className="btn-primary mt-6">
-          Voltar ao cardápio
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleContinue} className="space-y-6">
       {items.length > 0 && (
         <div className="card">
           <h3 className="font-semibold text-nutrir-emerald">Itens do pedido</h3>
@@ -258,9 +223,6 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
               </li>
             ))}
           </ul>
-          {cart.coupon && (
-            <p className="mt-2 text-xs text-nutrir-emerald/60">Cupom: {cart.coupon}</p>
-          )}
           <p className="mt-4 border-t pt-3 text-right font-bold">Total: {formatPrice(total)}</p>
         </div>
       )}
@@ -366,9 +328,14 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
           <label className="mb-1 block text-sm font-medium">Telefone / WhatsApp</label>
           <input
             required
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            maxLength={15}
             className="input-field"
             value={form.customer_phone}
-            onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+            onChange={(e) => setForm({ ...form, customer_phone: formatPhoneBR(e.target.value) })}
+            placeholder="(47) 99999-9999"
           />
         </div>
         <div>
@@ -412,40 +379,12 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
             placeholder="Alergias, preferências, etc."
           />
         </div>
-        <div className="md:col-span-2">
-          <label className="mb-2 block text-sm font-medium">Forma de pagamento</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(
-              [
-                { id: "pix" as const, label: "Pix" },
-                { id: "cash" as const, label: "Dinheiro" },
-                { id: "card" as const, label: "Cartão" },
-              ] as const
-            ).map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => setPaymentMethod(option.id)}
-                className={`rounded-xl border-2 px-3 py-2.5 text-sm font-bold transition ${
-                  paymentMethod === option.id
-                    ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                    : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <p className="mt-2 text-xs text-nutrir-emerald/60">
-            Valores promocionais para Pix ou Dinheiro.
-          </p>
-        </div>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button type="submit" disabled={loading} className="btn-primary w-full md:w-auto">
-        {loading ? "Enviando..." : mode === "pickup" ? "Confirmar retirada" : "Confirmar pedido"}
+      <button type="submit" className="btn-primary w-full md:w-auto">
+        {mode === "pickup" ? "Continuar" : "Continuar"}
       </button>
     </form>
   );

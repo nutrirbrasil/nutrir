@@ -4,16 +4,26 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import {
+  cpfValidationMessage,
+  formatCpf,
+  formatPhoneBR,
+  phoneValidationMessage,
+} from "@/lib/br-fields";
 import { formatPrice } from "@/lib/api";
 import { useCart } from "@/lib/cart-context";
-import { getRecentOrdersForPhone, type SavedOrder } from "@/lib/order-history";
+import {
+  fetchRecentOrdersForPhone,
+  syncCustomerToServer,
+  type SavedOrder,
+} from "@/lib/order-history";
 import { useProfile, SOCIAL_LOGIN_HINT } from "@/lib/profile-context";
 import type { PaymentMethod } from "@/lib/types";
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   pix: "Pix",
-  cash: "Dinheiro",
   card: "Cartão",
+  local: "No local",
 };
 
 export function ProfilePage() {
@@ -31,8 +41,12 @@ export function ProfilePage() {
   const [recentOrders, setRecentOrders] = useState<SavedOrder[]>([]);
 
   useEffect(() => {
-    setRecentOrders(getRecentOrdersForPhone(profile.phone, 2));
-  }, [profile.phone, isLoggedIn]);
+    if (!profile.phone) {
+      setRecentOrders([]);
+      return;
+    }
+    fetchRecentOrdersForPhone(profile.phone, 2).then(setRecentOrders);
+  }, [profile.phone, isLoggedIn, saved]);
 
   function handleReorder(orderId: string) {
     const order = recentOrders.find((o) => o.id === orderId);
@@ -60,8 +74,37 @@ export function ProfilePage() {
     }
   }
 
-  function handleProfileSave(e: React.FormEvent) {
+  async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault();
+
+    const cpfErr = cpfValidationMessage(profile.cpf);
+    if (cpfErr) {
+      setError(cpfErr);
+      return;
+    }
+    const phoneErr = phoneValidationMessage(profile.phone);
+    if (phoneErr) {
+      setError(phoneErr);
+      return;
+    }
+
+    const cpf = formatCpf(profile.cpf);
+    const phone = formatPhoneBR(profile.phone);
+    updateProfile({ cpf, phone });
+
+    const ok = await syncCustomerToServer({
+      phone,
+      whatsapp: phone,
+      name: profile.name,
+      email: profile.email,
+      cpf,
+      address: profile.address,
+    });
+    if (!ok) {
+      setError("Não foi possível salvar no servidor. Dados ficaram só neste aparelho.");
+    } else {
+      setError("");
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   }
@@ -88,9 +131,13 @@ export function ProfilePage() {
             <label className="mb-1 block text-sm font-medium">Telefone</label>
             <input
               required
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              maxLength={15}
               className="input-field"
               value={profile.phone}
-              onChange={(e) => updateProfile({ phone: e.target.value })}
+              onChange={(e) => updateProfile({ phone: formatPhoneBR(e.target.value) })}
               placeholder="(47) 99999-9999"
             />
           </div>
@@ -98,9 +145,13 @@ export function ProfilePage() {
             <label className="mb-1 block text-sm font-medium">CPF</label>
             <input
               required
+              type="tel"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={14}
               className="input-field"
               value={profile.cpf}
-              onChange={(e) => updateProfile({ cpf: e.target.value })}
+              onChange={(e) => updateProfile({ cpf: formatCpf(e.target.value) })}
               placeholder="000.000.000-00"
             />
           </div>
@@ -142,7 +193,7 @@ export function ProfilePage() {
             <h2 className="font-display text-lg font-bold text-nutrir-emerald">Últimos pedidos</h2>
             {recentOrders.length === 0 ? (
               <p className="mt-3 text-sm text-nutrir-emerald/60">
-                Nenhum pedido encontrado para este telefone.
+                Sem histórico. Você ainda não realizou nenhum pedido.
               </p>
             ) : (
               <ul className="mt-4 space-y-4">

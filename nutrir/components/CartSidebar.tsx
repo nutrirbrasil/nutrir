@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { FiTag, FiX } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
 import { getCartSuggestions, type MarmitaSize } from "@/lib/menu-data";
@@ -35,8 +35,6 @@ export function CartSidebar() {
     totalCents,
     updateQty,
     addItem,
-    coupon,
-    setCoupon,
   } = useCart();
   const [suggestionIndex, setSuggestionIndex] = useState(0);
 
@@ -217,17 +215,6 @@ export function CartSidebar() {
         </div>
 
         <footer className="border-t border-nutrir-nude-dark/40 bg-nutrir-cream px-5 py-4">
-          <div className="relative mb-4">
-            <FiTag className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-nutrir-emerald/40" />
-            <input
-              type="text"
-              placeholder="Aplicar cupom"
-              value={coupon}
-              onChange={(e) => setCoupon(e.target.value)}
-              className="input-field w-full py-2.5 pl-10"
-            />
-          </div>
-
           <div className="mb-4 flex items-baseline justify-between">
             <span className="text-sm text-nutrir-emerald/70">Total</span>
             <span className="text-xl font-bold text-nutrir-burgundy">

@@ -1,14 +1,10 @@
 import type { CreateOrderPayload, Order, PaymentMethod } from "./types";
+import { isLocalPayment } from "./payment-utils";
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  pix: "Pix",
-  cash: "Dinheiro",
-  card: "Cartão",
-};
-
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
-  pending: "Pendente",
-  confirmed: "Pagamento Confirmado",
+  pix: "Pix online",
+  card: "Cartão online",
+  local: "Pagamento no local",
 };
 
 function escapeMarkdown(text: string): string {
@@ -28,10 +24,15 @@ export function formatOrderTelegramMessage(order: Order, orderedAt: Date): strin
   const namePhone = `${order.customer_name} - ${order.customer_phone.replace(/\D/g, "")}`;
   const items = formatItemsBlock(order.items);
   const value = formatMoney(order.total_cents);
-  const paymentStatus =
-    PAYMENT_STATUS_LABELS[order.payment_status ?? "pending"] ?? order.payment_status ?? "Pendente";
   const paymentMethod =
     PAYMENT_METHOD_LABELS[order.payment_method ?? "pix"] ?? order.payment_method ?? "Pix";
+
+  let paymentStatus =
+    order.payment_status === "confirmed" ? "Pagamento confirmado" : "Pagamento pendente";
+
+  if (isLocalPayment(order.payment_method) && order.payment_status === "pending") {
+    paymentStatus = "Aguardando pagamento no local (48h)";
+  }
 
   const dd = String(orderedAt.getDate()).padStart(2, "0");
   const mm = String(orderedAt.getMonth() + 1).padStart(2, "0");
@@ -43,7 +44,7 @@ export function formatOrderTelegramMessage(order: Order, orderedAt: Date): strin
   const notes = order.user_notes?.trim() || "Sem observações";
 
   const lines = [
-    "NOVO PEDIDO!",
+    order.payment_status === "confirmed" ? "NOVO PEDIDO!" : "PEDIDO PENDENTE",
     `*${escapeMarkdown(namePhone)}*`,
     escapeMarkdown(items),
     `Valor: ${escapeMarkdown(value)}`,

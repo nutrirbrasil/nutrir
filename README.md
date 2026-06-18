@@ -18,6 +18,22 @@ Nutrir/
 └── supabase/          # Migrations SQL
 ```
 
+## Supabase (MCP)
+
+Este repo usa o projeto **`ocjtzacohamatjbzlind`** (Nutrir).
+
+- Config MCP do workspace: [`.cursor/mcp.json`](.cursor/mcp.json)
+- Credenciais do site: `nutrir/.env.local` (`SUPABASE_URL` + `SUPABASE_SERVICE_KEY`)
+- O projeto **Bot** usa outro Supabase (`kubsiwmftqxkhdywlbrp`) — configurado globalmente como `supabase-bot`
+
+Após clonar ou alterar o MCP: **Reload Window** no Cursor e autentique o Supabase MCP se pedir.
+
+Verificar tabelas:
+
+```bash
+cd nutrir && node scripts/check-supabase.mjs
+```
+
 ## Como rodar
 
 ### 1. Backend
@@ -37,6 +53,7 @@ uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 
 ```bash
 cd nutrir
+cp .env.example .env.local   # preencha credenciais
 npm install
 npm run dev
 ```
@@ -47,6 +64,7 @@ Abra [http://localhost:3000](http://localhost:3000)
 
 ```bash
 cd nootr
+cp .env.example .env.local
 npm install
 npm run dev
 ```

@@ -25,20 +25,23 @@ export interface OrderItem {
   size?: "P" | "G";
 }
 
-export type PaymentMethod = "pix" | "cash" | "card";
+export type PaymentMethod = "pix" | "card" | "local";
 export type PaymentStatus = "pending" | "confirmed";
 
 export interface CreateOrderPayload {
   customer_name: string;
   customer_phone: string;
   customer_email?: string;
+  customer_cpf?: string;
   delivery_address: string;
   delivery_date: string;
   pickup_display?: string;
   payment_method?: PaymentMethod;
+  payment_status?: PaymentStatus;
   user_notes?: string;
   notes?: string;
   items: OrderItem[];
+  coupon?: string;
 }
 
 export interface Order extends CreateOrderPayload {
@@ -47,4 +50,9 @@ export interface Order extends CreateOrderPayload {
   payment_status: PaymentStatus;
   total_cents: number;
   created_at: string;
+  local_pay_deadline?: string;
+  checkout_url?: string;
+  infinitepay_slug?: string;
+  infinitepay_transaction_nsu?: string;
+  infinitepay_capture_method?: string;
 }

@@ -9,6 +9,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { formatCpfDisplay, formatPhoneDisplay } from "./br-fields";
+import { fetchCustomerByPhone, syncCustomerToServer } from "./order-history";
 
 export interface UserProfile {
   name: string;
@@ -60,7 +62,13 @@ function loadProfile(): UserProfile {
   if (typeof window === "undefined") return emptyProfile;
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
-    return raw ? { ...emptyProfile, ...(JSON.parse(raw) as UserProfile) } : emptyProfile;
+    if (!raw) return emptyProfile;
+    const parsed = { ...emptyProfile, ...(JSON.parse(raw) as UserProfile) };
+    return {
+      ...parsed,
+      phone: formatPhoneDisplay(parsed.phone),
+      cpf: formatCpfDisplay(parsed.cpf),
+    };
   } catch {
     return emptyProfile;
   }
@@ -95,16 +103,41 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
   }, [profile, hydrated]);
 
+  useEffect(() => {
+    if (!hydrated) return;
+    const phone = loadProfile().phone;
+    if (!phone) return;
+    fetchCustomerByPhone(phone).then((remote) => {
+      if (!remote) return;
+      setProfile((p) => ({
+        ...p,
+        name: remote.name || p.name,
+        email: remote.email || p.email,
+        cpf: formatCpfDisplay(remote.cpf) || p.cpf,
+        address: remote.address || p.address,
+        phone: formatPhoneDisplay(remote.phone) || p.phone,
+      }));
+    });
+  }, [hydrated]);
+
   const login = useCallback(async (email: string, _password: string) => {
     const s = { email: email.trim().toLowerCase() };
     setSession(s);
-    setProfile((p) => ({ ...p, email: s.email }));
+    setProfile((p) => {
+      const next = { ...p, email: s.email };
+      void syncCustomerToServer({ phone: next.phone, whatsapp: next.phone, email: s.email, name: next.name, cpf: next.cpf, address: next.address });
+      return next;
+    });
   }, []);
 
   const register = useCallback(async (email: string, _password: string) => {
     const s = { email: email.trim().toLowerCase() };
     setSession(s);
-    setProfile((p) => ({ ...p, email: s.email }));
+    setProfile((p) => {
+      const next = { ...p, email: s.email };
+      void syncCustomerToServer({ phone: next.phone, whatsapp: next.phone, email: s.email, name: next.name, cpf: next.cpf, address: next.address });
+      return next;
+    });
   }, []);
 
   const logout = useCallback(() => {

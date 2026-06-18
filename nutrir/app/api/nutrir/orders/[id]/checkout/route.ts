@@ -1,0 +1,56 @@
+import { NextResponse } from "next/server";
+import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
+import { findOrder } from "@/lib/order-store";
+import type { PaymentMethod } from "@/lib/types";
+
+export async function POST(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const order = findOrder(params.id);
+  if (!order) {
+    return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
+  }
+
+  if (order.payment_status === "confirmed") {
+    return NextResponse.json({ error: "Pedido já pago." }, { status: 400 });
+  }
+
+  if (!isInfinitePayConfigured()) {
+    return NextResponse.json(
+      { error: "Pagamento online não configurado." },
+      { status: 503 }
+    );
+  }
+
+  let payment_method: PaymentMethod | undefined;
+  try {
+    const body = (await request.json()) as { payment_method?: PaymentMethod };
+    payment_method = body.payment_method;
+  } catch {
+    /* optional body */
+  }
+
+  const link = await createInfinitePayLink({
+    orderId: order.id,
+    amountCents: order.total_cents,
+    items: order.items,
+    customerName: order.customer_name,
+    customerEmail: order.customer_email,
+    customerPhone: order.customer_phone,
+  });
+
+  if (!link) {
+    return NextResponse.json(
+      { error: "Não foi possível abrir o checkout. Tente novamente." },
+      { status: 503 }
+    );
+  }
+
+  order.checkout_url = link.url;
+  if (payment_method === "pix" || payment_method === "card") {
+    order.payment_method = payment_method;
+  }
+
+  return NextResponse.json({ checkout_url: link.url });
+}

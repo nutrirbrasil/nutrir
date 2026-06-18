@@ -1,3 +1,17 @@
+import type { CreateOrderPayload, Order, PaymentStatus } from "./types";
+
+export const PAYMENT_METHOD_LABELS = {
+  pix: "Pix online",
+  card: "Cartão online",
+  local: "Pagamento no local",
+} as const;
+
+export interface CreateOrderResponse {
+  order: Order;
+  notified: boolean;
+  checkout_url?: string;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_NUTRIR_API_URL?.replace(/\/$/, "") ?? "";
 
 function resolveUrl(path: string): string {
@@ -39,10 +53,26 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const nutrirApi = {
   getMenus: () => api<{ menus: import("./types").MenuItem[] }>("/nutrir/menus"),
-  createOrder: (body: import("./types").CreateOrderPayload) =>
-    api<{ order: import("./types").Order; notified: boolean }>("/nutrir/orders", {
+  createOrder: (body: CreateOrderPayload) =>
+    api<CreateOrderResponse>("/nutrir/orders", {
       method: "POST",
       body: JSON.stringify(body),
+    }),
+  getOrder: (id: string) => api<{ order: Order }>(`/nutrir/orders/${id}`),
+  verifyOrderPayment: (body: { order_id: string; transaction_nsu?: string; slug?: string }) =>
+    api<{ order: Order; paid: boolean; notified: boolean }>("/nutrir/orders/verify", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  createCheckoutLink: (order_id: string, payment_method: import("./types").PaymentMethod) =>
+    api<{ checkout_url: string }>(`/nutrir/orders/${order_id}/checkout`, {
+      method: "POST",
+      body: JSON.stringify({ payment_method }),
+    }),
+  updatePaymentStatus: (order_id: string, payment_status: PaymentStatus) =>
+    api<{ order: Order; notified: boolean }>("/nutrir/orders", {
+      method: "PATCH",
+      body: JSON.stringify({ order_id, payment_status }),
     }),
 };
 
