@@ -47,7 +47,7 @@ export function CheckoutSuccessStep() {
             created_at: order.created_at,
             items: order.items,
             total_cents: order.total_cents,
-            payment_method: order.payment_method,
+            payment_method: order.payment_method ?? "pix",
             pickup_display: order.pickup_display ?? "",
             notes: order.user_notes,
           });
