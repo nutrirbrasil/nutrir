@@ -13,6 +13,7 @@ import {
 import { mapAuthError } from "./auth-errors";
 import { formatCpfDisplay, formatPhoneDisplay } from "./br-fields";
 import { fetchCustomerByPhone, syncCustomerToServer } from "./order-history";
+import { getAuthCallbackUrl } from "./auth-redirect";
 import { getSupabaseBrowser, isSupabaseAuthConfigured } from "./supabase-browser";
 
 export interface UserProfile {
@@ -86,11 +87,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [authLoading, setAuthLoading] = useState(true);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
   const authConfigured = isSupabaseAuthConfigured();
-
-  function getAuthRedirectUrl(path: string): string | undefined {
-    if (typeof window === "undefined") return undefined;
-    return `${window.location.origin}${path}`;
-  }
 
   useEffect(() => {
     setProfile(loadProfile());
@@ -168,12 +164,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (!authConfigured) throw new Error("Autenticação não configurada.");
     const supabase = getSupabaseBrowser();
     const normalized = email.trim().toLowerCase();
-    const redirectTo = getAuthRedirectUrl("/perfil");
+    const redirectTo = getAuthCallbackUrl("signup");
 
     const { data, error } = await supabase.auth.signUp({
       email: normalized,
       password,
-      options: redirectTo ? { emailRedirectTo: redirectTo } : undefined,
+      options: { emailRedirectTo: redirectTo },
     });
     if (error) throw new Error(mapAuthError(error));
 
@@ -210,6 +206,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: email.trim().toLowerCase(),
+      options: { emailRedirectTo: getAuthCallbackUrl("signup") },
     });
     if (error) throw new Error(mapAuthError(error));
   }, [authConfigured]);
@@ -218,7 +215,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (!authConfigured) throw new Error("Autenticação não configurada.");
     const supabase = getSupabaseBrowser();
     const normalized = email.trim().toLowerCase();
-    const redirectTo = getAuthRedirectUrl("/perfil/redefinir-senha");
+    const redirectTo = getAuthCallbackUrl("recovery");
 
     const { error } = await supabase.auth.resetPasswordForEmail(normalized, {
       redirectTo,

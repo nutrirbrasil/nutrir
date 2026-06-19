@@ -112,7 +112,9 @@ export function ProfilePage() {
       const { needsVerification } = await register(email, password);
       if (needsVerification) {
         setAuthStep("verify");
-        setInfo("Enviamos um código para seu e-mail. Digite abaixo para confirmar a conta.");
+        setInfo(
+          "Enviamos um link de confirmação para seu e-mail. Clique no link para ativar a conta."
+        );
         setVerifyCode("");
       }
     } catch (err) {
@@ -146,13 +148,20 @@ export function ProfilePage() {
     }
   }
 
-  async function handleResendCode() {
+  useEffect(() => {
+    if (authStep === "verify" && isLoggedIn) {
+      setAuthStep("form");
+      setInfo("E-mail confirmado! Você já está logado.");
+    }
+  }, [authStep, isLoggedIn]);
+
+  async function handleResendVerificationEmail() {
     setError("");
     setInfo("");
     setLoading(true);
     try {
       await resendVerification(email);
-      setInfo("Novo código enviado para seu e-mail.");
+      setInfo("Novo link enviado para seu e-mail. Clique assim que receber.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível reenviar o código.");
     } finally {
@@ -238,7 +247,7 @@ export function ProfilePage() {
       await requestPasswordReset(email);
       setAuthStep("reset");
       setInfo(
-        "Enviamos um código e um link para seu e-mail. Use o código abaixo ou clique no link."
+        "Enviamos um link para seu e-mail. Clique no link para redefinir a senha."
       );
       setVerifyCode("");
       setNewPassword("");
@@ -318,7 +327,7 @@ export function ProfilePage() {
     setLoading(true);
     try {
       await resendPasswordReset(email);
-      setInfo("Novo código enviado para seu e-mail.");
+      setInfo("Novo link enviado para seu e-mail.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível reenviar.");
     } finally {
@@ -700,35 +709,46 @@ export function ProfilePage() {
           Confirme seu e-mail
         </h1>
         <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
-          Digite o código de 6 dígitos enviado para <strong>{email}</strong>
+          Enviamos um link para <strong>{email}</strong>. Abra o e-mail e clique em{" "}
+          <strong>Confirm email address</strong> para ativar sua conta.
+        </p>
+        <p className="mt-2 text-center text-xs text-nutrir-emerald/55">
+          O link expira em poucos minutos. Depois de clicar, você será logado automaticamente.
         </p>
 
-        <form onSubmit={handleVerify} className="mt-8 space-y-4">
-          <input
-            required
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={8}
-            placeholder="Código de verificação"
-            className="input-field w-full text-center text-lg tracking-widest"
-            value={verifyCode}
-            onChange={(e) => setVerifyCode(e.target.value.replace(/\s/g, ""))}
-          />
-
+        <div className="mt-8 space-y-4">
           {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <button type="submit" disabled={loading} className="btn-primary w-full py-3">
-            {loading ? "Verificando…" : "Confirmar conta"}
-          </button>
           <button
             type="button"
             disabled={loading}
-            onClick={handleResendCode}
-            className="btn-secondary w-full py-3"
+            onClick={handleResendVerificationEmail}
+            className="btn-primary w-full py-3"
           >
-            Reenviar código
+            {loading ? "Enviando…" : "Reenviar e-mail"}
           </button>
+
+          <details className="rounded-lg border border-nutrir-nude-dark/50 p-4 text-sm">
+            <summary className="cursor-pointer font-medium text-nutrir-emerald">
+              Recebeu um código numérico? (opcional)
+            </summary>
+            <form onSubmit={handleVerify} className="mt-3 space-y-3">
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={8}
+                placeholder="Código de 6 dígitos"
+                className="input-field w-full text-center tracking-widest"
+                value={verifyCode}
+                onChange={(e) => setVerifyCode(e.target.value.replace(/\s/g, ""))}
+              />
+              <button type="submit" disabled={loading || !verifyCode.trim()} className="btn-secondary w-full py-2.5">
+                Confirmar com código
+              </button>
+            </form>
+          </details>
+
           <button
             type="button"
             onClick={() => {
@@ -741,7 +761,7 @@ export function ProfilePage() {
           >
             ← Voltar
           </button>
-        </form>
+        </div>
       </div>
     );
   }

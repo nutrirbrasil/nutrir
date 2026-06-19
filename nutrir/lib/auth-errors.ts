@@ -7,17 +7,19 @@ export function mapAuthError(error: AuthError | Error): string {
     return "E-mail ou senha incorretos.";
   }
   if (msg.includes("email not confirmed")) {
-    return "Confirme seu e-mail com o código enviado antes de entrar.";
+    return "Confirme seu e-mail pelo link enviado antes de entrar.";
   }
   if (msg.includes("user already registered") || msg.includes("already been registered")) {
     return "Este e-mail já está cadastrado. Faça login ou recupere a senha.";
   }
+  if (msg.includes("email link is invalid") || msg.includes("otp_expired")) {
+    return "Link inválido ou expirado. Peça um novo e-mail e clique assim que receber.";
+  }
   if (
     msg.includes("invalid otp") ||
-    msg.includes("token has expired") ||
-    msg.includes("otp_expired")
+    msg.includes("token has expired")
   ) {
-    return "Código inválido ou expirado. Solicite um novo.";
+    return "Código inválido ou expirado. Solicite um novo e-mail.";
   }
   if (msg.includes("password") && msg.includes("6")) {
     return "A senha deve ter pelo menos 6 caracteres.";

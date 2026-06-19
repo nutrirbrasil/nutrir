@@ -59,18 +59,21 @@ export function MarmitaCard({ item, sectionId }: Props) {
         ))}
       </div>
 
-      <div className="mt-4 flex items-end justify-between gap-3 border-t border-nutrir-nude-dark/50 pt-4">
-        <div>
-          <p className="text-sm text-nutrir-emerald/70">
-            De{" "}
-            <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span> por{" "}
-            <strong className="text-lg text-nutrir-burgundy">{formatPrice(price)}</strong>
-          </p>
-          <p className="mt-0.5 text-xs text-nutrir-emerald/60">no dinheiro ou pix</p>
+      <div className="mt-4 flex flex-col border-t border-nutrir-nude-dark/50 pt-4">
+        <p className="flex flex-wrap items-baseline gap-x-1 text-sm text-nutrir-emerald/70">
+          <span>De</span>
+          <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>
+          <span>por</span>
+          <strong className="text-lg text-nutrir-burgundy">{formatPrice(price)}</strong>
+        </p>
+        <div className="mt-3 flex justify-center">
+          <button type="button" onClick={handleAdd} className="btn-primary text-sm">
+            Adicionar
+          </button>
         </div>
-        <button type="button" onClick={handleAdd} className="btn-primary shrink-0 text-sm">
-          Adicionar
-        </button>
+        <p className="mt-2 text-center text-[10px] leading-snug text-nutrir-emerald/55">
+          *Valor promocional válido apenas para pagamentos em dinheiro ou pix
+        </p>
       </div>
     </article>
   );
