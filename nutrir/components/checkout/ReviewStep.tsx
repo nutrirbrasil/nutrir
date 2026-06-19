@@ -51,31 +51,57 @@ export function ReviewStep() {
     return "Ir para pagamento";
   }
 
+  function redirectToCheckout(url: string, orderId: string) {
+    patchDraft({ coupon, order_id: orderId });
+    window.location.href = url;
+  }
+
   async function handleFinalize() {
     setLoading(true);
     setError("");
     patchDraft({ coupon });
 
     try {
+      if (isOnlinePayment(method) && d.order_id) {
+        try {
+          const { order: existing } = await nutrirApi.getOrder(d.order_id);
+          if (existing.payment_status === "confirmed") {
+            cart.clearCart();
+            resetCheckout();
+            router.push(`/checkout/sucesso?order=${existing.id}`);
+            return;
+          }
+          if (existing.payment_status === "pending") {
+            const url =
+              existing.checkout_url ??
+              (await nutrirApi.createCheckoutLink(d.order_id, method)).checkout_url;
+            if (url) {
+              redirectToCheckout(url, existing.id);
+              return;
+            }
+          }
+        } catch {
+          /* pedido anterior expirou — cria um novo */
+        }
+      }
+
       const payload = buildPayload();
       const { order, checkout_url } = await nutrirApi.createOrder(payload);
 
-      saveOrderToHistory({
-        id: order.id,
-        customer_phone: order.customer_phone,
-        customer_name: order.customer_name,
-        created_at: order.created_at,
-        items: order.items,
-        total_cents: order.total_cents,
-        payment_method: method,
-        pickup_display: order.pickup_display ?? d.pickup_display,
-        notes: d.user_notes,
-      });
-
-      cart.clearCart();
-      resetCheckout();
-
       if (isLocalPayment(method)) {
+        saveOrderToHistory({
+          id: order.id,
+          customer_phone: order.customer_phone,
+          customer_name: order.customer_name,
+          created_at: order.created_at,
+          items: order.items,
+          total_cents: order.total_cents,
+          payment_method: method,
+          pickup_display: order.pickup_display ?? d.pickup_display,
+          notes: d.user_notes,
+        });
+        cart.clearCart();
+        resetCheckout();
         router.push(`/checkout/pendente?order=${order.id}`);
         return;
       }
@@ -85,7 +111,7 @@ export function ReviewStep() {
         return;
       }
 
-      window.location.href = checkout_url;
+      redirectToCheckout(checkout_url, order.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao finalizar pedido.");
     } finally {

@@ -5,9 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CheckoutShell } from "@/components/checkout/CheckoutShell";
 import { nutrirApi } from "@/lib/api";
+import { useCart } from "@/lib/cart-context";
+import { useCheckout } from "@/lib/checkout-context";
+import { saveOrderToHistory } from "@/lib/order-history";
 
 export function CheckoutSuccessStep() {
   const searchParams = useSearchParams();
+  const cart = useCart();
+  const { resetCheckout } = useCheckout();
   const orderId = searchParams.get("order");
   const [status, setStatus] = useState<"loading" | "confirmed" | "pending">("loading");
 
@@ -34,14 +39,32 @@ export function CheckoutSuccessStep() {
         }
 
         const { order } = await nutrirApi.getOrder(id);
-        setStatus(order.payment_status === "confirmed" ? "confirmed" : "pending");
+        if (order.payment_status === "confirmed") {
+          saveOrderToHistory({
+            id: order.id,
+            customer_phone: order.customer_phone,
+            customer_name: order.customer_name,
+            created_at: order.created_at,
+            items: order.items,
+            total_cents: order.total_cents,
+            payment_method: order.payment_method,
+            pickup_display: order.pickup_display ?? "",
+            notes: order.user_notes,
+          });
+          cart.clearCart();
+          resetCheckout();
+          setStatus("confirmed");
+          return;
+        }
+
+        setStatus("pending");
       } catch {
         setStatus("pending");
       }
     }
 
     load();
-  }, [orderId, searchParams]);
+  }, [orderId, searchParams, cart, resetCheckout]);
 
   if (status === "loading") {
     return (
@@ -66,8 +89,8 @@ export function CheckoutSuccessStep() {
               ? `Pedido ${orderId.replace("order-", "#")} — se você já pagou, aguarde alguns instantes.`
               : "Se você já pagou, aguarde alguns instantes."}
           </p>
-          <Link href="/" className="btn-primary mt-6 inline-block">
-            Voltar ao cardápio
+          <Link href="/checkout/revisar" className="btn-primary mt-6 inline-block">
+            Voltar ao checkout
           </Link>
         </div>
       </CheckoutShell>

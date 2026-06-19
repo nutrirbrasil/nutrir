@@ -1,11 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { OrderForm } from "@/components/OrderForm";
 import { useCart } from "@/lib/cart-context";
+import { useCheckout } from "@/lib/checkout-context";
 
 export default function AgendarPage() {
-  const { items } = useCart();
+  const { items, replaceItems } = useCart();
+  const { draft, hydrated } = useCheckout();
+
+  useEffect(() => {
+    if (!hydrated || items.length > 0 || !draft?.items.length) return;
+    replaceItems(draft.items);
+  }, [hydrated, items.length, draft?.items, replaceItems]);
+
+  const hasItems = items.length > 0 || (hydrated && (draft?.items.length ?? 0) > 0);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -18,7 +28,7 @@ export default function AgendarPage() {
           ← Voltar ao cardápio
         </Link>
       </div>
-      {items.length === 0 ? (
+      {!hasItems ? (
         <div className="card text-center">
           <p className="text-nutrir-emerald/70">Sua sacola está vazia.</p>
           <Link href="/" className="btn-primary mt-4 inline-block">
