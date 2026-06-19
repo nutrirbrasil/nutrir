@@ -191,3 +191,39 @@ export async function getRecentOrdersByPhone(
     notes: (row.user_notes as string) ?? undefined,
   }));
 }
+
+export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order | null> {
+  const db = getSupabaseAdmin();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from("nutrir_orders")
+    .select(
+      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at"
+    )
+    .eq("order_nsu", orderNsu)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[Supabase] getOrderByNsu:", error.message);
+    return null;
+  }
+
+  if (!data) return null;
+
+  return {
+    id: data.order_nsu as string,
+    customer_name: data.customer_name as string,
+    customer_phone: data.customer_phone as string,
+    delivery_address: data.delivery_address as string,
+    delivery_date: data.delivery_date as string,
+    pickup_display: (data.pickup_display as string) ?? undefined,
+    payment_method: (data.payment_method as PaymentMethod) ?? "pix",
+    payment_status: (data.payment_status as PaymentStatus) ?? "pending",
+    user_notes: (data.user_notes as string) ?? undefined,
+    items: data.items as OrderItem[],
+    total_cents: data.total_cents as number,
+    status: (data.status as string) ?? "pending",
+    created_at: data.created_at as string,
+  };
+}

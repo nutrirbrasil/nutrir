@@ -18,27 +18,54 @@ import {
   type SavedOrder,
 } from "@/lib/order-history";
 import { useProfile, SOCIAL_LOGIN_HINT } from "@/lib/profile-context";
+import { PAYMENT_METHOD_SHORT_LABELS } from "@/lib/payment-labels";
 import type { PaymentMethod } from "@/lib/types";
 
-const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  pix: "Pix",
-  card: "Cartão",
-  local: "No local",
-};
+const PAYMENT_LABELS = PAYMENT_METHOD_SHORT_LABELS;
+
+type AuthStep = "form" | "verify" | "forgot" | "reset";
 
 export function ProfilePage() {
   const router = useRouter();
   const { replaceItems } = useCart();
-  const { isLoggedIn, profile, login, register, logout, updateProfile, socialLoginHint } =
-    useProfile();
+  const {
+    isLoggedIn,
+    authConfigured,
+    authLoading,
+    passwordRecovery,
+    profile,
+    login,
+    register,
+    verifyEmail,
+    resendVerification,
+    requestPasswordReset,
+    resendPasswordReset,
+    verifyRecoveryAndResetPassword,
+    completePasswordRecovery,
+    changePassword,
+    logout,
+    updateProfile,
+    socialLoginHint,
+  } = useProfile();
+
   const [mode, setMode] = useState<"login" | "register">("register");
+  const [authStep, setAuthStep] = useState<AuthStep>("form");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [verifyCode, setVerifyCode] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [recentOrders, setRecentOrders] = useState<SavedOrder[]>([]);
+
+  const [showChangePass, setShowChangePass] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [passSaved, setPassSaved] = useState(false);
 
   useEffect(() => {
     if (!profile.phone) {
@@ -58,6 +85,13 @@ export function ProfilePage() {
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setInfo("");
+
+    if (!authConfigured) {
+      setError("Autenticação não configurada. Adicione as chaves do Supabase no .env.local.");
+      return;
+    }
+
     if (mode === "register" && password !== confirm) {
       setError("As senhas não coincidem.");
       return;
@@ -66,16 +100,69 @@ export function ProfilePage() {
       setError("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
+
+    setLoading(true);
     try {
-      if (mode === "login") await login(email, password);
-      else await register(email, password);
-    } catch {
-      setError("Não foi possível concluir. Tente novamente.");
+      if (mode === "login") {
+        await login(email, password);
+        setPassword("");
+        return;
+      }
+
+      const { needsVerification } = await register(email, password);
+      if (needsVerification) {
+        setAuthStep("verify");
+        setInfo("Enviamos um código para seu e-mail. Digite abaixo para confirmar a conta.");
+        setVerifyCode("");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível concluir. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    if (!verifyCode.trim()) {
+      setError("Informe o código recebido por e-mail.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await verifyEmail(email, verifyCode);
+      setAuthStep("form");
+      setPassword("");
+      setConfirm("");
+      setVerifyCode("");
+      setInfo("Conta confirmada! Você já está logado.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Código inválido.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResendCode() {
+    setError("");
+    setInfo("");
+    setLoading(true);
+    try {
+      await resendVerification(email);
+      setInfo("Novo código enviado para seu e-mail.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível reenviar o código.");
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
 
     const cpfErr = cpfValidationMessage(profile.cpf);
     if (cpfErr) {
@@ -102,11 +189,300 @@ export function ProfilePage() {
     });
     if (!ok) {
       setError("Não foi possível salvar no servidor. Dados ficaram só neste aparelho.");
-    } else {
-      setError("");
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+
+    if (newPassword.length < 6) {
+      setError("A nova senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setError("A confirmação da nova senha não confere.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setShowChangePass(false);
+      setPassSaved(true);
+      setTimeout(() => setPassSaved(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível trocar a senha.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+
+    if (!authConfigured) {
+      setError("Autenticação não configurada.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await requestPasswordReset(email);
+      setAuthStep("reset");
+      setInfo(
+        "Enviamos um código e um link para seu e-mail. Use o código abaixo ou clique no link."
+      );
+      setVerifyCode("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível enviar o e-mail.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResetWithCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+
+    if (newPassword.length < 6) {
+      setError("A nova senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setError("A confirmação da nova senha não confere.");
+      return;
+    }
+    if (!verifyCode.trim()) {
+      setError("Informe o código recebido por e-mail.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await verifyRecoveryAndResetPassword(email, verifyCode, newPassword);
+      setAuthStep("form");
+      setMode("login");
+      setVerifyCode("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setPassword("");
+      setInfo("Senha redefinida com sucesso!");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível redefinir a senha.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRecoveryLinkReset(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+
+    if (newPassword.length < 6) {
+      setError("A nova senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setError("A confirmação da nova senha não confere.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await completePasswordRecovery(newPassword);
+      setNewPassword("");
+      setConfirmNewPassword("");
+      router.push("/perfil");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível redefinir a senha.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResendResetCode() {
+    setError("");
+    setInfo("");
+    setLoading(true);
+    try {
+      await resendPasswordReset(email);
+      setInfo("Novo código enviado para seu e-mail.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível reenviar.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-16 text-center text-nutrir-emerald/70">
+        Carregando…
+      </div>
+    );
+  }
+
+  if (passwordRecovery) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-10">
+        <h1 className="text-center font-display text-2xl font-bold text-nutrir-emerald">
+          Nova senha
+        </h1>
+        <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+          Escolha uma nova senha para sua conta.
+        </p>
+
+        <form onSubmit={handleRecoveryLinkReset} className="mt-8 space-y-4">
+          <input
+            required
+            type="password"
+            placeholder="Nova senha"
+            className="input-field w-full"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <input
+            required
+            type="password"
+            placeholder="Confirmar nova senha"
+            className="input-field w-full"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+          />
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+            {loading ? "Salvando…" : "Salvar nova senha"}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (authStep === "forgot") {
+    return (
+      <div className="mx-auto max-w-md px-4 py-10">
+        <h1 className="text-center font-display text-2xl font-bold text-nutrir-emerald">
+          Esqueci minha senha
+        </h1>
+        <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+          Informe seu e-mail para receber o código de redefinição.
+        </p>
+
+        <form onSubmit={handleForgotPassword} className="mt-8 space-y-4">
+          <input
+            required
+            type="email"
+            placeholder="E-mail"
+            className="input-field w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <button type="submit" disabled={loading || !authConfigured} className="btn-primary w-full py-3">
+            {loading ? "Enviando…" : "Enviar código"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthStep("form");
+              setError("");
+              setInfo("");
+            }}
+            className="w-full text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald"
+          >
+            ← Voltar ao login
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (authStep === "reset") {
+    return (
+      <div className="mx-auto max-w-md px-4 py-10">
+        <h1 className="text-center font-display text-2xl font-bold text-nutrir-emerald">
+          Redefinir senha
+        </h1>
+        <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+          Digite o código enviado para <strong>{email}</strong> e escolha uma nova senha.
+        </p>
+
+        <form onSubmit={handleResetWithCode} className="mt-8 space-y-4">
+          <input
+            required
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={8}
+            placeholder="Código de verificação"
+            className="input-field w-full text-center text-lg tracking-widest"
+            value={verifyCode}
+            onChange={(e) => setVerifyCode(e.target.value.replace(/\s/g, ""))}
+          />
+          <input
+            required
+            type="password"
+            placeholder="Nova senha"
+            className="input-field w-full"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <input
+            required
+            type="password"
+            placeholder="Confirmar nova senha"
+            className="input-field w-full"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+          />
+
+          {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+            {loading ? "Salvando…" : "Redefinir senha"}
+          </button>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={handleResendResetCode}
+            className="btn-secondary w-full py-3"
+          >
+            Reenviar código
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthStep("form");
+              setVerifyCode("");
+              setNewPassword("");
+              setConfirmNewPassword("");
+              setError("");
+              setInfo("");
+            }}
+            className="w-full text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald"
+          >
+            ← Voltar ao login
+          </button>
+        </form>
+      </div>
+    );
   }
 
   if (isLoggedIn) {
@@ -160,9 +536,9 @@ export function ProfilePage() {
             <input
               required
               type="email"
-              className="input-field"
+              className="input-field bg-nutrir-nude-dark/20"
               value={profile.email}
-              onChange={(e) => updateProfile({ email: e.target.value })}
+              readOnly
             />
           </div>
           <div>
@@ -179,14 +555,83 @@ export function ProfilePage() {
           {saved && (
             <p className="text-sm font-medium text-nutrir-emerald">Dados salvos com sucesso!</p>
           )}
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button type="submit" className="btn-primary w-full">
             Salvar dados
           </button>
-          <button type="button" onClick={logout} className="btn-secondary w-full">
+          <button type="button" onClick={() => logout()} className="btn-secondary w-full">
             Sair da conta
           </button>
         </form>
+
+        <section className="card mt-6 space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-bold text-nutrir-emerald">Senha</h2>
+            {!showChangePass && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowChangePass(true);
+                  setError("");
+                }}
+                className="text-sm font-bold text-nutrir-burgundy"
+              >
+                Trocar senha
+              </button>
+            )}
+          </div>
+
+          {passSaved && (
+            <p className="text-sm font-medium text-nutrir-emerald">Senha alterada com sucesso!</p>
+          )}
+
+          {showChangePass && (
+            <form onSubmit={handleChangePassword} className="space-y-3">
+              <input
+                required
+                type="password"
+                placeholder="Senha atual"
+                className="input-field w-full"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+              <input
+                required
+                type="password"
+                placeholder="Nova senha"
+                className="input-field w-full"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <input
+                required
+                type="password"
+                placeholder="Confirmar nova senha"
+                className="input-field w-full"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <button type="submit" disabled={loading} className="btn-primary flex-1">
+                  {loading ? "Salvando…" : "Salvar nova senha"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowChangePass(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmNewPassword("");
+                  }}
+                  className="btn-secondary flex-1"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
+        </section>
 
         {profile.phone && (
           <section className="card mt-8">
@@ -248,11 +693,73 @@ export function ProfilePage() {
     );
   }
 
+  if (authStep === "verify") {
+    return (
+      <div className="mx-auto max-w-md px-4 py-10">
+        <h1 className="text-center font-display text-2xl font-bold text-nutrir-emerald">
+          Confirme seu e-mail
+        </h1>
+        <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+          Digite o código de 6 dígitos enviado para <strong>{email}</strong>
+        </p>
+
+        <form onSubmit={handleVerify} className="mt-8 space-y-4">
+          <input
+            required
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={8}
+            placeholder="Código de verificação"
+            className="input-field w-full text-center text-lg tracking-widest"
+            value={verifyCode}
+            onChange={(e) => setVerifyCode(e.target.value.replace(/\s/g, ""))}
+          />
+
+          {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+            {loading ? "Verificando…" : "Confirmar conta"}
+          </button>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={handleResendCode}
+            className="btn-secondary w-full py-3"
+          >
+            Reenviar código
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthStep("form");
+              setVerifyCode("");
+              setError("");
+              setInfo("");
+            }}
+            className="w-full text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald"
+          >
+            ← Voltar
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-md px-4 py-10">
       <h1 className="text-center font-display text-2xl font-bold uppercase tracking-tight text-nutrir-emerald md:text-3xl">
-        Crie sua conta e vamos às compras
+        {mode === "register" ? "Crie sua conta e vamos às compras" : "Entrar na sua conta"}
       </h1>
+
+      {!authConfigured && (
+        <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+          Autenticação não configurada. Adicione{" "}
+          <code className="text-xs">NEXT_PUBLIC_SUPABASE_URL</code> e{" "}
+          <code className="text-xs">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> no{" "}
+          <code className="text-xs">.env.local</code>.
+        </p>
+      )}
 
       <p className="mt-6 text-center text-sm text-nutrir-emerald/70">
         Use sua rede social para cadastrar sua conta
@@ -329,10 +836,27 @@ export function ProfilePage() {
           </div>
         )}
 
+        {mode === "login" && (
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthStep("forgot");
+                setError("");
+                setInfo("");
+              }}
+              className="text-sm font-medium text-nutrir-burgundy hover:underline"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
+        )}
+
+        {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button type="submit" className="btn-primary w-full py-3">
-          {mode === "register" ? "Continuar" : "Entrar"}
+        <button type="submit" disabled={loading || !authConfigured} className="btn-primary w-full py-3">
+          {loading ? "Aguarde…" : mode === "register" ? "Criar conta" : "Entrar"}
         </button>
       </form>
 
@@ -341,6 +865,7 @@ export function ProfilePage() {
         onClick={() => {
           setMode(mode === "register" ? "login" : "register");
           setError("");
+          setInfo("");
         }}
         className="mt-4 w-full rounded-full border-2 border-nutrir-emerald py-3 text-sm font-semibold text-nutrir-emerald transition hover:bg-nutrir-emerald/5"
       >

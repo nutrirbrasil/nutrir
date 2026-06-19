@@ -2,12 +2,29 @@ import type { PaymentMethod } from "./types";
 
 export const LOCAL_PAYMENT_HOURS = 48;
 
+export function normalizePaymentMethod(method?: PaymentMethod): PaymentMethod {
+  if (method === "local") return "local_cash";
+  return method ?? "pix";
+}
+
 export function isOnlinePayment(method?: PaymentMethod): boolean {
-  return method === "pix" || method === "card";
+  const m = normalizePaymentMethod(method);
+  return m === "pix" || m === "card";
 }
 
 export function isLocalPayment(method?: PaymentMethod): boolean {
-  return method === "local";
+  const m = normalizePaymentMethod(method);
+  return m === "local_cash" || m === "local_card";
+}
+
+export function isCardPayment(method?: PaymentMethod): boolean {
+  const m = normalizePaymentMethod(method);
+  return m === "card" || m === "local_card";
+}
+
+export function isCashDiscountPayment(method?: PaymentMethod): boolean {
+  const m = normalizePaymentMethod(method);
+  return m === "pix" || m === "local_cash";
 }
 
 export function calcLocalPaymentDeadline(from = new Date()): string {

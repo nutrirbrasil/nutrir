@@ -18,7 +18,7 @@ export function CheckoutSuccessStep() {
 
   useEffect(() => {
     if (!orderId) {
-      setStatus("confirmed");
+      setStatus("pending");
       return;
     }
 
@@ -78,19 +78,19 @@ export function CheckoutSuccessStep() {
 
   if (status === "pending") {
     return (
-      <CheckoutShell title="Pagamento pendente">
+      <CheckoutShell title={orderId ? "Pagamento pendente" : "Pedido não encontrado"}>
         <div className="card text-center">
-          <p className="text-4xl">⏳</p>
+          <p className="text-4xl">{orderId ? "⏳" : "❓"}</p>
           <h2 className="mt-4 font-display text-xl font-bold text-nutrir-emerald">
-            Ainda não confirmamos o pagamento
+            {orderId ? "Ainda não confirmamos o pagamento" : "Pedido não identificado"}
           </h2>
           <p className="mt-2 text-nutrir-emerald/70">
             {orderId
               ? `Pedido ${orderId.replace("order-", "#")} — se você já pagou, aguarde alguns instantes.`
-              : "Se você já pagou, aguarde alguns instantes."}
+              : "Volte ao checkout para concluir seu pedido."}
           </p>
-          <Link href="/checkout/revisar" className="btn-primary mt-6 inline-block">
-            Voltar ao checkout
+          <Link href={orderId ? "/checkout/revisar" : "/agendar"} className="btn-primary mt-6 inline-block">
+            {orderId ? "Voltar ao checkout" : "Ir para agendamento"}
           </Link>
         </div>
       </CheckoutShell>

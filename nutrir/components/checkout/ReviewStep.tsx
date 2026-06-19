@@ -3,31 +3,59 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FiTag } from "react-icons/fi";
+import { CheckoutPriceSummary } from "@/components/checkout/CheckoutPriceSummary";
 import { CheckoutShell, useCheckoutGuard } from "@/components/checkout/CheckoutShell";
 import { OrderSummarySidebar } from "@/components/checkout/OrderSummarySidebar";
-import { formatPrice, nutrirApi, PAYMENT_METHOD_LABELS } from "@/lib/api";
-import { isLocalPayment, isOnlinePayment } from "@/lib/payment-utils";
+import { nutrirApi, PAYMENT_METHOD_SHORT_LABELS } from "@/lib/api";
+import type { CheckoutDraft } from "@/lib/checkout-draft";
 import { useCheckout } from "@/lib/checkout-context";
-import { draftTotalCents } from "@/lib/checkout-draft";
+import {
+  computeOrderPricing,
+  getChargedItems,
+} from "@/lib/order-pricing";
+import { isLocalPayment, isOnlinePayment, normalizePaymentMethod } from "@/lib/payment-utils";
+import { formatPickupDisplayLines } from "@/lib/pickup-schedule";
 import { saveOrderToHistory } from "@/lib/order-history";
+import { NUTRIR_STORE_ADDRESS } from "@/lib/store-info";
 import { useCart } from "@/lib/cart-context";
-import type { CreateOrderPayload } from "@/lib/types";
+import type { CreateOrderPayload, Order, PaymentMethod } from "@/lib/types";
+
+function canReusePendingOrder(
+  existing: Order,
+  draft: CheckoutDraft,
+  method: PaymentMethod
+): boolean {
+  if (existing.payment_status !== "pending") return false;
+  if (normalizePaymentMethod(existing.payment_method) !== method) return false;
+
+  const pricing = computeOrderPricing(draft.items, method);
+  if (existing.total_cents !== pricing.total_cents) return false;
+
+  const charged = getChargedItems(draft.items, method);
+  if (existing.items.length !== charged.length) return false;
+
+  return existing.items.every(
+    (item, i) =>
+      item.name === charged[i].name &&
+      item.quantity === charged[i].quantity &&
+      item.price_cents === charged[i].price_cents
+  );
+}
 
 export function ReviewStep() {
   const router = useRouter();
   const cart = useCart();
   const { patchDraft, resetCheckout } = useCheckout();
   const { draft, ready } = useCheckoutGuard();
-  const [coupon, setCoupon] = useState(draft?.coupon ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   if (!ready || !draft) return null;
 
   const d = draft;
-  const total = draftTotalCents(d);
-  const method = d.payment_method ?? "pix";
+  const method = normalizePaymentMethod(d.payment_method);
+  const pricing = computeOrderPricing(d.items, method);
+  const pickupLines = formatPickupDisplayLines(d.pickup_display);
 
   function buildPayload(): CreateOrderPayload {
     return {
@@ -42,7 +70,6 @@ export function ReviewStep() {
       user_notes: d.user_notes,
       notes: d.internal_notes,
       items: d.items,
-      coupon: coupon || undefined,
     };
   }
 
@@ -52,14 +79,13 @@ export function ReviewStep() {
   }
 
   function redirectToCheckout(url: string, orderId: string) {
-    patchDraft({ coupon, order_id: orderId });
+    patchDraft({ order_id: orderId });
     window.location.href = url;
   }
 
   async function handleFinalize() {
     setLoading(true);
     setError("");
-    patchDraft({ coupon });
 
     try {
       if (isOnlinePayment(method) && d.order_id) {
@@ -71,7 +97,7 @@ export function ReviewStep() {
             router.push(`/checkout/sucesso?order=${existing.id}`);
             return;
           }
-          if (existing.payment_status === "pending") {
+          if (canReusePendingOrder(existing, d, method)) {
             const url =
               existing.checkout_url ??
               (await nutrirApi.createCheckoutLink(d.order_id, method)).checkout_url;
@@ -81,7 +107,7 @@ export function ReviewStep() {
             }
           }
         } catch {
-          /* pedido anterior expirou — cria um novo */
+          patchDraft({ order_id: undefined });
         }
       }
 
@@ -123,13 +149,20 @@ export function ReviewStep() {
     <CheckoutShell title="Revise os detalhes do seu pedido" backHref="/checkout/pagamento">
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
-          <div className="card flex items-center justify-between gap-3">
+          <div className="card flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Retirada</p>
-              <p className="font-semibold text-nutrir-emerald">{d.pickup_display}</p>
-              <p className="text-sm text-nutrir-emerald/70">{d.delivery_address}</p>
+              <div className="mt-1 space-y-2 font-semibold text-nutrir-emerald">
+                {pickupLines.map((line, i) => (
+                  <div key={i}>
+                    {line.label && <p>{line.label}</p>}
+                    {line.value && <p className={line.label ? "font-normal" : ""}>{line.value}</p>}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-sm text-nutrir-emerald/70">{NUTRIR_STORE_ADDRESS}</p>
             </div>
-            <Link href="/agendar" className="text-xs font-bold uppercase text-nutrir-burgundy">
+            <Link href="/agendar" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
               Trocar
             </Link>
           </div>
@@ -137,15 +170,12 @@ export function ReviewStep() {
           <div className="card flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Pagamento</p>
-              <p className="font-semibold text-nutrir-emerald">{PAYMENT_METHOD_LABELS[method]}</p>
-              {isOnlinePayment(method) && (
-                <p className="text-sm text-nutrir-emerald/70">
-                  Você será redirecionado ao checkout InfinitePay
-                </p>
-              )}
+              <p className="font-semibold text-nutrir-emerald">
+                {PAYMENT_METHOD_SHORT_LABELS[method]}
+              </p>
               {isLocalPayment(method) && (
                 <p className="text-sm text-nutrir-emerald/70">
-                  Pague no local em até 48 horas para iniciarmos a produção
+                  Após a confirmação, efetue o pagamento em até 48 horas
                 </p>
               )}
             </div>
@@ -155,28 +185,7 @@ export function ReviewStep() {
           </div>
 
           <div className="card">
-            <div className="relative">
-              <FiTag className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-nutrir-emerald/40" />
-              <input
-                type="text"
-                placeholder="Aplicar cupom"
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-                className="input-field w-full py-2.5 pl-10"
-              />
-            </div>
-          </div>
-
-          <div className="card">
-            <h3 className="font-bold text-nutrir-emerald">Resumo da compra</h3>
-            <div className="mt-3 flex justify-between text-sm">
-              <span>Subtotal</span>
-              <span>{formatPrice(total)}</span>
-            </div>
-            <div className="mt-2 flex justify-between border-t border-nutrir-nude-dark/40 pt-3 text-lg font-bold">
-              <span>Total</span>
-              <span className="text-nutrir-burgundy">{formatPrice(total)}</span>
-            </div>
+            <CheckoutPriceSummary pricing={pricing} method={method} />
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -191,7 +200,7 @@ export function ReviewStep() {
           </button>
         </div>
 
-        <OrderSummarySidebar draft={d} />
+        <OrderSummarySidebar draft={{ ...d, payment_method: method }} />
       </div>
     </CheckoutShell>
   );

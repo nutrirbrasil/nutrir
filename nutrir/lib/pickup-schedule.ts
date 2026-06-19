@@ -182,6 +182,24 @@ export function formatMonthYear(d: Date): string {
   return `${month.charAt(0).toUpperCase()}${month.slice(1)} de ${d.getFullYear()}`;
 }
 
+export interface PickupDisplayLine {
+  label: string;
+  value: string;
+}
+
+export function formatPickupDisplayLines(display: string): PickupDisplayLine[] {
+  if (!display.trim()) return [];
+
+  return display.split(" · ").map((segment) => {
+    const idx = segment.indexOf(":");
+    if (idx === -1) return { label: "", value: segment.trim() };
+    return {
+      label: segment.slice(0, idx + 1).trim(),
+      value: segment.slice(idx + 1).trim(),
+    };
+  });
+}
+
 export function formatPickupShort(selection: PickupSelection): string {
   const day = parseISODate(selection.date);
   const slot = PICKUP_SLOTS.find((s) => s.id === selection.slot)!;

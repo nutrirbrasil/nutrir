@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Corpo inválido." }, { status: 400 });
   }
 
-  const order = findOrder(body.order_id);
+  const order = await findOrder(body.order_id);
   if (!order) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
@@ -32,7 +32,8 @@ export async function POST(request: Request) {
       infinitepay_slug: body.slug ?? order.infinitepay_slug,
       infinitepay_capture_method: check.captureMethod,
     });
-    return NextResponse.json({ order: findOrder(body.order_id), paid: true, notified });
+    const updated = await findOrder(body.order_id);
+    return NextResponse.json({ order: updated, paid: true, notified });
   }
 
   return NextResponse.json({ order, paid: false, notified: false });

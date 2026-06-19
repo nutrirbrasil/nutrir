@@ -1,10 +1,4 @@
-import type { CreateOrderPayload, Order, PaymentStatus } from "./types";
-
-export const PAYMENT_METHOD_LABELS = {
-  pix: "Pix online",
-  card: "Cartão online",
-  local: "Pagamento no local",
-} as const;
+import type { CreateOrderPayload, Order } from "./types";
 
 export interface CreateOrderResponse {
   order: Order;
@@ -52,7 +46,6 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const nutrirApi = {
-  getMenus: () => api<{ menus: import("./types").MenuItem[] }>("/nutrir/menus"),
   createOrder: (body: CreateOrderPayload) =>
     api<CreateOrderResponse>("/nutrir/orders", {
       method: "POST",
@@ -69,13 +62,10 @@ export const nutrirApi = {
       method: "POST",
       body: JSON.stringify({ payment_method }),
     }),
-  updatePaymentStatus: (order_id: string, payment_status: PaymentStatus) =>
-    api<{ order: Order; notified: boolean }>("/nutrir/orders", {
-      method: "PATCH",
-      body: JSON.stringify({ order_id, payment_status }),
-    }),
 };
 
 export function formatPrice(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
+
+export { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_SHORT_LABELS } from "./payment-labels";

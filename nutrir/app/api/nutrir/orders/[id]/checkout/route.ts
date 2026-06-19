@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
-import { findOrder } from "@/lib/order-store";
+import { findOrder, patchOrderCache, saveOrder } from "@/lib/order-store";
 import type { PaymentMethod } from "@/lib/types";
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const order = findOrder(params.id);
+  const order = await findOrder(params.id);
   if (!order) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
@@ -47,10 +47,16 @@ export async function POST(
     );
   }
 
-  order.checkout_url = link.url;
-  if (payment_method === "pix" || payment_method === "card") {
-    order.payment_method = payment_method;
-  }
+  const updated = {
+    ...order,
+    checkout_url: link.url,
+    ...(payment_method === "pix" || payment_method === "card"
+      ? { payment_method }
+      : {}),
+  };
+
+  patchOrderCache(order.id, updated);
+  await saveOrder(updated);
 
   return NextResponse.json({ checkout_url: link.url });
 }

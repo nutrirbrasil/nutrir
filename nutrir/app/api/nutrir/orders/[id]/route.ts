@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { checkInfinitePayPayment } from "@/lib/infinitepay";
 import { notifyOrderPaid } from "@/lib/payments";
-import { findOrder } from "@/lib/order-store";
+import { findOrder, patchOrderCache } from "@/lib/order-store";
 
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const order = findOrder(params.id);
+  const order = await findOrder(params.id);
   if (!order) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
@@ -25,5 +25,6 @@ export async function GET(
     }
   }
 
-  return NextResponse.json({ order: findOrder(params.id) ?? order });
+  const latest = (await findOrder(params.id)) ?? order;
+  return NextResponse.json({ order: latest });
 }

@@ -1,22 +1,7 @@
-export interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  calories: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
-  price_cents: number;
-  image_url: string | null;
-  tags: string[];
-  available_days: string[];
-}
-
 export type MenuSectionId = "frango" | "carne" | "vegetariano" | "kit" | "combo";
 
 export interface OrderItem {
   menu_id?: string | null;
-  custom_meal_id?: string | null;
   name: string;
   quantity: number;
   price_cents: number;
@@ -25,7 +10,7 @@ export interface OrderItem {
   size?: "P" | "G";
 }
 
-export type PaymentMethod = "pix" | "card" | "local";
+export type PaymentMethod = "pix" | "card" | "local_cash" | "local_card" | "local";
 export type PaymentStatus = "pending" | "confirmed";
 
 export interface CreateOrderPayload {
@@ -41,7 +26,6 @@ export interface CreateOrderPayload {
   user_notes?: string;
   notes?: string;
   items: OrderItem[];
-  coupon?: string;
 }
 
 export interface Order extends CreateOrderPayload {

@@ -238,5 +238,5 @@ export function CartSidebar() {
 }
 
 function itemKey(item: OrderItem): string {
-  return item.menu_id ?? item.custom_meal_id ?? item.name;
+  return item.menu_id ?? `${item.name}-${item.price_cents}`;
 }

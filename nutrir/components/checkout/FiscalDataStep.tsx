@@ -72,7 +72,7 @@ export function FiscalDataStep() {
 
   return (
     <CheckoutShell
-      title="Qual é a melhor forma de pagamento para você?"
+      title="Confirme seus dados"
       backHref="/checkout/pagamento"
       backLabel="Alterar pagamento"
     >

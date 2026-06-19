@@ -21,9 +21,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing order_nsu" }, { status: 400 });
   }
 
-  const order = findOrder(orderId);
+  const order = await findOrder(orderId);
   if (!order) {
-    return NextResponse.json({ error: "Order not found" }, { status: 400 });
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
   if (order.payment_status === "confirmed") {

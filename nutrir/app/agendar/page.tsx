@@ -36,7 +36,7 @@ export default function AgendarPage() {
           </Link>
         </div>
       ) : (
-        <OrderForm mode="pickup" />
+        <OrderForm />
       )}
     </div>
   );

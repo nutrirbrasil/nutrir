@@ -1,0 +1,87 @@
+import { getComboCardTotalCents } from "./combo-builder-data";
+import { KIT_PRODUCTS, type MarmitaSize } from "./menu-data";
+import { isCardPayment, isCashDiscountPayment } from "./payment-utils";
+import type { OrderItem, PaymentMethod } from "./types";
+
+/** Marmita avulsa: cartão = +R$ 2,00 acima do pix/dinheiro (ex.: 22,99 → 24,99). */
+export const MARMITA_CARD_SURCHARGE_CENTS = 200;
+
+export function getMarmitaCardPriceCents(cashPriceCents: number): number {
+  return cashPriceCents + MARMITA_CARD_SURCHARGE_CENTS;
+}
+
+function parseKitMenuId(menuId: string | null | undefined) {
+  if (!menuId) return null;
+  const match = menuId.match(/^kit-(frango|carne|misto)-(\d+)-(P|G)$/);
+  if (!match) return null;
+  return {
+    kitId: match[1] as "frango" | "carne" | "misto",
+    meals: Number(match[2]),
+    size: match[3] as MarmitaSize,
+  };
+}
+
+/** Preço de referência (valor "De" / cartão). */
+export function getItemListPriceCents(item: OrderItem): number {
+  if (item.section_id === "combo" || item.item_id === "combo-build") {
+    return getComboCardTotalCents(item.price_cents);
+  }
+
+  const kit = parseKitMenuId(item.menu_id ?? undefined);
+  if (kit) {
+    const product = KIT_PRODUCTS.find((p) => p.id === kit.kitId);
+    const tier = product?.tiers.find((t) => t.meals === kit.meals);
+    const pricing = tier?.prices[kit.size];
+    if (pricing) return pricing.card_total_cents;
+  }
+
+  return getMarmitaCardPriceCents(item.price_cents);
+}
+
+export function getItemChargeCents(item: OrderItem, method?: PaymentMethod): number {
+  if (isCardPayment(method)) return getItemListPriceCents(item);
+  return item.price_cents;
+}
+
+export interface OrderPricing {
+  subtotal_cents: number;
+  pix_discount_cents: number;
+  total_cents: number;
+  show_pix_discount: boolean;
+}
+
+export function computeOrderPricing(
+  items: OrderItem[],
+  method?: PaymentMethod
+): OrderPricing {
+  const listTotal = items.reduce(
+    (sum, item) => sum + getItemListPriceCents(item) * item.quantity,
+    0
+  );
+  const cashTotal = items.reduce((sum, item) => sum + item.price_cents * item.quantity, 0);
+
+  if (isCardPayment(method)) {
+    return {
+      subtotal_cents: listTotal,
+      pix_discount_cents: 0,
+      total_cents: listTotal,
+      show_pix_discount: false,
+    };
+  }
+
+  const pixDiscount = Math.max(0, listTotal - cashTotal);
+
+  return {
+    subtotal_cents: listTotal,
+    pix_discount_cents: pixDiscount,
+    total_cents: cashTotal,
+    show_pix_discount: isCashDiscountPayment(method) && pixDiscount > 0,
+  };
+}
+
+export function getChargedItems(items: OrderItem[], method?: PaymentMethod): OrderItem[] {
+  return items.map((item) => ({
+    ...item,
+    price_cents: getItemChargeCents(item, method),
+  }));
+}

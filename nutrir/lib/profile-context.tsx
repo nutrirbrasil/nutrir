@@ -1,5 +1,6 @@
 "use client";
 
+import type { Session } from "@supabase/supabase-js";
 import {
   createContext,
   useCallback,
@@ -9,8 +10,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { mapAuthError } from "./auth-errors";
 import { formatCpfDisplay, formatPhoneDisplay } from "./br-fields";
 import { fetchCustomerByPhone, syncCustomerToServer } from "./order-history";
+import { getSupabaseBrowser, isSupabaseAuthConfigured } from "./supabase-browser";
 
 export interface UserProfile {
   name: string;
@@ -20,22 +23,31 @@ export interface UserProfile {
   address: string;
 }
 
-interface AuthSession {
-  email: string;
-}
-
 interface ProfileContextValue {
   isLoggedIn: boolean;
-  session: AuthSession | null;
+  authConfigured: boolean;
+  authLoading: boolean;
+  passwordRecovery: boolean;
+  session: Session | null;
   profile: UserProfile;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  register: (email: string, password: string) => Promise<{ needsVerification: boolean }>;
+  verifyEmail: (email: string, code: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  resendPasswordReset: (email: string) => Promise<void>;
+  verifyRecoveryAndResetPassword: (
+    email: string,
+    code: string,
+    newPassword: string
+  ) => Promise<void>;
+  completePasswordRecovery: (newPassword: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => void;
   socialLoginHint: string;
 }
 
-const SESSION_KEY = "nutrir-session";
 const PROFILE_KEY = "nutrir-profile";
 
 const emptyProfile: UserProfile = {
@@ -47,16 +59,6 @@ const emptyProfile: UserProfile = {
 };
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
-
-function loadSession(): AuthSession | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as AuthSession) : null;
-  } catch {
-    return null;
-  }
-}
 
 function loadProfile(): UserProfile {
   if (typeof window === "undefined") return emptyProfile;
@@ -78,25 +80,57 @@ export const SOCIAL_LOGIN_HINT =
   "Login com Google, Facebook ou Apple exige o site publicado online com Supabase Auth configurado (URLs de redirect). Por enquanto, use e-mail e senha.";
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<AuthSession | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile>(emptyProfile);
   const [hydrated, setHydrated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
+  const authConfigured = isSupabaseAuthConfigured();
+
+  function getAuthRedirectUrl(path: string): string | undefined {
+    if (typeof window === "undefined") return undefined;
+    return `${window.location.origin}${path}`;
+  }
 
   useEffect(() => {
-    const s = loadSession();
-    setSession(s);
     setProfile(loadProfile());
-    if (s?.email && !loadProfile().email) {
-      setProfile((p) => ({ ...p, email: s.email }));
-    }
     setHydrated(true);
-  }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    else localStorage.removeItem(SESSION_KEY);
-  }, [session, hydrated]);
+    if (!authConfigured) {
+      setAuthLoading(false);
+      return;
+    }
+
+    const supabase = getSupabaseBrowser();
+
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (data.session?.user.email) {
+        setProfile((p) => ({ ...p, email: data.session!.user.email! }));
+      }
+      setAuthLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setPasswordRecovery(true);
+      }
+      if (event === "SIGNED_OUT") {
+        setPasswordRecovery(false);
+      }
+      setSession(nextSession);
+      if (nextSession?.user.email) {
+        setProfile((p) => ({ ...p, email: nextSession.user.email! }));
+      }
+      if (!nextSession) {
+        setProfile((p) => ({ ...p, email: "" }));
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [authConfigured]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -120,46 +154,196 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     });
   }, [hydrated]);
 
-  const login = useCallback(async (email: string, _password: string) => {
-    const s = { email: email.trim().toLowerCase() };
-    setSession(s);
-    setProfile((p) => {
-      const next = { ...p, email: s.email };
-      void syncCustomerToServer({ phone: next.phone, whatsapp: next.phone, email: s.email, name: next.name, cpf: next.cpf, address: next.address });
-      return next;
+  const login = useCallback(async (email: string, password: string) => {
+    if (!authConfigured) throw new Error("Autenticação não configurada.");
+    const supabase = getSupabaseBrowser();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
     });
-  }, []);
+    if (error) throw new Error(mapAuthError(error));
+  }, [authConfigured]);
 
-  const register = useCallback(async (email: string, _password: string) => {
-    const s = { email: email.trim().toLowerCase() };
-    setSession(s);
-    setProfile((p) => {
-      const next = { ...p, email: s.email };
-      void syncCustomerToServer({ phone: next.phone, whatsapp: next.phone, email: s.email, name: next.name, cpf: next.cpf, address: next.address });
-      return next;
+  const register = useCallback(async (email: string, password: string) => {
+    if (!authConfigured) throw new Error("Autenticação não configurada.");
+    const supabase = getSupabaseBrowser();
+    const normalized = email.trim().toLowerCase();
+    const redirectTo = getAuthRedirectUrl("/perfil");
+
+    const { data, error } = await supabase.auth.signUp({
+      email: normalized,
+      password,
+      options: redirectTo ? { emailRedirectTo: redirectTo } : undefined,
     });
-  }, []);
+    if (error) throw new Error(mapAuthError(error));
 
-  const logout = useCallback(() => {
+    return { needsVerification: Boolean(data.user && !data.session) };
+  }, [authConfigured]);
+
+  const verifyEmail = useCallback(async (email: string, code: string) => {
+    if (!authConfigured) throw new Error("Autenticação não configurada.");
+    const supabase = getSupabaseBrowser();
+    const normalized = email.trim().toLowerCase();
+    const token = code.trim();
+
+    let { error } = await supabase.auth.verifyOtp({
+      email: normalized,
+      token,
+      type: "signup",
+    });
+
+    if (error) {
+      const retry = await supabase.auth.verifyOtp({
+        email: normalized,
+        token,
+        type: "email",
+      });
+      error = retry.error;
+    }
+
+    if (error) throw new Error(mapAuthError(error));
+  }, [authConfigured]);
+
+  const resendVerification = useCallback(async (email: string) => {
+    if (!authConfigured) throw new Error("Autenticação não configurada.");
+    const supabase = getSupabaseBrowser();
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim().toLowerCase(),
+    });
+    if (error) throw new Error(mapAuthError(error));
+  }, [authConfigured]);
+
+  const requestPasswordReset = useCallback(async (email: string) => {
+    if (!authConfigured) throw new Error("Autenticação não configurada.");
+    const supabase = getSupabaseBrowser();
+    const normalized = email.trim().toLowerCase();
+    const redirectTo = getAuthRedirectUrl("/perfil/redefinir-senha");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(normalized, {
+      redirectTo,
+    });
+    if (error) throw new Error(mapAuthError(error));
+  }, [authConfigured]);
+
+  const resendPasswordReset = useCallback(async (email: string) => {
+    await requestPasswordReset(email);
+  }, [requestPasswordReset]);
+
+  const verifyRecoveryAndResetPassword = useCallback(
+    async (email: string, code: string, newPassword: string) => {
+      if (!authConfigured) throw new Error("Autenticação não configurada.");
+      const supabase = getSupabaseBrowser();
+      const normalized = email.trim().toLowerCase();
+      const token = code.trim();
+
+      const { error } = await supabase.auth.verifyOtp({
+        email: normalized,
+        token,
+        type: "recovery",
+      });
+      if (error) throw new Error(mapAuthError(error));
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) throw new Error(mapAuthError(updateError));
+
+      setPasswordRecovery(false);
+    },
+    [authConfigured]
+  );
+
+  const completePasswordRecovery = useCallback(
+    async (newPassword: string) => {
+      if (!authConfigured) throw new Error("Autenticação não configurada.");
+      const supabase = getSupabaseBrowser();
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw new Error(mapAuthError(error));
+      setPasswordRecovery(false);
+    },
+    [authConfigured]
+  );
+
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string) => {
+      if (!authConfigured) throw new Error("Autenticação não configurada.");
+      const email = session?.user.email;
+      if (!email) throw new Error("Sessão expirada. Entre novamente.");
+
+      const supabase = getSupabaseBrowser();
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password: currentPassword,
+      });
+      if (loginError) throw new Error("Senha atual incorreta.");
+
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw new Error(mapAuthError(error));
+    },
+    [authConfigured, session?.user.email]
+  );
+
+  const logout = useCallback(async () => {
+    if (authConfigured) {
+      await getSupabaseBrowser().auth.signOut();
+    }
     setSession(null);
-  }, []);
+    setPasswordRecovery(false);
+  }, [authConfigured]);
 
   const updateProfile = useCallback((data: Partial<UserProfile>) => {
-    setProfile((p) => ({ ...p, ...data }));
+    setProfile((p) => {
+      const next = { ...p, ...data };
+      void syncCustomerToServer({
+        phone: next.phone,
+        whatsapp: next.phone,
+        email: next.email,
+        name: next.name,
+        cpf: next.cpf,
+        address: next.address,
+      });
+      return next;
+    });
   }, []);
 
   const value = useMemo(
     () => ({
-      isLoggedIn: !!session,
+      isLoggedIn: !!session?.user && !passwordRecovery,
+      authConfigured,
+      authLoading,
+      passwordRecovery,
       session,
       profile,
       login,
       register,
+      verifyEmail,
+      resendVerification,
+      requestPasswordReset,
+      resendPasswordReset,
+      verifyRecoveryAndResetPassword,
+      completePasswordRecovery,
+      changePassword,
       logout,
       updateProfile,
       socialLoginHint: SOCIAL_LOGIN_HINT,
     }),
-    [session, profile, login, register, logout, updateProfile]
+    [
+      session,
+      authConfigured,
+      authLoading,
+      passwordRecovery,
+      profile,
+      login,
+      register,
+      verifyEmail,
+      resendVerification,
+      requestPasswordReset,
+      resendPasswordReset,
+      verifyRecoveryAndResetPassword,
+      completePasswordRecovery,
+      changePassword,
+      logout,
+      updateProfile,
+    ]
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

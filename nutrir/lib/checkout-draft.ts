@@ -1,3 +1,4 @@
+import { isValidCpf, isValidPhoneBR } from "./br-fields";
 import type { MixedPickupMode, PickupSelection } from "./pickup-schedule";
 import type { OrderItem, PaymentMethod } from "./types";
 
@@ -17,7 +18,6 @@ export interface CheckoutDraft {
   pickup_combo?: PickupSelection | null;
   pickup_regular?: PickupSelection | null;
   payment_method?: PaymentMethod;
-  coupon?: string;
   order_id?: string;
 }
 
@@ -40,12 +40,6 @@ export function saveCheckoutDraft(draft: CheckoutDraft): void {
 export function clearCheckoutDraft(): void {
   sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
 }
-
-export function draftTotalCents(draft: CheckoutDraft): number {
-  return draft.items.reduce((sum, i) => sum + i.price_cents * i.quantity, 0);
-}
-
-import { isValidCpf, isValidPhoneBR } from "./br-fields";
 
 export function hasFiscalData(draft: CheckoutDraft): boolean {
   return isValidCpf(draft.customer_cpf ?? "") && isValidPhoneBR(draft.customer_phone ?? "");

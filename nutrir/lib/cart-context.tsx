@@ -25,14 +25,12 @@ interface CartContextValue {
   replaceItems: (items: OrderItem[]) => void;
   openCart: () => void;
   closeCart: () => void;
-  coupon: string;
-  setCoupon: (code: string) => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
 
 function itemKey(item: OrderItem): string {
-  return item.menu_id ?? item.custom_meal_id ?? `${item.name}-${item.price_cents}`;
+  return item.menu_id ?? `${item.name}-${item.price_cents}`;
 }
 
 function loadCart(): OrderItem[] {
@@ -48,7 +46,6 @@ function loadCart(): OrderItem[] {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<OrderItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [coupon, setCoupon] = useState("");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -118,10 +115,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       replaceItems,
       openCart: () => setIsOpen(true),
       closeCart: () => setIsOpen(false),
-      coupon,
-      setCoupon,
     }),
-    [items, isOpen, itemCount, totalCents, addItem, updateQty, removeItem, clearCart, replaceItems, coupon]
+    [items, isOpen, itemCount, totalCents, addItem, updateQty, removeItem, clearCart, replaceItems]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

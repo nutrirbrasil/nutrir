@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
 import { isValidPhoneBR } from "@/lib/br-fields";
+import { computeOrderPricing, getChargedItems } from "@/lib/order-pricing";
 import {
   calcLocalPaymentDeadline,
   isLocalPayment,
   isOnlinePayment,
+  normalizePaymentMethod,
 } from "@/lib/payment-utils";
-import { saveOrderToSupabase } from "@/lib/supabase-db";
-import { findOrder, listOrders, saveOrder, updateOrderPayment } from "@/lib/order-store";
+import { findOrder, saveOrder, updateOrderPayment } from "@/lib/order-store";
 import { formatOrderTelegramMessage, sendTelegramMessage } from "@/lib/telegram";
 import type { CreateOrderPayload, Order, PaymentStatus } from "@/lib/types";
 
@@ -39,10 +40,6 @@ async function notifyTelegram(order: Order): Promise<boolean> {
   return sendTelegramMessage(formatOrderTelegramMessage(order, new Date(order.created_at)));
 }
 
-export async function GET() {
-  return NextResponse.json({ orders: listOrders() });
-}
-
 export async function POST(request: Request) {
   let body: CreateOrderPayload;
   try {
@@ -56,12 +53,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validationError }, { status: 400 });
   }
 
-  const total_cents = body.items.reduce((sum, item) => sum + item.price_cents * item.quantity, 0);
+  const payment_method = normalizePaymentMethod(body.payment_method);
+  const chargedItems = getChargedItems(body.items, payment_method);
+  const { total_cents } = computeOrderPricing(body.items, payment_method);
   const created_at = new Date().toISOString();
-  const payment_method = body.payment_method ?? "pix";
 
   const order: Order = {
     ...body,
+    items: chargedItems,
     id: `order-${Date.now()}`,
     status: "pending",
     payment_method,
@@ -73,10 +72,6 @@ export async function POST(request: Request) {
   if (isLocalPayment(payment_method)) {
     order.local_pay_deadline = calcLocalPaymentDeadline(new Date(created_at));
   }
-
-  saveOrder(order);
-
-  void saveOrderToSupabase(order);
 
   let checkout_url: string | undefined;
 
@@ -110,6 +105,8 @@ export async function POST(request: Request) {
     checkout_url = link.url;
   }
 
+  await saveOrder(order);
+
   const notified = isLocalPayment(payment_method) ? await notifyTelegram(order) : false;
 
   return NextResponse.json({
@@ -127,13 +124,16 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Corpo inválido." }, { status: 400 });
   }
 
-  const order = findOrder(body.order_id);
+  const order = await findOrder(body.order_id);
   if (!order) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
 
-  updateOrderPayment(body.order_id, body.payment_status);
-  const updated = findOrder(body.order_id)!;
+  const updated = await updateOrderPayment(body.order_id, body.payment_status);
+  if (!updated) {
+    return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
+  }
+
   const notified =
     body.payment_status === "confirmed" ? await notifyTelegram(updated) : false;
 

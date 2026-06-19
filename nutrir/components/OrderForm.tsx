@@ -15,20 +15,15 @@ import {
   type MixedPickupMode,
   type PickupSelection,
 } from "@/lib/pickup-schedule";
+import { NUTRIR_STORE_ADDRESS } from "@/lib/store-info";
 
-interface Props {
-  mode?: "pickup" | "legacy";
-  initialItems?: import("@/lib/types").OrderItem[];
-}
-
-export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
+export function OrderForm() {
   const router = useRouter();
   const cart = useCart();
   const { profile } = useProfile();
   const { setDraft } = useCheckout();
-  const useCartItems = mode === "pickup";
 
-  const [items, setItems] = useState(useCartItems ? cart.items : initialItems);
+  const items = cart.items;
   const [error, setError] = useState("");
   const [mixedMode, setMixedMode] = useState<MixedPickupMode | null>(null);
   const [pickupUnified, setPickupUnified] = useState<PickupSelection | null>(null);
@@ -41,18 +36,8 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     customer_name: profile.name,
     customer_phone: profile.phone,
     customer_email: profile.email,
-    delivery_address: profile.address || "Retirada na loja — Nutrir Piçarras",
-    delivery_date: "",
     notes: "",
   });
-
-  useEffect(() => {
-    if (useCartItems) setItems(cart.items);
-  }, [useCartItems, cart.items]);
-
-  useEffect(() => {
-    if (initialItems.length > 0 && !useCartItems) setItems(initialItems);
-  }, [initialItems, useCartItems]);
 
   useEffect(() => {
     setForm((f) => ({
@@ -60,7 +45,6 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
       customer_name: profile.name || f.customer_name,
       customer_phone: profile.phone || f.customer_phone,
       customer_email: profile.email || f.customer_email,
-      delivery_address: profile.address || f.delivery_address,
     }));
   }, [profile]);
 
@@ -71,18 +55,15 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
   }, [cartAnalysis.isMixed]);
 
   const pickupRule = useMemo(() => {
-    if (!useCartItems) return "regular" as const;
     if (cartAnalysis.isMixed && mixedMode === "separate") return null;
     if (cartAnalysis.isMixed && mixedMode === "together") return "combo" as const;
     if (cartAnalysis.hasCombo && !cartAnalysis.hasRegular) return "combo" as const;
     return "regular" as const;
-  }, [useCartItems, cartAnalysis, mixedMode]);
+  }, [cartAnalysis, mixedMode]);
 
   const total = items.reduce((sum, i) => sum + i.price_cents * i.quantity, 0);
 
   function buildPickupDisplay(): string {
-    if (mode !== "pickup") return form.delivery_date;
-
     if (cartAnalysis.isMixed && mixedMode === "separate") {
       const parts: string[] = [];
       if (pickupCombo) parts.push(`Combo: ${formatPickupShort(pickupCombo)}`);
@@ -91,12 +72,10 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     }
 
     if (pickupUnified) return formatPickupShort(pickupUnified);
-    return form.delivery_date;
+    return "";
   }
 
   function buildInternalNotes(): string | undefined {
-    if (mode !== "pickup") return form.notes || undefined;
-
     const parts: string[] = [];
 
     if (cartAnalysis.isMixed && mixedMode === "separate") {
@@ -120,11 +99,6 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
   }
 
   function validatePickup(): string | null {
-    if (mode !== "pickup") {
-      if (!form.delivery_date) return "Selecione a data de retirada.";
-      return null;
-    }
-
     if (cartAnalysis.isMixed && !mixedMode) {
       return "Escolha se deseja retirar tudo junto ou em dias separados.";
     }
@@ -164,7 +138,6 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
       return;
     }
 
-    const delivery_date = mode === "pickup" ? getPrimaryDeliveryDate() : form.delivery_date;
     const phone = formatPhoneBR(form.customer_phone);
 
     setDraft({
@@ -173,8 +146,8 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
       customer_phone: phone,
       customer_email: form.customer_email?.trim() || undefined,
       customer_cpf: profile.cpf || undefined,
-      delivery_address: form.delivery_address,
-      delivery_date,
+      delivery_address: profile.address || NUTRIR_STORE_ADDRESS,
+      delivery_date: getPrimaryDeliveryDate(),
       pickup_display: buildPickupDisplay(),
       user_notes: form.notes.trim() || undefined,
       internal_notes: buildInternalNotes(),
@@ -187,20 +160,6 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
     router.push("/checkout/pagamento");
   }
 
-  function updateQty(index: number, delta: number) {
-    if (useCartItems) {
-      cart.updateQty(index, delta);
-      return;
-    }
-    setItems((prev) =>
-      prev
-        .map((item, i) =>
-          i === index ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-  }
-
   return (
     <form onSubmit={handleContinue} className="space-y-6">
       {items.length > 0 && (
@@ -211,11 +170,11 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
               <li key={`${item.name}-${i}`} className="flex items-center justify-between text-sm">
                 <span className="mr-2 flex-1">{item.name}</span>
                 <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => updateQty(i, -1)} className="btn-secondary px-2 py-1">
+                  <button type="button" onClick={() => cart.updateQty(i, -1)} className="btn-secondary px-2 py-1">
                     −
                   </button>
                   <span>{item.quantity}</span>
-                  <button type="button" onClick={() => updateQty(i, 1)} className="btn-secondary px-2 py-1">
+                  <button type="button" onClick={() => cart.updateQty(i, 1)} className="btn-secondary px-2 py-1">
                     +
                   </button>
                   <span className="ml-2 font-medium">{formatPrice(item.price_cents * item.quantity)}</span>
@@ -227,92 +186,86 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
         </div>
       )}
 
-      {mode === "pickup" && (
-        <div className="card space-y-6">
-          <div>
-            <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-emerald">
-              Agende sua retirada
-            </h2>
-            {cartAnalysis.hasCombo && !cartAnalysis.hasRegular && (
-              <p className="mt-2 text-xs text-nutrir-emerald/60">
-                Combos: retirada seg ou sex, com mínimo de 48h de antecedência.
-              </p>
-            )}
-            {!cartAnalysis.hasCombo && cartAnalysis.hasRegular && (
-              <p className="mt-2 text-xs text-nutrir-emerald/60">
-                Marmitas avulsas: retirada seg a sex. Pedido até 19h retira amanhã à tarde; após 19h, a partir de depois de amanhã. Sem retirada no mesmo dia.
-              </p>
-            )}
-          </div>
-
-          {cartAnalysis.isMixed && (
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-nutrir-emerald">
-                Você tem combo e marmitas avulsas. Como prefere retirar?
-              </p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMixedMode("together");
-                    setPickupCombo(null);
-                    setPickupRegular(null);
-                    setPickupUnified(null);
-                  }}
-                  className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
-                    mixedMode === "together"
-                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
-                  }`}
-                >
-                  Tudo junto
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMixedMode("separate");
-                    setPickupUnified(null);
-                    setPickupCombo(null);
-                    setPickupRegular(null);
-                  }}
-                  className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
-                    mixedMode === "separate"
-                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
-                  }`}
-                >
-                  Separado
-                </button>
-              </div>
-            </div>
+      <div className="card space-y-6">
+        <div>
+          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-emerald">
+            Agende sua retirada
+          </h2>
+          {cartAnalysis.hasCombo && !cartAnalysis.hasRegular && (
+            <p className="mt-2 text-xs text-nutrir-emerald/60">
+              Combos: retirada seg ou sex, com mínimo de 48h de antecedência.
+            </p>
           )}
-
-          {cartAnalysis.isMixed && mixedMode === "separate" && (
-            <>
-              <PickupScheduler
-                rule="combo"
-                title="Retirada do combo"
-                value={pickupCombo}
-                onChange={setPickupCombo}
-              />
-              <PickupScheduler
-                rule="regular"
-                title="Retirada das marmitas"
-                value={pickupRegular}
-                onChange={setPickupRegular}
-              />
-            </>
-          )}
-
-          {pickupRule && (
-            <PickupScheduler
-              rule={pickupRule}
-              value={pickupUnified}
-              onChange={setPickupUnified}
-            />
+          {!cartAnalysis.hasCombo && cartAnalysis.hasRegular && (
+            <p className="mt-2 text-xs text-nutrir-emerald/60">
+              Marmitas avulsas: retirada seg a sex. Pedido até 19h retira amanhã à tarde; após 19h, a partir de depois de amanhã.
+            </p>
           )}
         </div>
-      )}
+
+        {cartAnalysis.isMixed && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-nutrir-emerald">
+              Você tem combo e marmitas avulsas. Como prefere retirar?
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMixedMode("together");
+                  setPickupCombo(null);
+                  setPickupRegular(null);
+                  setPickupUnified(null);
+                }}
+                className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
+                  mixedMode === "together"
+                    ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                    : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                }`}
+              >
+                Tudo junto
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMixedMode("separate");
+                  setPickupUnified(null);
+                  setPickupCombo(null);
+                  setPickupRegular(null);
+                }}
+                className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
+                  mixedMode === "separate"
+                    ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                    : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                }`}
+              >
+                Separado
+              </button>
+            </div>
+          </div>
+        )}
+
+        {cartAnalysis.isMixed && mixedMode === "separate" && (
+          <>
+            <PickupScheduler
+              rule="combo"
+              title="Retirada do combo"
+              value={pickupCombo}
+              onChange={setPickupCombo}
+            />
+            <PickupScheduler
+              rule="regular"
+              title="Retirada das marmitas"
+              value={pickupRegular}
+              onChange={setPickupRegular}
+            />
+          </>
+        )}
+
+        {pickupRule && (
+          <PickupScheduler rule={pickupRule} value={pickupUnified} onChange={setPickupUnified} />
+        )}
+      </div>
 
       <div className="card grid gap-4 md:grid-cols-2">
         <div>
@@ -338,7 +291,7 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
             placeholder="(47) 99999-9999"
           />
         </div>
-        <div>
+        <div className="md:col-span-2">
           <label className="mb-1 block text-sm font-medium">E-mail (opcional)</label>
           <input
             type="email"
@@ -347,29 +300,6 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
             onChange={(e) => setForm({ ...form, customer_email: e.target.value })}
           />
         </div>
-        {mode !== "pickup" && (
-          <>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Data de retirada</label>
-              <input
-                required
-                type="date"
-                className="input-field"
-                value={form.delivery_date}
-                onChange={(e) => setForm({ ...form, delivery_date: e.target.value })}
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium">Endereço de entrega</label>
-              <input
-                required
-                className="input-field"
-                value={form.delivery_address}
-                onChange={(e) => setForm({ ...form, delivery_address: e.target.value })}
-              />
-            </div>
-          </>
-        )}
         <div className="md:col-span-2">
           <label className="mb-1 block text-sm font-medium">Observações</label>
           <textarea
@@ -384,7 +314,7 @@ export function OrderForm({ mode = "legacy", initialItems = [] }: Props) {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <button type="submit" className="btn-primary w-full md:w-auto">
-        {mode === "pickup" ? "Continuar" : "Continuar"}
+        Continuar
       </button>
     </form>
   );
