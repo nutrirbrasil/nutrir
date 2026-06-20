@@ -15,9 +15,9 @@ import {
 } from "@/lib/order-pricing";
 import { isLocalPayment, isOnlinePayment, normalizePaymentMethod } from "@/lib/payment-utils";
 import { formatPickupDisplayLines } from "@/lib/pickup-schedule";
-import { saveOrderToHistory } from "@/lib/order-history";
 import { NUTRIR_STORE_ADDRESS } from "@/lib/store-info";
 import { useCart } from "@/lib/cart-context";
+import { useProfile } from "@/lib/profile-context";
 import type { CreateOrderPayload, Order, PaymentMethod } from "@/lib/types";
 
 function canReusePendingOrder(
@@ -45,6 +45,7 @@ function canReusePendingOrder(
 export function ReviewStep() {
   const router = useRouter();
   const cart = useCart();
+  const { profile, session } = useProfile();
   const { patchDraft, resetCheckout } = useCheckout();
   const { draft, ready } = useCheckoutGuard();
   const [loading, setLoading] = useState(false);
@@ -58,10 +59,11 @@ export function ReviewStep() {
   const pickupLines = formatPickupDisplayLines(d.pickup_display);
 
   function buildPayload(): CreateOrderPayload {
+    const accountEmail = (session?.user.email ?? profile.email).trim().toLowerCase();
     return {
       customer_name: d.customer_name,
       customer_phone: d.customer_phone,
-      customer_email: d.customer_email,
+      customer_email: d.customer_email?.trim().toLowerCase() || accountEmail || undefined,
       customer_cpf: d.customer_cpf,
       delivery_address: d.delivery_address,
       delivery_date: d.delivery_date,
@@ -115,17 +117,6 @@ export function ReviewStep() {
       const { order, checkout_url } = await nutrirApi.createOrder(payload);
 
       if (isLocalPayment(method)) {
-        saveOrderToHistory({
-          id: order.id,
-          customer_phone: order.customer_phone,
-          customer_name: order.customer_name,
-          created_at: order.created_at,
-          items: order.items,
-          total_cents: order.total_cents,
-          payment_method: method,
-          pickup_display: order.pickup_display ?? d.pickup_display,
-          notes: d.user_notes,
-        });
         cart.clearCart();
         resetCheckout();
         router.push(`/checkout/pendente?order=${order.id}`);

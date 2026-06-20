@@ -4,19 +4,29 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useCheckout } from "@/lib/checkout-context";
+import { useRequireLogin } from "@/lib/use-require-login";
 
 export function useCheckoutGuard(requireItems = true) {
   const router = useRouter();
   const { draft, hydrated } = useCheckout();
+  const { ready: authReady } = useRequireLogin();
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !authReady) return;
     if (!draft || (requireItems && draft.items.length === 0)) {
       router.replace("/agendar");
     }
-  }, [draft, hydrated, requireItems, router]);
+  }, [draft, hydrated, requireItems, router, authReady]);
 
-  return { draft, hydrated, ready: hydrated && !!draft && (!requireItems || draft.items.length > 0) };
+  return {
+    draft,
+    hydrated,
+    ready:
+      authReady &&
+      hydrated &&
+      !!draft &&
+      (!requireItems || draft.items.length > 0),
+  };
 }
 
 interface CheckoutShellProps {

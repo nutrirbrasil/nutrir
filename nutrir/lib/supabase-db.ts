@@ -23,7 +23,7 @@ export interface CustomerRecord {
 
 export interface SavedOrderRecord {
   id: string;
-  customer_phone: string;
+  customer_email: string;
   customer_name: string;
   created_at: string;
   items: OrderItem[];
@@ -31,6 +31,35 @@ export interface SavedOrderRecord {
   payment_method: PaymentMethod;
   pickup_display: string;
   notes?: string;
+}
+
+function buildCustomerPatch(input: {
+  phone: string;
+  whatsapp?: string;
+  name?: string;
+  email?: string;
+  cpf?: string;
+  address?: string;
+}): {
+  phone: string;
+  whatsapp: string;
+  name?: string;
+  email?: string;
+  cpf?: string | null;
+  address?: string | null;
+} {
+  const phone = normalizePhone(input.phone);
+  const whatsapp = input.whatsapp ? normalizePhone(input.whatsapp) : phone;
+  const email = input.email?.trim().toLowerCase();
+
+  return {
+    phone,
+    whatsapp,
+    ...(input.name !== undefined ? { name: input.name.trim() } : {}),
+    ...(email ? { email } : {}),
+    ...(input.cpf !== undefined ? { cpf: stripCpfDigits(input.cpf) || null } : {}),
+    ...(input.address !== undefined ? { address: input.address.trim() || null } : {}),
+  };
 }
 
 export async function upsertCustomer(input: {
@@ -44,33 +73,80 @@ export async function upsertCustomer(input: {
   const db = getSupabaseAdmin();
   if (!db) return null;
 
-  const phone = normalizePhone(input.phone);
-  if (phone.length < 10) return null;
+  const patch = buildCustomerPatch(input);
+  if (patch.phone.length < 10) return null;
 
-  const whatsapp = input.whatsapp ? normalizePhone(input.whatsapp) : phone;
+  const email = input.email?.trim().toLowerCase();
+  if (email) {
+    const existing = await getCustomerByEmail(email);
+    if (existing) {
+      const { data, error } = await db
+        .from("nutrir_customers")
+        .update(patch)
+        .eq("id", existing.id)
+        .select("id, phone, whatsapp, name, email, cpf, address")
+        .single();
+
+      if (error) {
+        console.error("[Supabase] upsertCustomer (email):", error.message);
+        return null;
+      }
+      return data as CustomerRecord;
+    }
+  }
+
+  const byPhone = await getCustomerByPhone(patch.phone);
+  if (byPhone) {
+    const { data, error } = await db
+      .from("nutrir_customers")
+      .update(patch)
+      .eq("id", byPhone.id)
+      .select("id, phone, whatsapp, name, email, cpf, address")
+      .single();
+
+    if (error) {
+      console.error("[Supabase] upsertCustomer (phone):", error.message);
+      return null;
+    }
+    return data as CustomerRecord;
+  }
 
   const { data, error } = await db
     .from("nutrir_customers")
-    .upsert(
-      {
-        phone,
-        whatsapp,
-        ...(input.name !== undefined ? { name: input.name.trim() } : {}),
-        ...(input.email !== undefined ? { email: input.email.trim().toLowerCase() || null } : {}),
-        ...(input.cpf !== undefined ? { cpf: stripCpfDigits(input.cpf) || null } : {}),
-        ...(input.address !== undefined ? { address: input.address.trim() || null } : {}),
-      },
-      { onConflict: "phone" }
-    )
+    .insert({
+      ...patch,
+      name: patch.name ?? "",
+    })
     .select("id, phone, whatsapp, name, email, cpf, address")
     .single();
 
   if (error) {
-    console.error("[Supabase] upsertCustomer:", error.message);
+    console.error("[Supabase] upsertCustomer (insert):", error.message);
     return null;
   }
 
   return data as CustomerRecord;
+}
+
+export async function getCustomerByEmail(email: string): Promise<CustomerRecord | null> {
+  const db = getSupabaseAdmin();
+  if (!db) return null;
+
+  const key = email.trim().toLowerCase();
+  if (!key) return null;
+
+  const { data, error } = await db
+    .from("nutrir_customers")
+    .select("id, phone, whatsapp, name, email, cpf, address")
+    .eq("email", key)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[Supabase] getCustomerByEmail:", error.message);
+    return null;
+  }
+
+  return (data as CustomerRecord) ?? null;
 }
 
 export async function getCustomerByPhone(phone: string): Promise<CustomerRecord | null> {
@@ -155,20 +231,20 @@ export async function updateOrderPaymentInSupabase(
   return true;
 }
 
-export async function getRecentOrdersByPhone(
-  phone: string,
+export async function getRecentOrdersByEmail(
+  email: string,
   limit = 2
 ): Promise<SavedOrderRecord[]> {
   const db = getSupabaseAdmin();
   if (!db) return [];
 
-  const customer = await getCustomerByPhone(phone);
+  const customer = await getCustomerByEmail(email);
   if (!customer) return [];
 
   const { data, error } = await db
     .from("nutrir_orders")
     .select(
-      "order_nsu, customer_name, customer_phone, created_at, items, total_cents, payment_method, pickup_display, user_notes"
+      "order_nsu, customer_name, created_at, items, total_cents, payment_method, pickup_display, user_notes"
     )
     .eq("customer_id", customer.id)
     .order("created_at", { ascending: false })
@@ -179,9 +255,11 @@ export async function getRecentOrdersByPhone(
     return [];
   }
 
+  const customerEmail = customer.email?.trim().toLowerCase() ?? email.trim().toLowerCase();
+
   return (data ?? []).map((row) => ({
     id: row.order_nsu as string,
-    customer_phone: row.customer_phone as string,
+    customer_email: customerEmail,
     customer_name: row.customer_name as string,
     created_at: row.created_at as string,
     items: row.items as OrderItem[],

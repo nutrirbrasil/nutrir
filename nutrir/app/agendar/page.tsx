@@ -5,10 +5,12 @@ import { useEffect } from "react";
 import { OrderForm } from "@/components/OrderForm";
 import { useCart } from "@/lib/cart-context";
 import { useCheckout } from "@/lib/checkout-context";
+import { useRequireLogin } from "@/lib/use-require-login";
 
 export default function AgendarPage() {
   const { items, replaceItems } = useCart();
   const { draft, hydrated } = useCheckout();
+  const { ready: authReady } = useRequireLogin();
 
   useEffect(() => {
     if (!hydrated || items.length > 0 || !draft?.items.length) return;
@@ -16,6 +18,14 @@ export default function AgendarPage() {
   }, [hydrated, items.length, draft?.items, replaceItems]);
 
   const hasItems = items.length > 0 || (hydrated && (draft?.items.length ?? 0) > 0);
+
+  if (!authReady) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 text-center text-nutrir-emerald/70">
+        Carregando…
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">

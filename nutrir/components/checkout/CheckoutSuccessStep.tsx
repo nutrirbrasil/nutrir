@@ -7,7 +7,6 @@ import { CheckoutShell } from "@/components/checkout/CheckoutShell";
 import { nutrirApi } from "@/lib/api";
 import { useCart } from "@/lib/cart-context";
 import { useCheckout } from "@/lib/checkout-context";
-import { saveOrderToHistory } from "@/lib/order-history";
 
 export function CheckoutSuccessStep() {
   const searchParams = useSearchParams();
@@ -40,17 +39,6 @@ export function CheckoutSuccessStep() {
 
         const { order } = await nutrirApi.getOrder(id);
         if (order.payment_status === "confirmed") {
-          saveOrderToHistory({
-            id: order.id,
-            customer_phone: order.customer_phone,
-            customer_name: order.customer_name,
-            created_at: order.created_at,
-            items: order.items,
-            total_cents: order.total_cents,
-            payment_method: order.payment_method ?? "pix",
-            pickup_display: order.pickup_display ?? "",
-            notes: order.user_notes,
-          });
           cart.clearCart();
           resetCheckout();
           setStatus("confirmed");

@@ -17,7 +17,7 @@ import { useProfile } from "@/lib/profile-context";
 export function FiscalDataStep() {
   const router = useRouter();
   const { patchDraft } = useCheckout();
-  const { updateProfile } = useProfile();
+  const { updateProfile, profile } = useProfile();
   const { draft, ready } = useCheckoutGuard();
   const [name, setName] = useState(draft?.customer_name ?? "");
   const [cpf, setCpf] = useState(() => formatCpf(draft?.customer_cpf ?? ""));
@@ -65,6 +65,7 @@ export function FiscalDataStep() {
       whatsapp: phoneFormatted,
       name: name.trim(),
       cpf: cpfFormatted,
+      email: profile.email?.trim().toLowerCase() || undefined,
     });
 
     router.push("/checkout/revisar");

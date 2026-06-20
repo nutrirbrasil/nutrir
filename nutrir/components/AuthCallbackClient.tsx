@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clearAuthHash, parseAuthHashError } from "@/lib/auth-redirect";
+import { consumeAuthNext } from "@/lib/auth-next";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export function AuthCallbackClient() {
@@ -52,7 +53,8 @@ export function AuthCallbackClient() {
       if (flow === "recovery") {
         router.replace("/perfil/redefinir-senha");
       } else {
-        router.replace("/perfil");
+        const next = consumeAuthNext();
+        router.replace(next ?? "/perfil");
       }
     }
 

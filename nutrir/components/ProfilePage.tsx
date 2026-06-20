@@ -13,11 +13,12 @@ import {
 import { formatPrice } from "@/lib/api";
 import { useCart } from "@/lib/cart-context";
 import {
-  fetchRecentOrdersForPhone,
+  fetchRecentOrdersForEmail,
   syncCustomerToServer,
   type SavedOrder,
 } from "@/lib/order-history";
 import { useProfile, SOCIAL_LOGIN_HINT } from "@/lib/profile-context";
+import { rememberAuthNext, consumeAuthNext, sanitizeAuthNext } from "@/lib/auth-next";
 import { PAYMENT_METHOD_SHORT_LABELS } from "@/lib/payment-labels";
 import type { PaymentMethod } from "@/lib/types";
 
@@ -33,6 +34,7 @@ export function ProfilePage() {
     authConfigured,
     authLoading,
     passwordRecovery,
+    session,
     profile,
     login,
     register,
@@ -68,12 +70,26 @@ export function ProfilePage() {
   const [passSaved, setPassSaved] = useState(false);
 
   useEffect(() => {
-    if (!profile.phone) {
+    if (typeof window === "undefined") return;
+    const next = sanitizeAuthNext(new URLSearchParams(window.location.search).get("next"));
+    if (next) rememberAuthNext(next);
+  }, []);
+
+  useEffect(() => {
+    if (authLoading || !isLoggedIn || passwordRecovery) return;
+    if (authStep === "verify" || authStep === "forgot" || authStep === "reset") return;
+    const next = consumeAuthNext();
+    if (next) router.replace(next);
+  }, [isLoggedIn, authLoading, authStep, passwordRecovery, router]);
+
+  useEffect(() => {
+    const accountEmail = (session?.user.email ?? profile.email).trim().toLowerCase();
+    if (!isLoggedIn || !accountEmail) {
       setRecentOrders([]);
       return;
     }
-    fetchRecentOrdersForPhone(profile.phone, 2).then(setRecentOrders);
-  }, [profile.phone, isLoggedIn, saved]);
+    fetchRecentOrdersForEmail(accountEmail, 2).then(setRecentOrders);
+  }, [session?.user.email, profile.email, isLoggedIn, saved]);
 
   function handleReorder(orderId: string) {
     const order = recentOrders.find((o) => o.id === orderId);
@@ -642,7 +658,7 @@ export function ProfilePage() {
           )}
         </section>
 
-        {profile.phone && (
+        {isLoggedIn && (session?.user.email ?? profile.email) && (
           <section className="card mt-8">
             <h2 className="font-display text-lg font-bold text-nutrir-emerald">Últimos pedidos</h2>
             {recentOrders.length === 0 ? (

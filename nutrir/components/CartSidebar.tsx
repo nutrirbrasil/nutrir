@@ -6,6 +6,8 @@ import { FiX } from "react-icons/fi";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
 import { getCartSuggestions, type MarmitaSize } from "@/lib/menu-data";
+import { useProfile } from "@/lib/profile-context";
+import { buildPerfilUrl } from "@/lib/auth-next";
 import type { OrderItem } from "@/lib/types";
 
 function dominantSection(items: OrderItem[]): string | undefined {
@@ -36,6 +38,7 @@ export function CartSidebar() {
     updateQty,
     addItem,
   } = useCart();
+  const { isLoggedIn, authLoading } = useProfile();
   const [suggestionIndex, setSuggestionIndex] = useState(0);
 
   const sectionId = useMemo(() => dominantSection(items), [items]);
@@ -222,15 +225,27 @@ export function CartSidebar() {
             </span>
           </div>
 
-          <Link
-            href="/agendar"
-            onClick={closeCart}
-            className={`btn-primary block w-full py-3.5 text-center text-sm font-bold uppercase tracking-wide ${
-              items.length === 0 ? "pointer-events-none opacity-50" : ""
-            }`}
-          >
-            Agendar retirada
-          </Link>
+          {!authLoading && !isLoggedIn ? (
+            <Link
+              href={buildPerfilUrl("/agendar")}
+              onClick={closeCart}
+              className={`btn-primary block w-full py-3.5 text-center text-sm font-bold uppercase tracking-wide ${
+                items.length === 0 ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              Entrar ou Criar Conta
+            </Link>
+          ) : (
+            <Link
+              href="/agendar"
+              onClick={closeCart}
+              className={`btn-primary block w-full py-3.5 text-center text-sm font-bold uppercase tracking-wide ${
+                items.length === 0 || authLoading ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              Agendar retirada
+            </Link>
+          )}
         </footer>
       </aside>
     </>
