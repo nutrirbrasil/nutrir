@@ -23,11 +23,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: `${site.fullName} — ${site.subtitle}`,
     description: site.tagline,
-    images: [{ url: site.profileImage }],
+    images: [{ url: site.iconImage }],
   },
   icons: {
-    icon: site.profileImage,
-    apple: site.profileImage,
+    icon: site.iconImage,
+    apple: site.iconImage,
   },
 };
 

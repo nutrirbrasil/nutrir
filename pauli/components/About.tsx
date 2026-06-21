@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { FiMapPin } from "react-icons/fi";
+import { aboutImageUrl } from "@/lib/brand-assets";
 import { site } from "@/lib/site";
 
 export function About() {
@@ -16,11 +18,42 @@ export function About() {
             {site.subtitle} · {site.city}
           </p>
 
+          <p className="mt-6 leading-relaxed text-pauli-charcoal/80">{site.education}</p>
+
           <div className="mt-6 space-y-4 leading-relaxed text-pauli-charcoal/80">
             {site.bio.map((paragraph) => (
               <p key={paragraph.slice(0, 40)}>{paragraph}</p>
             ))}
           </div>
+
+          <dl className="mt-8 space-y-3 text-sm text-pauli-charcoal/80">
+            <div>
+              <dt className="font-semibold text-pauli-emerald">Atendimento presencial</dt>
+              <dd>{site.attendance.inPerson}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-pauli-emerald">Atendimento online</dt>
+              <dd>{site.attendance.online}</dd>
+            </div>
+            <div>
+              <dt className="flex items-center gap-1 font-semibold text-pauli-emerald">
+                <FiMapPin className="shrink-0" />
+                Localização
+              </dt>
+              <dd className="mt-1">
+                <a
+                  href={site.address.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-pauli-burgundy hover:underline"
+                >
+                  {site.address.line}
+                  <br />
+                  {site.address.cityState}, {site.address.zip}
+                </a>
+              </dd>
+            </div>
+          </dl>
 
           <p className="mt-6 text-sm text-pauli-emerald/60">{site.crn}</p>
 
@@ -37,10 +70,10 @@ export function About() {
         <div className="order-1 md:order-2">
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-xl">
             <Image
-              src={site.profileImage}
+              src={aboutImageUrl()}
               alt={site.fullName}
               fill
-              className="object-cover object-top grayscale"
+              className="object-cover object-center"
               sizes="(max-width: 768px) 100vw, 420px"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-pauli-charcoal/50 via-transparent to-transparent" />

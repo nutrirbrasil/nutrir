@@ -14,7 +14,12 @@ export function Footer() {
         >
           {site.instagram}
         </a>
-        <p className="mt-4 opacity-70">{site.crn} · {site.email}</p>
+        <p className="mt-4 opacity-70">
+          {site.crn} ·{" "}
+          <a href={`mailto:${site.email}`} className="hover:underline">
+            {site.email}
+          </a>
+        </p>
         <p className="mt-2 opacity-60">© {new Date().getFullYear()} — Todos os direitos reservados</p>
       </div>
     </footer>

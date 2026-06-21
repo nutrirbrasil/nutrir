@@ -1,3 +1,5 @@
+import { profileImageUrl } from "./brand-assets";
+
 export const site = {
   name: "Pauli",
   fullName: "Pauli Pastorino",
@@ -5,20 +7,34 @@ export const site = {
   subtitle: "Nutricionista",
   title: "Nutricionista clínica e esportiva",
   city: "Balneário Piçarras, SC",
-  crn: "CRN-3 XXXXX/X",
-  email: "contato@nutrirpicarras.com.br",
+  crn: "CRN 18489D",
+  education: "Formada na Universidade Federal de Pelotas (UFPel) desde 2022.",
+  attendance: {
+    inPerson: "Balneário Piçarras e região",
+    online: "Todo o Brasil",
+  },
+  address: {
+    line: "R. Itajaí, 162 - Centro",
+    cityState: "Balneário Piçarras - SC",
+    zip: "88380-000",
+    full: "R. Itajaí, 162 - Centro, Balneário Piçarras - SC, 88380-000",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=R.+Itaja%C3%AD,+162+-+Centro,+Balne%C3%A1rio+Pi%C3%A7arras+-+SC,+88380-000",
+  },
+  email: "paulipastorino@hotmail.com",
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5547992279022",
   instagram: "@paulipastorino",
   instagramUrl: "https://www.instagram.com/paulipastorino/",
-  profileImage: "/profile.jpg",
-  marmitasUrl: "https://nutrirpicarras.com.br",
+  tiktok: "@pauliipastorino",
+  tiktokUrl: "https://www.tiktok.com/@pauliipastorino",
+  iconImage: profileImageUrl(),
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://pauli.nutrirpicarras.com.br",
   tagline:
     "Aprender a comer bem, sem terrorismo nutricional — com estratégia, acolhimento e resultados que cabem na sua rotina.",
   bio: [
-    "Sou nutricionista em Balneário Piçarras, com atendimento presencial e online. Meu trabalho é traduzir ciência em escolhas práticas para o seu dia a dia — seja para emagrecimento, ganho de massa, saúde metabólica ou performance nos treinos.",
-    "No Instagram compartilho orientações sobre alimentação consciente, montagem de pratos e hábitos sustentáveis. Acredito em planos individualizados, sem dietas restritivas impossíveis de manter.",
-    "Também faço parte da equipe por trás das marmitas fit Nutrir Piçarras — refeições pensadas por nutricionistas para quem busca praticidade sem abrir mão da qualidade.",
+    "Meu trabalho é traduzir ciência em escolhas práticas para o seu dia a dia — seja para emagrecimento, ganho de massa, saúde metabólica ou performance nos treinos.",
+    "No Instagram e TikTok compartilho orientações sobre alimentação consciente, montagem de pratos e hábitos sustentáveis. Acredito em planos individualizados, sem dietas restritivas impossíveis de manter.",
+    "Atendo com acompanhamento próximo e retornos periódicos, para que cada plano faça sentido na sua rotina real.",
   ],
 } as const;
 

@@ -32,14 +32,6 @@ export function Header() {
               {item.label}
             </a>
           ))}
-          <a
-            href={site.marmitasUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-pauli-burgundy hover:underline"
-          >
-            Marmitas Nutrir
-          </a>
         </nav>
 
         <a href="#contato" className="btn-primary shrink-0 px-4 py-2 text-xs">

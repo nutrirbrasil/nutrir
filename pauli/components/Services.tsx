@@ -32,7 +32,7 @@ export function Services() {
         </p>
         <h2 className="section-title mt-2 text-center">Serviços</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-pauli-charcoal/70">
-          Atendimento presencial em {site.city} e online para todo o Brasil.
+          Atendimento presencial em {site.attendance.inPerson} e online para {site.attendance.online.toLowerCase()}.
         </p>
 
         <ul className="mt-12 grid gap-6 sm:grid-cols-2">
@@ -48,18 +48,6 @@ export function Services() {
             </li>
           ))}
         </ul>
-
-        <div className="mt-12 rounded-2xl border border-pauli-burgundy/20 bg-pauli-cream p-6 text-center">
-          <p className="text-sm text-pauli-charcoal/70">Também conheça as marmitas fit da família</p>
-          <a
-            href={site.marmitasUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-block font-display text-xl font-bold text-pauli-burgundy hover:underline"
-          >
-            Nutrir Piçarras →
-          </a>
-        </div>
       </div>
     </section>
   );

@@ -34,19 +34,11 @@ export function Hero() {
             >
               WhatsApp
             </a>
-            <a
-              href={site.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary border-white/20 text-white/90 hover:border-white/50 hover:bg-white/5"
-            >
-              Instagram
-            </a>
           </div>
         </div>
 
         <div className="order-1 flex justify-center md:order-2 md:justify-end">
-          <ProfilePhoto size="hero" priority />
+          <ProfilePhoto size="hero" variant="hero" priority />
         </div>
       </div>
     </section>

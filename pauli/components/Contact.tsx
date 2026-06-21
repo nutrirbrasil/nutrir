@@ -1,5 +1,5 @@
-import { FiInstagram, FiMail } from "react-icons/fi";
-import { FaWhatsapp } from "react-icons/fa";
+import { FiInstagram } from "react-icons/fi";
+import { FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { site, whatsappLink } from "@/lib/site";
 
 export function Contact() {
@@ -9,7 +9,8 @@ export function Contact() {
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">Contato</p>
         <h2 className="mt-2 font-display text-3xl font-bold md:text-4xl">Agende sua consulta</h2>
         <p className="mt-3 text-white/70">
-          Chame no WhatsApp ou siga no Instagram para conteúdos sobre alimentação e rotina saudável.
+          Chame no WhatsApp ou acompanhe no Instagram e TikTok conteúdos sobre alimentação e rotina
+          saudável.
         </p>
 
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -32,11 +33,13 @@ export function Contact() {
             {site.instagram}
           </a>
           <a
-            href={`mailto:${site.email}`}
+            href={site.tiktokUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="btn-secondary flex items-center gap-2 border-white/20 text-white/90 hover:border-white/40"
           >
-            <FiMail />
-            E-mail
+            <FaTiktok />
+            {site.tiktok}
           </a>
         </div>
       </div>
