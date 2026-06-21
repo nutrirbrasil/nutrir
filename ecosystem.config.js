@@ -1,12 +1,12 @@
 /**
- * PM2 — Nutrir (site Next.js)
+ * PM2 — monorepo nutricao
  *
  * VPS:
- *   1. Variáveis em ~/nutrir/nutrir/.env.local (NÃO use .env aqui)
- *   2. cd ~/nutrir/nutrir && npm run build   (obrigatório após mudar NEXT_PUBLIC_*)
- *   3. cd ~/nutrir && pm2 start ecosystem.config.js
- *
- * Ajuste "cwd" se o caminho do projeto for outro.
+ *   1. Clone em ~/nutricao (não ~/nutrir)
+ *   2. nutrir/.env.local e pauli/.env.local
+ *   3. cd nutricao/nutrir && npm run build
+ *   4. cd nutricao/pauli && npm run build
+ *   5. cd ~/nutricao && pm2 start ecosystem.config.js
  */
 module.exports = {
   apps: [
@@ -14,10 +14,15 @@ module.exports = {
       name: "nutrir-web",
       script: "node_modules/.bin/next",
       args: "start -p 3001",
-      cwd: "/home/zeedo/nutrir/nutrir",
-      env: {
-        NODE_ENV: "production",
-      },
+      cwd: "/home/zeedo/nutricao/nutrir",
+      env: { NODE_ENV: "production" },
+    },
+    {
+      name: "pauli-web",
+      script: "node_modules/.bin/next",
+      args: "start -p 3002",
+      cwd: "/home/zeedo/nutricao/pauli",
+      env: { NODE_ENV: "production" },
     },
   ],
 };

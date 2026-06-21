@@ -1,82 +1,60 @@
-# Nutrir Ecosystem
+# Nutrição — monorepo
 
-Monorepo com dois produtos:
+Monorepo com os produtos da família Nutrir / Pauli:
 
-| Projeto | Pasta | Porta dev | Descrição |
-|---------|-------|-----------|-----------|
-| **Nutrir** | `nutrir/` | 3000 | Marmitaria — cardápio, pedidos, monte sua marmita |
-| **Nootr** | `nootr/` | 3001 | App de substituições alimentares |
-| **API** | `backend/` | 8000 | Backend compartilhado (FastAPI) |
+| Projeto | Pasta | Porta dev | URL produção |
+|---------|-------|-----------|--------------|
+| **Nutrir** (marmitas) | `nutrir/` | 3000 | `https://nutrirpicarras.com.br` |
+| **Pauli** (nutricionista) | `pauli/` | 3002 | `https://pauli.nutrirpicarras.com.br` |
+| **Nootr** | `nootr/` | 3001 | (futuro) |
+| **API** | `backend/` | 8000 | FastAPI legado |
 
 ## Estrutura
 
 ```
-Nutrir/
-├── backend/           # API FastAPI
+nutricao/
 ├── nutrir/            # Site da marmitaria (Next.js)
-├── nootr/             # App de nutrição (Next.js)
-└── supabase/          # Migrations SQL
+├── pauli/             # Site profissional da nutricionista (Next.js)
+├── nootr/             # App de substituições alimentares
+├── backend/           # API FastAPI
+├── supabase/          # Migrations SQL
+├── deploy/            # Configs nginx de referência
+└── ecosystem.config.js
 ```
+
+> A pasta raiz chama-se **nutricao** para não confundir com **nutrir/** (site das marmitas).
 
 ## Supabase (MCP)
 
-Este repo usa o projeto **`ocjtzacohamatjbzlind`** (Nutrir).
+Projeto **`ocjtzacohamatjbzlind`** — usado pelo site **nutrir/** (pedidos e auth).
 
-- Config MCP do workspace: [`.cursor/mcp.json`](.cursor/mcp.json)
-- Credenciais do site: `nutrir/.env.local` (`SUPABASE_URL` + `SUPABASE_SERVICE_KEY`)
-- O projeto **Bot** usa outro Supabase (`kubsiwmftqxkhdywlbrp`) — configurado globalmente como `supabase-bot`
+Credenciais: `nutrir/.env.local`
 
-Após clonar ou alterar o MCP: **Reload Window** no Cursor e autentique o Supabase MCP se pedir.
+## Desenvolvimento local
 
-Verificar tabelas:
-
-```bash
-cd nutrir && node scripts/check-supabase.mjs
-```
-
-## Como rodar
-
-### 1. Backend
-
-```bash
-cd backend
-python -m venv venv
-# Windows: venv\Scripts\activate
-pip install -r requirements.txt
-# Na raiz do monorepo, copie .env.example → .env
-uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-> Rode o uvicorn **na raiz** do monorepo (`Nutrir/`), não dentro de `backend/`.
-
-### 2. Nutrir (marmitaria)
+### Nutrir (marmitas)
 
 ```bash
 cd nutrir
-cp .env.example .env.local   # preencha credenciais
+cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000)
+[http://localhost:3000](http://localhost:3000)
 
-### Nutrir — VPS (Hetzner + Cloudflare)
-
-O site Next.js usa **somente** `nutrir/.env.local` — não crie `nutrir/.env` na VPS.
+### Pauli (nutricionista)
 
 ```bash
-nano ~/nutrir/nutrir/.env.local   # credenciais + NEXT_PUBLIC_SITE_URL
-cd ~/nutrir/nutrir && npm run build && pm2 restart nutrir-web
+cd pauli
+cp .env.example .env.local
+npm install
+npm run dev
 ```
 
-| Variável | Produção |
-|----------|----------|
-| `NEXT_PUBLIC_SITE_URL` | `https://nutrirpicarras.com.br` |
-| Supabase redirect | `https://nutrirpicarras.com.br/auth/callback` |
+[http://localhost:3002](http://localhost:3002)
 
-DNS fica no **Registro.br** (nameservers Cloudflare) + **Cloudflare** (A → IP da VPS). Na Hetzner, só libere portas **80/443** no firewall; nginx na VPS faz proxy para `:3001`.
-
-### 3. Nootr (app)
+### Nootr
 
 ```bash
 cd nootr
@@ -85,29 +63,65 @@ npm install
 npm run dev
 ```
 
-Abre em [http://localhost:3001](http://localhost:3001)
+## VPS (Hetzner + Cloudflare)
 
-## Rotas Nutrir (site)
+### Caminho no servidor
 
-| Rota | Função |
-|------|--------|
-| `/` | Landing |
-| `/cardapio` | Cardápios da semana |
-| `/pedido` | Fazer pedido (notifica admin) |
-| `/montar` | Monte sua própria marmita |
+```text
+/home/zeedo/nutricao/
+```
 
-## Rotas Nootr (app)
+Se ainda estiver em `~/nutrir`, renomeie:
 
-| Rota | Função |
-|------|--------|
-| `/` | Home / visão geral |
-| `/dieta` | Dieta do dia |
-| `/substituir` | Comi diferente · Vou comer diferente · Estou em falta |
+```bash
+mv ~/nutrir ~/nutricao
+pm2 delete nutrir-web 2>/dev/null
+cd ~/nutricao && pm2 start ecosystem.config.js
+pm2 save
+```
 
-## API
+Atualize os `cwd` no nginx se referenciavam `/home/zeedo/nutrir/`.
 
-Documentação interativa: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+### Deploy Nutrir
 
-Prefixos:
-- `/nutrir/*` — cardápios, pedidos, marmita customizada
-- `/nootr/*` — dietas e substituições (MVP)
+```bash
+nano ~/nutricao/nutrir/.env.local
+cd ~/nutricao/nutrir && npm run build && pm2 restart nutrir-web
+```
+
+| Variável | Valor |
+|----------|--------|
+| `NEXT_PUBLIC_SITE_URL` | `https://nutrirpicarras.com.br` |
+
+### Deploy Pauli
+
+```bash
+cp ~/nutricao/pauli/.env.example ~/nutricao/pauli/.env.local
+cd ~/nutricao/pauli && npm install && npm run build
+pm2 restart pauli-web
+```
+
+| Variável | Valor |
+|----------|--------|
+| `NEXT_PUBLIC_SITE_URL` | `https://pauli.nutrirpicarras.com.br` |
+
+### DNS (Cloudflare)
+
+| Type | Name | Content |
+|------|------|---------|
+| A | `@` | IP da VPS |
+| A | `www` | IP da VPS |
+| A | `pauli` | IP da VPS |
+
+### Nginx
+
+- **nutrirpicarras.com.br** → `127.0.0.1:3001` (site existente)
+- **pauli.nutrirpicarras.com.br** → `127.0.0.1:3002` — ver `deploy/nginx-pauli.conf`
+
+```bash
+sudo cp deploy/nginx-pauli.conf /etc/nginx/sites-available/pauli
+sudo ln -sf /etc/nginx/sites-available/pauli /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Personalize textos, foto e CRN em `pauli/lib/site.ts`.

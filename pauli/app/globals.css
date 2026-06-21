@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-pauli-cream font-sans text-pauli-emerald antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-pauli-burgundy px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-pauli-burgundy/90;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-pauli-emerald px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-emerald transition hover:bg-pauli-emerald hover:text-white;
+  }
+
+  .section-title {
+    @apply font-display text-3xl font-bold text-pauli-emerald md:text-4xl;
+  }
+}
