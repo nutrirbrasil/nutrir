@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { FiShoppingBag, FiUser } from "react-icons/fi";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
+import { logoUrl } from "@/lib/brand-assets";
 
 const links = [
   { href: "/", label: "Combo" },
@@ -22,12 +23,13 @@ export function Navbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <Link href="/" className="group flex shrink-0 items-center gap-3">
           <Image
-            src="/logo.png"
+            src={logoUrl()}
             alt="Nutrir Piçarras"
             width={52}
             height={52}
             className="h-12 w-auto object-contain"
             priority
+            unoptimized
           />
           <div className="leading-tight">
             <span className="block font-display text-lg font-bold tracking-wide text-nutrir-nude">

@@ -3,6 +3,7 @@ import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/AppProviders";
 import { Navbar } from "@/components/Navbar";
+import { logoUrl } from "@/lib/brand-assets";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -20,8 +21,8 @@ export const metadata: Metadata = {
   description:
     "Marmitas saudáveis em Piçarras. Combos, marmitas avulsas, monte seu combo e peça online.",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: logoUrl(),
+    apple: logoUrl(),
   },
 };
 
