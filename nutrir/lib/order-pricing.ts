@@ -10,9 +10,26 @@ export function getMarmitaCardPriceCents(cashPriceCents: number): number {
   return cashPriceCents + MARMITA_CARD_SURCHARGE_CENTS;
 }
 
+export function getItemAddonsCents(item: OrderItem): number {
+  return item.addons_cents ?? 0;
+}
+
+export function getItemCashTotalCents(item: OrderItem): number {
+  return item.price_cents + getItemAddonsCents(item);
+}
+
+function isSingleMarmitaItem(item: OrderItem): boolean {
+  return (
+    !!item.section_id &&
+    item.section_id !== "kit" &&
+    item.section_id !== "combo"
+  );
+}
+
 function parseKitMenuId(menuId: string | null | undefined) {
   if (!menuId) return null;
-  const match = menuId.match(/^kit-(frango|carne|misto)-(\d+)-(P|G)$/);
+  const base = menuId.split("-addons-")[0] ?? menuId;
+  const match = base.match(/^kit-(frango|carne|misto)-(\d+)-(P|G)$/);
   if (!match) return null;
   return {
     kitId: match[1] as "frango" | "carne" | "misto",
@@ -23,8 +40,10 @@ function parseKitMenuId(menuId: string | null | undefined) {
 
 /** Preço de referência (valor "De" / cartão). */
 export function getItemListPriceCents(item: OrderItem): number {
+  const addons = getItemAddonsCents(item);
+
   if (item.section_id === "combo" || item.item_id === "combo-build") {
-    return getComboCardTotalCents(item.price_cents);
+    return getComboCardTotalCents(item.price_cents) + addons;
   }
 
   const kit = parseKitMenuId(item.menu_id ?? undefined);
@@ -32,15 +51,19 @@ export function getItemListPriceCents(item: OrderItem): number {
     const product = KIT_PRODUCTS.find((p) => p.id === kit.kitId);
     const tier = product?.tiers.find((t) => t.meals === kit.meals);
     const pricing = tier?.prices[kit.size];
-    if (pricing) return pricing.card_total_cents;
+    if (pricing) return pricing.card_total_cents + addons;
   }
 
-  return getMarmitaCardPriceCents(item.price_cents);
+  if (isSingleMarmitaItem(item)) {
+    return getMarmitaCardPriceCents(getItemCashTotalCents(item));
+  }
+
+  return getMarmitaCardPriceCents(item.price_cents) + addons;
 }
 
 export function getItemChargeCents(item: OrderItem, method?: PaymentMethod): number {
   if (isCardPayment(method)) return getItemListPriceCents(item);
-  return item.price_cents;
+  return getItemCashTotalCents(item);
 }
 
 export interface OrderPricing {
@@ -58,7 +81,10 @@ export function computeOrderPricing(
     (sum, item) => sum + getItemListPriceCents(item) * item.quantity,
     0
   );
-  const cashTotal = items.reduce((sum, item) => sum + item.price_cents * item.quantity, 0);
+  const cashTotal = items.reduce(
+    (sum, item) => sum + getItemCashTotalCents(item) * item.quantity,
+    0
+  );
 
   if (isCardPayment(method)) {
     return {

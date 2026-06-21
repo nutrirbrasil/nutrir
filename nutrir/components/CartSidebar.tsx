@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FiX } from "react-icons/fi";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
+import { getItemCashTotalCents } from "@/lib/order-pricing";
 import { getCartSuggestions, type MarmitaSize } from "@/lib/menu-data";
 import { useProfile } from "@/lib/profile-context";
 import { buildPerfilUrl } from "@/lib/auth-next";
@@ -184,8 +185,13 @@ export function CartSidebar() {
                         <p className="line-clamp-2 text-sm font-medium text-nutrir-emerald">
                           {item.name}
                         </p>
+                        {item.addons_note && (
+                          <p className="mt-1 whitespace-pre-line text-xs text-nutrir-emerald/55">
+                            {item.addons_note}
+                          </p>
+                        )}
                         <p className="mt-1 text-sm font-bold text-nutrir-burgundy">
-                          {formatPrice(item.price_cents * item.quantity)}
+                          {formatPrice(getItemCashTotalCents(item) * item.quantity)}
                         </p>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1">
@@ -253,5 +259,6 @@ export function CartSidebar() {
 }
 
 function itemKey(item: OrderItem): string {
-  return item.menu_id ?? `${item.name}-${item.price_cents}`;
+  const addonsPart = item.addons_note ? `::${item.addons_note}` : "";
+  return `${item.menu_id ?? `${item.name}-${item.price_cents}`}${addonsPart}`;
 }

@@ -4,10 +4,15 @@ export interface OrderItem {
   menu_id?: string | null;
   name: string;
   quantity: number;
+  /** Preço base em centavos (pix/dinheiro), sem adicionais */
   price_cents: number;
   section_id?: MenuSectionId;
   item_id?: string;
   size?: "P" | "G";
+  /** Total dos adicionais em centavos (pix/dinheiro) */
+  addons_cents?: number;
+  /** Detalhes dos adicionais para pedido / sacola */
+  addons_note?: string;
 }
 
 export type PaymentMethod = "pix" | "card" | "local_cash" | "local_card" | "local";

@@ -1,5 +1,7 @@
 /** Incremente ao trocar imagens para forçar atualização no navegador. */
 export const IMAGE_VERSION = "2";
+/** Só o logo do hero — incremente quando trocar logo.png */
+export const LOGO_VERSION = "3";
 
 const FILES = {
   hero: "1.png",
@@ -9,12 +11,12 @@ const FILES = {
   logo: "logo.png",
 } as const;
 
-function assetUrl(file: string): string {
+function assetUrl(file: string, version: string = IMAGE_VERSION): string {
   const encoded = file
     .split("/")
     .map((part) => encodeURIComponent(part))
     .join("/");
-  return `/${encoded}?v=${IMAGE_VERSION}`;
+  return `/${encoded}?v=${version}`;
 }
 
 export function heroImageUrl(): string {
@@ -34,5 +36,5 @@ export function iconImageUrl(): string {
 }
 
 export function logoImageUrl(): string {
-  return assetUrl(FILES.logo);
+  return assetUrl(FILES.logo, LOGO_VERSION);
 }

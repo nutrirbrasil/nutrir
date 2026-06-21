@@ -30,7 +30,7 @@ export const site = {
   iconImage: iconImageUrl(),
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://pauli.nutrirpicarras.com.br",
   tagline:
-    "Aprender a comer bem, sem terrorismo nutricional — com estratégia, acolhimento e resultados que cabem na sua rotina.",
+    "Aprender a comer bem, sem terrorismo nutricional, com estratégia, acolhimento e resultados que cabem na sua rotina.",
   bio: [
     "Meu trabalho é traduzir ciência em escolhas práticas para o seu dia a dia, com foco em emagrecimento, ganho de massa, saúde da mulher, longevidade e performance nos treinos.",
     "Acredito em planos individualizados, sem dietas restritivas impossíveis de manter. Atendo com acompanhamento próximo e retornos periódicos, para que cada plano faça sentido na sua rotina real.",

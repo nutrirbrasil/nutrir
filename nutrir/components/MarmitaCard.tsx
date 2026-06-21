@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatPrice } from "@/lib/api";
-import { useCart } from "@/lib/cart-context";
+import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { MarmitaOption, MarmitaSize } from "@/lib/menu-data";
 import { getMarmitaCardPriceCents } from "@/lib/order-pricing";
 import type { MenuSectionId } from "@/lib/types";
@@ -13,21 +13,26 @@ interface Props {
 }
 
 export function MarmitaCard({ item, sectionId }: Props) {
-  const { addItem } = useCart();
+  const { requestAdd } = useAddonsFlow();
   const [size, setSize] = useState<MarmitaSize>("P");
 
   const price = item.prices[size];
   const cardPrice = getMarmitaCardPriceCents(price);
 
   function handleAdd() {
-    addItem({
-      menu_id: `${item.id}-${size}`,
-      item_id: item.id,
-      section_id: sectionId,
-      size,
-      name: `${item.name} — ${size}`,
-      quantity: 1,
-      price_cents: price,
+    requestAdd({
+      kind: "marmita",
+      mealCount: 1,
+      mealLabels: [`${item.name} — ${size}`],
+      baseItem: {
+        menu_id: `${item.id}-${size}`,
+        item_id: item.id,
+        section_id: sectionId,
+        size,
+        name: `${item.name} — ${size}`,
+        quantity: 1,
+        price_cents: price,
+      },
     });
   }
 

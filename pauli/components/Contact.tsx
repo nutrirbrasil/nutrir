@@ -19,8 +19,8 @@ export function Contact() {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">Contato</p>
           <h2 className="mt-2 font-display text-3xl font-bold md:text-4xl">Agende sua consulta</h2>
           <p className="mt-3 text-white/70">
-            Chame no WhatsApp ou acompanhe no Instagram e TikTok conteúdos sobre alimentação e rotina
-            saudável.
+            Me chame no WhatsApp e me acompanhe no Instagram e TikTok, conteúdos diários sobre alimentação
+            e rotina saudável.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap md:justify-start">

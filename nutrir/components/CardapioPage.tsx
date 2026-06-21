@@ -52,10 +52,6 @@ export function CardapioPage() {
       <div className="mx-auto max-w-6xl space-y-16 px-4 py-12">
         {tab === "combos" && (
           <section id="combos" className="scroll-mt-24">
-            <div className="mb-8 text-center">
-              <h2 className="section-title">Combos</h2>
-              <p className="section-subtitle">Kits marmitas</p>
-            </div>
             <div className="grid items-start gap-6 lg:grid-cols-3">
               {KIT_PRODUCTS.map((kit) => (
                 <KitCard key={kit.id} kit={kit} />

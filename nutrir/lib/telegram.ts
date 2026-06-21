@@ -6,7 +6,15 @@ function escapeMarkdown(text: string): string {
 }
 
 function formatItemsBlock(items: CreateOrderPayload["items"]): string {
-  return items.map((item) => `${item.quantity} ${item.name}`).join("\n");
+  return items
+    .map((item) => {
+      let line = `${item.quantity}× ${item.name}`;
+      if (item.addons_note?.trim()) {
+        line += `\n   ↳ ${item.addons_note.trim().replace(/\n/g, "\n   ↳ ")}`;
+      }
+      return line;
+    })
+    .join("\n");
 }
 
 function formatMoney(cents: number): string {

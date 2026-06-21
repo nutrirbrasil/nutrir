@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { OrderItem } from "./types";
+import { getItemCashTotalCents } from "./order-pricing";
 
 const STORAGE_KEY = "nutrir-cart";
 
@@ -30,7 +31,8 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | null>(null);
 
 function itemKey(item: OrderItem): string {
-  return item.menu_id ?? `${item.name}-${item.price_cents}`;
+  const addonsPart = item.addons_note ? `::${item.addons_note}` : "";
+  return `${item.menu_id ?? `${item.name}-${item.price_cents}`}${addonsPart}`;
 }
 
 function loadCart(): OrderItem[] {
@@ -98,7 +100,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const totalCents = useMemo(
-    () => items.reduce((sum, i) => sum + i.price_cents * i.quantity, 0),
+    () => items.reduce((sum, i) => sum + getItemCashTotalCents(i) * i.quantity, 0),
     [items]
   );
 

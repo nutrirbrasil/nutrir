@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/api";
-import { useCart } from "@/lib/cart-context";
+import { useAddonsFlow } from "@/lib/addons-flow-context";
 import {
   COMBO_MEAL_MAX,
   COMBO_MEAL_MIN,
   calculateComboBuild,
+  expandComboMealLabels,
   formatComboSummary,
   getComboCardTotalCents,
   getComboSectionsWithOptions,
@@ -63,7 +64,7 @@ function SizeQtyControl({
 }
 
 export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
-  const { addItem } = useCart();
+  const { requestAdd } = useAddonsFlow();
   const [targetTotal, setTargetTotal] = useState<number>(14);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [step, setStep] = useState<"total" | "pick">("total");
@@ -112,13 +113,18 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
 
   function handleAdd() {
     if (!build.isValid) return;
-    addItem({
-      menu_id: `combo-build-${Date.now()}`,
-      item_id: "combo-build",
-      section_id: "combo",
-      name: `Combo — ${formatComboSummary(build.lines)}`,
-      quantity: 1,
-      price_cents: build.total_cents,
+    requestAdd({
+      kind: "combo",
+      mealCount: build.totalMeals,
+      mealLabels: expandComboMealLabels(build.lines),
+      baseItem: {
+        menu_id: `combo-build-${Date.now()}`,
+        item_id: "combo-build",
+        section_id: "combo",
+        name: `Combo — ${formatComboSummary(build.lines)}`,
+        quantity: 1,
+        price_cents: build.total_cents,
+      },
     });
     setQuantities({});
     setStep("total");

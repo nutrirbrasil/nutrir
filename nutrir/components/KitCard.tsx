@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { formatPrice } from "@/lib/api";
-import { useCart } from "@/lib/cart-context";
+import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { KitProduct, KitTier, MarmitaSize } from "@/lib/menu-data";
+import { getKitMealLabels } from "@/lib/kit-contents-data";
+import { KitContentModal } from "./KitContentModal";
 
 interface Props {
   kit: KitProduct;
@@ -18,18 +20,23 @@ function TierRow({
   tier: KitTier;
   size: MarmitaSize;
 }) {
-  const { addItem } = useCart();
+  const { requestAdd } = useAddonsFlow();
   const pricing = tier.prices[size];
 
   function handleAdd() {
-    addItem({
-      menu_id: `kit-${kit.id}-${tier.meals}-${size}`,
-      item_id: `kit-${kit.id}-${tier.meals}`,
-      section_id: "kit",
-      size,
-      name: `${kit.name} — ${tier.meals} refeições — ${size}`,
-      quantity: 1,
-      price_cents: pricing.cash_total_cents,
+    requestAdd({
+      kind: "kit",
+      mealCount: tier.meals,
+      mealLabels: getKitMealLabels(kit.id, tier.meals),
+      baseItem: {
+        menu_id: `kit-${kit.id}-${tier.meals}-${size}`,
+        item_id: `kit-${kit.id}-${tier.meals}`,
+        section_id: "kit",
+        size,
+        name: `${kit.name} — ${tier.meals} refeições — ${size}`,
+        quantity: 1,
+        price_cents: pricing.cash_total_cents,
+      },
     });
   }
 
@@ -75,41 +82,53 @@ function TierRow({
 
 export function KitCard({ kit }: Props) {
   const [size, setSize] = useState<MarmitaSize>("P");
+  const [showContent, setShowContent] = useState(false);
 
   const emoji = kit.id === "frango" ? "🍗" : kit.id === "carne" ? "🥩" : "🍱";
 
   return (
-    <article className="card flex flex-col overflow-hidden p-0">
-      <div className="bg-nutrir-emerald px-5 py-5 text-center">
-        <span className="text-3xl">{emoji}</span>
-        <h3 className="mt-2 font-display text-2xl font-bold text-nutrir-nude">{kit.name}</h3>
-        <p className="mt-1 text-sm text-nutrir-nude/75">{kit.description}</p>
-      </div>
-
-      <div className="flex flex-1 flex-col space-y-4 bg-nutrir-nude p-5">
-        <div className="flex justify-center gap-2">
-          {(["P", "G"] as MarmitaSize[]).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setSize(s)}
-              className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
-                size === s
-                  ? "bg-nutrir-burgundy text-nutrir-nude"
-                  : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
+    <>
+      <article className="card flex flex-col overflow-hidden p-0">
+        <div className="bg-nutrir-emerald px-5 py-5 text-center">
+          <span className="text-3xl">{emoji}</span>
+          <h3 className="mt-2 font-display text-2xl font-bold text-nutrir-nude">{kit.name}</h3>
+          <p className="mt-1 text-sm text-nutrir-nude/75">{kit.description}</p>
+          <button
+            type="button"
+            onClick={() => setShowContent(true)}
+            className="mt-3 text-sm font-semibold text-nutrir-nude underline-offset-2 hover:underline"
+          >
+            Ver conteúdo
+          </button>
         </div>
 
-        <div className="space-y-3">
-          {kit.tiers.map((tier) => (
-            <TierRow key={tier.meals} kit={kit} tier={tier} size={size} />
-          ))}
+        <div className="flex flex-1 flex-col space-y-4 bg-nutrir-nude p-5">
+          <div className="flex justify-center gap-2">
+            {(["P", "G"] as MarmitaSize[]).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSize(s)}
+                className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                  size === s
+                    ? "bg-nutrir-burgundy text-nutrir-nude"
+                    : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            {kit.tiers.map((tier) => (
+              <TierRow key={tier.meals} kit={kit} tier={tier} size={size} />
+            ))}
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+
+      {showContent && <KitContentModal kit={kit} onClose={() => setShowContent(false)} />}
+    </>
   );
 }

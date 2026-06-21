@@ -15,6 +15,7 @@ import {
   type MixedPickupMode,
   type PickupSelection,
 } from "@/lib/pickup-schedule";
+import { getItemCashTotalCents } from "@/lib/order-pricing";
 import { NUTRIR_STORE_ADDRESS } from "@/lib/store-info";
 
 export function OrderForm() {
@@ -61,7 +62,7 @@ export function OrderForm() {
     return "regular" as const;
   }, [cartAnalysis, mixedMode]);
 
-  const total = items.reduce((sum, i) => sum + i.price_cents * i.quantity, 0);
+  const total = items.reduce((sum, i) => sum + getItemCashTotalCents(i) * i.quantity, 0);
 
   function buildPickupDisplay(): string {
     if (cartAnalysis.isMixed && mixedMode === "separate") {
@@ -168,7 +169,14 @@ export function OrderForm() {
           <ul className="mt-3 space-y-2">
             {items.map((item, i) => (
               <li key={`${item.name}-${i}`} className="flex items-center justify-between text-sm">
-                <span className="mr-2 flex-1">{item.name}</span>
+                <span className="mr-2 flex-1">
+                  {item.name}
+                  {item.addons_note && (
+                    <span className="mt-0.5 block whitespace-pre-line text-xs text-nutrir-emerald/55">
+                      {item.addons_note}
+                    </span>
+                  )}
+                </span>
                 <div className="flex items-center gap-2">
                   <button type="button" onClick={() => cart.updateQty(i, -1)} className="btn-secondary px-2 py-1">
                     −
@@ -177,7 +185,9 @@ export function OrderForm() {
                   <button type="button" onClick={() => cart.updateQty(i, 1)} className="btn-secondary px-2 py-1">
                     +
                   </button>
-                  <span className="ml-2 font-medium">{formatPrice(item.price_cents * item.quantity)}</span>
+                  <span className="ml-2 font-medium">
+                    {formatPrice(getItemCashTotalCents(item) * item.quantity)}
+                  </span>
                 </div>
               </li>
             ))}

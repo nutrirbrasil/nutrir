@@ -21,7 +21,14 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
       <ul className="mt-4 space-y-3">
         {draft.items.map((item, i) => (
           <li key={`${item.name}-${i}`} className="flex justify-between gap-3 text-sm">
-            <span className="flex-1 text-nutrir-emerald">{item.name}</span>
+            <span className="flex-1 text-nutrir-emerald">
+              {item.name}
+              {item.addons_note && (
+                <span className="mt-0.5 block whitespace-pre-line text-xs text-nutrir-emerald/55">
+                  {item.addons_note}
+                </span>
+              )}
+            </span>
             <span className="font-semibold text-nutrir-burgundy">
               {formatPrice(getItemChargeCents(item, method) * item.quantity)}
             </span>

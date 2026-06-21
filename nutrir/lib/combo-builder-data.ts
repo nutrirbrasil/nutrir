@@ -157,3 +157,18 @@ export function formatComboSummary(lines: ComboLine[]): string {
   const parts = lines.map((l) => `${l.option.displayName} ×${l.quantity}`);
   return `${total} marmitas (${parts.join(", ")})`;
 }
+
+/** Rótulos individuais por marmita (para adicionais personalizados). */
+export function expandComboMealLabels(lines: ComboLine[]): string[] {
+  const labels: string[] = [];
+  for (const line of lines) {
+    for (let i = 0; i < line.quantity; i++) {
+      labels.push(
+        line.quantity > 1
+          ? `${line.option.displayName} (${i + 1}/${line.quantity})`
+          : line.option.displayName
+      );
+    }
+  }
+  return labels;
+}

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { FiMapPin } from "react-icons/fi";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { logoImageUrl } from "@/lib/brand-assets";
 import { site, whatsappLink } from "@/lib/site";
@@ -39,13 +40,14 @@ export function Hero() {
               Saber mais
             </a>
           </div>
-          <p className="mt-6 text-xs font-medium uppercase tracking-[0.35em] text-white/55">
-            {site.city}
-          </p>
         </div>
 
-        <div className="order-1 flex justify-center md:order-2 md:justify-end">
+        <div className="order-1 flex flex-col items-center md:order-2 md:items-end">
           <ProfilePhoto size="hero" variant="hero" priority />
+          <p className="mt-4 flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.2em] text-white/55 md:tracking-[0.35em]">
+            <FiMapPin className="shrink-0 text-sm" aria-hidden />
+            {site.city}
+          </p>
         </div>
       </div>
     </section>
