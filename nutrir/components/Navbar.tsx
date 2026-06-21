@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FiShoppingBag, FiUser } from "react-icons/fi";
@@ -20,9 +21,14 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-nutrir-emerald-dark/20 bg-nutrir-emerald bg-grain shadow-lg">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <Link href="/" className="group flex shrink-0 items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-nutrir-nude/30 bg-nutrir-burgundy font-display text-lg font-bold text-nutrir-nude">
-            N
-          </span>
+          <Image
+            src="/logo.png"
+            alt="Nutrir Piçarras"
+            width={52}
+            height={52}
+            className="h-12 w-auto object-contain"
+            priority
+          />
           <div className="leading-tight">
             <span className="block font-display text-lg font-bold tracking-wide text-nutrir-nude">
               NUTRIR

@@ -60,6 +60,22 @@ npm run dev
 
 Abra [http://localhost:3000](http://localhost:3000)
 
+### Nutrir — VPS (Hetzner + Cloudflare)
+
+O site Next.js usa **somente** `nutrir/.env.local` — não crie `nutrir/.env` na VPS.
+
+```bash
+nano ~/nutrir/nutrir/.env.local   # credenciais + NEXT_PUBLIC_SITE_URL
+cd ~/nutrir/nutrir && npm run build && pm2 restart nutrir-web
+```
+
+| Variável | Produção |
+|----------|----------|
+| `NEXT_PUBLIC_SITE_URL` | `https://nutrirpicarras.com.br` |
+| Supabase redirect | `https://nutrirpicarras.com.br/auth/callback` |
+
+DNS fica no **Registro.br** (nameservers Cloudflare) + **Cloudflare** (A → IP da VPS). Na Hetzner, só libere portas **80/443** no firewall; nginx na VPS faz proxy para `:3001`.
+
 ### 3. Nootr (app)
 
 ```bash

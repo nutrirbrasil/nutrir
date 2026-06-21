@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   title: "Nutrir Piçarras — Marmitas Fit",
   description:
     "Marmitas saudáveis em Piçarras. Combos, marmitas avulsas, monte seu combo e peça online.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

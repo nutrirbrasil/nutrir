@@ -1,6 +1,11 @@
 /**
  * PM2 — Nutrir (site Next.js)
- * No VPS: cd ~/nutrir && pm2 start ecosystem.config.js
+ *
+ * VPS:
+ *   1. Variáveis em ~/nutrir/nutrir/.env.local (NÃO use .env aqui)
+ *   2. cd ~/nutrir/nutrir && npm run build   (obrigatório após mudar NEXT_PUBLIC_*)
+ *   3. cd ~/nutrir && pm2 start ecosystem.config.js
+ *
  * Ajuste "cwd" se o caminho do projeto for outro.
  */
 module.exports = {
@@ -12,7 +17,6 @@ module.exports = {
       cwd: "/home/zeedo/nutrir/nutrir",
       env: {
         NODE_ENV: "production",
-        // Telegram: crie nutrir/.env.local no VPS ou defina aqui via pm2 ecosystem
       },
     },
   ],

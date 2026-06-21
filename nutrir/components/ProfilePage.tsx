@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import {
   cpfValidationMessage,
@@ -18,7 +18,13 @@ import {
   type SavedOrder,
 } from "@/lib/order-history";
 import { useProfile, SOCIAL_LOGIN_HINT } from "@/lib/profile-context";
-import { rememberAuthNext, consumeAuthNext, sanitizeAuthNext } from "@/lib/auth-next";
+import {
+  rememberAuthNext,
+  consumeAuthNext,
+  sanitizeAuthNext,
+  clearAuthNext,
+  resolveAuthNext,
+} from "@/lib/auth-next";
 import { PAYMENT_METHOD_SHORT_LABELS } from "@/lib/payment-labels";
 import type { PaymentMethod } from "@/lib/types";
 
@@ -28,6 +34,7 @@ type AuthStep = "form" | "verify" | "forgot" | "reset";
 
 export function ProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { replaceItems } = useCart();
   const {
     isLoggedIn,
@@ -69,18 +76,29 @@ export function ProfilePage() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [passSaved, setPassSaved] = useState(false);
 
+  function goToPendingNext() {
+    const next =
+      resolveAuthNext(searchParams.get("next")) ??
+      (typeof window !== "undefined"
+        ? sanitizeAuthNext(new URLSearchParams(window.location.search).get("next"))
+        : null) ??
+      consumeAuthNext();
+    if (!next) return false;
+    clearAuthNext();
+    router.replace(next);
+    return true;
+  }
+
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const next = sanitizeAuthNext(new URLSearchParams(window.location.search).get("next"));
+    const next = sanitizeAuthNext(searchParams.get("next"));
     if (next) rememberAuthNext(next);
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     if (authLoading || !isLoggedIn || passwordRecovery) return;
     if (authStep === "verify" || authStep === "forgot" || authStep === "reset") return;
-    const next = consumeAuthNext();
-    if (next) router.replace(next);
-  }, [isLoggedIn, authLoading, authStep, passwordRecovery, router]);
+    goToPendingNext();
+  }, [isLoggedIn, authLoading, authStep, passwordRecovery, searchParams]);
 
   useEffect(() => {
     const accountEmail = (session?.user.email ?? profile.email).trim().toLowerCase();
@@ -122,6 +140,7 @@ export function ProfilePage() {
       if (mode === "login") {
         await login(email, password);
         setPassword("");
+        goToPendingNext();
         return;
       }
 
@@ -157,6 +176,7 @@ export function ProfilePage() {
       setConfirm("");
       setVerifyCode("");
       setInfo("Conta confirmada! Você já está logado.");
+      goToPendingNext();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Código inválido.");
     } finally {

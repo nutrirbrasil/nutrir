@@ -35,3 +35,12 @@ export function buildPerfilUrl(next?: string | null): string {
   const safe = sanitizeAuthNext(next);
   return safe ? `/perfil?next=${encodeURIComponent(safe)}` : "/perfil";
 }
+
+export function resolveAuthNext(fromUrl: string | null | undefined): string | null {
+  return sanitizeAuthNext(fromUrl) ?? peekAuthNext();
+}
+
+export function clearAuthNext(): void {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(STORAGE_KEY);
+}
