@@ -9,6 +9,7 @@ const config: Config = {
     extend: {
       colors: {
         pauli: {
+          charcoal: "#1C1C1C",
           emerald: { DEFAULT: "#0F4D3A", dark: "#0A3A2C", light: "#1A6B52" },
           sage: "#E8F0EC",
           cream: "#FAF8F5",

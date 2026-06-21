@@ -17,10 +17,18 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: `${site.fullName} | ${site.city}`,
-  description:
-    "Consulta nutricional presencial e online em Balneário Piçarras. Planos alimentares personalizados.",
+  title: `${site.fullName} — ${site.subtitle} | ${site.city}`,
+  description: site.tagline,
   metadataBase: new URL(site.siteUrl),
+  openGraph: {
+    title: `${site.fullName} — ${site.subtitle}`,
+    description: site.tagline,
+    images: [{ url: site.profileImage }],
+  },
+  icons: {
+    icon: site.profileImage,
+    apple: site.profileImage,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

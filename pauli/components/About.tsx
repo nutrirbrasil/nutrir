@@ -1,35 +1,53 @@
+import Image from "next/image";
 import { site } from "@/lib/site";
 
 export function About() {
   return (
-    <section id="sobre" className="scroll-mt-20 bg-pauli-sage/50 px-4 py-20">
-      <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
+    <section id="sobre" className="scroll-mt-20 bg-pauli-sand/60 px-4 py-20">
+      <div className="mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-2">
         <div className="order-2 md:order-1">
-          <h2 className="section-title">Sobre mim</h2>
-          <p className="mt-4 leading-relaxed text-pauli-emerald/80">
-            Sou nutricionista em {site.city}, com foco em reeducação alimentar e relação saudável com
-            a comida. Acredito que nutrição vai além da balança: é sobre energia, bem-estar e
-            escolhas que cabem na sua vida.
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pauli-emerald/60">
+            Sobre mim
           </p>
-          <p className="mt-4 leading-relaxed text-pauli-emerald/80">
-            Também faço parte da equipe por trás das marmitas fit{" "}
-            <a
-              href={site.marmitasUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-pauli-burgundy hover:underline"
-            >
-              Nutrir Piçarras
-            </a>
-            — refeições pensadas por nutricionistas para quem busca praticidade sem abrir mão da
-            qualidade.
+          <h2 className="mt-2 font-display text-3xl font-bold text-pauli-charcoal md:text-4xl">
+            {site.fullName}
+          </h2>
+          <p className="mt-1 font-display text-lg italic text-pauli-emerald/80">
+            {site.subtitle} · {site.city}
           </p>
-          <p className="mt-4 text-sm text-pauli-emerald/60">{site.crn}</p>
+
+          <div className="mt-6 space-y-4 leading-relaxed text-pauli-charcoal/80">
+            {site.bio.map((paragraph) => (
+              <p key={paragraph.slice(0, 40)}>{paragraph}</p>
+            ))}
+          </div>
+
+          <p className="mt-6 text-sm text-pauli-emerald/60">{site.crn}</p>
+
+          <a
+            href={site.instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-block text-sm font-semibold text-pauli-burgundy hover:underline"
+          >
+            {site.instagram} no Instagram →
+          </a>
         </div>
 
-        <div className="order-1 flex justify-center md:order-2">
-          <div className="aspect-[4/5] w-full max-w-sm rounded-2xl bg-pauli-emerald/10 flex items-center justify-center text-pauli-emerald/40 text-sm">
-            Foto profissional
+        <div className="order-1 md:order-2">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-xl">
+            <Image
+              src={site.profileImage}
+              alt={site.fullName}
+              fill
+              className="object-cover object-top grayscale"
+              sizes="(max-width: 768px) 100vw, 420px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-pauli-charcoal/50 via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+              <p className="font-display text-2xl font-bold">{site.displayTitle}</p>
+              <p className="text-sm text-white/80">{site.subtitle}</p>
+            </div>
           </div>
         </div>
       </div>

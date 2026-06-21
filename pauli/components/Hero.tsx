@@ -1,40 +1,52 @@
+import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { site, whatsappLink } from "@/lib/site";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-pauli-emerald px-4 py-20 text-white md:py-28">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.08),transparent_50%)]" />
-      <div className="relative mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/70">
+    <section className="relative overflow-hidden bg-pauli-charcoal px-4 py-20 text-white md:py-28">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(15,77,58,0.35),transparent_55%)]" />
+      <div className="absolute inset-0 opacity-[0.04] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E')]" />
+
+      <div className="relative mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-2">
+        <div className="order-2 md:order-1">
+          <p className="text-xs font-medium uppercase tracking-[0.35em] text-white/55">
             {site.city}
           </p>
-          <h1 className="mt-3 font-display text-4xl font-bold leading-tight md:text-5xl">
-            Nutrição com acolhimento e resultados reais
-          </h1>
-          <p className="mt-5 text-lg leading-relaxed text-white/85">
-            Consultoria personalizada para você construir hábitos sustentáveis — sem dietas
-            restritivas impossíveis de manter.
+          <p className="mt-3 font-display text-sm italic tracking-wide text-pauli-sand/80">
+            {site.displayTitle} · {site.subtitle}
           </p>
+          <h1 className="mt-4 font-display text-4xl font-bold leading-[1.1] md:text-5xl">
+            Nutrição com estratégia, leveza e resultado real
+          </h1>
+          <p className="mt-5 text-lg leading-relaxed text-white/80">{site.tagline}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#contato" className="btn-primary bg-white text-pauli-emerald hover:bg-pauli-sage">
+            <a
+              href="#contato"
+              className="btn-primary bg-white text-pauli-charcoal hover:bg-pauli-sand"
+            >
               Agendar consulta
             </a>
             <a
-              href={whatsappLink("Olá! Gostaria de saber mais sobre a consulta.")}
+              href={whatsappLink("Olá Pauli! Gostaria de saber mais sobre a consulta.")}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-secondary border-white/40 text-white hover:border-white hover:bg-white/10 hover:text-white"
+              className="btn-secondary border-white/35 text-white hover:border-white hover:bg-white/10 hover:text-white"
             >
               WhatsApp
+            </a>
+            <a
+              href={site.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary border-white/20 text-white/90 hover:border-white/50 hover:bg-white/5"
+            >
+              Instagram
             </a>
           </div>
         </div>
 
-        <div className="flex justify-center md:justify-end">
-          <div className="flex h-64 w-64 items-center justify-center rounded-full border-4 border-white/20 bg-white/10 font-display text-6xl font-bold text-white/90 md:h-72 md:w-72">
-            P
-          </div>
+        <div className="order-1 flex justify-center md:order-2 md:justify-end">
+          <ProfilePhoto size="hero" priority />
         </div>
       </div>
     </section>

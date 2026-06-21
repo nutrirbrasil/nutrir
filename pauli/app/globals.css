@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply bg-pauli-cream font-sans text-pauli-emerald antialiased;
+    @apply bg-pauli-cream font-sans text-pauli-charcoal antialiased;
   }
 }
 
@@ -22,6 +22,6 @@
   }
 
   .section-title {
-    @apply font-display text-3xl font-bold text-pauli-emerald md:text-4xl;
+    @apply font-display text-3xl font-bold text-pauli-charcoal md:text-4xl;
   }
 }
