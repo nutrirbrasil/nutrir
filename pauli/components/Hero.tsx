@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
+import { logoImageUrl } from "@/lib/brand-assets";
 import { site, whatsappLink } from "@/lib/site";
 
 export function Hero() {
@@ -9,13 +11,15 @@ export function Hero() {
 
       <div className="relative mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-2">
         <div className="order-2 md:order-1">
-          <p className="text-xs font-medium uppercase tracking-[0.35em] text-white/55">
-            {site.city}
-          </p>
-          <p className="mt-3 font-display text-sm italic tracking-wide text-pauli-sand/80">
-            {site.displayTitle} · {site.subtitle}
-          </p>
-          <h1 className="mt-4 font-display text-4xl font-bold leading-[1.1] md:text-5xl">
+          <Image
+            src={logoImageUrl()}
+            alt={`${site.fullName} — ${site.subtitle}`}
+            width={320}
+            height={160}
+            priority
+            className="h-auto w-44 object-contain md:w-52"
+          />
+          <h1 className="mt-6 font-display text-4xl font-bold leading-[1.1] md:text-5xl">
             Nutrição com estratégia, leveza e resultado real
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-white/80">{site.tagline}</p>
@@ -35,6 +39,9 @@ export function Hero() {
               Saber mais
             </a>
           </div>
+          <p className="mt-6 text-xs font-medium uppercase tracking-[0.35em] text-white/55">
+            {site.city}
+          </p>
         </div>
 
         <div className="order-1 flex justify-center md:order-2 md:justify-end">

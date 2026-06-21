@@ -9,7 +9,7 @@
 
   body {
     @apply bg-pauli-cream font-sans text-pauli-charcoal antialiased transition-colors duration-300;
-    @apply dark:bg-[#0f1412] dark:text-pauli-sage;
+    @apply dark:bg-[#0f1412] dark:text-pauli-sand;
   }
 }
 
@@ -20,15 +20,31 @@
 
   .btn-secondary {
     @apply inline-flex items-center justify-center rounded-full border-2 border-pauli-emerald px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-emerald transition hover:bg-pauli-emerald hover:text-white;
-    @apply dark:border-pauli-sage/35 dark:text-pauli-sage dark:hover:border-pauli-sage dark:hover:bg-pauli-emerald dark:hover:text-white;
+    @apply dark:border-pauli-sand/40 dark:text-pauli-sand dark:hover:border-pauli-cream dark:hover:bg-pauli-sand/15 dark:hover:text-pauli-cream;
   }
 
   .section-title {
-    @apply font-display text-3xl font-bold text-pauli-charcoal md:text-4xl dark:text-pauli-sage;
+    @apply font-display text-3xl font-bold text-pauli-charcoal md:text-4xl dark:text-pauli-cream;
   }
 
   .surface-card {
     @apply rounded-2xl border border-pauli-emerald/10 bg-white shadow-sm;
-    @apply dark:border-pauli-emerald/20 dark:bg-[#1a2420];
+    @apply dark:border-pauli-sand/15 dark:bg-[#1a1816];
+  }
+
+  .dark-accent-label {
+    @apply text-pauli-emerald/60 dark:text-pauli-sand/70;
+  }
+
+  .dark-accent-heading {
+    @apply text-pauli-charcoal dark:text-pauli-cream;
+  }
+
+  .dark-accent-body {
+    @apply text-pauli-charcoal/80 dark:text-pauli-sand/85;
+  }
+
+  .dark-accent-title {
+    @apply font-semibold text-pauli-emerald dark:text-pauli-sand;
   }
 }

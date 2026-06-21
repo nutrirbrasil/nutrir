@@ -2,9 +2,9 @@ import { site } from "@/lib/site";
 
 export function Footer() {
   return (
-    <footer className="border-t border-pauli-emerald/10 bg-pauli-emerald py-10 text-pauli-sage dark:border-pauli-emerald/30 dark:bg-pauli-emerald-dark">
+    <footer className="border-t border-pauli-emerald/10 bg-pauli-emerald py-10 text-pauli-sage dark:border-pauli-sand/15 dark:bg-[#151c19] dark:text-pauli-sand">
       <div className="mx-auto max-w-5xl px-4 text-center text-sm">
-        <p className="font-display text-lg text-white">{site.fullName}</p>
+        <p className="font-display text-lg text-white dark:text-pauli-cream">{site.fullName}</p>
         <p className="mt-1 opacity-80">{site.subtitle} · {site.city}</p>
         <a
           href={site.instagramUrl}

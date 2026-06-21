@@ -7,32 +7,32 @@ export function Attendance() {
       <div className="mx-auto max-w-5xl">
         <div className="grid gap-8 md:grid-cols-2">
           <div className="surface-card p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pauli-emerald/60 dark:text-pauli-sage/50">
+            <p className="dark-accent-label text-xs font-semibold uppercase tracking-[0.3em]">
               Atendimento
             </p>
-            <h2 className="mt-2 font-display text-2xl font-bold text-pauli-charcoal dark:text-pauli-sage md:text-3xl">
+            <h2 className="dark-accent-heading mt-2 font-display text-2xl font-bold md:text-3xl">
               Como funciona
             </h2>
 
             <dl className="mt-8 space-y-6">
               <div className="flex gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-emerald/10 text-pauli-emerald">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-emerald/10 text-pauli-emerald dark:bg-pauli-sand/10 dark:text-pauli-sand">
                   <FiUsers className="text-lg" />
                 </div>
                 <div>
-                  <dt className="font-semibold text-pauli-emerald">Presencial</dt>
-                  <dd className="mt-1 text-sm leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sage/75">
+                  <dt className="dark-accent-title">Presencial</dt>
+                  <dd className="dark-accent-body mt-1 text-sm leading-relaxed">
                     {site.attendance.inPerson}
                   </dd>
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-emerald/10 text-pauli-emerald">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-emerald/10 text-pauli-emerald dark:bg-pauli-sand/10 dark:text-pauli-sand">
                   <FiMonitor className="text-lg" />
                 </div>
                 <div>
-                  <dt className="font-semibold text-pauli-emerald">Online</dt>
-                  <dd className="mt-1 text-sm leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sage/75">
+                  <dt className="dark-accent-title">Online</dt>
+                  <dd className="dark-accent-body mt-1 text-sm leading-relaxed">
                     {site.attendance.online}
                   </dd>
                 </div>
@@ -41,23 +41,23 @@ export function Attendance() {
           </div>
 
           <div className="surface-card p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pauli-emerald/60 dark:text-pauli-sage/50">
+            <p className="dark-accent-label text-xs font-semibold uppercase tracking-[0.3em]">
               Localização
             </p>
-            <h2 className="mt-2 font-display text-2xl font-bold text-pauli-charcoal dark:text-pauli-sage md:text-3xl">
-              Consultório
+            <h2 className="dark-accent-heading mt-2 font-display text-2xl font-bold md:text-3xl">
+              Academia Thom
             </h2>
 
             <div className="mt-8 flex gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-burgundy/10 text-pauli-burgundy">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-burgundy/10 text-pauli-burgundy dark:bg-pauli-sand/10 dark:text-pauli-sand">
                 <FiMapPin className="text-lg" />
               </div>
-              <address className="not-italic text-sm leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sage/75">
+              <address className="dark-accent-body not-italic text-sm leading-relaxed">
                 <a
                   href={site.address.mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="transition hover:text-pauli-burgundy hover:underline"
+                  className="transition hover:text-pauli-burgundy hover:underline dark:hover:text-pauli-cream"
                 >
                   {site.address.line}
                   <br />
@@ -72,7 +72,7 @@ export function Attendance() {
               href={site.address.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-block text-sm font-semibold text-pauli-burgundy hover:underline"
+              className="mt-6 inline-block text-sm font-semibold text-pauli-burgundy hover:underline dark:text-pauli-sand dark:hover:text-pauli-cream"
             >
               Ver no Google Maps →
             </a>

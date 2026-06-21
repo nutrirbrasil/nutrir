@@ -27,22 +27,25 @@ export function Services() {
   return (
     <section id="servicos" className="scroll-mt-20 bg-pauli-cream px-4 py-20 dark:bg-[#121816]">
       <div className="mx-auto max-w-5xl">
-        <p className="text-center text-xs font-semibold uppercase tracking-[0.3em] text-pauli-emerald/60">
+        <p className="dark-accent-label text-center text-xs font-semibold uppercase tracking-[0.3em]">
           Como posso ajudar
         </p>
         <h2 className="section-title mt-2 text-center">Serviços</h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-pauli-charcoal/70 dark:text-pauli-sage/70">
-          Atendimento presencial em {site.attendance.inPerson} e online para {site.attendance.online.toLowerCase()}.
+        <p className="dark-accent-body mx-auto mt-3 max-w-xl text-center">
+          Atendimento presencial em {site.attendance.inPerson} e online para{" "}
+          {site.attendance.online.toLowerCase()}.
         </p>
 
         <ul className="mt-12 grid gap-6 sm:grid-cols-2">
           {services.map((service) => (
             <li
               key={service.title}
-              className="surface-card p-6 transition hover:border-pauli-emerald/25 hover:shadow-md dark:hover:border-pauli-emerald/35"
+              className="surface-card p-6 transition hover:border-pauli-emerald/25 hover:shadow-md dark:hover:border-pauli-sand/25"
             >
-              <h3 className="font-display text-xl font-bold text-pauli-emerald">{service.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-pauli-charcoal/75 dark:text-pauli-sage/75">
+              <h3 className="font-display text-xl font-bold text-pauli-emerald dark:text-pauli-cream">
+                {service.title}
+              </h3>
+              <p className="dark-accent-body mt-2 text-sm leading-relaxed">
                 {service.description}
               </p>
             </li>

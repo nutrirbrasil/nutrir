@@ -6,6 +6,7 @@ const FILES = {
   about: "3 com fundo.png",
   profile: "foto perfil.png",
   icon: "p.png",
+  logo: "logo.png",
 } as const;
 
 function assetUrl(file: string): string {
@@ -30,4 +31,8 @@ export function profileImageUrl(): string {
 
 export function iconImageUrl(): string {
   return assetUrl(FILES.icon);
+}
+
+export function logoImageUrl(): string {
+  return assetUrl(FILES.logo);
 }

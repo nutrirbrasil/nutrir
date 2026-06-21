@@ -32,9 +32,8 @@ export const site = {
   tagline:
     "Aprender a comer bem, sem terrorismo nutricional — com estratégia, acolhimento e resultados que cabem na sua rotina.",
   bio: [
-    "Meu trabalho é traduzir ciência em escolhas práticas para o seu dia a dia — seja para emagrecimento, ganho de massa, saúde metabólica ou performance nos treinos.",
-    "No Instagram e TikTok compartilho orientações sobre alimentação consciente, montagem de pratos e hábitos sustentáveis. Acredito em planos individualizados, sem dietas restritivas impossíveis de manter.",
-    "Atendo com acompanhamento próximo e retornos periódicos, para que cada plano faça sentido na sua rotina real.",
+    "Meu trabalho é traduzir ciência em escolhas práticas para o seu dia a dia, com foco em emagrecimento, ganho de massa, saúde da mulher, longevidade e performance nos treinos.",
+    "Acredito em planos individualizados, sem dietas restritivas impossíveis de manter. Atendo com acompanhamento próximo e retornos periódicos, para que cada plano faça sentido na sua rotina real.",
   ],
 } as const;
 
