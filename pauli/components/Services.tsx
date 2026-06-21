@@ -25,13 +25,13 @@ const services = [
 
 export function Services() {
   return (
-    <section id="servicos" className="scroll-mt-20 px-4 py-20">
+    <section id="servicos" className="scroll-mt-20 bg-pauli-cream px-4 py-20 dark:bg-[#121816]">
       <div className="mx-auto max-w-5xl">
         <p className="text-center text-xs font-semibold uppercase tracking-[0.3em] text-pauli-emerald/60">
           Como posso ajudar
         </p>
         <h2 className="section-title mt-2 text-center">Serviços</h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-pauli-charcoal/70">
+        <p className="mx-auto mt-3 max-w-xl text-center text-pauli-charcoal/70 dark:text-pauli-sage/70">
           Atendimento presencial em {site.attendance.inPerson} e online para {site.attendance.online.toLowerCase()}.
         </p>
 
@@ -39,10 +39,10 @@ export function Services() {
           {services.map((service) => (
             <li
               key={service.title}
-              className="rounded-2xl border border-pauli-emerald/10 bg-white p-6 shadow-sm transition hover:border-pauli-emerald/25 hover:shadow-md"
+              className="surface-card p-6 transition hover:border-pauli-emerald/25 hover:shadow-md dark:hover:border-pauli-emerald/35"
             >
               <h3 className="font-display text-xl font-bold text-pauli-emerald">{service.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-pauli-charcoal/75">
+              <p className="mt-2 text-sm leading-relaxed text-pauli-charcoal/75 dark:text-pauli-sage/75">
                 {service.description}
               </p>
             </li>

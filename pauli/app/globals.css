@@ -8,7 +8,8 @@
   }
 
   body {
-    @apply bg-pauli-cream font-sans text-pauli-charcoal antialiased;
+    @apply bg-pauli-cream font-sans text-pauli-charcoal antialiased transition-colors duration-300;
+    @apply dark:bg-[#0f1412] dark:text-pauli-sage;
   }
 }
 
@@ -19,9 +20,15 @@
 
   .btn-secondary {
     @apply inline-flex items-center justify-center rounded-full border-2 border-pauli-emerald px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-emerald transition hover:bg-pauli-emerald hover:text-white;
+    @apply dark:border-pauli-sage/35 dark:text-pauli-sage dark:hover:border-pauli-sage dark:hover:bg-pauli-emerald dark:hover:text-white;
   }
 
   .section-title {
-    @apply font-display text-3xl font-bold text-pauli-charcoal md:text-4xl;
+    @apply font-display text-3xl font-bold text-pauli-charcoal md:text-4xl dark:text-pauli-sage;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-pauli-emerald/10 bg-white shadow-sm;
+    @apply dark:border-pauli-emerald/20 dark:bg-[#1a2420];
   }
 }

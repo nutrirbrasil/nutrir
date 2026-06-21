@@ -1,4 +1,4 @@
-import { profileImageUrl } from "./brand-assets";
+import { iconImageUrl } from "./brand-assets";
 
 export const site = {
   name: "Pauli",
@@ -27,7 +27,7 @@ export const site = {
   instagramUrl: "https://www.instagram.com/paulipastorino/",
   tiktok: "@pauliipastorino",
   tiktokUrl: "https://www.tiktok.com/@pauliipastorino",
-  iconImage: profileImageUrl(),
+  iconImage: iconImageUrl(),
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://pauli.nutrirpicarras.com.br",
   tagline:
     "Aprender a comer bem, sem terrorismo nutricional — com estratégia, acolhimento e resultados que cabem na sua rotina.",

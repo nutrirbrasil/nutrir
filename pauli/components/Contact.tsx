@@ -4,7 +4,7 @@ import { site, whatsappLink } from "@/lib/site";
 
 export function Contact() {
   return (
-    <section id="contato" className="scroll-mt-20 bg-pauli-charcoal px-4 py-20 text-white">
+    <section id="contato" className="scroll-mt-20 bg-pauli-charcoal px-4 py-20 text-white dark:bg-black">
       <div className="mx-auto max-w-2xl text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">Contato</p>
         <h2 className="mt-2 font-display text-3xl font-bold md:text-4xl">Agende sua consulta</h2>

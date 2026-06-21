@@ -1,10 +1,11 @@
 /** Incremente ao trocar imagens para forçar atualização no navegador. */
-export const IMAGE_VERSION = "1";
+export const IMAGE_VERSION = "2";
 
 const FILES = {
   hero: "1.png",
   about: "3 com fundo.png",
   profile: "foto perfil.png",
+  icon: "p.png",
 } as const;
 
 function assetUrl(file: string): string {
@@ -25,4 +26,8 @@ export function aboutImageUrl(): string {
 
 export function profileImageUrl(): string {
   return assetUrl(FILES.profile);
+}
+
+export function iconImageUrl(): string {
+  return assetUrl(FILES.icon);
 }
