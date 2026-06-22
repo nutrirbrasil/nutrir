@@ -20,13 +20,13 @@ export function Hero() {
             priority
             className="h-auto w-44 object-contain md:w-52"
           />
-          <h1 className="mt-6 font-display text-4xl font-bold leading-[1.1] md:text-5xl">
-            Nutrição com estratégia, leveza e resultado real
+          <h1 className="mt-6 font-display text-3xl font-bold leading-[1.15] md:text-4xl lg:text-[2.65rem]">
+            {site.heroTitle}
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-white/80">{site.tagline}</p>
+          <p className="mt-5 text-lg leading-relaxed text-white/80">{site.heroSubtitle}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href={whatsappLink("Olá Paula! Vim do seu site e gostaria de agendar uma consulta.")}
+              href={whatsappLink("Olá Pauli! Vim do seu site e gostaria de agendar uma consulta.")}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary bg-white text-pauli-charcoal hover:bg-pauli-sand"

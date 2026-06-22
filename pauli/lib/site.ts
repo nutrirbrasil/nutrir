@@ -1,14 +1,27 @@
 import { iconImageUrl } from "./brand-assets";
 
 export const site = {
-  name: "Paula",
-  fullName: "Paula Pastorino",
-  displayTitle: "Pαulα Pαstorino",
+  name: "Pauli",
+  fullName: "Pauli Pastorino",
+  displayTitle: "Pαuli Pαstorino",
   subtitle: "Nutricionista",
   title: "Nutricionista clínica e esportiva",
   city: "Balneário Piçarras, SC",
   crn: "CRN 18489D",
   education: "Formada na Universidade Federal de Pelotas (UFPel) desde 2022.",
+  heroTitle: "Nutrição clínica e esportiva para resultados que cabem na sua rotina.",
+  heroSubtitle:
+    "Estratégias individualizadas para melhorar sua saúde, potencializar sua performance e construir hábitos sustentáveis.",
+  identificationBadges: [
+    "Emagrecimento saudável",
+    "Ganho de massa muscular",
+    "Corredores e atletas amadores",
+    "Saúde da mulher",
+    "Reeducação alimentar",
+  ],
+  aboutTitle: "Quem é Pauli?",
+  aboutIntro:
+    "Sou a Pauli, nutricionista clínica e esportiva, e acredito que a melhor estratégia alimentar é aquela que você consegue viver. Meu trabalho é transformar a ciência da nutrição em estratégias práticas e individualizadas para melhorar sua saúde, sua performance e sua relação com a alimentação, com um cuidado especial voltado aos atletas amadores que buscam evoluir sem abrir mão da vida real.",
   attendance: {
     inPerson: "Balneário Piçarras e região",
     online: "Todo o Brasil",
@@ -29,63 +42,67 @@ export const site = {
   tiktokUrl: "https://www.tiktok.com/@pauliipastorino",
   iconImage: iconImageUrl(),
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://pauli.nutrirpicarras.com.br",
-  tagline:
-    "Aprender a comer bem, sem terrorismo nutricional, com estratégia, acolhimento e resultados que cabem na sua rotina.",
-  bio: [
-    "Meu trabalho é traduzir ciência em escolhas práticas para o seu dia a dia, com foco em emagrecimento, ganho de massa, saúde da mulher, longevidade e performance nos treinos.",
-    "Na nutrição esportiva, me identifico especialmente com atletas amadores — corredores, jogadores, ciclistas — que conciliam treino, trabalho e vida real e precisam de estratégia alimentar sem complicação.",
-    "Acredito em planos individualizados, sem dietas restritivas impossíveis de manter. Atendo com acompanhamento próximo e retornos periódicos, para que cada plano faça sentido na sua rotina.",
-  ],
   approach: {
     intro:
-      "Cada pessoa chega com uma história, uma rotina e um objetivo diferente. Por isso, não trabalho com receitas prontas: construo estratégia alimentar com você, de forma clara e possível de seguir.",
+      "Acredito em uma nutrição baseada em ciência, construída para a vida real e pensada para gerar resultados sustentáveis. Por isso, meu acompanhamento é baseado em cinco pilares:",
     pillars: [
       {
-        title: "Plano individualizado",
+        icon: "🧠",
+        title: "Ciência sem extremismos",
         description:
-          "Avaliação completa e estratégia alinhada aos seus objetivos, preferências, treinos e momento de vida — nada de copiar cardápio de outra pessoa.",
+          "Condutas baseadas em evidências, sem terrorismo nutricional e sem regras impossíveis de seguir.",
       },
       {
-        title: "Ciência com leveza",
+        icon: "🍽",
+        title: "Alimentação que se adapta à sua vida",
         description:
-          "Decisões baseadas em evidência, explicadas de um jeito simples. Sem terrorismo nutricional e sem proibições desnecessárias.",
+          "A melhor estratégia alimentar é aquela que você consegue manter no dia a dia, respeitando sua rotina, preferências e objetivos.",
       },
       {
-        title: "Estratégia na rotina real",
+        icon: "🏋️",
+        title: "Saúde e performance caminhando juntas",
         description:
-          "O plano precisa caber no seu dia a dia — trabalho, treinos, viagens e imprevistos inclusos. Constância vale mais que perfeição.",
+          "Seja para emagrecer, ganhar massa muscular ou melhorar o desempenho nos treinos e provas, a alimentação é ajustada de forma individualizada para potencializar seus resultados.",
       },
       {
-        title: "Acompanhamento de verdade",
+        icon: "📈",
+        title: "Construção de hábitos sustentáveis",
         description:
-          "Retornos para ajustar o que for preciso, ouvir suas dúvidas e acompanhar sua evolução com proximidade e acolhimento.",
+          "Mais do que entregar um plano alimentar, meu objetivo é ajudar você a desenvolver comportamentos que possam ser mantidos a longo prazo.",
+      },
+      {
+        icon: "❤️",
+        title: "Cuidado individualizado",
+        description:
+          "Cada pessoa tem uma história, uma rotina e necessidades diferentes. Por isso, o acompanhamento é personalizado, próximo e pensado para a sua realidade.",
       },
     ],
   },
+  plansIntro:
+    "Cada pessoa possui objetivos, necessidades e rotinas diferentes. Por isso, você pode escolher a modalidade de acompanhamento que melhor se encaixa no seu momento.",
   plans: [
     {
       id: "inicial",
       title: "Consulta Inicial",
-      tagline:
-        "Para conhecer meu trabalho ou resolver uma demanda pontual — sem compromisso com acompanhamento contínuo.",
+      tagline: "Ideal para quem deseja conhecer meu trabalho ou precisa de orientações mais pontuais.",
       description:
-        "Indicada se você ainda não me conhece e quer entender como trabalho antes de um plano trimestral ou semestral. Também serve para quem precisa de orientação mais pontual: avaliação, direcionamento e plano alimentar, sem acompanhamento próximo entre as consultas.",
-      featured: true,
+        "Um atendimento individualizado para avaliar sua rotina, definir estratégias e construir um plano alimentar alinhado aos seus objetivos.",
+      featured: false,
     },
     {
       id: "trimestral",
       title: "Acompanhamento Trimestral",
-      tagline: "3 meses de evolução com retornos e ajustes no plano.",
+      tagline: "",
       description:
-        "Para quem quer acompanhamento mais próximo: consultas de retorno ao longo do trimestre, monitoramento da evolução e ajustes conforme treinos, rotina e resultados.",
-      featured: false,
+        "Indicado para quem busca mudanças de hábitos, melhora da composição corporal, ganho de massa muscular, emagrecimento ou evolução na performance esportiva, com acompanhamento mais próximo e ajustes ao longo do processo.",
+      featured: true,
     },
     {
       id: "semestral",
       title: "Acompanhamento Semestral",
-      tagline: "6 meses para consolidar hábitos e aprofundar resultados.",
+      tagline: "",
       description:
-        "Indicado para quem busca constância e mudança de hábitos com suporte contínuo — com retornos periódicos e acompanhamento da evolução ao longo do semestre.",
+        "Perfeito para quem deseja uma transformação mais consistente e sustentável, com tempo para consolidar hábitos, acompanhar a evolução e realizar ajustes contínuos, promovendo resultados duradouros.",
       featured: false,
     },
   ],

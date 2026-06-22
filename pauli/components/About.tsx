@@ -8,22 +8,22 @@ export function About() {
       <div className="mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-2">
         <div className="order-2 md:order-1">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pauli-emerald/60 dark:text-pauli-sand/70">
-            Sobre mim
+            {site.aboutTitle}
           </p>
           <h2 className="mt-2 font-display text-3xl font-bold text-pauli-charcoal dark:text-pauli-cream md:text-4xl">
             {site.fullName}
           </h2>
           <p className="mt-1 font-display text-lg italic text-pauli-emerald/80 dark:text-pauli-sand/85">
-            {site.subtitle} · {site.city}
+            {site.title} · {site.city}
           </p>
 
-          <p className="mt-6 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85">{site.education}</p>
+          <p className="mt-6 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85">
+            {site.aboutIntro}
+          </p>
 
-          <div className="mt-6 space-y-4 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85">
-            {site.bio.map((paragraph) => (
-              <p key={paragraph.slice(0, 40)}>{paragraph}</p>
-            ))}
-          </div>
+          <p className="mt-6 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85">
+            {site.education}
+          </p>
 
           <p className="mt-6 text-sm text-pauli-emerald/60 dark:text-pauli-sand/65">{site.crn}</p>
         </div>

@@ -18,11 +18,11 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: `${site.fullName} — ${site.subtitle} | ${site.city}`,
-  description: site.tagline,
+  description: site.heroSubtitle,
   metadataBase: new URL(site.siteUrl),
   openGraph: {
     title: `${site.fullName} — ${site.subtitle}`,
-    description: site.tagline,
+    description: site.heroSubtitle,
     images: [{ url: site.iconImage }],
   },
   icons: {

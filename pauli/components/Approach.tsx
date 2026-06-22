@@ -12,13 +12,16 @@ export function Approach() {
           {site.approach.intro}
         </p>
 
-        <ul className="mt-12 grid gap-6 sm:grid-cols-2">
+        <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 [&>li:last-child:nth-child(3n+2)]:lg:col-span-3 [&>li:last-child:nth-child(3n+2)]:lg:max-w-sm [&>li:last-child:nth-child(3n+2)]:lg:justify-self-center">
           {site.approach.pillars.map((pillar) => (
             <li
               key={pillar.title}
               className="surface-card p-6 transition hover:border-pauli-emerald/25 hover:shadow-md dark:hover:border-pauli-sand/25"
             >
-              <h3 className="font-display text-xl font-bold text-pauli-emerald dark:text-pauli-cream">
+              <span className="text-3xl" aria-hidden>
+                {pillar.icon}
+              </span>
+              <h3 className="mt-3 font-display text-lg font-bold text-pauli-emerald dark:text-pauli-cream">
                 {pillar.title}
               </h3>
               <p className="dark-accent-body mt-2 text-sm leading-relaxed">{pillar.description}</p>

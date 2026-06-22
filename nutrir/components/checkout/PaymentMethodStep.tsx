@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { FiAlertTriangle } from "react-icons/fi";
 import { CheckoutShell, useCheckoutGuard } from "@/components/checkout/CheckoutShell";
 import { useCheckout } from "@/lib/checkout-context";
 import { hasFiscalData } from "@/lib/checkout-draft";
 import { analyzeCartItems } from "@/lib/pickup-schedule";
-import { normalizePaymentMethod } from "@/lib/payment-utils";
+import { isLocalPayment, normalizePaymentMethod } from "@/lib/payment-utils";
 import type { PaymentMethod } from "@/lib/types";
 
 interface PaymentOption {
@@ -15,6 +16,9 @@ interface PaymentOption {
   hint: string;
   badge?: string;
 }
+
+const LOCAL_PAYMENT_NOTICE =
+  "Ao selecionar essa opção você concorda que precisa realizar o pagamento no local dentro de 24h, dentro do horário de funcionamento e que atraso no pagamento pode ocasionar atraso na produção e entrega.";
 
 const ONLINE_OPTIONS: PaymentOption[] = [
   {
@@ -25,7 +29,7 @@ const ONLINE_OPTIONS: PaymentOption[] = [
   },
   {
     id: "card",
-    label: "Cartão",
+    label: "Cartão Online",
     hint: "Pagamento imediato, produção imediata.",
   },
 ];
@@ -34,13 +38,13 @@ const LOCAL_OPTIONS: PaymentOption[] = [
   {
     id: "local_cash",
     label: "Dinheiro",
-    hint: "10% de desconto igual ao Pix",
+    hint: "Produção mediante pagamento",
     badge: "10% OFF",
   },
   {
     id: "local_card",
-    label: "Cartão",
-    hint: "Valor igual do cartão online",
+    label: "Cartão Físico",
+    hint: "Produção mediante pagamento",
   },
 ];
 
@@ -104,10 +108,11 @@ export function PaymentMethodStep() {
           ))}
         </div>
 
-        {cartAnalysis.hasCombo && (
-          <p className="text-sm text-nutrir-emerald/70">
-            Após a confirmação, você deve efetuar o pagamento dentro de 48 horas!
-          </p>
+        {isLocalPayment(method) && (
+          <div className="flex gap-3 rounded-lg border-2 border-amber-400/80 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950 dark:border-amber-500/50 dark:bg-amber-950/30 dark:text-amber-100">
+            <FiAlertTriangle className="mt-0.5 shrink-0 text-lg text-amber-600 dark:text-amber-400" aria-hidden />
+            <p>{LOCAL_PAYMENT_NOTICE}</p>
+          </div>
         )}
 
         <button type="button" onClick={handleContinue} className="btn-primary w-full py-3.5">
