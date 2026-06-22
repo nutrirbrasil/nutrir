@@ -30,6 +30,7 @@ export interface CreateOrderPayload {
   payment_status?: PaymentStatus;
   user_notes?: string;
   notes?: string;
+  coupon_code?: string;
   items: OrderItem[];
 }
 
@@ -38,6 +39,7 @@ export interface Order extends CreateOrderPayload {
   status: string;
   payment_status: PaymentStatus;
   total_cents: number;
+  coupon_discount_cents?: number;
   created_at: string;
   local_pay_deadline?: string;
   checkout_url?: string;

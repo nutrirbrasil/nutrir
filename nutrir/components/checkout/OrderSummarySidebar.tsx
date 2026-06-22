@@ -8,7 +8,7 @@ import { CheckoutPriceSummary } from "@/components/checkout/CheckoutPriceSummary
 
 export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
   const method = normalizePaymentMethod(draft.payment_method);
-  const pricing = computeOrderPricing(draft.items, method);
+  const pricing = computeOrderPricing(draft.items, method, draft.coupon_code);
 
   return (
     <aside className="card sticky top-4">

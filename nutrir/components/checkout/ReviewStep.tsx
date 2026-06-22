@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CheckoutPriceSummary } from "@/components/checkout/CheckoutPriceSummary";
+import { CouponField } from "@/components/checkout/CouponField";
 import { CheckoutShell, useCheckoutGuard } from "@/components/checkout/CheckoutShell";
 import { OrderSummarySidebar } from "@/components/checkout/OrderSummarySidebar";
 import { nutrirApi, PAYMENT_METHOD_SHORT_LABELS } from "@/lib/api";
@@ -15,7 +16,7 @@ import {
 } from "@/lib/order-pricing";
 import { isLocalPayment, isOnlinePayment, normalizePaymentMethod } from "@/lib/payment-utils";
 import { formatPickupDisplayLines } from "@/lib/pickup-schedule";
-import { NUTRIR_STORE_ADDRESS } from "@/lib/store-info";
+import { NUTRIR_STORE_ADDRESS, resolvePickupAddress } from "@/lib/store-info";
 import { useCart } from "@/lib/cart-context";
 import { useProfile } from "@/lib/profile-context";
 import type { CreateOrderPayload, Order, PaymentMethod } from "@/lib/types";
@@ -28,8 +29,9 @@ function canReusePendingOrder(
   if (existing.payment_status !== "pending") return false;
   if (normalizePaymentMethod(existing.payment_method) !== method) return false;
 
-  const pricing = computeOrderPricing(draft.items, method);
+  const pricing = computeOrderPricing(draft.items, method, draft.coupon_code);
   if (existing.total_cents !== pricing.total_cents) return false;
+  if ((existing.coupon_code ?? "") !== (draft.coupon_code ?? "")) return false;
 
   const charged = getChargedItems(draft.items, method);
   if (existing.items.length !== charged.length) return false;
@@ -55,7 +57,7 @@ export function ReviewStep() {
 
   const d = draft;
   const method = normalizePaymentMethod(d.payment_method);
-  const pricing = computeOrderPricing(d.items, method);
+  const pricing = computeOrderPricing(d.items, method, d.coupon_code);
   const pickupLines = formatPickupDisplayLines(d.pickup_display);
 
   function buildPayload(): CreateOrderPayload {
@@ -65,12 +67,13 @@ export function ReviewStep() {
       customer_phone: d.customer_phone,
       customer_email: d.customer_email?.trim().toLowerCase() || accountEmail || undefined,
       customer_cpf: d.customer_cpf,
-      delivery_address: d.delivery_address,
+      delivery_address: resolvePickupAddress(),
       delivery_date: d.delivery_date,
       pickup_display: d.pickup_display,
       payment_method: method,
       user_notes: d.user_notes,
       notes: d.internal_notes,
+      coupon_code: d.coupon_code,
       items: d.items,
     };
   }
@@ -175,7 +178,12 @@ export function ReviewStep() {
             </Link>
           </div>
 
-          <div className="card">
+          <div className="card space-y-4">
+            <CouponField
+              code={d.coupon_code}
+              onApply={(code) => patchDraft({ coupon_code: code, order_id: undefined })}
+              onRemove={() => patchDraft({ coupon_code: undefined, order_id: undefined })}
+            />
             <CheckoutPriceSummary pricing={pricing} method={method} />
           </div>
 

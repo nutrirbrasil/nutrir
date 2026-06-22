@@ -5,22 +5,24 @@ import { useState } from "react";
 import {
   FEATURED_TESTIMONIAL_IDS,
   getExtraTestimonialIds,
+  TESTIMONIAL_DIMENSIONS,
   testimonialImageUrl,
   type TestimonialId,
 } from "@/lib/testimonials-data";
 
 function TestimonialCard({ id }: { id: TestimonialId }) {
+  const { width, height } = TESTIMONIAL_DIMENSIONS[id];
+
   return (
     <li className="surface-card overflow-hidden p-2 transition hover:border-pauli-emerald/25 hover:shadow-md dark:hover:border-pauli-sand/25">
-      <div className="relative aspect-[9/16] w-full overflow-hidden rounded-xl bg-pauli-sand/40 dark:bg-[#252220]">
-        <Image
-          src={testimonialImageUrl(id)}
-          alt={`Depoimento de paciente ${id}`}
-          fill
-          className="object-cover object-top"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-        />
-      </div>
+      <Image
+        src={testimonialImageUrl(id)}
+        alt={`Depoimento de paciente ${id}`}
+        width={width}
+        height={height}
+        className="h-auto w-full rounded-xl"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
+      />
     </li>
   );
 }

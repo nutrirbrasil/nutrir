@@ -31,12 +31,19 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
           </div>
         </>
       ) : (
-        !compact && (
+        (!compact || pricing.show_coupon_discount) && (
           <div className="flex justify-between text-sm">
             <span>Subtotal</span>
-            <span>{formatPrice(pricing.total_cents)}</span>
+            <span>{formatPrice(pricing.subtotal_cents)}</span>
           </div>
         )
+      )}
+
+      {pricing.show_coupon_discount && (
+        <div className="flex justify-between text-sm text-green-600">
+          <span>Cupom {pricing.coupon_code}</span>
+          <span>− {formatPrice(pricing.coupon_discount_cents)}</span>
+        </div>
       )}
 
       <div

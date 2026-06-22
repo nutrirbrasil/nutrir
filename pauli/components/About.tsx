@@ -11,7 +11,7 @@ export function About() {
             {site.aboutTitle}
           </p>
           <h2 className="mt-2 font-display text-3xl font-bold text-pauli-charcoal dark:text-pauli-cream md:text-4xl">
-            {site.fullName}
+            {site.formalName}
           </h2>
           <p className="mt-1 font-display text-lg italic text-pauli-emerald/80 dark:text-pauli-sand/85">
             {site.title} · {site.city}
@@ -20,12 +20,6 @@ export function About() {
           <p className="mt-6 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85">
             {site.aboutIntro}
           </p>
-
-          <p className="mt-6 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85">
-            {site.education}
-          </p>
-
-          <p className="mt-6 text-sm text-pauli-emerald/60 dark:text-pauli-sand/65">{site.crn}</p>
         </div>
 
         <div className="order-1 md:order-2">
@@ -41,6 +35,7 @@ export function About() {
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
               <p className="font-display text-2xl font-bold">{site.displayTitle}</p>
               <p className="text-sm text-white/80">{site.subtitle}</p>
+              <p className="mt-1 text-xs text-white/65">{site.crn}</p>
             </div>
           </div>
         </div>

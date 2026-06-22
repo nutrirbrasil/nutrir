@@ -54,6 +54,13 @@ export function formatOrderTelegramMessage(order: Order, orderedAt: Date): strin
     lines.push(`📝 ${escapeMarkdown(order.user_notes.trim())}`);
   }
 
+  if (order.coupon_code?.trim()) {
+    const couponLine = order.coupon_discount_cents
+      ? `Cupom ${order.coupon_code} (−${formatMoney(order.coupon_discount_cents)})`
+      : `Cupom ${order.coupon_code}`;
+    lines.splice(6, 0, `🎟 ${escapeMarkdown(couponLine)}`);
+  }
+
   return lines.join("\n");
 }
 

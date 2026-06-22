@@ -18,6 +18,7 @@ export interface CheckoutDraft {
   pickup_combo?: PickupSelection | null;
   pickup_regular?: PickupSelection | null;
   payment_method?: PaymentMethod;
+  coupon_code?: string;
   order_id?: string;
 }
 

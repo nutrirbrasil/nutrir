@@ -1,7 +1,5 @@
-import Image from "next/image";
 import { FiMapPin } from "react-icons/fi";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
-import { logoImageUrl } from "@/lib/brand-assets";
 import { site, whatsappLink } from "@/lib/site";
 
 export function Hero() {
@@ -12,15 +10,7 @@ export function Hero() {
 
       <div className="relative mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-2">
         <div className="order-2 md:order-1">
-          <Image
-            src={logoImageUrl()}
-            alt={`${site.fullName} — ${site.subtitle}`}
-            width={320}
-            height={160}
-            priority
-            className="h-auto w-44 object-contain md:w-52"
-          />
-          <h1 className="mt-6 font-display text-3xl font-bold leading-[1.15] md:text-4xl lg:text-[2.65rem]">
+          <h1 className="font-display text-3xl font-bold leading-[1.15] md:text-4xl lg:text-[2.65rem]">
             {site.heroTitle}
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-white/80">{site.heroSubtitle}</p>
@@ -42,9 +32,9 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="order-1 flex flex-col items-center md:order-2 md:items-end">
+        <div className="order-1 flex w-full flex-col items-center md:order-2">
           <ProfilePhoto size="hero" variant="hero" priority />
-          <p className="mt-4 flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.2em] text-white/55 md:tracking-[0.35em]">
+          <p className="mt-4 flex w-full max-w-[16rem] items-center justify-center gap-1.5 text-center text-xs font-medium uppercase tracking-[0.15em] text-white/55 sm:max-w-[20rem] md:max-w-[20rem]">
             <FiMapPin className="shrink-0 text-sm" aria-hidden />
             {site.city}
           </p>

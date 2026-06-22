@@ -3,12 +3,12 @@ import { iconImageUrl } from "./brand-assets";
 export const site = {
   name: "Pauli",
   fullName: "Pauli Pastorino",
+  formalName: "Paula Pastorino",
   displayTitle: "Pαuli Pαstorino",
   subtitle: "Nutricionista",
   title: "Nutricionista clínica e esportiva",
   city: "Balneário Piçarras, SC",
   crn: "CRN 18489D",
-  education: "Formada na Universidade Federal de Pelotas (UFPel) desde 2022.",
   heroTitle: "Nutrição clínica e esportiva para resultados que cabem na sua rotina.",
   heroSubtitle:
     "Estratégias individualizadas para melhorar sua saúde, potencializar sua performance e construir hábitos sustentáveis.",
@@ -18,6 +18,8 @@ export const site = {
     "Corredores e atletas amadores",
     "Saúde da mulher",
     "Reeducação alimentar",
+    "Longevidade",
+    "Materno-Infantil",
   ],
   aboutTitle: "Quem é Pauli?",
   aboutIntro:

@@ -16,7 +16,7 @@ import {
   type PickupSelection,
 } from "@/lib/pickup-schedule";
 import { getItemCashTotalCents } from "@/lib/order-pricing";
-import { NUTRIR_STORE_ADDRESS } from "@/lib/store-info";
+import { NUTRIR_STORE_ADDRESS, resolvePickupAddress } from "@/lib/store-info";
 
 export function OrderForm() {
   const router = useRouter();
@@ -147,7 +147,7 @@ export function OrderForm() {
       customer_phone: phone,
       customer_email: form.customer_email?.trim() || undefined,
       customer_cpf: profile.cpf || undefined,
-      delivery_address: profile.address || NUTRIR_STORE_ADDRESS,
+      delivery_address: resolvePickupAddress(),
       delivery_date: getPrimaryDeliveryDate(),
       pickup_display: buildPickupDisplay(),
       user_notes: form.notes.trim() || undefined,

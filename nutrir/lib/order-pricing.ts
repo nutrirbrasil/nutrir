@@ -1,3 +1,4 @@
+import { computeCouponDiscountCents, getCoupon, normalizeCouponCode } from "./coupons";
 import { getComboCardTotalCents } from "./combo-builder-data";
 import { KIT_PRODUCTS, type MarmitaSize } from "./menu-data";
 import { isCardPayment, isCashDiscountPayment } from "./payment-utils";
@@ -69,13 +70,17 @@ export function getItemChargeCents(item: OrderItem, method?: PaymentMethod): num
 export interface OrderPricing {
   subtotal_cents: number;
   pix_discount_cents: number;
+  coupon_code?: string;
+  coupon_discount_cents: number;
   total_cents: number;
   show_pix_discount: boolean;
+  show_coupon_discount: boolean;
 }
 
 export function computeOrderPricing(
   items: OrderItem[],
-  method?: PaymentMethod
+  method?: PaymentMethod,
+  couponCode?: string | null
 ): OrderPricing {
   const listTotal = items.reduce(
     (sum, item) => sum + getItemListPriceCents(item) * item.quantity,
@@ -86,22 +91,34 @@ export function computeOrderPricing(
     0
   );
 
+  const coupon = getCoupon(couponCode);
+  const couponDiscount = coupon ? computeCouponDiscountCents(listTotal, coupon) : 0;
+  const appliedCouponCode = coupon ? normalizeCouponCode(couponCode!) : undefined;
+
   if (isCardPayment(method)) {
+    const total = Math.max(0, listTotal - couponDiscount);
     return {
       subtotal_cents: listTotal,
       pix_discount_cents: 0,
-      total_cents: listTotal,
+      coupon_code: appliedCouponCode,
+      coupon_discount_cents: couponDiscount,
+      total_cents: total,
       show_pix_discount: false,
+      show_coupon_discount: couponDiscount > 0,
     };
   }
 
   const pixDiscount = Math.max(0, listTotal - cashTotal);
+  const total = Math.max(0, cashTotal - couponDiscount);
 
   return {
     subtotal_cents: listTotal,
     pix_discount_cents: pixDiscount,
-    total_cents: cashTotal,
+    coupon_code: appliedCouponCode,
+    coupon_discount_cents: couponDiscount,
+    total_cents: total,
     show_pix_discount: isCashDiscountPayment(method) && pixDiscount > 0,
+    show_coupon_discount: couponDiscount > 0,
   };
 }
 

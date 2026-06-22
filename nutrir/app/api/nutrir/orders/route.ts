@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isValidCouponCode } from "@/lib/coupons";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
 import { isValidPhoneBR } from "@/lib/br-fields";
 import { computeOrderPricing, getChargedItems } from "@/lib/order-pricing";
@@ -33,6 +34,9 @@ function validate(body: CreateOrderPayload): string | null {
     if (!item.quantity || item.quantity < 1) return "Quantidade inválida no pedido.";
     if (item.price_cents < 0) return "Preço inválido no pedido.";
   }
+  if (body.coupon_code?.trim() && !isValidCouponCode(body.coupon_code)) {
+    return "Cupom inválido.";
+  }
   return null;
 }
 
@@ -55,7 +59,7 @@ export async function POST(request: Request) {
 
   const payment_method = normalizePaymentMethod(body.payment_method);
   const chargedItems = getChargedItems(body.items, payment_method);
-  const { total_cents } = computeOrderPricing(body.items, payment_method);
+  const pricing = computeOrderPricing(body.items, payment_method, body.coupon_code);
   const created_at = new Date().toISOString();
 
   const order: Order = {
@@ -65,7 +69,8 @@ export async function POST(request: Request) {
     status: "pending",
     payment_method,
     payment_status: "pending",
-    total_cents,
+    total_cents: pricing.total_cents,
+    coupon_discount_cents: pricing.coupon_discount_cents || undefined,
     created_at,
   };
 
@@ -87,7 +92,7 @@ export async function POST(request: Request) {
 
     const link = await createInfinitePayLink({
       orderId: order.id,
-      amountCents: total_cents,
+      amountCents: order.total_cents,
       items: order.items,
       customerName: order.customer_name,
       customerEmail: order.customer_email,

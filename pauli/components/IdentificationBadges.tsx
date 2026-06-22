@@ -6,7 +6,7 @@ export function IdentificationBadges() {
     <section className="border-y border-pauli-emerald/10 bg-white px-4 py-10 dark:border-pauli-sand/10 dark:bg-[#151c19]">
       <div className="mx-auto max-w-5xl">
         <p className="dark-accent-label text-center text-xs font-semibold uppercase tracking-[0.3em]">
-          Selos de identificação
+          Especialidades
         </p>
         <ul className="mt-6 flex flex-wrap justify-center gap-3 sm:gap-4">
           {site.identificationBadges.map((label) => (
