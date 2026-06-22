@@ -6,7 +6,7 @@ export default function AuthCallbackPage() {
     <Suspense
       fallback={
         <div className="mx-auto max-w-md px-4 py-16 text-center text-nutrir-emerald/70">
-          Confirmando seu e-mail…
+          Confirmando login…
         </div>
       }
     >

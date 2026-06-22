@@ -96,9 +96,9 @@ export function KitCard({ kit }: Props) {
           <button
             type="button"
             onClick={() => setShowContent(true)}
-            className="mt-3 text-sm font-semibold text-nutrir-nude underline-offset-2 hover:underline"
+            className="mt-3 text-sm font-semibold text-nutrir-nude underline underline-offset-4 decoration-nutrir-nude/90 hover:decoration-nutrir-nude"
           >
-            Ver conteúdo
+            Ver conteúdo do combo
           </button>
         </div>
 

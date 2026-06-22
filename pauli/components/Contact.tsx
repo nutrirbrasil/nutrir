@@ -25,7 +25,7 @@ export function Contact() {
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap md:justify-start">
             <a
-              href={whatsappLink("Olá Pauli! Quero agendar uma consulta.")}
+              href={whatsappLink("Olá Paula! Quero agendar uma consulta.")}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary flex items-center gap-2 bg-white text-pauli-charcoal hover:bg-pauli-sand"

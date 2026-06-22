@@ -26,7 +26,7 @@ export function Hero() {
           <p className="mt-5 text-lg leading-relaxed text-white/80">{site.tagline}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href={whatsappLink("Olá Pauli! Vim do seu site e gostaria de agendar uma consulta.")}
+              href={whatsappLink("Olá Paula! Vim do seu site e gostaria de agendar uma consulta.")}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary bg-white text-pauli-charcoal hover:bg-pauli-sand"
@@ -34,7 +34,7 @@ export function Hero() {
               Agendar consulta
             </a>
             <a
-              href="#sobre"
+              href="#acompanhamento"
               className="btn-secondary border-white/35 text-white hover:border-white hover:bg-white/10 hover:text-white"
             >
               Saber mais

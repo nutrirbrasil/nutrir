@@ -44,9 +44,9 @@ interface ProfileContextValue {
   ) => Promise<void>;
   completePasswordRecovery: (newPassword: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => void;
-  socialLoginHint: string;
 }
 
 const PROFILE_KEY = "nutrir-profile";
@@ -78,7 +78,7 @@ function loadProfile(): UserProfile {
 }
 
 export const SOCIAL_LOGIN_HINT =
-  "Login com Google, Facebook ou Apple exige o site publicado online com Supabase Auth configurado (URLs de redirect). Por enquanto, use e-mail e senha.";
+  "Ative o provedor Google no Supabase (Authentication → Providers) e configure o OAuth no Google Cloud Console.";
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -279,6 +279,18 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     [authConfigured, session?.user.email]
   );
 
+  const loginWithGoogle = useCallback(async () => {
+    if (!authConfigured) throw new Error(SOCIAL_LOGIN_HINT);
+    const supabase = getSupabaseBrowser();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: getAuthCallbackUrl("signup"),
+      },
+    });
+    if (error) throw new Error(mapAuthError(error));
+  }, [authConfigured]);
+
   const logout = useCallback(async () => {
     if (authConfigured) {
       await getSupabaseBrowser().auth.signOut();
@@ -319,9 +331,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       verifyRecoveryAndResetPassword,
       completePasswordRecovery,
       changePassword,
+      loginWithGoogle,
       logout,
       updateProfile,
-      socialLoginHint: SOCIAL_LOGIN_HINT,
     }),
     [
       session,
@@ -338,6 +350,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       verifyRecoveryAndResetPassword,
       completePasswordRecovery,
       changePassword,
+      loginWithGoogle,
       logout,
       updateProfile,
     ]

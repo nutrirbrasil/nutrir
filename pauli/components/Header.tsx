@@ -5,7 +5,9 @@ import { site } from "@/lib/site";
 
 const nav = [
   { href: "#sobre", label: "Sobre" },
-  { href: "#servicos", label: "Serviços" },
+  { href: "#abordagem", label: "Abordagem" },
+  { href: "#acompanhamento", label: "Acompanhamento" },
+  { href: "#depoimentos", label: "Depoimentos" },
   { href: "#contato", label: "Contato" },
 ];
 

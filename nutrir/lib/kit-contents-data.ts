@@ -15,7 +15,7 @@ const FRANGO_LINES: Record<number, KitContentLine[]> = {
   ],
   14: [
     { label: "Frango e arroz", count: 5 },
-    { label: "Frango e massa", count: 4 },
+    { label: "Frango e massa", count: 5 },
     { label: "Frango e batata", count: 4 },
   ],
   28: [
@@ -33,7 +33,7 @@ const CARNE_LINES: Record<number, KitContentLine[]> = {
   ],
   14: [
     { label: "Carne e arroz", count: 5 },
-    { label: "Carne e massa", count: 4 },
+    { label: "Carne e massa", count: 5 },
     { label: "Carne e batata", count: 4 },
   ],
   28: [
@@ -90,9 +90,4 @@ export function getKitMealLabels(kitId: KitId, meals: number): string[] {
     }
   }
   return labels;
-}
-
-export function formatKitContentTier(meals: number, lines: KitContentLine[]): string {
-  const parts = lines.map((line) => `${line.count} ${line.label.toLowerCase()}`);
-  return `${meals} refeições: ${parts.join(", ")}`;
 }

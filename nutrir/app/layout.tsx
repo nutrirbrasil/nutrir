@@ -36,6 +36,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <footer className="bg-nutrir-emerald-dark bg-grain py-10 text-center text-sm text-nutrir-nude/80">
             <p className="font-display text-lg italic text-nutrir-nude">@nutrirpicarras</p>
             <p className="mt-2">Nutrir Piçarras · Marmitas fit com ingredientes frescos</p>
+            <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
+              <a href="/politica-de-privacidade" className="hover:text-nutrir-nude hover:underline">
+                Política de Privacidade
+              </a>
+              <span aria-hidden className="opacity-40">
+                ·
+              </span>
+              <a href="/termos-de-uso" className="hover:text-nutrir-nude hover:underline">
+                Termos de Uso
+              </a>
+            </p>
           </footer>
         </AppProviders>
       </body>

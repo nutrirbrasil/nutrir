@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 import {
   cpfValidationMessage,
   formatCpf,
@@ -17,7 +18,7 @@ import {
   syncCustomerToServer,
   type SavedOrder,
 } from "@/lib/order-history";
-import { useProfile, SOCIAL_LOGIN_HINT } from "@/lib/profile-context";
+import { useProfile } from "@/lib/profile-context";
 import {
   rememberAuthNext,
   consumeAuthNext,
@@ -52,9 +53,9 @@ export function ProfilePage() {
     verifyRecoveryAndResetPassword,
     completePasswordRecovery,
     changePassword,
+    loginWithGoogle,
     logout,
     updateProfile,
-    socialLoginHint,
   } = useProfile();
 
   const [mode, setMode] = useState<"login" | "register">("register");
@@ -155,6 +156,18 @@ export function ProfilePage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível concluir. Tente novamente.");
     } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    setError("");
+    setInfo("");
+    setLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível entrar com Google.");
       setLoading(false);
     }
   }
@@ -818,32 +831,24 @@ export function ProfilePage() {
       )}
 
       <p className="mt-6 text-center text-sm text-nutrir-emerald/70">
-        Use sua rede social para cadastrar sua conta
+        Entre ou cadastre-se com sua conta Google
       </p>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {[
-          { label: "Facebook", bg: "bg-[#1877F2]", icon: "f", title: socialLoginHint },
-          { label: "Google", bg: "bg-nutrir-cream border border-gray-200", icon: "G", title: socialLoginHint },
-          { label: "Apple", bg: "bg-black", icon: "", title: socialLoginHint },
-        ].map((s) => (
-          <button
-            key={s.label}
-            type="button"
-            title={s.title}
-            onClick={() => setError(SOCIAL_LOGIN_HINT)}
-            className={`flex h-12 items-center justify-center rounded-lg text-lg font-bold opacity-60 ${s.bg} ${
-              s.label === "Google" ? "text-gray-700" : "text-white"
-            }`}
-          >
-            {s.icon || ""}
-          </button>
-        ))}
-      </div>
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        disabled={loading}
+        className="mt-4 flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-nutrir-cream text-sm font-semibold text-gray-700 transition hover:bg-white disabled:opacity-50"
+      >
+        <FcGoogle className="text-xl" aria-hidden />
+        Continuar com Google
+      </button>
 
-      <p className="mt-2 text-center text-xs text-nutrir-emerald/50">
-        Disponível quando o site estiver online com login social configurado.
-      </p>
+      {!authConfigured && (
+        <p className="mt-2 text-center text-xs text-nutrir-emerald/50">
+          Configure Supabase e o provedor Google para ativar este botão.
+        </p>
+      )}
 
       <div className="my-6 flex items-center gap-3">
         <div className="h-px flex-1 bg-nutrir-nude-dark" />

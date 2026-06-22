@@ -1,10 +1,7 @@
 "use client";
 
 import { FiX } from "react-icons/fi";
-import {
-  formatKitContentTier,
-  getKitContentLines,
-} from "@/lib/kit-contents-data";
+import { getKitContentLines } from "@/lib/kit-contents-data";
 import type { KitProduct } from "@/lib/menu-data";
 
 interface Props {
@@ -28,7 +25,7 @@ export function KitContentModal({ kit, onClose }: Props) {
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-display text-xl font-bold text-nutrir-emerald">Conteúdo do kit</h2>
+            <h2 className="font-display text-xl font-bold text-nutrir-emerald">Conteúdo do Combo</h2>
             <p className="mt-1 text-sm text-nutrir-emerald/65">{kit.name}</p>
           </div>
           <button
@@ -41,7 +38,7 @@ export function KitContentModal({ kit, onClose }: Props) {
         </div>
 
         <p className="mb-4 text-xs text-nutrir-emerald/60">
-          A composição é a mesma nos tamanhos P e G — só muda o tamanho da marmita.
+          O conteúdo é o mesmo nos tamanhos P e G, muda apenas as quantidades.
         </p>
 
         <ul className="space-y-4">
@@ -62,9 +59,6 @@ export function KitContentModal({ kit, onClose }: Props) {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-2 text-xs italic text-nutrir-emerald/50">
-                  {formatKitContentTier(tier.meals, lines)}
-                </p>
               </li>
             );
           })}
