@@ -11,16 +11,27 @@
     @apply bg-pauli-cream font-sans text-pauli-charcoal antialiased transition-colors duration-300;
     @apply dark:bg-[#0f1412] dark:text-pauli-sand;
   }
+
+  /* Contorno fino em textos dourados no tema claro */
+  html:not(.dark) .gold-text {
+    text-shadow:
+      0.4px 0 0 #1c1c1c,
+      -0.4px 0 0 #1c1c1c,
+      0 0.4px 0 #1c1c1c,
+      0 -0.4px 0 #1c1c1c;
+  }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-pauli-burgundy px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-pauli-burgundy/90;
+    @apply inline-flex items-center justify-center rounded-full bg-pauli-gold px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-charcoal transition hover:bg-pauli-gold-dark hover:text-white;
+    @apply dark:bg-pauli-gold dark:text-pauli-charcoal dark:hover:bg-pauli-gold-light;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-pauli-emerald px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-emerald transition hover:bg-pauli-emerald hover:text-white;
-    @apply dark:border-pauli-sand/40 dark:text-pauli-sand dark:hover:border-pauli-cream dark:hover:bg-pauli-sand/15 dark:hover:text-pauli-cream;
+    @apply gold-text inline-flex items-center justify-center rounded-full border-2 border-pauli-gold-dark px-6 py-3 text-sm font-bold uppercase tracking-wide transition;
+    @apply hover:bg-pauli-gold-dark hover:text-white hover:[text-shadow:none];
+    @apply dark:border-pauli-gold/50 dark:text-pauli-gold-light dark:hover:border-pauli-gold dark:hover:bg-pauli-gold/15 dark:hover:text-pauli-gold-light;
   }
 
   .section-title {
@@ -28,12 +39,12 @@
   }
 
   .surface-card {
-    @apply rounded-2xl border border-pauli-emerald/10 bg-white shadow-sm;
-    @apply dark:border-pauli-sand/15 dark:bg-[#1a1816];
+    @apply rounded-2xl border border-pauli-charcoal/10 bg-white shadow-sm;
+    @apply dark:border-pauli-gray-muted/30 dark:bg-[#1a1816];
   }
 
   .dark-accent-label {
-    @apply text-pauli-emerald/60 dark:text-pauli-sand/70;
+    @apply gold-text text-pauli-gold-dark/90 dark:text-pauli-gold-light/80;
   }
 
   .dark-accent-heading {
@@ -45,6 +56,60 @@
   }
 
   .dark-accent-title {
-    @apply font-semibold text-pauli-emerald dark:text-pauli-sand;
+    @apply gold-text font-semibold text-pauli-gold-dark dark:text-pauli-gold-light;
+  }
+}
+
+@layer utilities {
+  .gold-text {
+    @apply text-pauli-gold-dark dark:text-pauli-gold-light;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-reveal {
+    opacity: 0;
+    transition:
+      opacity var(--reveal-duration, 700ms) cubic-bezier(0.22, 1, 0.36, 1)
+        var(--reveal-delay, 0ms),
+      transform var(--reveal-duration, 700ms) cubic-bezier(0.22, 1, 0.36, 1)
+        var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .scroll-reveal-fade-up {
+    transform: translateY(2.5rem);
+  }
+
+  .scroll-reveal-fade-down {
+    transform: translateY(-2rem);
+  }
+
+  .scroll-reveal-fade-left {
+    transform: translateX(-3rem);
+  }
+
+  .scroll-reveal-fade-right {
+    transform: translateX(3rem);
+  }
+
+  .scroll-reveal-fade-in {
+    transform: none;
+  }
+
+  .scroll-reveal-scale-up {
+    transform: scale(0.94);
+  }
+
+  .scroll-reveal-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
   }
 }

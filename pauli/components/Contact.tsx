@@ -1,21 +1,22 @@
 import { FiInstagram } from "react-icons/fi";
 import { FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { site, whatsappLink } from "@/lib/site";
 
 export function Contact() {
   return (
     <section id="contato" className="scroll-mt-20 bg-pauli-charcoal px-4 py-20 text-white dark:bg-black">
       <div className="mx-auto grid max-w-4xl items-center gap-10 md:grid-cols-[auto_1fr] md:gap-12">
-        <div className="flex justify-center md:justify-start">
+        <ScrollReveal animation="scale-up" duration={800} className="flex justify-center md:justify-start">
           <ProfilePhoto
             size="md"
             variant="profile"
             className="h-44 w-44 ring-4 ring-white/20 md:h-52 md:w-52"
           />
-        </div>
+        </ScrollReveal>
 
-        <div className="text-center md:text-left">
+        <ScrollReveal animation="fade-left" delay={150} duration={750} className="text-center md:text-left">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">Contato</p>
           <h2 className="mt-2 font-display text-3xl font-bold md:text-4xl">Agende sua consulta</h2>
           <p className="mt-3 text-white/70">
@@ -52,7 +53,7 @@ export function Contact() {
               {site.tiktok}
             </a>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

@@ -29,7 +29,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={dark ? "Ativar modo claro" : "Ativar modo escuro"}
       title={dark ? "Modo claro" : "Modo escuro"}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-pauli-emerald/20 bg-white/80 text-pauli-emerald transition hover:bg-pauli-emerald/10 dark:border-pauli-sand/25 dark:bg-[#1a1816] dark:text-pauli-sand dark:hover:bg-pauli-sand/10 dark:hover:text-pauli-cream"
+      className="gold-text flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-pauli-gold/25 bg-white/80 transition hover:bg-pauli-gold/10 dark:border-pauli-sand/25 dark:bg-[#1a1816] dark:text-pauli-gold-light dark:hover:bg-pauli-gold/10"
     >
       {dark ? <FiSun className="text-lg" /> : <FiMoon className="text-lg" />}
     </button>
