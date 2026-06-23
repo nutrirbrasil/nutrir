@@ -68,9 +68,15 @@ export async function createInfinitePayLink(input: {
       ...(input.customerEmail ? { email: input.customerEmail } : {}),
       phone_number: formatPhoneE164(input.customerPhone),
     },
-    ...(captureMethods ? { capture_methods: captureMethods } : {}),
-    ...(captureMethod ? { capture_method: captureMethod } : {}),
   };
+
+  // Com capture_methods o checkout restringe ao método escolhido (só Pix ou só cartão).
+  // Sem isso, a InfinitePay exibe a tela de escolha (Apple Pay / Crédito / Pix).
+  if (captureMethods) {
+    payload.origin = "external_checkout";
+    payload.capture_methods = captureMethods;
+    if (captureMethod) payload.capture_method = captureMethod;
+  }
 
   const res = await postCheckoutLink(payload);
   if (!res.ok) {
