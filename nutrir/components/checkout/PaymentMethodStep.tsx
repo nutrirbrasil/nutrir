@@ -87,12 +87,16 @@ export function PaymentMethodStep() {
     router.push("/checkout/revisar");
   }
 
+  const paymentBanner = getPaymentMethodBanner(isLocalPayment(method), isPatient);
+
   return (
     <CheckoutShell title="Qual é a melhor forma de pagamento para você?" backHref="/agendar" backLabel="Alterar retirada">
       <div className="card space-y-4">
-        <p className="rounded-lg bg-nutrir-emerald/5 p-3 text-sm text-nutrir-emerald/80">
-          {getPaymentMethodBanner(isLocalPayment(method), isPatient)}
-        </p>
+        {paymentBanner && (
+          <p className="rounded-lg bg-nutrir-emerald/5 p-3 text-sm text-nutrir-emerald/80">
+            {paymentBanner}
+          </p>
+        )}
         <p className="text-sm font-semibold text-nutrir-emerald">Forma de pagamento</p>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {options.map((option) => (

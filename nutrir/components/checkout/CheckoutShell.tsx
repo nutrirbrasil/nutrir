@@ -33,12 +33,22 @@ interface CheckoutShellProps {
   title: string;
   backHref?: string;
   backLabel?: string;
+  /** `wide` para etapas com duas colunas (ex.: revisão do pedido). */
+  layout?: "default" | "wide";
   children: React.ReactNode;
 }
 
-export function CheckoutShell({ title, backHref, backLabel, children }: CheckoutShellProps) {
+export function CheckoutShell({
+  title,
+  backHref,
+  backLabel,
+  layout = "default",
+  children,
+}: CheckoutShellProps) {
+  const widthClass = layout === "wide" ? "max-w-5xl" : "max-w-2xl";
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
+    <div className={`mx-auto ${widthClass} px-4 py-10`}>
       {backHref && (
         <Link href={backHref} className="text-sm font-medium text-nutrir-burgundy hover:underline">
           ← {backLabel ?? "Voltar"}

@@ -65,7 +65,7 @@ export function CouponField({ code, onApply, onRemove }: Props) {
   return (
     <div>
       <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Cupom de desconto</p>
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           type="text"
           value={input}
@@ -79,15 +79,15 @@ export function CouponField({ code, onApply, onRemove }: Props) {
               handleApply();
             }
           }}
-          placeholder="Cupom"
-          className="input-field flex-1 uppercase"
+          placeholder="Digite o cupom"
+          className="input-field w-full min-w-0 flex-1 uppercase sm:min-w-[10rem]"
           autoComplete="off"
           spellCheck={false}
         />
         <button
           type="button"
           onClick={handleApply}
-          className="btn-primary shrink-0 px-4 py-2.5 text-xs font-bold uppercase"
+          className="btn-primary w-full shrink-0 px-6 py-2.5 text-xs font-bold uppercase sm:w-auto"
         >
           Aplicar
         </button>

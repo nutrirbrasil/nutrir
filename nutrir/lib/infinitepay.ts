@@ -14,6 +14,14 @@ function resolveCaptureMethods(
   return undefined;
 }
 
+function resolveCaptureMethodField(
+  paymentMethod?: PaymentMethod
+): InfinitePayCaptureMethod | undefined {
+  if (paymentMethod === "pix") return "pix";
+  if (paymentMethod === "card") return "credit_card";
+  return undefined;
+}
+
 export function getInfinitePayHandle(): string {
   return process.env.INFINITEPAY_HANDLE?.trim().replace(/^\$/, "") ?? "";
 }
@@ -47,6 +55,7 @@ export async function createInfinitePayLink(input: {
 
   const gatewayItems = buildGatewayItems(input.items, input.amountCents);
   const captureMethods = resolveCaptureMethods(input.paymentMethod);
+  const captureMethod = resolveCaptureMethodField(input.paymentMethod);
 
   const payload: Record<string, unknown> = {
     handle,
@@ -60,6 +69,7 @@ export async function createInfinitePayLink(input: {
       phone_number: formatPhoneE164(input.customerPhone),
     },
     ...(captureMethods ? { capture_methods: captureMethods } : {}),
+    ...(captureMethod ? { capture_method: captureMethod } : {}),
   };
 
   const res = await postCheckoutLink(payload);

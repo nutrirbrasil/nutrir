@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
+import { isOnlinePayment, normalizePaymentMethod } from "@/lib/payment-utils";
 import { findOrder, patchOrderCache, saveOrder } from "@/lib/order-store";
 import type { PaymentMethod } from "@/lib/types";
 
@@ -31,7 +32,14 @@ export async function POST(
     /* optional body */
   }
 
-  const method = payment_method ?? order.payment_method;
+  const method = normalizePaymentMethod(payment_method ?? order.payment_method);
+  if (!isOnlinePayment(method)) {
+    return NextResponse.json(
+      { error: "Informe Pix ou cartão online para abrir o pagamento." },
+      { status: 400 }
+    );
+  }
+
   const link = await createInfinitePayLink({
     orderId: order.id,
     amountCents: order.total_cents,
@@ -39,7 +47,7 @@ export async function POST(
     customerName: order.customer_name,
     customerEmail: order.customer_email,
     customerPhone: order.customer_phone,
-    paymentMethod: method === "pix" || method === "card" ? method : undefined,
+    paymentMethod: method,
   });
 
   if (!link) {
@@ -52,9 +60,7 @@ export async function POST(
   const updated = {
     ...order,
     checkout_url: link.url,
-    ...(payment_method === "pix" || payment_method === "card"
-      ? { payment_method }
-      : {}),
+    payment_method: method,
   };
 
   patchOrderCache(order.id, updated);

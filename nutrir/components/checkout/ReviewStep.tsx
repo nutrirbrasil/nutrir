@@ -120,7 +120,7 @@ export function ReviewStep() {
       }
 
       const payload = buildPayload();
-      const { order, checkout_url } = await nutrirApi.createOrder(payload);
+      const { order } = await nutrirApi.createOrder(payload);
 
       if (isLocalPayment(method)) {
         cart.clearCart();
@@ -129,12 +129,13 @@ export function ReviewStep() {
         return;
       }
 
-      if (!checkout_url) {
+      const { checkout_url: freshUrl } = await nutrirApi.createCheckoutLink(order.id, method);
+      if (!freshUrl) {
         setError("Não foi possível abrir o pagamento. Tente novamente.");
         return;
       }
 
-      redirectToCheckout(checkout_url, order.id);
+      redirectToCheckout(freshUrl, order.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao finalizar pedido.");
     } finally {
@@ -143,42 +144,42 @@ export function ReviewStep() {
   }
 
   return (
-    <CheckoutShell title="Revise os detalhes do seu pedido" backHref="/checkout/pagamento">
-      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-4">
-          <div className="card flex items-start justify-between gap-3">
-            <div>
+    <CheckoutShell title="Revise os detalhes do seu pedido" backHref="/checkout/pagamento" layout="wide">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,300px)] lg:gap-8">
+        <div className="min-w-0 space-y-4">
+          <div className="card space-y-2">
+            <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Retirada</p>
-              <div className="mt-1 space-y-2 font-semibold text-nutrir-emerald">
-                {pickupLines.map((line, i) => (
-                  <div key={i}>
-                    {line.label && <p>{line.label}</p>}
-                    {line.value && <p className={line.label ? "font-normal" : ""}>{line.value}</p>}
-                  </div>
-                ))}
-              </div>
-              <p className="mt-2 text-sm text-nutrir-emerald/70">{NUTRIR_STORE_ADDRESS}</p>
+              <Link href="/agendar" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
+                Trocar
+              </Link>
             </div>
-            <Link href="/agendar" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
-              Trocar
-            </Link>
+            <div className="space-y-2 font-semibold text-nutrir-emerald">
+              {pickupLines.map((line, i) => (
+                <div key={i}>
+                  {line.label && <p>{line.label}</p>}
+                  {line.value && <p className={line.label ? "font-normal" : ""}>{line.value}</p>}
+                </div>
+              ))}
+            </div>
+            <p className="text-sm leading-relaxed text-nutrir-emerald/70">{NUTRIR_STORE_ADDRESS}</p>
           </div>
 
-          <div className="card flex items-center justify-between gap-3">
-            <div>
+          <div className="card space-y-2">
+            <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Pagamento</p>
-              <p className="font-semibold text-nutrir-emerald">
-                {PAYMENT_METHOD_SHORT_LABELS[method]}
-              </p>
-              {isLocalPayment(method) && (
-                <p className="text-sm text-nutrir-emerald/70">
-                  {getReviewLocalPaymentNote(isPatient)}
-                </p>
-              )}
+              <Link href="/checkout/pagamento" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
+                Trocar
+              </Link>
             </div>
-            <Link href="/checkout/pagamento" className="text-xs font-bold uppercase text-nutrir-burgundy">
-              Trocar
-            </Link>
+            <p className="font-semibold text-nutrir-emerald">
+              {PAYMENT_METHOD_SHORT_LABELS[method]}
+            </p>
+            {isLocalPayment(method) && (
+              <p className="text-sm leading-relaxed text-nutrir-emerald/70">
+                {getReviewLocalPaymentNote(isPatient)}
+              </p>
+            )}
           </div>
 
           <div className="card">
