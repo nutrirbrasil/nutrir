@@ -1,4 +1,4 @@
-import type { OrderItem, PaymentMethod } from "./types";
+import type { OrderItem } from "./types";
 
 export function buildInfinitePayItems(
   items: OrderItem[]
@@ -40,20 +40,4 @@ export function buildGatewayItems(
 ): { quantity: number; price: number; description: string }[] {
   const adjusted = scaleItemsToTotalCents(items, targetTotalCents);
   return buildInfinitePayItems(adjusted);
-}
-
-export function applyPaymentPreferenceToUrl(url: string, paymentMethod?: PaymentMethod): string {
-  if (paymentMethod !== "pix" && paymentMethod !== "card") return url;
-
-  const captureValue = paymentMethod === "pix" ? "pix" : "credit_card";
-
-  try {
-    const parsed = new URL(url);
-    parsed.searchParams.set("capture_method", captureValue);
-    parsed.searchParams.set("payment_method", paymentMethod);
-    return parsed.toString();
-  } catch {
-    const joiner = url.includes("?") ? "&" : "?";
-    return `${url}${joiner}capture_method=${captureValue}&payment_method=${paymentMethod}`;
-  }
 }

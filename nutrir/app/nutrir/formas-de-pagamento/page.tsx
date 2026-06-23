@@ -15,23 +15,23 @@ export default function FormasDePagamentoPage() {
   return (
     <InfoPage title="Formas de Pagamento">
       <p>
-        Para tornar sua experiência de compra ainda mais fácil, oferecemos a opção de pagamento com{" "}
-        <strong>Pix</strong>, garantindo rapidez e segurança nas suas transações. E para facilitar
-        ainda mais o acesso dos nossos clientes à alimentação saudável, aceitamos pagamentos em{" "}
-        <strong>cartão online</strong>, <strong>cartão físico</strong> e <strong>dinheiro</strong>.
+        Para tornar sua experiência de compra ainda mais fácil, oferecemos pagamento com{" "}
+        <strong>Pix</strong> e <strong>cartão online</strong> para todos os clientes.{" "}
+        <strong>Pacientes em acompanhamento com a nutricionista Paula Pastorino</strong> também podem
+        optar por <strong>dinheiro</strong> ou <strong>cartão físico na retirada</strong> — veja a
+        seção ao final desta página.
       </p>
 
       <p>
-        Além disso, se você é daqueles que tem renda em outra moeda e não tem dinheiro em real, ou
-        gosta de manter a privacidade fora do sistema tradicional, não se preocupe — também
-        trabalhamos com <strong>criptomoedas</strong>.
+        Além disso, se você tem renda em outra moeda ou prefere privacidade fora do sistema
+        tradicional, trabalhamos com <strong>criptomoedas</strong>.
       </p>
 
       <InfoSection title="Pix online">
         <p>
           Pagamento imediato pelo site, com confirmação rápida e <strong>aproximadamente 10% de
-          desconto</strong> em relação ao valor de referência no cartão. Ideal para quem quer
-          agilidade na produção do pedido.
+          desconto</strong> em relação ao valor de referência no cartão. A produção começa assim que
+          o pagamento é confirmado.
         </p>
       </InfoSection>
 
@@ -42,29 +42,30 @@ export default function FormasDePagamentoPage() {
         </p>
       </InfoSection>
 
-      <InfoSection title="Dinheiro no local">
+      <InfoSection title="Dinheiro na retirada">
         <p>
-          Disponível para pedidos com retirada na loja. O pagamento é feito no momento da retirada,
-          dentro do horário de funcionamento e em até <strong>24 horas</strong> após a confirmação do
-          pedido. Também oferece <strong>aproximadamente 10% de desconto</strong>, como no Pix.
+          Exclusivo para <strong>pacientes da nutricionista Paula Pastorino</strong>. Você faz o
+          pedido pelo site, escolhe pagamento em dinheiro e, estando{" "}
+          <strong>cadastrado com os dados corretos</strong>, identificamos seu perfil de paciente. A
+          produção é <strong>prioritária</strong> e o pagamento em dinheiro é feito{" "}
+          <strong>na retirada</strong> — sem necessidade de pagamento antecipado no Nutrir.
         </p>
-        <p className="text-sm text-nutrir-emerald/75">
-          Produção mediante confirmação do pagamento no local.
+        <p>
+          Também oferece <strong>aproximadamente 10% de desconto</strong>, como no Pix.
         </p>
       </InfoSection>
 
-      <InfoSection title="Cartão físico no local">
+      <InfoSection title="Cartão físico na retirada">
         <p>
-          Aceitamos cartão de crédito e débito na retirada, nas maquininhas disponíveis na loja.
-          Funciona como o pagamento em dinheiro: o pedido segue para produção após o pagamento no
-          local, dentro do prazo de 24 horas.
+          Também exclusivo para pacientes em acompanhamento. Aceitamos cartão de crédito e débito nas
+          maquininhas do Nutrir <strong>no momento da retirada</strong>, após identificarmos seu
+          cadastro como paciente. A produção entra em <strong>prioridade</strong> assim que o pedido
+          é confirmado — o pagamento no cartão ocorre quando você busca as marmitas.
         </p>
       </InfoSection>
 
       <InfoSection title="Criptomoedas">
-        <p>
-          Aceitamos pagamento com criptomoedas, entre elas:
-        </p>
+        <p>Aceitamos pagamento com criptomoedas, entre elas:</p>
         <ul className="list-disc space-y-1 pl-5">
           {cryptoAssets.map((asset) => (
             <li key={asset}>{asset}</li>
@@ -84,13 +85,33 @@ export default function FormasDePagamentoPage() {
         </a>
       </InfoSection>
 
+      <InfoSection title="Pagamento na retirada — exclusivo para pacientes">
+        <p>
+          Pagamento em dinheiro ou cartão físico na retirada é exclusivo para{" "}
+          <strong>pacientes da nutricionista Paula Pastorino</strong>, cadastrados no site com os
+          dados corretos para identificação.
+        </p>
+        <p>
+          Além disso, pacientes têm acesso a <strong>cupons de desconto especiais</strong>,{" "}
+          <strong>marmitas individuais com quantidades personalizadas</strong>,{" "}
+          <strong>produção prioritária</strong> e muito mais.
+        </p>
+        <p>
+          Quer saber mais sobre os benefícios que apenas pacientes possuem no Nutrir?{" "}
+          <Link href="/beneficios" className="font-semibold text-nutrir-burgundy hover:underline">
+            Clique aqui
+          </Link>
+          .
+        </p>
+      </InfoSection>
+
       <p className="text-sm text-nutrir-emerald/75">
-        No checkout do site você pode escolher Pix ou cartão online. Para dinheiro, cartão físico ou
-        cripto,{" "}
+        No checkout do site você pode escolher Pix ou cartão online. Pacientes podem escolher
+        dinheiro ou cartão físico ao{" "}
         <Link href="/agendar" className="font-medium text-nutrir-burgundy hover:underline">
-          finalize seu pedido
-        </Link>{" "}
-        e selecione a forma de pagamento disponível — ou fale conosco pelo WhatsApp.
+          finalizar o pedido
+        </Link>
+        . Dúvidas? Fale conosco pelo WhatsApp.
       </p>
     </InfoPage>
   );

@@ -6,8 +6,15 @@ import { FiAlertTriangle } from "react-icons/fi";
 import { CheckoutShell, useCheckoutGuard } from "@/components/checkout/CheckoutShell";
 import { useCheckout } from "@/lib/checkout-context";
 import { hasFiscalData } from "@/lib/checkout-draft";
+import {
+  getLocalOptionHint,
+  getLocalPaymentNotice,
+  getPaymentMethodBanner,
+} from "@/lib/local-payment-copy";
 import { analyzeCartItems } from "@/lib/pickup-schedule";
 import { isLocalPayment, normalizePaymentMethod } from "@/lib/payment-utils";
+import { useProfile } from "@/lib/profile-context";
+import { usePatientStatus } from "@/lib/use-patient-status";
 import type { PaymentMethod } from "@/lib/types";
 
 interface PaymentOption {
@@ -16,9 +23,6 @@ interface PaymentOption {
   hint: string;
   badge?: string;
 }
-
-const LOCAL_PAYMENT_NOTICE =
-  "Ao selecionar essa opção você concorda que precisa realizar o pagamento no local dentro de 24h, dentro do horário de funcionamento e que atraso no pagamento pode ocasionar atraso na produção e entrega.";
 
 const ONLINE_OPTIONS: PaymentOption[] = [
   {
@@ -34,37 +38,42 @@ const ONLINE_OPTIONS: PaymentOption[] = [
   },
 ];
 
-const LOCAL_OPTIONS: PaymentOption[] = [
-  {
-    id: "local_cash",
-    label: "Dinheiro",
-    hint: "Produção mediante pagamento",
-    badge: "10% OFF",
-  },
-  {
-    id: "local_card",
-    label: "Cartão Físico",
-    hint: "Produção mediante pagamento",
-  },
-];
-
 export function PaymentMethodStep() {
   const router = useRouter();
   const { patchDraft } = useCheckout();
   const { draft, ready } = useCheckoutGuard();
+  const { profile } = useProfile();
   const [method, setMethod] = useState<PaymentMethod>(
     normalizePaymentMethod(draft?.payment_method)
   );
+
+  const cpf = draft?.customer_cpf || profile.cpf;
+  const { isPatient } = usePatientStatus(cpf);
 
   const cartAnalysis = useMemo(
     () => (draft ? analyzeCartItems(draft.items) : { hasCombo: false }),
     [draft]
   );
 
+  const localHint = getLocalOptionHint(isPatient);
+  const localOptions: PaymentOption[] = [
+    {
+      id: "local_cash",
+      label: "Dinheiro",
+      hint: localHint,
+      badge: "10% OFF",
+    },
+    {
+      id: "local_card",
+      label: "Cartão Físico",
+      hint: localHint,
+    },
+  ];
+
   if (!ready || !draft) return null;
 
   const options = cartAnalysis.hasCombo
-    ? [...ONLINE_OPTIONS, ...LOCAL_OPTIONS]
+    ? [...ONLINE_OPTIONS, ...localOptions]
     : ONLINE_OPTIONS;
 
   function handleContinue() {
@@ -82,7 +91,7 @@ export function PaymentMethodStep() {
     <CheckoutShell title="Qual é a melhor forma de pagamento para você?" backHref="/agendar" backLabel="Alterar retirada">
       <div className="card space-y-4">
         <p className="rounded-lg bg-nutrir-emerald/5 p-3 text-sm text-nutrir-emerald/80">
-          A produção só começa após a confirmação do pagamento.
+          {getPaymentMethodBanner(isLocalPayment(method), isPatient)}
         </p>
         <p className="text-sm font-semibold text-nutrir-emerald">Forma de pagamento</p>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
@@ -111,7 +120,7 @@ export function PaymentMethodStep() {
         {isLocalPayment(method) && (
           <div className="flex gap-3 rounded-lg border-2 border-amber-400/80 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950 dark:border-amber-500/50 dark:bg-amber-950/30 dark:text-amber-100">
             <FiAlertTriangle className="mt-0.5 shrink-0 text-lg text-amber-600 dark:text-amber-400" aria-hidden />
-            <p>{LOCAL_PAYMENT_NOTICE}</p>
+            <p>{getLocalPaymentNotice(isPatient)}</p>
           </div>
         )}
 

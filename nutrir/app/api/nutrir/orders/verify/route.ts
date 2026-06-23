@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkInfinitePayPayment } from "@/lib/infinitepay";
+import { canConfirmInfinitePayPayment } from "@/lib/infinitepay-payment-validation";
 import { notifyOrderPaid } from "@/lib/payments";
 import { findOrder } from "@/lib/order-store";
 
@@ -27,6 +28,19 @@ export async function POST(request: Request) {
   });
 
   if (check.paid) {
+    if (
+      !canConfirmInfinitePayPayment(order, {
+        capture_method: check.captureMethod,
+      })
+    ) {
+      return NextResponse.json({
+        order,
+        paid: false,
+        notified: false,
+        error: "Método de pagamento não corresponde ao pedido.",
+      });
+    }
+
     const notified = await notifyOrderPaid(body.order_id, {
       infinitepay_transaction_nsu: body.transaction_nsu ?? order.infinitepay_transaction_nsu,
       infinitepay_slug: body.slug ?? order.infinitepay_slug,

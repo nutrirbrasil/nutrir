@@ -54,3 +54,20 @@ DROP TRIGGER IF EXISTS nutrir_customers_updated_at ON nutrir_customers;
 CREATE TRIGGER nutrir_customers_updated_at
   BEFORE UPDATE ON nutrir_customers
   FOR EACH ROW EXECUTE FUNCTION nutrir_touch_updated_at();
+
+-- Pacientes VIP (identificação por CPF)
+CREATE TABLE IF NOT EXISTS pacientes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome TEXT NOT NULL,
+  cpf TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT pacientes_cpf_unique UNIQUE (cpf),
+  CONSTRAINT pacientes_cpf_len CHECK (char_length(cpf) = 11)
+);
+
+CREATE INDEX IF NOT EXISTS pacientes_cpf_idx ON pacientes (cpf);
+ALTER TABLE pacientes ENABLE ROW LEVEL SECURITY;
+
+INSERT INTO pacientes (nome, cpf)
+VALUES ('Pedro Azevedo', '02950269010')
+ON CONFLICT (cpf) DO NOTHING;

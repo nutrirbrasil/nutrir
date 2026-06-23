@@ -22,7 +22,11 @@ function formatMoney(cents: number): string {
   return `R$${value.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
-export function formatOrderTelegramMessage(order: Order, orderedAt: Date): string {
+export function formatOrderTelegramMessage(
+  order: Order,
+  orderedAt: Date,
+  options?: { isPatient?: boolean }
+): string {
   const namePhone = `${order.customer_name} - ${order.customer_phone.replace(/\D/g, "")}`;
   const items = formatItemsBlock(order.items);
   const value = formatMoney(order.total_cents);
@@ -33,8 +37,12 @@ export function formatOrderTelegramMessage(order: Order, orderedAt: Date): strin
     order.payment_status === "confirmed" ? "✅ Confirmado" : "⏳ Pendente";
 
   if (order.local_pay_deadline && order.payment_status === "pending") {
-    const deadline = new Date(order.local_pay_deadline).toLocaleString("pt-BR");
-    paymentStatus += ` (pagar até ${deadline})`;
+    if (options?.isPatient) {
+      paymentStatus += " (pagamento na retirada — paciente)";
+    } else {
+      const deadline = new Date(order.local_pay_deadline).toLocaleString("pt-BR");
+      paymentStatus += ` (pagar até ${deadline})`;
+    }
   }
 
   const pickup = order.pickup_display ?? order.delivery_date;

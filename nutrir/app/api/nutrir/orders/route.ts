@@ -10,6 +10,7 @@ import {
   normalizePaymentMethod,
 } from "@/lib/payment-utils";
 import { findOrder, saveOrder, updateOrderPayment } from "@/lib/order-store";
+import { findPacienteByCpf } from "@/lib/supabase-db";
 import { formatOrderTelegramMessage, sendTelegramMessage } from "@/lib/telegram";
 import type { CreateOrderPayload, Order, PaymentStatus } from "@/lib/types";
 
@@ -41,7 +42,14 @@ function validate(body: CreateOrderPayload): string | null {
 }
 
 async function notifyTelegram(order: Order): Promise<boolean> {
-  return sendTelegramMessage(formatOrderTelegramMessage(order, new Date(order.created_at)));
+  const paciente = order.customer_cpf
+    ? await findPacienteByCpf(order.customer_cpf)
+    : null;
+  return sendTelegramMessage(
+    formatOrderTelegramMessage(order, new Date(order.created_at), {
+      isPatient: !!paciente,
+    })
+  );
 }
 
 export async function POST(request: Request) {

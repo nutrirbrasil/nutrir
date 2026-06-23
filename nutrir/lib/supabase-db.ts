@@ -21,6 +21,33 @@ export interface CustomerRecord {
   address: string | null;
 }
 
+export interface PacienteRecord {
+  id: string;
+  nome: string;
+  cpf: string;
+}
+
+export async function findPacienteByCpf(cpf: string): Promise<PacienteRecord | null> {
+  const db = getSupabaseAdmin();
+  if (!db) return null;
+
+  const digits = stripCpfDigits(cpf);
+  if (digits.length !== 11) return null;
+
+  const { data, error } = await db
+    .from("pacientes")
+    .select("id, nome, cpf")
+    .eq("cpf", digits)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[Supabase] findPacienteByCpf:", error.message);
+    return null;
+  }
+
+  return (data as PacienteRecord) ?? null;
+}
+
 export interface SavedOrderRecord {
   id: string;
   customer_email: string;

@@ -44,6 +44,7 @@ export function ProfilePage() {
     passwordRecovery,
     session,
     profile,
+    isPatient,
     login,
     register,
     verifyEmail,
@@ -546,7 +547,14 @@ export function ProfilePage() {
   if (isLoggedIn) {
     return (
       <div className="mx-auto max-w-lg px-4 py-10">
-        <h1 className="section-title text-center">Meu perfil</h1>
+        <div className="flex flex-col items-center gap-2">
+          <h1 className="section-title text-center">Meu perfil</h1>
+          {isPatient && (
+            <span className="inline-flex items-center rounded-full bg-nutrir-burgundy px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+              Paciente VIP
+            </span>
+          )}
+        </div>
         <p className="mt-2 text-center text-sm text-nutrir-emerald/70">
           Complete seus dados para agilizar a retirada.
         </p>

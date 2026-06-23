@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { canConfirmInfinitePayPayment } from "@/lib/infinitepay-payment-validation";
 import { notifyOrderPaid } from "@/lib/payments";
 import { findOrder } from "@/lib/order-store";
 
@@ -8,6 +9,7 @@ export async function POST(request: Request) {
     transaction_nsu?: string;
     invoice_slug?: string;
     capture_method?: string;
+    paid_amount?: number;
   };
 
   try {
@@ -28,6 +30,25 @@ export async function POST(request: Request) {
 
   if (order.payment_status === "confirmed") {
     return NextResponse.json({ ok: true });
+  }
+
+  if (
+    !canConfirmInfinitePayPayment(order, {
+      capture_method: body.capture_method,
+      paid_amount: body.paid_amount,
+    })
+  ) {
+    console.error(
+      "[InfinitePay] Pagamento recusado: método ou valor incompatível com o pedido",
+      {
+        orderId,
+        expectedMethod: order.payment_method,
+        captureMethod: body.capture_method,
+        paidAmount: body.paid_amount,
+        orderTotal: order.total_cents,
+      }
+    );
+    return NextResponse.json({ ok: true, ignored: true });
   }
 
   await notifyOrderPaid(orderId, {

@@ -1,11 +1,18 @@
 import type { PaymentMethod } from "./types";
-import {
-  applyPaymentPreferenceToUrl,
-  buildGatewayItems,
-} from "./infinitepay-checkout";
+import { buildGatewayItems } from "./infinitepay-checkout";
 import type { OrderItem } from "./types";
 
 const CHECKOUT_API = "https://api.checkout.infinitepay.io";
+
+type InfinitePayCaptureMethod = "pix" | "credit_card";
+
+function resolveCaptureMethods(
+  paymentMethod?: PaymentMethod
+): InfinitePayCaptureMethod[] | undefined {
+  if (paymentMethod === "pix") return ["pix"];
+  if (paymentMethod === "card") return ["credit_card"];
+  return undefined;
+}
 
 export function getInfinitePayHandle(): string {
   return process.env.INFINITEPAY_HANDLE?.trim().replace(/^\$/, "") ?? "";
@@ -39,12 +46,7 @@ export async function createInfinitePayLink(input: {
   if (!handle || !siteUrl) return null;
 
   const gatewayItems = buildGatewayItems(input.items, input.amountCents);
-  const captureMethod =
-    input.paymentMethod === "pix"
-      ? "pix"
-      : input.paymentMethod === "card"
-        ? "credit_card"
-        : undefined;
+  const captureMethods = resolveCaptureMethods(input.paymentMethod);
 
   const payload: Record<string, unknown> = {
     handle,
@@ -57,23 +59,10 @@ export async function createInfinitePayLink(input: {
       ...(input.customerEmail ? { email: input.customerEmail } : {}),
       phone_number: formatPhoneE164(input.customerPhone),
     },
-    ...(captureMethod
-      ? { capture_method: captureMethod, payment_method: captureMethod === "pix" ? "pix" : "credit_card" }
-      : {}),
+    ...(captureMethods ? { capture_methods: captureMethods } : {}),
   };
 
   const res = await postCheckoutLink(payload);
-  if (!res.ok && captureMethod) {
-    const { capture_method: _, payment_method: __, ...withoutMethod } = payload;
-    const retry = await postCheckoutLink(withoutMethod);
-    if (retry.ok) {
-      const data = (await retry.json()) as { url?: string };
-      if (data.url) {
-        return { url: applyPaymentPreferenceToUrl(data.url, input.paymentMethod) };
-      }
-    }
-  }
-
   if (!res.ok) {
     console.error("[InfinitePay] links:", await res.text());
     return null;
@@ -82,9 +71,7 @@ export async function createInfinitePayLink(input: {
   const data = (await res.json()) as { url?: string };
   if (!data.url) return null;
 
-  return {
-    url: applyPaymentPreferenceToUrl(data.url, input.paymentMethod),
-  };
+  return { url: data.url };
 }
 
 async function postCheckoutLink(payload: Record<string, unknown>) {

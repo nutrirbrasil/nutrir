@@ -60,22 +60,25 @@ function TierRow({
         </div>
       </div>
 
-      <div className="mt-3 flex justify-center">
-        <div className="inline-flex w-[72%] justify-center items-center gap-2 rounded-md bg-nutrir-emerald px-4 py-2 text-nutrir-nude">
+      <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center md:gap-2">
+        <div className="flex w-full flex-1 items-center justify-center gap-2 rounded-md bg-nutrir-emerald px-4 py-2 text-nutrir-nude md:w-auto">
           <span className="text-sm font-bold tabular-nums">
             {formatPrice(pricing.cash_per_meal_cents)}
           </span>
           <span className="text-xs font-normal opacity-90">por marmita</span>
         </div>
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="btn-primary w-full shrink-0 text-sm md:w-auto md:px-5"
+        >
+          Adicionar combo
+        </button>
       </div>
 
       {tier.note && (
         <p className="mt-2 text-center text-xs italic text-nutrir-emerald/55">{tier.note}</p>
       )}
-
-      <button type="button" onClick={handleAdd} className="btn-primary mt-3 w-full text-sm">
-        Adicionar combo
-      </button>
     </div>
   );
 }
@@ -88,11 +91,13 @@ export function KitCard({ kit }: Props) {
 
   return (
     <>
-      <article className="card flex flex-col overflow-hidden p-0">
+      <article className="card flex h-full flex-col overflow-hidden p-0">
         <div className="bg-nutrir-emerald px-5 py-5 text-center">
           <span className="text-3xl">{emoji}</span>
           <h3 className="mt-2 font-display text-2xl font-bold text-nutrir-nude">{kit.name}</h3>
-          <p className="mt-1 text-sm text-nutrir-nude/75">{kit.description}</p>
+          <p className="mx-auto mt-1 min-h-[4.5rem] max-w-[16rem] text-sm leading-relaxed text-nutrir-nude/75">
+            {kit.description}
+          </p>
           <button
             type="button"
             onClick={() => setShowContent(true)}

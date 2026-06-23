@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkInfinitePayPayment } from "@/lib/infinitepay";
+import { canConfirmInfinitePayPayment } from "@/lib/infinitepay-payment-validation";
 import { notifyOrderPaid } from "@/lib/payments";
 import { findOrder, patchOrderCache } from "@/lib/order-store";
 
@@ -18,7 +19,10 @@ export async function GET(
       transactionNsu: order.infinitepay_transaction_nsu,
       slug: order.infinitepay_slug,
     });
-    if (check.paid) {
+    if (
+      check.paid &&
+      canConfirmInfinitePayPayment(order, { capture_method: check.captureMethod })
+    ) {
       await notifyOrderPaid(order.id, {
         infinitepay_capture_method: check.captureMethod,
       });

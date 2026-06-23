@@ -12,6 +12,7 @@ import {
 } from "react";
 import { mapAuthError } from "./auth-errors";
 import { formatCpfDisplay, formatPhoneDisplay } from "./br-fields";
+import { usePatientStatus } from "./use-patient-status";
 import { fetchCustomerByPhone, syncCustomerToServer } from "./order-history";
 import { getAuthCallbackUrl } from "./auth-redirect";
 import { getSupabaseBrowser, isSupabaseAuthConfigured } from "./supabase-browser";
@@ -31,6 +32,8 @@ interface ProfileContextValue {
   passwordRecovery: boolean;
   session: Session | null;
   profile: UserProfile;
+  isPatient: boolean;
+  patientLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<{ needsVerification: boolean }>;
   verifyEmail: (email: string, code: string) => Promise<void>;
@@ -87,6 +90,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [authLoading, setAuthLoading] = useState(true);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
   const authConfigured = isSupabaseAuthConfigured();
+  const { isPatient, loading: patientLoading } = usePatientStatus(profile.cpf);
 
   useEffect(() => {
     setProfile(loadProfile());
@@ -322,6 +326,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       passwordRecovery,
       session,
       profile,
+      isPatient,
+      patientLoading,
       login,
       register,
       verifyEmail,
@@ -341,6 +347,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       authLoading,
       passwordRecovery,
       profile,
+      isPatient,
+      patientLoading,
       login,
       register,
       verifyEmail,

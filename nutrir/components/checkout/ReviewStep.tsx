@@ -14,11 +14,13 @@ import {
   computeOrderPricing,
   getChargedItems,
 } from "@/lib/order-pricing";
+import { getReviewLocalPaymentNote } from "@/lib/local-payment-copy";
 import { isLocalPayment, isOnlinePayment, normalizePaymentMethod } from "@/lib/payment-utils";
 import { formatPickupDisplayLines } from "@/lib/pickup-schedule";
 import { NUTRIR_STORE_ADDRESS, resolvePickupAddress } from "@/lib/store-info";
 import { useCart } from "@/lib/cart-context";
 import { useProfile } from "@/lib/profile-context";
+import { usePatientStatus } from "@/lib/use-patient-status";
 import type { CreateOrderPayload, Order, PaymentMethod } from "@/lib/types";
 
 function canReusePendingOrder(
@@ -52,6 +54,9 @@ export function ReviewStep() {
   const { draft, ready } = useCheckoutGuard();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const cpfForPatient = draft?.customer_cpf || profile.cpf;
+  const { isPatient } = usePatientStatus(cpfForPatient);
 
   if (!ready || !draft) return null;
 
@@ -167,7 +172,7 @@ export function ReviewStep() {
               </p>
               {isLocalPayment(method) && (
                 <p className="text-sm text-nutrir-emerald/70">
-                  Após a confirmação, efetue o pagamento em até 48 horas
+                  {getReviewLocalPaymentNote(isPatient)}
                 </p>
               )}
             </div>
