@@ -97,6 +97,7 @@ export async function POST(request: Request) {
       customerName: order.customer_name,
       customerEmail: order.customer_email,
       customerPhone: order.customer_phone,
+      paymentMethod: payment_method,
     });
 
     if (!link) {

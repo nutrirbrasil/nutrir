@@ -42,7 +42,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
 
       <aside className="absolute right-0 top-0 flex h-full w-[min(100%,20rem)] flex-col bg-nutrir-cream shadow-2xl">
         <div className="flex items-center justify-between border-b border-nutrir-nude-dark/50 px-5 py-4">
-          <p className="font-display text-lg font-bold text-nutrir-burgundy">Menu</p>
+          <p className="font-display text-lg font-bold uppercase tracking-wide text-nutrir-burgundy">Menu</p>
           <button
             type="button"
             aria-label="Fechar"
@@ -81,7 +81,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`block rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                    className={`block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide transition ${
                       pathname === link.href
                         ? "bg-nutrir-burgundy/10 text-nutrir-burgundy"
                         : "text-nutrir-emerald/85 hover:bg-nutrir-nude"

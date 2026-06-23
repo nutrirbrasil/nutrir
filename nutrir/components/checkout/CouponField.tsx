@@ -79,7 +79,7 @@ export function CouponField({ code, onApply, onRemove }: Props) {
               handleApply();
             }
           }}
-          placeholder="Ex.: ZEEDO5"
+          placeholder="Cupom"
           className="input-field flex-1 uppercase"
           autoComplete="off"
           spellCheck={false}

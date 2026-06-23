@@ -103,9 +103,7 @@ export function ReviewStep() {
             return;
           }
           if (canReusePendingOrder(existing, d, method)) {
-            const url =
-              existing.checkout_url ??
-              (await nutrirApi.createCheckoutLink(d.order_id, method)).checkout_url;
+            const { checkout_url: url } = await nutrirApi.createCheckoutLink(d.order_id, method);
             if (url) {
               redirectToCheckout(url, existing.id);
               return;
@@ -178,12 +176,15 @@ export function ReviewStep() {
             </Link>
           </div>
 
-          <div className="card space-y-4">
+          <div className="card">
             <CouponField
               code={d.coupon_code}
               onApply={(code) => patchDraft({ coupon_code: code, order_id: undefined })}
               onRemove={() => patchDraft({ coupon_code: undefined, order_id: undefined })}
             />
+          </div>
+
+          <div className="card">
             <CheckoutPriceSummary pricing={pricing} method={method} />
           </div>
 

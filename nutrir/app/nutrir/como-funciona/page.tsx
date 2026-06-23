@@ -16,7 +16,7 @@ export default function ComoFuncionaPage() {
         diversas formas de variar o pedido — e a retirada é simples de agendar, sem intermediários.
       </p>
 
-      <div className="overflow-hidden rounded-2xl border border-nutrir-burgundy/20 bg-white">
+      <div className="overflow-hidden rounded-2xl">
         <Image
           src="/4%20passos.png"
           alt="4 passos para pedir na Nutrir: escolha, agende, pague e retire"

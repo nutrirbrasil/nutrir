@@ -91,7 +91,7 @@ export function PickupScheduler({ rule, title, value, onChange, now = new Date()
           <p className="text-sm font-medium text-nutrir-emerald">
             Selecione o período que deseja retirar
           </p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="mt-2 grid grid-cols-2 gap-2">
             {PICKUP_SLOTS.filter((s) => slots.includes(s.id)).map((slot) => {
               const selected = value.slot === slot.id;
               return (
@@ -99,21 +99,21 @@ export function PickupScheduler({ rule, title, value, onChange, now = new Date()
                   key={slot.id}
                   type="button"
                   onClick={() => selectSlot(slot.id)}
-                  className={`rounded-xl border-2 px-4 py-4 text-left transition ${
+                  className={`rounded-xl border-2 px-2 py-2.5 text-left transition sm:px-3 sm:py-3 ${
                     selected
                       ? "border-nutrir-emerald bg-nutrir-emerald/10"
                       : "border-nutrir-burgundy/30 bg-nutrir-nude hover:border-nutrir-burgundy"
                   }`}
                 >
                   <span
-                    className={`block font-bold ${
+                    className={`block text-sm font-bold ${
                       selected ? "text-nutrir-emerald" : "text-nutrir-emerald-dark"
                     }`}
                   >
                     {slot.label}
                   </span>
                   <span
-                    className={`mt-0.5 block text-sm ${
+                    className={`mt-0.5 block text-xs ${
                       selected ? "text-nutrir-emerald/80" : "text-nutrir-emerald/55"
                     }`}
                   >

@@ -8,6 +8,7 @@ import { useCart } from "@/lib/cart-context";
 import { useCheckout } from "@/lib/checkout-context";
 import { useProfile } from "@/lib/profile-context";
 import { PickupScheduler } from "@/components/PickupScheduler";
+import { formatItemAddonsLabel } from "@/lib/item-addons-label";
 import {
   analyzeCartItems,
   formatPickupShort,
@@ -171,11 +172,9 @@ export function OrderForm() {
               <li key={`${item.name}-${i}`} className="flex items-center justify-between text-sm">
                 <span className="mr-2 flex-1">
                   {item.name}
-                  {item.addons_note && (
-                    <span className="mt-0.5 block whitespace-pre-line text-xs text-nutrir-emerald/55">
-                      {item.addons_note}
-                    </span>
-                  )}
+                  <span className="mt-0.5 block text-xs text-nutrir-emerald/55">
+                    {formatItemAddonsLabel(item)}
+                  </span>
                 </span>
                 <div className="flex items-center gap-2">
                   <button type="button" onClick={() => cart.updateQty(i, -1)} className="btn-secondary px-2 py-1">

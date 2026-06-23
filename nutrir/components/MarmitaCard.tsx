@@ -36,47 +36,50 @@ export function MarmitaCard({ item, sectionId }: Props) {
     });
   }
 
+  const emoji = sectionId === "frango" ? "🍗" : sectionId === "carne" ? "🥩" : "🥗";
+
   return (
-    <article className="card flex flex-col transition hover:shadow-md">
-      <div className="mb-4 flex aspect-square items-center justify-center rounded-xl border-2 border-nutrir-burgundy bg-nutrir-nude-dark/25">
-        <span className="text-4xl opacity-80">
-          {sectionId === "frango" ? "🍗" : sectionId === "carne" ? "🥩" : "🥗"}
-        </span>
+    <article className="card flex flex-row gap-3 p-3 transition hover:shadow-md sm:flex-col sm:gap-0 sm:p-6">
+      <div className="flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-xl border-2 border-nutrir-burgundy bg-nutrir-nude-dark/25 sm:mb-4 sm:aspect-square sm:h-auto sm:w-full">
+        <span className="text-2xl opacity-80 sm:text-4xl">{emoji}</span>
       </div>
 
-      <h3 className="font-display text-lg font-bold text-nutrir-emerald">{item.name}</h3>
-      <p className="mt-1 flex-1 text-sm text-nutrir-emerald/70">{item.description}</p>
-
-      <div className="mt-4 flex gap-2">
-        {(["P", "G"] as MarmitaSize[]).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setSize(s)}
-            className={`flex-1 rounded-lg py-2 text-center text-sm font-bold transition ${
-              size === s
-                ? "bg-nutrir-burgundy text-nutrir-nude"
-                : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
-            }`}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-4 flex flex-col border-t border-nutrir-nude-dark/50 pt-4">
-        <p className="flex flex-wrap items-baseline gap-x-1 text-sm text-nutrir-emerald/70">
-          <span>De</span>
-          <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>
-          <span>por</span>
-          <strong className="text-lg text-nutrir-burgundy">{formatPrice(price)}</strong>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <h3 className="font-display text-base font-bold leading-tight text-nutrir-emerald sm:text-lg">
+          {item.name}
+        </h3>
+        <p className="mt-0.5 line-clamp-2 flex-1 text-xs text-nutrir-emerald/70 sm:mt-1 sm:line-clamp-none sm:text-sm">
+          {item.description}
         </p>
-        <div className="mt-3 flex justify-center">
-          <button type="button" onClick={handleAdd} className="btn-primary text-sm">
+
+        <div className="mt-2 flex gap-1.5 sm:mt-4 sm:gap-2">
+          {(["P", "G"] as MarmitaSize[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setSize(s)}
+              className={`flex-1 rounded-lg py-1.5 text-center text-xs font-bold transition sm:py-2 sm:text-sm ${
+                size === s
+                  ? "bg-nutrir-burgundy text-nutrir-nude"
+                  : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-2 border-t border-nutrir-nude-dark/50 pt-2 sm:mt-4 sm:flex-col sm:items-stretch sm:pt-4">
+          <p className="text-xs text-nutrir-emerald/70 sm:text-sm">
+            <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>{" "}
+            <strong className="text-base text-nutrir-burgundy sm:text-lg">{formatPrice(price)}</strong>
+          </p>
+          <button type="button" onClick={handleAdd} className="btn-primary shrink-0 px-4 py-1.5 text-xs sm:w-full sm:py-2.5 sm:text-sm">
             Adicionar
           </button>
         </div>
-        <p className="mt-2 text-center text-[10px] leading-snug text-nutrir-emerald/55">
+
+        <p className="mt-1 hidden text-center text-[10px] leading-snug text-nutrir-emerald/55 sm:mt-2 sm:block">
           *Valor promocional válido apenas para pagamentos em dinheiro ou pix
         </p>
       </div>

@@ -1,3 +1,8 @@
+import type { PaymentMethod } from "./types";
+import {
+  applyPaymentPreferenceToUrl,
+  buildGatewayItems,
+} from "./infinitepay-checkout";
 import type { OrderItem } from "./types";
 
 const CHECKOUT_API = "https://api.checkout.infinitepay.io";
@@ -20,16 +25,6 @@ function formatPhoneE164(phone: string): string {
   return `+55${digits}`;
 }
 
-export function buildInfinitePayItems(
-  items: OrderItem[]
-): { quantity: number; price: number; description: string }[] {
-  return items.map((item) => ({
-    quantity: item.quantity,
-    price: item.price_cents,
-    description: item.name.slice(0, 120),
-  }));
-}
-
 export async function createInfinitePayLink(input: {
   orderId: string;
   amountCents: number;
@@ -37,15 +32,24 @@ export async function createInfinitePayLink(input: {
   customerName: string;
   customerEmail?: string;
   customerPhone: string;
+  paymentMethod?: PaymentMethod;
 }): Promise<{ url: string } | null> {
   const handle = getInfinitePayHandle();
   const siteUrl = getSiteUrl();
   if (!handle || !siteUrl) return null;
 
+  const gatewayItems = buildGatewayItems(input.items, input.amountCents);
+  const captureMethod =
+    input.paymentMethod === "pix"
+      ? "pix"
+      : input.paymentMethod === "card"
+        ? "credit_card"
+        : undefined;
+
   const payload: Record<string, unknown> = {
     handle,
     order_nsu: input.orderId,
-    items: buildInfinitePayItems(input.items),
+    items: gatewayItems,
     redirect_url: `${siteUrl}/checkout/sucesso?order=${encodeURIComponent(input.orderId)}`,
     webhook_url: `${siteUrl}/api/nutrir/webhooks/infinitepay`,
     customer: {
@@ -53,13 +57,22 @@ export async function createInfinitePayLink(input: {
       ...(input.customerEmail ? { email: input.customerEmail } : {}),
       phone_number: formatPhoneE164(input.customerPhone),
     },
+    ...(captureMethod
+      ? { capture_method: captureMethod, payment_method: captureMethod === "pix" ? "pix" : "credit_card" }
+      : {}),
   };
 
-  const res = await fetch(`${CHECKOUT_API}/links`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  const res = await postCheckoutLink(payload);
+  if (!res.ok && captureMethod) {
+    const { capture_method: _, payment_method: __, ...withoutMethod } = payload;
+    const retry = await postCheckoutLink(withoutMethod);
+    if (retry.ok) {
+      const data = (await retry.json()) as { url?: string };
+      if (data.url) {
+        return { url: applyPaymentPreferenceToUrl(data.url, input.paymentMethod) };
+      }
+    }
+  }
 
   if (!res.ok) {
     console.error("[InfinitePay] links:", await res.text());
@@ -67,7 +80,19 @@ export async function createInfinitePayLink(input: {
   }
 
   const data = (await res.json()) as { url?: string };
-  return data.url ? { url: data.url } : null;
+  if (!data.url) return null;
+
+  return {
+    url: applyPaymentPreferenceToUrl(data.url, input.paymentMethod),
+  };
+}
+
+async function postCheckoutLink(payload: Record<string, unknown>) {
+  return fetch(`${CHECKOUT_API}/links`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function checkInfinitePayPayment(input: {
@@ -105,3 +130,6 @@ export async function checkInfinitePayPayment(input: {
     captureMethod: data.capture_method,
   };
 }
+
+// Re-export for tests / legacy imports
+export { buildInfinitePayItems } from "./infinitepay-checkout";

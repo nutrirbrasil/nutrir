@@ -85,13 +85,13 @@ export function PaymentMethodStep() {
           A produção só começa após a confirmação do pagamento.
         </p>
         <p className="text-sm font-semibold text-nutrir-emerald">Forma de pagamento</p>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {options.map((option) => (
             <button
               key={option.id}
               type="button"
               onClick={() => setMethod(option.id)}
-              className={`relative rounded-xl border-2 px-4 py-4 text-left transition ${
+              className={`relative rounded-xl border-2 px-3 py-3 text-left transition sm:px-4 sm:py-4 ${
                 method === option.id
                   ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
                   : "border-nutrir-burgundy/30 bg-nutrir-nude hover:border-nutrir-burgundy"

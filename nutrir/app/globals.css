@@ -12,6 +12,10 @@
     --nutrir-nude-dark: #e8d5c4;
     --nutrir-cream: #faf6f1;
   }
+
+  html {
+    font-size: 80%;
+  }
 }
 
 body {

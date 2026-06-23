@@ -2,6 +2,7 @@
 
 import { formatPrice } from "@/lib/api";
 import type { CheckoutDraft } from "@/lib/checkout-draft";
+import { formatItemAddonsLabel } from "@/lib/item-addons-label";
 import { computeOrderPricing, getItemChargeCents } from "@/lib/order-pricing";
 import { normalizePaymentMethod } from "@/lib/payment-utils";
 import { CheckoutPriceSummary } from "@/components/checkout/CheckoutPriceSummary";
@@ -23,11 +24,9 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
           <li key={`${item.name}-${i}`} className="flex justify-between gap-3 text-sm">
             <span className="flex-1 text-nutrir-emerald">
               {item.name}
-              {item.addons_note && (
-                <span className="mt-0.5 block whitespace-pre-line text-xs text-nutrir-emerald/55">
-                  {item.addons_note}
-                </span>
-              )}
+              <span className="mt-0.5 block text-xs text-nutrir-emerald/55">
+                {formatItemAddonsLabel(item)}
+              </span>
             </span>
             <span className="font-semibold text-nutrir-burgundy">
               {formatPrice(getItemChargeCents(item, method) * item.quantity)}

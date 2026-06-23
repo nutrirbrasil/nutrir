@@ -14,7 +14,6 @@ import { logoUrl } from "@/lib/brand-assets";
 const links = [
   { href: "/", label: "Combo" },
   { href: "/marmitas", label: "Marmitas" },
-  { href: "/perfil", label: "Perfil" },
 ] as const;
 
 export function Navbar() {
@@ -27,8 +26,7 @@ export function Navbar() {
   }, [pathname]);
 
   function navLinkClass(href: string) {
-    const active =
-      pathname === href || (href === "/perfil" && pathname.startsWith("/perfil"));
+    const active = pathname === href;
     return `rounded-full px-4 py-2 text-sm font-medium transition ${
       active
         ? "bg-nutrir-nude text-nutrir-burgundy"
@@ -68,9 +66,6 @@ export function Navbar() {
               {links[1].label}
             </Link>
             <NutrirNavMenu variant="desktop" />
-            <Link href={links[2].href} className={navLinkClass(links[2].href)}>
-              {links[2].label}
-            </Link>
           </nav>
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">

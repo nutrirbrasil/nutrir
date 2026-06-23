@@ -20,7 +20,7 @@ export function InfoPage({ title, subtitle, children }: Props) {
         </p>
       ) : null}
 
-      <div className="card mt-8 space-y-5 text-sm leading-relaxed text-nutrir-emerald/90 md:text-base">
+      <div className="mt-8 space-y-5 text-sm leading-relaxed text-nutrir-emerald/90 md:text-base">
         {children}
       </div>
 

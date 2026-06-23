@@ -31,6 +31,7 @@ export async function POST(
     /* optional body */
   }
 
+  const method = payment_method ?? order.payment_method;
   const link = await createInfinitePayLink({
     orderId: order.id,
     amountCents: order.total_cents,
@@ -38,6 +39,7 @@ export async function POST(
     customerName: order.customer_name,
     customerEmail: order.customer_email,
     customerPhone: order.customer_phone,
+    paymentMethod: method === "pix" || method === "card" ? method : undefined,
   });
 
   if (!link) {
