@@ -165,7 +165,7 @@ export async function getCustomerByEmail(email: string): Promise<CustomerRecord 
   const { data, error } = await db
     .from("nutrir_customers")
     .select("id, phone, whatsapp, name, email, cpf, address")
-    .eq("email", key)
+    .ilike("email", key)
     .maybeSingle();
 
   if (error) {

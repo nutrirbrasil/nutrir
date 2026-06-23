@@ -13,7 +13,7 @@ import {
 import { mapAuthError } from "./auth-errors";
 import { formatCpfDisplay, formatPhoneDisplay } from "./br-fields";
 import { usePatientStatus } from "./use-patient-status";
-import { fetchCustomerByPhone, syncCustomerToServer } from "./order-history";
+import { fetchCustomerByEmail, fetchCustomerByPhone, syncCustomerToServer } from "./order-history";
 import { getAuthCallbackUrl } from "./auth-redirect";
 import { getSupabaseBrowser, isSupabaseAuthConfigured } from "./supabase-browser";
 
@@ -83,6 +83,26 @@ function loadProfile(): UserProfile {
 export const SOCIAL_LOGIN_HINT =
   "Ative o provedor Google no Supabase (Authentication → Providers) e configure o OAuth no Google Cloud Console.";
 
+function mergeRemoteProfile(
+  current: UserProfile,
+  remote: {
+    name: string;
+    phone: string;
+    email: string;
+    cpf: string;
+    address: string;
+  },
+  sessionEmail?: string
+): UserProfile {
+  return {
+    name: remote.name || current.name,
+    phone: remote.phone || current.phone,
+    cpf: remote.cpf || current.cpf,
+    address: remote.address || current.address,
+    email: sessionEmail || remote.email || current.email,
+  };
+}
+
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile>(emptyProfile);
@@ -139,20 +159,33 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    const phone = loadProfile().phone;
-    if (!phone) return;
-    fetchCustomerByPhone(phone).then((remote) => {
-      if (!remote) return;
-      setProfile((p) => ({
-        ...p,
-        name: remote.name || p.name,
-        email: remote.email || p.email,
-        cpf: formatCpfDisplay(remote.cpf) || p.cpf,
-        address: remote.address || p.address,
-        phone: formatPhoneDisplay(remote.phone) || p.phone,
-      }));
-    });
-  }, [hydrated]);
+
+    const sessionEmail = session?.user.email?.trim().toLowerCase();
+    if (!sessionEmail) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const remote = await fetchCustomerByEmail(sessionEmail);
+      if (cancelled) return;
+
+      if (remote) {
+        setProfile((p) => mergeRemoteProfile(p, remote, sessionEmail));
+        return;
+      }
+
+      const phone = loadProfile().phone;
+      if (!phone) return;
+
+      const byPhone = await fetchCustomerByPhone(phone);
+      if (cancelled || !byPhone) return;
+      setProfile((p) => mergeRemoteProfile(p, byPhone, sessionEmail));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, session?.user.email]);
 
   const login = useCallback(async (email: string, password: string) => {
     if (!authConfigured) throw new Error("Autenticação não configurada.");

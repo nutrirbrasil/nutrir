@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
-import { getCustomerByPhone, normalizePhone, upsertCustomer } from "@/lib/supabase-db";
+import { getCustomerByEmail, getCustomerByPhone, normalizePhone, upsertCustomer } from "@/lib/supabase-db";
 import { cpfValidationMessage, phoneValidationMessage } from "@/lib/br-fields";
 
 export async function GET(request: Request) {
-  const phone = new URL(request.url).searchParams.get("phone");
-  if (!phone?.trim()) {
-    return NextResponse.json({ error: "Informe o telefone." }, { status: 400 });
+  const { searchParams } = new URL(request.url);
+  const phone = searchParams.get("phone");
+  const email = searchParams.get("email");
+
+  if (email?.trim()) {
+    const customer = await getCustomerByEmail(email);
+    return NextResponse.json({ customer });
   }
 
-  const customer = await getCustomerByPhone(phone);
-  if (!customer) {
-    return NextResponse.json({ customer: null });
+  if (phone?.trim()) {
+    const customer = await getCustomerByPhone(phone);
+    return NextResponse.json({ customer });
   }
 
-  return NextResponse.json({ customer });
+  return NextResponse.json({ error: "Informe o telefone ou o e-mail." }, { status: 400 });
 }
 
 export async function PUT(request: Request) {

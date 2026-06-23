@@ -62,14 +62,52 @@ export async function syncCustomerToServer(input: {
   }
 }
 
-export async function fetchCustomerByPhone(phone: string): Promise<{
+function mapCustomerRecord(c: {
   name: string;
   phone: string;
-  whatsapp: string;
-  email: string;
-  cpf: string;
-  address: string;
-} | null> {
+  whatsapp: string | null;
+  email: string | null;
+  cpf: string | null;
+  address: string | null;
+}) {
+  return {
+    name: c.name ?? "",
+    phone: formatPhoneDisplay(c.phone),
+    whatsapp: formatPhoneDisplay(c.whatsapp ?? c.phone),
+    email: c.email ?? "",
+    cpf: formatCpfDisplay(c.cpf ?? ""),
+    address: c.address ?? "",
+  };
+}
+
+export type RemoteCustomer = ReturnType<typeof mapCustomerRecord>;
+
+export async function fetchCustomerByEmail(email: string): Promise<RemoteCustomer | null> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+
+  try {
+    const params = new URLSearchParams({ email: normalized });
+    const res = await fetch(`/api/nutrir/customers?${params}`);
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      customer: {
+        name: string;
+        phone: string;
+        whatsapp: string | null;
+        email: string | null;
+        cpf: string | null;
+        address: string | null;
+      } | null;
+    };
+    if (!data.customer) return null;
+    return mapCustomerRecord(data.customer);
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchCustomerByPhone(phone: string): Promise<RemoteCustomer | null> {
   if (!phone.trim()) return null;
 
   try {
@@ -87,15 +125,7 @@ export async function fetchCustomerByPhone(phone: string): Promise<{
       } | null;
     };
     if (!data.customer) return null;
-    const c = data.customer;
-    return {
-      name: c.name ?? "",
-      phone: formatPhoneDisplay(c.phone),
-      whatsapp: formatPhoneDisplay(c.whatsapp ?? c.phone),
-      email: c.email ?? "",
-      cpf: formatCpfDisplay(c.cpf ?? ""),
-      address: c.address ?? "",
-    };
+    return mapCustomerRecord(data.customer);
   } catch {
     return null;
   }
