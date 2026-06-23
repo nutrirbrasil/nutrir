@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/AppProviders";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Navbar } from "@/components/Navbar";
 import { logoUrl } from "@/lib/brand-assets";
 
@@ -32,7 +33,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <AppProviders>
           <Navbar />
-          <main className="min-h-screen bg-nutrir-nude">{children}</main>
+          <main className="min-h-screen bg-nutrir-nude pb-[4.75rem] md:pb-0">{children}</main>
+          <MobileBottomNav />
           <footer className="bg-nutrir-emerald-dark bg-grain py-10 text-center text-sm text-nutrir-nude/80">
             <p className="font-display text-lg italic text-nutrir-nude">@nutrirpicarras</p>
             <p className="mt-2">Nutrir Piçarras · Marmitas fit com ingredientes frescos</p>
