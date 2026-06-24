@@ -105,6 +105,7 @@ export async function POST(request: Request) {
       items: order.items,
       customerName: order.customer_name,
       customerEmail: order.customer_email,
+      customerPhone: order.customer_phone,
     });
 
     if (!link) {

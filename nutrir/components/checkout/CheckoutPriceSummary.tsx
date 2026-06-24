@@ -60,7 +60,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
 
       {isOnlinePayment(method) && !compact && (
         <p className="rounded-lg bg-nutrir-emerald/5 p-3 text-sm text-nutrir-emerald/90">
-          No checkout você escolhe Pix (10% OFF — valor acima) ou cartão no valor de referência.
+          No checkout InfinitePay: Pix com 10% de desconto (total acima) ou cartão no valor de referência.
         </p>
       )}
     </div>

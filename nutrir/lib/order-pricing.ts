@@ -1,6 +1,6 @@
 import { computeCouponDiscountCents, getCoupon, normalizeCouponCode } from "./coupons";
 import { getComboCardTotalCents } from "./combo-builder-data";
-import { getInfinitePayCardTotalCents } from "./infinitepay-checkout";
+import { getInfinitePayReferenceTotalCents } from "./infinitepay-checkout";
 import { KIT_PRODUCTS, type MarmitaSize } from "./menu-data";
 import { isCardPayment, isCashDiscountPayment, isOnlinePayment } from "./payment-utils";
 import type { OrderItem, PaymentMethod } from "./types";
@@ -142,7 +142,7 @@ export function computeOnlineCheckoutDisplayPricing(
   couponCode?: string | null
 ): OrderPricing {
   const pixPricing = computeOrderPricing(items, "pix", couponCode);
-  const referenceCardTotal = getInfinitePayCardTotalCents(pixPricing.total_cents);
+  const referenceCardTotal = getInfinitePayReferenceTotalCents(pixPricing.total_cents);
   const pixDiscount = Math.max(0, referenceCardTotal - pixPricing.total_cents);
 
   return {
