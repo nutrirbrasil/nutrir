@@ -1,4 +1,4 @@
-import { buildGatewayItemsFromPixTotal } from "./infinitepay-checkout";
+import { buildGatewayItemsFromTotal } from "./infinitepay-checkout";
 import type { OrderItem } from "./types";
 
 const CHECKOUT_API = "https://api.checkout.infinitepay.io";
@@ -21,11 +21,10 @@ function formatPhoneE164(phone: string): string {
   return `+55${digits}`;
 }
 
+/** Checkout InfinitePay apenas para cartão online. */
 export async function createInfinitePayLink(input: {
   orderId: string;
-  /** Total com preços Pix (cupom já aplicado). */
-  pixTotalCents: number;
-  /** Itens com unitário Pix. */
+  totalCents: number;
   items: OrderItem[];
   customerName: string;
   customerEmail?: string;
@@ -35,11 +34,10 @@ export async function createInfinitePayLink(input: {
   const siteUrl = getSiteUrl();
   if (!handle || !siteUrl) return null;
 
-  const gatewayItems = buildGatewayItemsFromPixTotal(input.items, input.pixTotalCents);
+  const gatewayItems = buildGatewayItemsFromTotal(input.items, input.totalCents);
 
   const payload = {
     handle,
-    origin: "external_checkout",
     order_nsu: input.orderId,
     items: gatewayItems,
     redirect_url: `${siteUrl}/checkout/sucesso?order=${encodeURIComponent(input.orderId)}`,
@@ -108,10 +106,4 @@ export async function checkInfinitePayPayment(input: {
   };
 }
 
-export {
-  buildInfinitePayItems,
-  buildGatewayItemsFromPixTotal,
-  getInfinitePayCardTotalCents,
-  getInfinitePayReferenceTotalCents,
-  INFINITEPAY_PIX_DISCOUNT_PERCENT,
-} from "./infinitepay-checkout";
+export { buildGatewayItemsFromTotal, buildInfinitePayItems, scaleItemsToTotalCents } from "./infinitepay-checkout";

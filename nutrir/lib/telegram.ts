@@ -25,7 +25,7 @@ function formatMoney(cents: number): string {
 export function formatOrderTelegramMessage(
   order: Order,
   orderedAt: Date,
-  options?: { isPatient?: boolean }
+  options?: { isPatient?: boolean; pixPending?: boolean }
 ): string {
   const namePhone = `${order.customer_name} - ${order.customer_phone.replace(/\D/g, "")}`;
   const items = formatItemsBlock(order.items);
@@ -36,7 +36,9 @@ export function formatOrderTelegramMessage(
   let paymentStatus =
     order.payment_status === "confirmed" ? "✅ Confirmado" : "⏳ Pendente";
 
-  if (order.local_pay_deadline && order.payment_status === "pending") {
+  if (options?.pixPending && order.payment_status === "pending") {
+    paymentStatus = "⏳ Pix Pendente";
+  } else if (order.local_pay_deadline && order.payment_status === "pending") {
     if (options?.isPatient) {
       paymentStatus += " (pagamento na retirada — paciente)";
     } else {

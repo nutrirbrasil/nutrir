@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CheckoutShell } from "@/components/checkout/CheckoutShell";
 import { nutrirApi } from "@/lib/api";
@@ -10,6 +10,7 @@ import { usePatientStatus } from "@/lib/use-patient-status";
 import type { PaymentMethod } from "@/lib/types";
 
 export function PendingPaymentStep() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order");
   const [loading, setLoading] = useState<PaymentMethod | null>(null);
@@ -41,7 +42,12 @@ export function PendingPaymentStep() {
     setError("");
 
     try {
-      const { checkout_url } = await nutrirApi.createCheckoutLink(orderId, method);
+      if (method === "pix") {
+        router.push(`/checkout/pix?order=${orderId}`);
+        return;
+      }
+
+      const { checkout_url } = await nutrirApi.createCheckoutLink(orderId, "card");
       if (!checkout_url) {
         setError("Não foi possível abrir o pagamento. Tente novamente.");
         return;

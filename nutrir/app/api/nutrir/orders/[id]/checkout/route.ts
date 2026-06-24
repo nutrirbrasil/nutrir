@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
-import { isOnlinePayment, normalizePaymentMethod } from "@/lib/payment-utils";
+import { isOnlineCardPayment, normalizePaymentMethod } from "@/lib/payment-utils";
 import { findOrder, patchOrderCache, saveOrder } from "@/lib/order-store";
 import type { PaymentMethod } from "@/lib/types";
 
@@ -17,13 +17,6 @@ export async function POST(
     return NextResponse.json({ error: "Pedido já pago." }, { status: 400 });
   }
 
-  if (!isInfinitePayConfigured()) {
-    return NextResponse.json(
-      { error: "Pagamento online não configurado." },
-      { status: 503 }
-    );
-  }
-
   let payment_method: PaymentMethod | undefined;
   try {
     const body = (await request.json()) as { payment_method?: PaymentMethod };
@@ -33,16 +26,24 @@ export async function POST(
   }
 
   const method = normalizePaymentMethod(payment_method ?? order.payment_method);
-  if (!isOnlinePayment(method)) {
+
+  if (!isOnlineCardPayment(method)) {
     return NextResponse.json(
-      { error: "Informe Pix ou cartão online para abrir o pagamento." },
+      { error: "Checkout InfinitePay disponível apenas para cartão online." },
       { status: 400 }
+    );
+  }
+
+  if (!isInfinitePayConfigured()) {
+    return NextResponse.json(
+      { error: "Pagamento com cartão online não configurado." },
+      { status: 503 }
     );
   }
 
   const link = await createInfinitePayLink({
     orderId: order.id,
-    pixTotalCents: order.total_cents,
+    totalCents: order.total_cents,
     items: order.items,
     customerName: order.customer_name,
     customerEmail: order.customer_email,

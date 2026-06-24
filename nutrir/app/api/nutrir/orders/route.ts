@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import { isValidCouponCode } from "@/lib/coupons";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
 import { isValidPhoneBR } from "@/lib/br-fields";
-import { computeOrderPricing, getChargedItems, getOrderPricingMethod } from "@/lib/order-pricing";
+import { computeOrderPricing, getChargedItems } from "@/lib/order-pricing";
 import {
   calcLocalPaymentDeadline,
   isLocalPayment,
-  isOnlinePayment,
+  isOnlineCardPayment,
+  isOnlinePixPayment,
   normalizePaymentMethod,
 } from "@/lib/payment-utils";
+import { isPixConfigured } from "@/lib/pix-config";
 import { findOrder, saveOrder, updateOrderPayment } from "@/lib/order-store";
 import { findPacienteByCpf } from "@/lib/supabase-db";
 import { formatOrderTelegramMessage, sendTelegramMessage } from "@/lib/telegram";
@@ -66,9 +68,8 @@ export async function POST(request: Request) {
   }
 
   const payment_method = normalizePaymentMethod(body.payment_method);
-  const pricingMethod = getOrderPricingMethod(payment_method);
-  const chargedItems = getChargedItems(body.items, pricingMethod);
-  const pricing = computeOrderPricing(body.items, pricingMethod, body.coupon_code);
+  const chargedItems = getChargedItems(body.items, payment_method);
+  const pricing = computeOrderPricing(body.items, payment_method, body.coupon_code);
   const created_at = new Date().toISOString();
 
   const order: Order = {
@@ -89,11 +90,12 @@ export async function POST(request: Request) {
 
   let checkout_url: string | undefined;
 
-  if (isOnlinePayment(payment_method)) {
+  if (isOnlineCardPayment(payment_method)) {
     if (!isInfinitePayConfigured()) {
       return NextResponse.json(
         {
-          error: "Pagamento online não configurado. Defina INFINITEPAY_HANDLE e NEXT_PUBLIC_SITE_URL.",
+          error:
+            "Pagamento com cartão online não configurado. Defina INFINITEPAY_HANDLE e NEXT_PUBLIC_SITE_URL.",
         },
         { status: 503 }
       );
@@ -101,7 +103,7 @@ export async function POST(request: Request) {
 
     const link = await createInfinitePayLink({
       orderId: order.id,
-      pixTotalCents: order.total_cents,
+      totalCents: order.total_cents,
       items: order.items,
       customerName: order.customer_name,
       customerEmail: order.customer_email,
@@ -117,6 +119,13 @@ export async function POST(request: Request) {
 
     order.checkout_url = link.url;
     checkout_url = link.url;
+  }
+
+  if (isOnlinePixPayment(payment_method) && !isPixConfigured()) {
+    return NextResponse.json(
+      { error: "Pix online não configurado. Defina PIX_KEY no servidor." },
+      { status: 503 }
+    );
   }
 
   await saveOrder(order);

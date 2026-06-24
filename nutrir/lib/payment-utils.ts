@@ -12,6 +12,14 @@ export function isOnlinePayment(method?: PaymentMethod): boolean {
   return m === "pix" || m === "card";
 }
 
+export function isOnlinePixPayment(method?: PaymentMethod): boolean {
+  return normalizePaymentMethod(method) === "pix";
+}
+
+export function isOnlineCardPayment(method?: PaymentMethod): boolean {
+  return normalizePaymentMethod(method) === "card";
+}
+
 export function isLocalPayment(method?: PaymentMethod): boolean {
   const m = normalizePaymentMethod(method);
   return m === "local_cash" || m === "local_card";

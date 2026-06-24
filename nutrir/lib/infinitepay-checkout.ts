@@ -1,26 +1,5 @@
 import type { OrderItem } from "./types";
 
-/**
- * Desconto Pix no painel InfinitePay (Checkout → Configurações → Meios de pagamento → Desconto).
- * Deve ser o mesmo valor configurado lá.
- */
-export const INFINITEPAY_PIX_DISCOUNT_PERCENT = 10;
-
-/**
- * Preço de referência (cartão) para o checkout InfinitePay.
- * Com desconto Pix no painel: referência × (1 − 10%) ≈ total Pix do pedido.
- */
-export function getInfinitePayReferenceTotalCents(pixTotalCents: number): number {
-  if (pixTotalCents <= 0) return 0;
-  const factor = 1 - INFINITEPAY_PIX_DISCOUNT_PERCENT / 100;
-  return Math.round(pixTotalCents / factor);
-}
-
-/** @deprecated Use getInfinitePayReferenceTotalCents */
-export function getInfinitePayCardTotalCents(pixTotalCents: number): number {
-  return getInfinitePayReferenceTotalCents(pixTotalCents);
-}
-
 export function buildInfinitePayItems(
   items: OrderItem[]
 ): { quantity: number; price: number; description: string }[] {
@@ -55,14 +34,10 @@ export function scaleItemsToTotalCents(items: OrderItem[], targetTotalCents: num
   return scaled;
 }
 
-/**
- * Itens com preço Pix; envia referência (cartão) para a InfinitePay aplicar o desconto Pix do painel.
- */
-export function buildGatewayItemsFromPixTotal(
+export function buildGatewayItemsFromTotal(
   items: OrderItem[],
-  pixTotalCents: number
+  totalCents: number
 ): { quantity: number; price: number; description: string }[] {
-  const referenceTotalCents = getInfinitePayReferenceTotalCents(pixTotalCents);
-  const adjusted = scaleItemsToTotalCents(items, referenceTotalCents);
+  const adjusted = scaleItemsToTotalCents(items, totalCents);
   return buildInfinitePayItems(adjusted);
 }

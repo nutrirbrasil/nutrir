@@ -62,6 +62,14 @@ export const nutrirApi = {
       method: "POST",
       body: JSON.stringify({ payment_method }),
     }),
+  getPixPayment: (order_id: string) =>
+    api<{ copia_cola: string; amount_cents: number; receiver_name: string; order_id: string }>(
+      `/nutrir/orders/${order_id}/pix`
+    ),
+  notifyPixPayment: (order_id: string) =>
+    api<{ notified: boolean; already?: boolean }>(`/nutrir/orders/${order_id}/pix`, {
+      method: "POST",
+    }),
 };
 
 export function formatPrice(cents: number) {
