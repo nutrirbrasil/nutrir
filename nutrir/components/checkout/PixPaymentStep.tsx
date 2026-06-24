@@ -2,16 +2,18 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CheckoutShell } from "@/components/checkout/CheckoutShell";
 import { formatPrice, nutrirApi } from "@/lib/api";
 import { useCheckout } from "@/lib/checkout-context";
-import { getWhatsAppUrl } from "@/lib/payment-utils";
 
 const QRCode = dynamic(() => import("react-qr-code"), { ssr: false });
 
+const PIX_QR_BURGUNDY = "#7A2E3A";
+
 export function PixPaymentStep() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { resetCheckout } = useCheckout();
   const orderId = searchParams.get("order");
@@ -83,18 +85,14 @@ export function PixPaymentStep() {
     );
   }
 
-  const whatsappUrl = getWhatsAppUrl(
-    `Olá! Fiz o Pix do pedido ${orderId.replace("order-", "#")} e aguardo confirmação.`
-  );
+  const orderLabel = orderId.replace("order-", "#");
 
   return (
     <CheckoutShell title="Pague com Pix">
       <div className="card mx-auto max-w-md space-y-6">
         {loading && <p className="text-center text-nutrir-emerald/70">Carregando dados do Pix…</p>}
 
-        {error && !loading && (
-          <p className="text-center text-sm text-red-600">{error}</p>
-        )}
+        {error && !loading && <p className="text-center text-sm text-red-600">{error}</p>}
 
         {!loading && !error && copiaCola && (
           <>
@@ -103,13 +101,17 @@ export function PixPaymentStep() {
               <p className="font-display text-3xl font-bold text-nutrir-burgundy">
                 {formatPrice(amountCents)}
               </p>
-              <p className="mt-1 text-xs text-nutrir-emerald/60">
-                Beneficiário: {receiverName}
-              </p>
+              <p className="mt-1 text-xs text-nutrir-emerald/60">Beneficiário: {receiverName}</p>
             </div>
 
-            <div className="flex justify-center rounded-xl bg-white p-4">
-              <QRCode value={copiaCola} size={220} />
+            <div className="flex justify-center p-2">
+              <QRCode
+                value={copiaCola}
+                size={220}
+                fgColor={PIX_QR_BURGUNDY}
+                bgColor="transparent"
+                level="M"
+              />
             </div>
 
             <div className="space-y-2">
@@ -129,28 +131,29 @@ export function PixPaymentStep() {
               </button>
             </div>
 
-            <div className="rounded-lg bg-amber-50 p-4 text-sm leading-relaxed text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
-              <p>
-                Após pagar, aguarde a confirmação manual. Você receberá retorno quando o pagamento
-                for identificado no banco.
-              </p>
-              <p className="mt-2 text-xs opacity-80">
-                Pedido {orderId.replace("order-", "#")}
-              </p>
-            </div>
+            <p className="text-center text-sm leading-relaxed text-nutrir-emerald/80">
+              Após efetuar o pagamento clique no botão &ldquo;Já paguei&rdquo;. Seremos notificados do
+              pedido e ao confirmar o pagamento seu pedido já entra automaticamente na fila de
+              produção.
+            </p>
+            <p className="text-center text-xs text-nutrir-emerald/55">Pedido {orderLabel}</p>
 
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-center text-sm font-bold text-nutrir-burgundy underline"
+            <button
+              type="button"
+              onClick={() =>
+                router.push(`/checkout/obrigado?order=${encodeURIComponent(orderId)}`)
+              }
+              className="btn-primary w-full py-3.5 text-sm font-bold uppercase tracking-wide"
             >
-              Já paguei — avisar no WhatsApp
-            </a>
+              Já paguei
+            </button>
           </>
         )}
 
-        <Link href="/" className="block text-center text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald">
+        <Link
+          href="/"
+          className="block text-center text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald"
+        >
           Voltar ao cardápio
         </Link>
       </div>

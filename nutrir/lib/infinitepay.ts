@@ -63,7 +63,7 @@ export async function createInfinitePayLink(input: {
     handle,
     order_nsu: input.orderId,
     items: buildGatewayItems(input.items, input.totalCents),
-    redirect_url: `${siteUrl}/checkout/sucesso?order=${encodeURIComponent(input.orderId)}`,
+    redirect_url: `${siteUrl}/checkout/obrigado?order=${encodeURIComponent(input.orderId)}`,
     webhook_url: `${siteUrl}/api/nutrir/webhooks/infinitepay`,
     customer: {
       name: input.customerName,

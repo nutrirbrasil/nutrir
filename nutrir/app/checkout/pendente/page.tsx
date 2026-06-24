@@ -1,10 +1,15 @@
-import { Suspense } from "react";
-import { PendingPaymentStep } from "@/components/checkout/PendingPaymentStep";
+import { redirect } from "next/navigation";
 
-export default function PendingPage() {
-  return (
-    <Suspense>
-      <PendingPaymentStep />
-    </Suspense>
-  );
+export default function CheckoutPendenteRedirect({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === "string") query.set(key, value);
+    else if (Array.isArray(value)) value.forEach((v) => query.append(key, v));
+  }
+  const qs = query.toString();
+  redirect(qs ? `/checkout/obrigado?${qs}` : "/checkout/obrigado");
 }

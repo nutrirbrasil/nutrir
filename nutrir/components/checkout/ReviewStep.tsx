@@ -114,7 +114,7 @@ export function ReviewStep() {
           if (existing.payment_status === "confirmed") {
             cart.clearCart();
             resetCheckout();
-            router.push(`/checkout/sucesso?order=${existing.id}`);
+            router.push(`/checkout/obrigado?order=${existing.id}`);
             return;
           }
           if (canReusePendingOrder(existing, d, method)) {
@@ -138,8 +138,7 @@ export function ReviewStep() {
 
       if (isLocalPayment(method)) {
         cart.clearCart();
-        resetCheckout();
-        router.push(`/checkout/pendente?order=${order.id}`);
+        window.location.href = `/checkout/obrigado?order=${encodeURIComponent(order.id)}`;
         return;
       }
 

@@ -1,10 +1,15 @@
-import { Suspense } from "react";
-import { CheckoutSuccessStep } from "@/components/checkout/CheckoutSuccessStep";
+import { redirect } from "next/navigation";
 
-export default function CheckoutSuccessPage() {
-  return (
-    <Suspense>
-      <CheckoutSuccessStep />
-    </Suspense>
-  );
+export default function CheckoutSucessoRedirect({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === "string") query.set(key, value);
+    else if (Array.isArray(value)) value.forEach((v) => query.append(key, v));
+  }
+  const qs = query.toString();
+  redirect(qs ? `/checkout/obrigado?${qs}` : "/checkout/obrigado");
 }
