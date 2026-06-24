@@ -28,13 +28,13 @@ const ONLINE_OPTIONS: PaymentOption[] = [
   {
     id: "pix",
     label: "Pix",
-    hint: "Pagamento imediato, produção imediata.",
+    hint: "10% OFF no checkout InfinitePay. Produção imediata.",
     badge: "10% OFF",
   },
   {
     id: "card",
     label: "Cartão Online",
-    hint: "Pagamento imediato, produção imediata.",
+    hint: "Valor de referência no checkout. Produção imediata.",
   },
 ];
 

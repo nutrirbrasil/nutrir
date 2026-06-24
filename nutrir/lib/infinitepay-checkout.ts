@@ -1,5 +1,14 @@
 import type { OrderItem } from "./types";
 
+/** Desconto Pix configurado no painel InfinitePay (Checkout → Configurações). */
+export const INFINITEPAY_PIX_DISCOUNT_PERCENT = 10;
+
+export function getInfinitePayCardTotalCents(pixTotalCents: number): number {
+  if (pixTotalCents <= 0) return 0;
+  const factor = 1 + INFINITEPAY_PIX_DISCOUNT_PERCENT / 100;
+  return Math.round(pixTotalCents * factor);
+}
+
 export function buildInfinitePayItems(
   items: OrderItem[]
 ): { quantity: number; price: number; description: string }[] {
@@ -10,7 +19,7 @@ export function buildInfinitePayItems(
   }));
 }
 
-/** Ajusta preços dos itens para que a soma bata com o total (cupom / descontos). */
+/** Ajusta preços dos itens para que a soma bata com o total alvo. */
 export function scaleItemsToTotalCents(items: OrderItem[], targetTotalCents: number): OrderItem[] {
   const currentTotal = items.reduce((sum, item) => sum + item.price_cents * item.quantity, 0);
   if (currentTotal <= 0 || currentTotal === targetTotalCents) return items;
@@ -34,10 +43,15 @@ export function scaleItemsToTotalCents(items: OrderItem[], targetTotalCents: num
   return scaled;
 }
 
-export function buildGatewayItems(
+/**
+ * Itens com preço Pix; envia à InfinitePay com +10% no total.
+ * Com 10% de desconto Pix no painel, o cliente paga o valor Pix original.
+ */
+export function buildGatewayItemsFromPixTotal(
   items: OrderItem[],
-  targetTotalCents: number
+  pixTotalCents: number
 ): { quantity: number; price: number; description: string }[] {
-  const adjusted = scaleItemsToTotalCents(items, targetTotalCents);
+  const cardTotalCents = getInfinitePayCardTotalCents(pixTotalCents);
+  const adjusted = scaleItemsToTotalCents(items, cardTotalCents);
   return buildInfinitePayItems(adjusted);
 }

@@ -42,12 +42,11 @@ export async function POST(
 
   const link = await createInfinitePayLink({
     orderId: order.id,
-    amountCents: order.total_cents,
+    pixTotalCents: order.total_cents,
     items: order.items,
     customerName: order.customer_name,
     customerEmail: order.customer_email,
     customerPhone: order.customer_phone,
-    paymentMethod: method,
   });
 
   if (!link) {

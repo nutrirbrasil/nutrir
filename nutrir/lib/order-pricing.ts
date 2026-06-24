@@ -1,7 +1,8 @@
 import { computeCouponDiscountCents, getCoupon, normalizeCouponCode } from "./coupons";
 import { getComboCardTotalCents } from "./combo-builder-data";
+import { getInfinitePayCardTotalCents } from "./infinitepay-checkout";
 import { KIT_PRODUCTS, type MarmitaSize } from "./menu-data";
-import { isCardPayment, isCashDiscountPayment } from "./payment-utils";
+import { isCardPayment, isCashDiscountPayment, isOnlinePayment } from "./payment-utils";
 import type { OrderItem, PaymentMethod } from "./types";
 
 /** Marmita avulsa: cartão = +R$ 2,00 acima do pix/dinheiro (ex.: 22,99 → 24,99). */
@@ -127,4 +128,46 @@ export function getChargedItems(items: OrderItem[], method?: PaymentMethod): Ord
     ...item,
     price_cents: getItemChargeCents(item, method),
   }));
+}
+
+/** Pedidos online usam preço Pix; o +10% só entra no link InfinitePay. */
+export function getOrderPricingMethod(method?: PaymentMethod): PaymentMethod {
+  if (isOnlinePayment(method)) return "pix";
+  return method ?? "pix";
+}
+
+/** Resumo na revisão: referência +10% e total Pix (10% OFF no checkout). */
+export function computeOnlineCheckoutDisplayPricing(
+  items: OrderItem[],
+  couponCode?: string | null
+): OrderPricing {
+  const pixPricing = computeOrderPricing(items, "pix", couponCode);
+  const referenceCardTotal = getInfinitePayCardTotalCents(pixPricing.total_cents);
+  const pixDiscount = Math.max(0, referenceCardTotal - pixPricing.total_cents);
+
+  return {
+    subtotal_cents: referenceCardTotal,
+    pix_discount_cents: pixDiscount,
+    coupon_code: pixPricing.coupon_code,
+    coupon_discount_cents: pixPricing.coupon_discount_cents,
+    total_cents: pixPricing.total_cents,
+    show_pix_discount: pixDiscount > 0,
+    show_coupon_discount: pixPricing.show_coupon_discount,
+  };
+}
+
+export function computeCheckoutDisplayPricing(
+  items: OrderItem[],
+  method?: PaymentMethod,
+  couponCode?: string | null
+): OrderPricing {
+  if (isOnlinePayment(method)) {
+    return computeOnlineCheckoutDisplayPricing(items, couponCode);
+  }
+  return computeOrderPricing(items, method, couponCode);
+}
+
+export function getCheckoutLineItemCents(item: OrderItem, method?: PaymentMethod): number {
+  if (isOnlinePayment(method)) return getItemCashTotalCents(item);
+  return getItemChargeCents(item, method);
 }

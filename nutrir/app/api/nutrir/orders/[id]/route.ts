@@ -1,34 +1,31 @@
-import { NextResponse } from "next/server";
-import { checkInfinitePayPayment } from "@/lib/infinitepay";
-import { canConfirmInfinitePayPayment } from "@/lib/infinitepay-payment-validation";
-import { notifyOrderPaid } from "@/lib/payments";
-import { findOrder, patchOrderCache } from "@/lib/order-store";
-
-export async function GET(
-  _request: Request,
-  { params }: { params: { id: string } }
-) {
-  const order = await findOrder(params.id);
-  if (!order) {
-    return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
-  }
-
-  if (order.payment_status === "pending" && order.checkout_url) {
-    const check = await checkInfinitePayPayment({
-      orderNsu: order.id,
-      transactionNsu: order.infinitepay_transaction_nsu,
-      slug: order.infinitepay_slug,
-    });
-    if (
-      check.paid &&
-      canConfirmInfinitePayPayment(order, { capture_method: check.captureMethod })
-    ) {
-      await notifyOrderPaid(order.id, {
-        infinitepay_capture_method: check.captureMethod,
-      });
-    }
-  }
-
-  const latest = (await findOrder(params.id)) ?? order;
-  return NextResponse.json({ order: latest });
-}
+import { NextResponse } from "next/server";
+import { checkInfinitePayPayment } from "@/lib/infinitepay";
+import { notifyOrderPaid } from "@/lib/payments";
+import { findOrder } from "@/lib/order-store";
+
+export async function GET(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
+  const order = await findOrder(params.id);
+  if (!order) {
+    return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
+  }
+
+  if (order.payment_status === "pending" && order.checkout_url) {
+    const check = await checkInfinitePayPayment({
+      orderNsu: order.id,
+      transactionNsu: order.infinitepay_transaction_nsu,
+      slug: order.infinitepay_slug,
+    });
+    if (check.paid) {
+      await notifyOrderPaid(order.id, {
+        infinitepay_capture_method: check.captureMethod,
+      });
+    }
+  }
+
+  const latest = (await findOrder(params.id)) ?? order;
+  return NextResponse.json({ order: latest });
+}
+

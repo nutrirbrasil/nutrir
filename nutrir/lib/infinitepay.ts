@@ -1,26 +1,7 @@
-import type { PaymentMethod } from "./types";
-import { buildGatewayItems } from "./infinitepay-checkout";
+import { buildGatewayItemsFromPixTotal } from "./infinitepay-checkout";
 import type { OrderItem } from "./types";
 
 const CHECKOUT_API = "https://api.checkout.infinitepay.io";
-
-type InfinitePayCaptureMethod = "pix" | "credit_card";
-
-function resolveCaptureMethods(
-  paymentMethod?: PaymentMethod
-): InfinitePayCaptureMethod[] | undefined {
-  if (paymentMethod === "pix") return ["pix"];
-  if (paymentMethod === "card") return ["credit_card"];
-  return undefined;
-}
-
-function resolveCaptureMethodField(
-  paymentMethod?: PaymentMethod
-): InfinitePayCaptureMethod | undefined {
-  if (paymentMethod === "pix") return "pix";
-  if (paymentMethod === "card") return "credit_card";
-  return undefined;
-}
 
 export function getInfinitePayHandle(): string {
   return process.env.INFINITEPAY_HANDLE?.trim().replace(/^\$/, "") ?? "";
@@ -42,22 +23,21 @@ function formatPhoneE164(phone: string): string {
 
 export async function createInfinitePayLink(input: {
   orderId: string;
-  amountCents: number;
+  /** Total com preços Pix (cupom já aplicado). */
+  pixTotalCents: number;
+  /** Itens com unitário Pix. */
   items: OrderItem[];
   customerName: string;
   customerEmail?: string;
   customerPhone: string;
-  paymentMethod?: PaymentMethod;
 }): Promise<{ url: string } | null> {
   const handle = getInfinitePayHandle();
   const siteUrl = getSiteUrl();
   if (!handle || !siteUrl) return null;
 
-  const gatewayItems = buildGatewayItems(input.items, input.amountCents);
-  const captureMethods = resolveCaptureMethods(input.paymentMethod);
-  const captureMethod = resolveCaptureMethodField(input.paymentMethod);
+  const gatewayItems = buildGatewayItemsFromPixTotal(input.items, input.pixTotalCents);
 
-  const payload: Record<string, unknown> = {
+  const payload = {
     handle,
     order_nsu: input.orderId,
     items: gatewayItems,
@@ -70,15 +50,12 @@ export async function createInfinitePayLink(input: {
     },
   };
 
-  // Com capture_methods o checkout restringe ao método escolhido (só Pix ou só cartão).
-  // Sem isso, a InfinitePay exibe a tela de escolha (Apple Pay / Crédito / Pix).
-  if (captureMethods) {
-    payload.origin = "external_checkout";
-    payload.capture_methods = captureMethods;
-    if (captureMethod) payload.capture_method = captureMethod;
-  }
+  const res = await fetch(`${CHECKOUT_API}/links`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-  const res = await postCheckoutLink(payload);
   if (!res.ok) {
     console.error("[InfinitePay] links:", await res.text());
     return null;
@@ -90,19 +67,11 @@ export async function createInfinitePayLink(input: {
   return { url: data.url };
 }
 
-async function postCheckoutLink(payload: Record<string, unknown>) {
-  return fetch(`${CHECKOUT_API}/links`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
 export async function checkInfinitePayPayment(input: {
   orderNsu: string;
   transactionNsu?: string;
   slug?: string;
-}): Promise<{ paid: boolean; captureMethod?: string }> {
+}): Promise<{ paid: boolean; captureMethod?: string; paidAmountCents?: number }> {
   const handle = getInfinitePayHandle();
   if (!handle) return { paid: false };
 
@@ -126,13 +95,19 @@ export async function checkInfinitePayPayment(input: {
     success?: boolean;
     paid?: boolean;
     capture_method?: string;
+    paid_amount?: number;
   };
 
   return {
     paid: Boolean(data.success && data.paid),
     captureMethod: data.capture_method,
+    paidAmountCents: data.paid_amount,
   };
 }
 
-// Re-export for tests / legacy imports
-export { buildInfinitePayItems } from "./infinitepay-checkout";
+export {
+  buildInfinitePayItems,
+  buildGatewayItemsFromPixTotal,
+  getInfinitePayCardTotalCents,
+  INFINITEPAY_PIX_DISCOUNT_PERCENT,
+} from "./infinitepay-checkout";

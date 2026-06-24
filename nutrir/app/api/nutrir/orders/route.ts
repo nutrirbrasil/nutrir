@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isValidCouponCode } from "@/lib/coupons";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
 import { isValidPhoneBR } from "@/lib/br-fields";
-import { computeOrderPricing, getChargedItems } from "@/lib/order-pricing";
+import { computeOrderPricing, getChargedItems, getOrderPricingMethod } from "@/lib/order-pricing";
 import {
   calcLocalPaymentDeadline,
   isLocalPayment,
@@ -66,8 +66,9 @@ export async function POST(request: Request) {
   }
 
   const payment_method = normalizePaymentMethod(body.payment_method);
-  const chargedItems = getChargedItems(body.items, payment_method);
-  const pricing = computeOrderPricing(body.items, payment_method, body.coupon_code);
+  const pricingMethod = getOrderPricingMethod(payment_method);
+  const chargedItems = getChargedItems(body.items, pricingMethod);
+  const pricing = computeOrderPricing(body.items, pricingMethod, body.coupon_code);
   const created_at = new Date().toISOString();
 
   const order: Order = {
@@ -100,12 +101,11 @@ export async function POST(request: Request) {
 
     const link = await createInfinitePayLink({
       orderId: order.id,
-      amountCents: order.total_cents,
+      pixTotalCents: order.total_cents,
       items: order.items,
       customerName: order.customer_name,
       customerEmail: order.customer_email,
       customerPhone: order.customer_phone,
-      paymentMethod: payment_method,
     });
 
     if (!link) {

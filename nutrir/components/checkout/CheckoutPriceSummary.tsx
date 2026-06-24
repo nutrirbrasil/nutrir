@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { formatPrice } from "@/lib/api";
 import type { OrderPricing } from "@/lib/order-pricing";
-import { isCardPayment } from "@/lib/payment-utils";
+import { isOnlinePayment } from "@/lib/payment-utils";
 import type { PaymentMethod } from "@/lib/types";
 
 interface Props {
@@ -13,7 +12,11 @@ interface Props {
 }
 
 export function CheckoutPriceSummary({ pricing, method, compact = false }: Props) {
-  const discountLabel = method === "local_cash" ? "Desconto Dinheiro" : "Desconto Pix";
+  const discountLabel = isOnlinePayment(method)
+    ? "Desconto Pix (10%)"
+    : method === "local_cash"
+      ? "Desconto Dinheiro"
+      : "Desconto Pix";
 
   return (
     <div className={compact ? "space-y-2" : "space-y-3"}>
@@ -22,7 +25,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
       {pricing.show_pix_discount ? (
         <>
           <div className="flex justify-between text-sm">
-            <span>Subtotal</span>
+            <span>{isOnlinePayment(method) ? "Referência cartão" : "Subtotal"}</span>
             <span>{formatPrice(pricing.subtotal_cents)}</span>
           </div>
           <div className="flex justify-between text-sm text-green-600">
@@ -51,17 +54,14 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
           compact ? "text-sm" : "border-t border-nutrir-nude-dark/40 pt-3 text-lg"
         }`}
       >
-        <span>Total</span>
+        <span>{isOnlinePayment(method) ? "Total Pix" : "Total"}</span>
         <span className="text-nutrir-burgundy">{formatPrice(pricing.total_cents)}</span>
       </div>
 
-      {isCardPayment(method) && (
-        <div className="rounded-lg bg-green-50 p-3 text-sm text-nutrir-emerald/90">
-          <p>Pague no Pix e ganhe aproximadamente 10% de desconto!</p>
-          <Link href="/checkout/pagamento" className="mt-1 inline-block font-bold text-nutrir-burgundy">
-            Pagar no Pix
-          </Link>
-        </div>
+      {isOnlinePayment(method) && !compact && (
+        <p className="rounded-lg bg-nutrir-emerald/5 p-3 text-sm text-nutrir-emerald/90">
+          No checkout você escolhe Pix (10% OFF — valor acima) ou cartão no valor de referência.
+        </p>
       )}
     </div>
   );

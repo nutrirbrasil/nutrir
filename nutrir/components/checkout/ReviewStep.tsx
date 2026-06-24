@@ -11,8 +11,10 @@ import { nutrirApi, PAYMENT_METHOD_SHORT_LABELS } from "@/lib/api";
 import type { CheckoutDraft } from "@/lib/checkout-draft";
 import { useCheckout } from "@/lib/checkout-context";
 import {
+  computeCheckoutDisplayPricing,
   computeOrderPricing,
   getChargedItems,
+  getOrderPricingMethod,
 } from "@/lib/order-pricing";
 import { getReviewLocalPaymentNote } from "@/lib/local-payment-copy";
 import { isLocalPayment, isOnlinePayment, normalizePaymentMethod } from "@/lib/payment-utils";
@@ -29,13 +31,22 @@ function canReusePendingOrder(
   method: PaymentMethod
 ): boolean {
   if (existing.payment_status !== "pending") return false;
-  if (normalizePaymentMethod(existing.payment_method) !== method) return false;
+  if (
+    !isOnlinePayment(method) &&
+    normalizePaymentMethod(existing.payment_method) !== method
+  ) {
+    return false;
+  }
+  if (isOnlinePayment(method) && !isOnlinePayment(existing.payment_method)) {
+    return false;
+  }
 
-  const pricing = computeOrderPricing(draft.items, method, draft.coupon_code);
+  const pricingMethod = getOrderPricingMethod(method);
+  const pricing = computeOrderPricing(draft.items, pricingMethod, draft.coupon_code);
   if (existing.total_cents !== pricing.total_cents) return false;
   if ((existing.coupon_code ?? "") !== (draft.coupon_code ?? "")) return false;
 
-  const charged = getChargedItems(draft.items, method);
+  const charged = getChargedItems(draft.items, pricingMethod);
   if (existing.items.length !== charged.length) return false;
 
   return existing.items.every(
@@ -62,7 +73,7 @@ export function ReviewStep() {
 
   const d = draft;
   const method = normalizePaymentMethod(d.payment_method);
-  const pricing = computeOrderPricing(d.items, method, d.coupon_code);
+  const pricing = computeCheckoutDisplayPricing(d.items, method, d.coupon_code);
   const pickupLines = formatPickupDisplayLines(d.pickup_display);
 
   function buildPayload(): CreateOrderPayload {
@@ -178,6 +189,11 @@ export function ReviewStep() {
             {isLocalPayment(method) && (
               <p className="text-sm leading-relaxed text-nutrir-emerald/70">
                 {getReviewLocalPaymentNote(isPatient)}
+              </p>
+            )}
+            {isOnlinePayment(method) && (
+              <p className="text-sm leading-relaxed text-nutrir-emerald/70">
+                No checkout InfinitePay: Pix com 10% de desconto ou cartão no valor de referência.
               </p>
             )}
           </div>
