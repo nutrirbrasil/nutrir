@@ -128,15 +128,3 @@ export function getChargedItems(items: OrderItem[], method?: PaymentMethod): Ord
     price_cents: getItemChargeCents(item, method),
   }));
 }
-
-export function computeCheckoutDisplayPricing(
-  items: OrderItem[],
-  method?: PaymentMethod,
-  couponCode?: string | null
-): OrderPricing {
-  return computeOrderPricing(items, method, couponCode);
-}
-
-export function getCheckoutLineItemCents(item: OrderItem, method?: PaymentMethod): number {
-  return getItemChargeCents(item, method);
-}

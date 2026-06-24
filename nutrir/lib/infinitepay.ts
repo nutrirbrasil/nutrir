@@ -1,24 +1,49 @@
-import { buildGatewayItemsFromTotal } from "./infinitepay-checkout";
 import type { OrderItem } from "./types";
 
 const CHECKOUT_API = "https://api.checkout.infinitepay.io";
 
-export function getInfinitePayHandle(): string {
-  return process.env.INFINITEPAY_HANDLE?.trim().replace(/^\$/, "") ?? "";
-}
-
-export function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "";
-}
-
 export function isInfinitePayConfigured(): boolean {
-  return Boolean(getInfinitePayHandle() && getSiteUrl());
+  const handle = process.env.INFINITEPAY_HANDLE?.trim().replace(/^\$/, "") ?? "";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "";
+  return Boolean(handle && siteUrl);
 }
 
 function formatPhoneE164(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   if (digits.startsWith("55") && digits.length >= 12) return `+${digits}`;
   return `+55${digits}`;
+}
+
+function buildGatewayItems(
+  items: OrderItem[],
+  totalCents: number
+): { quantity: number; price: number; description: string }[] {
+  const currentTotal = items.reduce((sum, item) => sum + item.price_cents * item.quantity, 0);
+  let scaled = items;
+
+  if (currentTotal > 0 && currentTotal !== totalCents) {
+    const factor = totalCents / currentTotal;
+    scaled = items.map((item) => ({
+      ...item,
+      price_cents: Math.max(1, Math.floor(item.price_cents * factor)),
+    }));
+
+    let total = scaled.reduce((sum, item) => sum + item.price_cents * item.quantity, 0);
+    const diff = totalCents - total;
+    if (diff !== 0) {
+      const last = scaled[scaled.length - 1];
+      if (last) {
+        const perUnit = Math.round(diff / last.quantity);
+        last.price_cents = Math.max(1, last.price_cents + perUnit);
+      }
+    }
+  }
+
+  return scaled.map((item) => ({
+    quantity: item.quantity,
+    price: item.price_cents,
+    description: item.name.slice(0, 120),
+  }));
 }
 
 /** Checkout InfinitePay apenas para cartão online. */
@@ -30,16 +55,14 @@ export async function createInfinitePayLink(input: {
   customerEmail?: string;
   customerPhone: string;
 }): Promise<{ url: string } | null> {
-  const handle = getInfinitePayHandle();
-  const siteUrl = getSiteUrl();
+  const handle = process.env.INFINITEPAY_HANDLE?.trim().replace(/^\$/, "") ?? "";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "";
   if (!handle || !siteUrl) return null;
-
-  const gatewayItems = buildGatewayItemsFromTotal(input.items, input.totalCents);
 
   const payload = {
     handle,
     order_nsu: input.orderId,
-    items: gatewayItems,
+    items: buildGatewayItems(input.items, input.totalCents),
     redirect_url: `${siteUrl}/checkout/sucesso?order=${encodeURIComponent(input.orderId)}`,
     webhook_url: `${siteUrl}/api/nutrir/webhooks/infinitepay`,
     customer: {
@@ -72,8 +95,8 @@ export async function checkInfinitePayPayment(input: {
   orderNsu: string;
   transactionNsu?: string;
   slug?: string;
-}): Promise<{ paid: boolean; captureMethod?: string; paidAmountCents?: number }> {
-  const handle = getInfinitePayHandle();
+}): Promise<{ paid: boolean }> {
+  const handle = process.env.INFINITEPAY_HANDLE?.trim().replace(/^\$/, "") ?? "";
   if (!handle) return { paid: false };
 
   const res = await fetch(`${CHECKOUT_API}/payment_check`, {
@@ -92,18 +115,6 @@ export async function checkInfinitePayPayment(input: {
     return { paid: false };
   }
 
-  const data = (await res.json()) as {
-    success?: boolean;
-    paid?: boolean;
-    capture_method?: string;
-    paid_amount?: number;
-  };
-
-  return {
-    paid: Boolean(data.success && data.paid),
-    captureMethod: data.capture_method,
-    paidAmountCents: data.paid_amount,
-  };
+  const data = (await res.json()) as { success?: boolean; paid?: boolean };
+  return { paid: Boolean(data.success && data.paid) };
 }
-
-export { buildGatewayItemsFromTotal, buildInfinitePayItems, scaleItemsToTotalCents } from "./infinitepay-checkout";

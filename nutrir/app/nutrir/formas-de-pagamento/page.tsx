@@ -29,16 +29,16 @@ export default function FormasDePagamentoPage() {
 
       <InfoSection title="Pix online">
         <p>
-          Pagamento imediato pelo site, com confirmação rápida e <strong>aproximadamente 10% de
-          desconto</strong> em relação ao valor de referência no cartão. A produção começa assim que
-          o pagamento é confirmado.
+          Pagamento pelo site com QR Code e Pix copia e cola, com{" "}
+          <strong>aproximadamente 10% de desconto</strong> em relação ao cartão. A confirmação é
+          feita após identificarmos o pagamento no banco; em seguida iniciamos a produção.
         </p>
       </InfoSection>
 
       <InfoSection title="Cartão online">
         <p>
-          Pague com cartão de crédito ou débito direto no checkout do site. A confirmação é
-          automática e a produção começa assim que o pagamento é aprovado.
+          Pague com cartão de crédito no checkout seguro InfinitePay. A confirmação é automática e
+          a produção começa assim que o pagamento é aprovado.
         </p>
       </InfoSection>
 

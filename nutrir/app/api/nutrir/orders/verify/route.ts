@@ -30,7 +30,6 @@ export async function POST(request: Request) {
     const notified = await notifyOrderPaid(body.order_id, {
       infinitepay_transaction_nsu: body.transaction_nsu ?? order.infinitepay_transaction_nsu,
       infinitepay_slug: body.slug ?? order.infinitepay_slug,
-      infinitepay_capture_method: check.captureMethod,
     });
     const updated = await findOrder(body.order_id);
     return NextResponse.json({ order: updated, paid: true, notified });
@@ -38,4 +37,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ order, paid: false, notified: false });
 }
-

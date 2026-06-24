@@ -3,16 +3,13 @@
 import { formatPrice } from "@/lib/api";
 import type { CheckoutDraft } from "@/lib/checkout-draft";
 import { formatItemAddonsLabel } from "@/lib/item-addons-label";
-import {
-  computeCheckoutDisplayPricing,
-  getCheckoutLineItemCents,
-} from "@/lib/order-pricing";
+import { computeOrderPricing, getItemChargeCents } from "@/lib/order-pricing";
 import { normalizePaymentMethod } from "@/lib/payment-utils";
 import { CheckoutPriceSummary } from "@/components/checkout/CheckoutPriceSummary";
 
 export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
   const method = normalizePaymentMethod(draft.payment_method);
-  const pricing = computeCheckoutDisplayPricing(draft.items, method, draft.coupon_code);
+  const pricing = computeOrderPricing(draft.items, method, draft.coupon_code);
 
   return (
     <aside className="card sticky top-4">
@@ -32,7 +29,7 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
               </span>
             </span>
             <span className="font-semibold text-nutrir-burgundy">
-              {formatPrice(getCheckoutLineItemCents(item, method) * item.quantity)}
+              {formatPrice(getItemChargeCents(item, method) * item.quantity)}
             </span>
           </li>
         ))}

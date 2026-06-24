@@ -1,9 +1,5 @@
 # Dependencies
 node_modules/
-venv/
-.venv/
-__pycache__/
-*.py[cod]
 
 # Environment
 .env
@@ -14,6 +10,7 @@ __pycache__/
 .next/
 out/
 build/
+*.tsbuildinfo
 
 # IDE / OS
 .idea/
@@ -21,12 +18,8 @@ build/
 *.swp
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log
 npm-debug.log*
-
-# Python
-*.egg-info/
-dist/
-.pytest_cache/

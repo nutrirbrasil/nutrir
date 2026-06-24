@@ -6,10 +6,10 @@ export interface CreateOrderResponse {
   checkout_url?: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_NUTRIR_API_URL?.replace(/\/$/, "") ?? "";
+const API_PREFIX = "/api";
 
 function resolveUrl(path: string): string {
-  return API_URL ? `${API_URL}${path}` : `/api${path}`;
+  return `${API_PREFIX}${path}`;
 }
 
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
@@ -23,11 +23,7 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
       },
     });
   } catch {
-    throw new Error(
-      API_URL
-        ? "Não foi possível conectar ao servidor. Verifique se o backend está rodando."
-        : "Não foi possível enviar o pedido. Tente novamente em instantes."
-    );
+    throw new Error("Não foi possível enviar o pedido. Tente novamente em instantes.");
   }
 
   if (!res.ok) {

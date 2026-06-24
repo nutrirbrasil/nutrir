@@ -45,6 +45,5 @@ export interface Order extends CreateOrderPayload {
   checkout_url?: string;
   infinitepay_slug?: string;
   infinitepay_transaction_nsu?: string;
-  infinitepay_capture_method?: string;
   pix_telegram_notified?: boolean;
 }

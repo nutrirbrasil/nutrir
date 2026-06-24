@@ -7,8 +7,6 @@ export async function POST(request: Request) {
     order_nsu?: string;
     transaction_nsu?: string;
     invoice_slug?: string;
-    capture_method?: string;
-    paid_amount?: number;
   };
 
   try {
@@ -34,9 +32,7 @@ export async function POST(request: Request) {
   await notifyOrderPaid(orderId, {
     infinitepay_transaction_nsu: body.transaction_nsu,
     infinitepay_slug: body.invoice_slug,
-    infinitepay_capture_method: body.capture_method,
   });
 
   return NextResponse.json({ ok: true });
 }
-

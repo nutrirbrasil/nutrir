@@ -10,7 +10,7 @@ import {
   isOnlinePixPayment,
   normalizePaymentMethod,
 } from "@/lib/payment-utils";
-import { isPixConfigured } from "@/lib/pix-config";
+import { isPixConfigured } from "@/lib/pix-brcode";
 import { findOrder, saveOrder, updateOrderPayment } from "@/lib/order-store";
 import { findPacienteByCpf } from "@/lib/supabase-db";
 import { formatOrderTelegramMessage, sendTelegramMessage } from "@/lib/telegram";

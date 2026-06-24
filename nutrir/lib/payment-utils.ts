@@ -7,11 +7,6 @@ export function normalizePaymentMethod(method?: PaymentMethod): PaymentMethod {
   return method ?? "pix";
 }
 
-export function isOnlinePayment(method?: PaymentMethod): boolean {
-  const m = normalizePaymentMethod(method);
-  return m === "pix" || m === "card";
-}
-
 export function isOnlinePixPayment(method?: PaymentMethod): boolean {
   return normalizePaymentMethod(method) === "pix";
 }

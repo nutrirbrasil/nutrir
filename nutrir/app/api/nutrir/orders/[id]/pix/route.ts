@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { findOrder } from "@/lib/order-store";
-import { buildPixCopiaECola } from "@/lib/pix-brcode";
-import { getPixCity, getPixKey, getPixReceiverName, isPixConfigured } from "@/lib/pix-config";
+import { buildPixCopiaECola, getPixCity, getPixKey, getPixReceiverName, isPixConfigured } from "@/lib/pix-brcode";
 import { notifyPixPendingOrder } from "@/lib/pix-notify";
 
 export async function GET(

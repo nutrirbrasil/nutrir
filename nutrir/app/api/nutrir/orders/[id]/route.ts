@@ -19,13 +19,10 @@ export async function GET(
       slug: order.infinitepay_slug,
     });
     if (check.paid) {
-      await notifyOrderPaid(order.id, {
-        infinitepay_capture_method: check.captureMethod,
-      });
+      await notifyOrderPaid(order.id);
     }
   }
 
   const latest = (await findOrder(params.id)) ?? order;
   return NextResponse.json({ order: latest });
 }
-

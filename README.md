@@ -1,22 +1,21 @@
 # Nutrição — monorepo
 
-Monorepo com os produtos da família Nutrir / Pauli:
+Sites da família Nutrir / Pauli:
 
 | Projeto | Pasta | Porta dev | URL produção |
 |---------|-------|-----------|--------------|
 | **Nutrir** (marmitas) | `nutrir/` | 3000 | `https://nutrirpicarras.com.br` |
 | **Pauli** (nutricionista) | `pauli/` | 3002 | `https://pauli.nutrirpicarras.com.br` |
-| **Nootr** | `nootr/` | 3001 | (futuro) |
-| **API** | `backend/` | 8000 | FastAPI legado |
+| **Nootr** | `nootr/` | 3001 | (em desenvolvimento) |
 
 ## Estrutura
 
 ```
 nutricao/
-├── nutrir/            # Site da marmitaria (Next.js)
+├── nutrir/            # Site da marmitaria (Next.js + API em app/api)
 ├── pauli/             # Site profissional da nutricionista (Next.js)
-├── nootr/             # App de substituições alimentares
-├── backend/           # API FastAPI
+├── nootr/             # App de substituições alimentares (Next.js)
+├── backend/           # API FastAPI (Nootr)
 ├── supabase/          # Migrations SQL
 ├── deploy/            # Configs nginx de referência
 └── ecosystem.config.js
@@ -24,9 +23,9 @@ nutricao/
 
 > A pasta raiz chama-se **nutricao** para não confundir com **nutrir/** (site das marmitas).
 
-## Supabase (MCP)
+## Supabase
 
-Projeto **`ocjtzacohamatjbzlind`** — usado pelo site **nutrir/** (pedidos e auth).
+Projeto **`ocjtzacohamatjbzlind`** — pedidos, clientes e auth do **nutrir/**.
 
 Credenciais: `nutrir/.env.local`
 
@@ -63,6 +62,15 @@ npm install
 npm run dev
 ```
 
+[http://localhost:3001](http://localhost:3001)
+
+API (em outro terminal, na raiz do monorepo):
+
+```bash
+pip install -r backend/requirements.txt
+uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
 ## VPS (Hetzner + Cloudflare)
 
 ### Caminho no servidor
@@ -70,17 +78,6 @@ npm run dev
 ```text
 /home/zeedo/nutricao/
 ```
-
-Se ainda estiver em `~/nutrir`, renomeie:
-
-```bash
-mv ~/nutrir ~/nutricao
-pm2 delete nutrir-web 2>/dev/null
-cd ~/nutricao && pm2 start ecosystem.config.js
-pm2 save
-```
-
-Atualize os `cwd` no nginx se referenciavam `/home/zeedo/nutrir/`.
 
 ### Deploy Nutrir
 
@@ -115,7 +112,7 @@ pm2 restart pauli-web
 
 ### Nginx
 
-- **nutrirpicarras.com.br** → `127.0.0.1:3001` (site existente)
+- **nutrirpicarras.com.br** → `127.0.0.1:3001`
 - **pauli.nutrirpicarras.com.br** → `127.0.0.1:3002` — ver `deploy/nginx-pauli.conf`
 
 ```bash
