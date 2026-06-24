@@ -28,13 +28,13 @@ const ONLINE_OPTIONS: PaymentOption[] = [
   {
     id: "pix",
     label: "Pix",
-    hint: "QR Code e copia e cola no site. Produção após confirmação.",
+    hint: "Pagamento imediato, produção imediata.",
     badge: "10% OFF",
   },
   {
     id: "card",
     label: "Cartão Online",
-    hint: "Checkout seguro InfinitePay. Pagamento imediato.",
+    hint: "Produção imediata após confirmação de pagamento.",
   },
 ];
 

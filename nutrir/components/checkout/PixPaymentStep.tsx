@@ -6,12 +6,14 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CheckoutShell } from "@/components/checkout/CheckoutShell";
 import { formatPrice, nutrirApi } from "@/lib/api";
+import { useCheckout } from "@/lib/checkout-context";
 import { getWhatsAppUrl } from "@/lib/payment-utils";
 
 const QRCode = dynamic(() => import("react-qr-code"), { ssr: false });
 
 export function PixPaymentStep() {
   const searchParams = useSearchParams();
+  const { resetCheckout } = useCheckout();
   const orderId = searchParams.get("order");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -41,6 +43,8 @@ export function PixPaymentStep() {
           notifiedRef.current = true;
           await nutrirApi.notifyPixPayment(orderId!);
         }
+
+        resetCheckout();
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Erro ao carregar Pix.");
@@ -54,7 +58,7 @@ export function PixPaymentStep() {
     return () => {
       cancelled = true;
     };
-  }, [orderId]);
+  }, [orderId, resetCheckout]);
 
   async function handleCopy() {
     if (!copiaCola) return;

@@ -100,8 +100,7 @@ export function ReviewStep() {
 
   function goToPixPage(orderId: string) {
     cart.clearCart();
-    resetCheckout();
-    router.push(`/checkout/pix?order=${orderId}`);
+    window.location.href = `/checkout/pix?order=${encodeURIComponent(orderId)}`;
   }
 
   async function handleFinalize() {
@@ -164,7 +163,7 @@ export function ReviewStep() {
 
   function onlinePaymentNote(): string {
     if (isOnlinePixPayment(method)) {
-      return "Pix no site com QR Code e copia e cola. A confirmação é feita manualmente após o pagamento.";
+      return "Pagamento imediato via Pix no site. Produção começa após confirmarmos o pagamento.";
     }
     if (isOnlineCardPayment(method)) {
       return "Pagamento com cartão de crédito via InfinitePay.";
