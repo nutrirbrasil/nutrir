@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { FiX } from "react-icons/fi";
+import { ComboNavLink } from "@/components/ComboNavLink";
 import { COMBO_MENU_LINKS } from "@/lib/combo-nav-links";
 import { NUTRIR_MENU_LINKS } from "@/components/NutrirNavMenu";
 
@@ -73,12 +74,13 @@ export function MobileNavDrawer({ open, onClose }: Props) {
               </li>
               {COMBO_MENU_LINKS.map((link) => (
                 <li key={link.sectionId}>
-                  <Link
+                  <ComboNavLink
                     href={link.href}
+                    sectionId={link.sectionId}
+                    label={link.label}
                     className="block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-nutrir-emerald/85 transition hover:bg-nutrir-nude"
-                  >
-                    {link.label}
-                  </Link>
+                    onNavigate={onClose}
+                  />
                 </li>
               ))}
             </ul>

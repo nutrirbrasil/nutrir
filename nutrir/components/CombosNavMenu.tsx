@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
-import { COMBO_MENU_LINKS, isCombosHome } from "@/lib/combo-nav-links";
+import { ComboNavLink, COMBO_MENU_LINKS } from "@/components/ComboNavLink";
+import { isCombosHome } from "@/lib/combo-nav-links";
 
 export function CombosNavMenu({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
   const pathname = usePathname();
@@ -27,6 +27,8 @@ export function CombosNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
     setOpen(false);
   }, [pathname]);
 
+  const close = () => setOpen(false);
+
   const triggerClass =
     variant === "desktop"
       ? `inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition ${
@@ -46,8 +48,13 @@ export function CombosNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
           open ? "visible opacity-100" : "invisible opacity-0"
         }`
       : `mt-1 space-y-1 overflow-hidden rounded-xl border border-nutrir-nude/20 bg-nutrir-burgundy-dark/40 p-2 transition-all ${
-          open ? "max-h-48 opacity-100" : "max-h-0 border-transparent p-0 opacity-0"
+          open ? "max-h-64 opacity-100" : "max-h-0 border-transparent p-0 opacity-0"
         }`;
+
+  const linkClass =
+    variant === "desktop"
+      ? "block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald transition hover:bg-nutrir-nude hover:text-nutrir-burgundy"
+      : "block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/90 transition hover:bg-nutrir-nude/10";
 
   return (
     <div
@@ -75,13 +82,12 @@ export function CombosNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
           <ul className={panelClass} role="menu">
             {COMBO_MENU_LINKS.map((item) => (
               <li key={item.sectionId} role="none">
-                <Link
+                <ComboNavLink
                   href={item.href}
-                  role="menuitem"
-                  className="block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald transition hover:bg-nutrir-nude hover:text-nutrir-burgundy"
-                >
-                  {item.label}
-                </Link>
+                  sectionId={item.sectionId}
+                  label={item.label}
+                  className={linkClass}
+                />
               </li>
             ))}
           </ul>
@@ -90,13 +96,13 @@ export function CombosNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
         <ul className={panelClass} role="menu">
           {COMBO_MENU_LINKS.map((item) => (
             <li key={item.sectionId} role="none">
-              <Link
+              <ComboNavLink
                 href={item.href}
-                role="menuitem"
-                className="block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/90 transition hover:bg-nutrir-nude/10"
-              >
-                {item.label}
-              </Link>
+                sectionId={item.sectionId}
+                label={item.label}
+                className={linkClass}
+                onNavigate={close}
+              />
             </li>
           ))}
         </ul>

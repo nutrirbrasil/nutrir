@@ -103,62 +103,64 @@ export function KitCard({ kit }: Props) {
 
   return (
     <>
-      <article className="card flex h-full flex-col overflow-hidden p-0">
-        <div className="bg-nutrir-emerald px-5 py-5 text-center">
-          <span className="text-3xl">{kitEmoji(kit.id)}</span>
-          <h3 className="mt-2 font-display text-2xl font-bold text-nutrir-nude">{kit.name}</h3>
-          <p className="mx-auto mt-1 min-h-[4.5rem] max-w-[16rem] text-sm leading-relaxed text-nutrir-nude/75">
-            {kit.description}
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowContent(true)}
-            className="mt-3 text-sm font-semibold text-nutrir-nude underline underline-offset-4 decoration-nutrir-nude/90 hover:decoration-nutrir-nude"
-          >
-            Ver conteúdo do combo
-          </button>
-        </div>
-
-        <div className="flex flex-1 flex-col space-y-4 bg-nutrir-nude p-5">
-          <div className="flex justify-center gap-2">
-            {(["P", "G"] as MarmitaSize[]).map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSize(s)}
-                className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
-                  size === s
-                    ? "bg-nutrir-burgundy text-nutrir-nude"
-                    : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
+      <article className="card overflow-hidden p-0">
+        <div className="flex flex-col md:flex-row md:items-stretch">
+          <div className="flex shrink-0 flex-col items-center justify-center bg-nutrir-emerald px-6 py-8 text-center md:w-56 md:py-10 lg:w-64">
+            <span className="text-4xl">{kitEmoji(kit.id)}</span>
+            <h3 className="mt-3 font-display text-2xl font-bold text-nutrir-nude">{kit.name}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-nutrir-nude/75">{kit.description}</p>
+            <button
+              type="button"
+              onClick={() => setShowContent(true)}
+              className="mt-4 text-sm font-semibold text-nutrir-nude underline underline-offset-4 decoration-nutrir-nude/90 hover:decoration-nutrir-nude"
+            >
+              Ver conteúdo do combo
+            </button>
           </div>
 
-          {kit.id === "misto" && (
-            <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-nutrir-emerald/15 bg-nutrir-cream/50 px-3 py-2.5 text-left text-sm leading-snug text-nutrir-emerald">
-              <input
-                type="checkbox"
-                checked={includeVeg}
-                onChange={(e) => setIncludeVeg(e.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-nutrir-burgundy"
-              />
-              <span>Deseja incluir marmitas vegetarianas também?</span>
-            </label>
-          )}
+          <div className="flex min-w-0 flex-1 flex-col bg-nutrir-nude p-5 md:p-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex gap-2">
+                {(["P", "G"] as MarmitaSize[]).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSize(s)}
+                    className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                      size === s
+                        ? "bg-nutrir-burgundy text-nutrir-nude"
+                        : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
 
-          <div className="space-y-3">
-            {kit.tiers.map((tier) => (
-              <TierRow
-                key={tier.meals}
-                kit={kit}
-                tier={tier}
-                size={size}
-                includeVeg={includeVeg}
-              />
-            ))}
+              {kit.id === "misto" && (
+                <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2.5 rounded-lg border border-nutrir-emerald/15 bg-nutrir-cream/50 px-3 py-2.5 text-left text-sm leading-snug text-nutrir-emerald">
+                  <input
+                    type="checkbox"
+                    checked={includeVeg}
+                    onChange={(e) => setIncludeVeg(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-nutrir-burgundy"
+                  />
+                  <span>Deseja incluir marmitas vegetarianas também?</span>
+                </label>
+              )}
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {kit.tiers.map((tier) => (
+                <TierRow
+                  key={tier.meals}
+                  kit={kit}
+                  tier={tier}
+                  size={size}
+                  includeVeg={includeVeg}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </article>

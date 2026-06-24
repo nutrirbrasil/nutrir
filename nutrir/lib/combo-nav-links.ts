@@ -6,6 +6,8 @@ export const COMBO_SECTION_IDS = {
   montar: "combo-montar",
 } as const;
 
+export const COMBO_NAV_EVENT = "nutrir:combo-nav";
+
 export const COMBO_MENU_LINKS = [
   { href: `/#${COMBO_SECTION_IDS.frango}`, label: "Frango", sectionId: COMBO_SECTION_IDS.frango },
   { href: `/#${COMBO_SECTION_IDS.carne}`, label: "Carne", sectionId: COMBO_SECTION_IDS.carne },
@@ -22,6 +24,26 @@ export const COMBO_MENU_LINKS = [
   },
 ] as const;
 
+export type ComboSectionId = (typeof COMBO_MENU_LINKS)[number]["sectionId"];
+
 export function isCombosHome(pathname: string) {
   return pathname === "/";
+}
+
+/** Navegação por âncora — funciona mesmo já estando na home (mesma URL). */
+export function navigateToComboSection(sectionId: ComboSectionId) {
+  if (typeof window === "undefined") return;
+
+  const hash = `#${sectionId}`;
+  if (window.location.hash !== hash) {
+    window.history.pushState(null, "", hash);
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(COMBO_NAV_EVENT, { detail: { sectionId } })
+  );
+}
+
+export function isMontarSection(sectionId: string) {
+  return sectionId === COMBO_SECTION_IDS.montar;
 }
