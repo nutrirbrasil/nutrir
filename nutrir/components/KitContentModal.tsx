@@ -6,10 +6,11 @@ import type { KitProduct } from "@/lib/menu-data";
 
 interface Props {
   kit: KitProduct;
+  includeVeg?: boolean;
   onClose: () => void;
 }
 
-export function KitContentModal({ kit, onClose }: Props) {
+export function KitContentModal({ kit, includeVeg = false, onClose }: Props) {
   return (
     <>
       <button
@@ -43,7 +44,9 @@ export function KitContentModal({ kit, onClose }: Props) {
 
         <ul className="space-y-4">
           {kit.tiers.map((tier) => {
-            const lines = getKitContentLines(kit.id, tier.meals);
+            const lines = getKitContentLines(kit.id, tier.meals, {
+              includeVeg: kit.id === "misto" ? includeVeg : undefined,
+            });
             return (
               <li
                 key={tier.meals}

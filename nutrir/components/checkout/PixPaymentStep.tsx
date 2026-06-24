@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CheckoutShell } from "@/components/checkout/CheckoutShell";
+import { formatOrderLabel } from "@/lib/order-id";
 import { formatPrice, nutrirApi } from "@/lib/api";
 import { useCheckout } from "@/lib/checkout-context";
 
@@ -85,7 +86,7 @@ export function PixPaymentStep() {
     );
   }
 
-  const orderLabel = orderId.replace("order-", "#");
+  const orderLabel = formatOrderLabel(orderId);
 
   return (
     <CheckoutShell title="Pague com Pix">

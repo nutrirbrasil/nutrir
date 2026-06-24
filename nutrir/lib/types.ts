@@ -46,4 +46,6 @@ export interface Order extends CreateOrderPayload {
   infinitepay_slug?: string;
   infinitepay_transaction_nsu?: string;
   pix_telegram_notified?: boolean;
+  /** Já recebeu pelo menos uma notificação no Telegram (próximas = atualização). */
+  telegram_notified?: boolean;
 }

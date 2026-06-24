@@ -1,20 +1,37 @@
 import { NextResponse } from "next/server";
+import { switchOrderPaymentMethod } from "@/lib/order-payment-switch";
 import { findOrder } from "@/lib/order-store";
 import { buildPixCopiaECola, getPixCity, getPixKey, getPixReceiverName, isPixConfigured } from "@/lib/pix-brcode";
 import { notifyPixPendingOrder } from "@/lib/pix-notify";
+import { isLocalPayment, isOnlinePixPayment } from "@/lib/payment-utils";
+
+async function resolvePixOrder(orderId: string) {
+  let order = await findOrder(orderId);
+  if (!order) return null;
+
+  if (!isOnlinePixPayment(order.payment_method)) {
+    if (order.payment_status === "confirmed" || !isLocalPayment(order.payment_method)) {
+      return { error: "Este pedido não é Pix online." as const };
+    }
+    order = await switchOrderPaymentMethod(order, "pix");
+  }
+
+  return { order };
+}
 
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const order = await findOrder(params.id);
-  if (!order) {
+  const resolved = await resolvePixOrder(params.id);
+  if (!resolved) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
-
-  if (order.payment_method !== "pix") {
-    return NextResponse.json({ error: "Este pedido não é Pix online." }, { status: 400 });
+  if ("error" in resolved) {
+    return NextResponse.json({ error: resolved.error }, { status: 400 });
   }
+
+  const order = resolved.order;
 
   if (order.payment_status === "confirmed") {
     return NextResponse.json({ error: "Pedido já pago." }, { status: 400 });
@@ -47,13 +64,12 @@ export async function POST(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const order = await findOrder(params.id);
-  if (!order) {
+  const resolved = await resolvePixOrder(params.id);
+  if (!resolved) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
-
-  if (order.payment_method !== "pix") {
-    return NextResponse.json({ error: "Este pedido não é Pix online." }, { status: 400 });
+  if ("error" in resolved) {
+    return NextResponse.json({ error: resolved.error }, { status: 400 });
   }
 
   const result = await notifyPixPendingOrder(params.id);

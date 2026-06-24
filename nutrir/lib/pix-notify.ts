@@ -1,6 +1,6 @@
 import { findPacienteByCpf } from "./supabase-db";
 import { findOrder, patchOrderCache, saveOrder } from "./order-store";
-import { formatOrderTelegramMessage, sendTelegramMessage } from "./telegram";
+import { sendOrderTelegramNotification } from "./order-telegram";
 
 const notifiedOrderIds = new Set<string>();
 
@@ -20,16 +20,15 @@ export async function notifyPixPendingOrder(
     ? await findPacienteByCpf(order.customer_cpf)
     : null;
 
-  const ok = await sendTelegramMessage(
-    formatOrderTelegramMessage(order, new Date(order.created_at), {
-      isPatient: !!paciente,
-      pixPending: true,
-    })
-  );
+  const ok = await sendOrderTelegramNotification(order, {
+    isPatient: !!paciente,
+    pixPending: true,
+  });
 
   if (ok) {
     notifiedOrderIds.add(orderId);
-    const updated = { ...order, pix_telegram_notified: true };
+    const latest = (await findOrder(orderId)) ?? order;
+    const updated = { ...latest, pix_telegram_notified: true };
     patchOrderCache(orderId, updated);
     await saveOrder(updated);
   }

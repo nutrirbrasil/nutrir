@@ -1,7 +1,7 @@
 import { computeCouponDiscountCents, getCoupon, normalizeCouponCode } from "./coupons";
 import { getComboCardTotalCents } from "./combo-builder-data";
 import { KIT_PRODUCTS, type MarmitaSize } from "./menu-data";
-import { isCardPayment, isCashDiscountPayment } from "./payment-utils";
+import { isCardPayment, isCashDiscountPayment, normalizePaymentMethod } from "./payment-utils";
 import type { OrderItem, PaymentMethod } from "./types";
 
 /** Marmita avulsa: cartão = +R$ 2,00 acima do pix/dinheiro (ex.: 22,99 → 24,99). */
@@ -30,10 +30,10 @@ function isSingleMarmitaItem(item: OrderItem): boolean {
 function parseKitMenuId(menuId: string | null | undefined) {
   if (!menuId) return null;
   const base = menuId.split("-addons-")[0] ?? menuId;
-  const match = base.match(/^kit-(frango|carne|misto)-(\d+)-(P|G)$/);
+  const match = base.match(/^kit-(frango|carne|misto|veg)-(\d+)-(P|G)(?:-veg)?$/);
   if (!match) return null;
   return {
-    kitId: match[1] as "frango" | "carne" | "misto",
+    kitId: match[1] as "frango" | "carne" | "misto" | "veg",
     meals: Number(match[2]),
     size: match[3] as MarmitaSize,
   };
@@ -127,4 +127,45 @@ export function getChargedItems(items: OrderItem[], method?: PaymentMethod): Ord
     ...item,
     price_cents: getItemChargeCents(item, method),
   }));
+}
+
+/** Desfaz preço já cobrado no item para recalcular outro método de pagamento. */
+export function restoreBaseOrderItems(
+  items: OrderItem[],
+  fromMethod?: PaymentMethod
+): OrderItem[] {
+  const from = normalizePaymentMethod(fromMethod);
+  if (!isCardPayment(from) && !isCashDiscountPayment(from)) return items;
+  return items.map((item) => restoreBaseOrderItem(item, from));
+}
+
+function restoreBaseOrderItem(item: OrderItem, from: PaymentMethod): OrderItem {
+  const addons = getItemAddonsCents(item);
+  const charged = item.price_cents;
+
+  if (isCashDiscountPayment(from)) {
+    return { ...item, price_cents: Math.max(0, charged - addons) };
+  }
+
+  if (item.section_id === "combo" || item.item_id === "combo-build") {
+    const listWithoutAddons = charged - addons;
+    let cashBase = listWithoutAddons;
+    while (cashBase > 0 && getComboCardTotalCents(cashBase) > listWithoutAddons) cashBase--;
+    while (getComboCardTotalCents(cashBase + 1) <= listWithoutAddons) cashBase++;
+    return { ...item, price_cents: cashBase };
+  }
+
+  const kit = parseKitMenuId(item.menu_id ?? undefined);
+  if (kit) {
+    const product = KIT_PRODUCTS.find((p) => p.id === kit.kitId);
+    const tier = product?.tiers.find((t) => t.meals === kit.meals);
+    const cashBase = tier?.prices[kit.size]?.cash_total_cents ?? Math.max(0, charged - addons);
+    return { ...item, price_cents: cashBase };
+  }
+
+  if (isSingleMarmitaItem(item)) {
+    return { ...item, price_cents: Math.max(0, charged - addons - MARMITA_CARD_SURCHARGE_CENTS) };
+  }
+
+  return { ...item, price_cents: Math.max(0, charged - addons - MARMITA_CARD_SURCHARGE_CENTS) };
 }

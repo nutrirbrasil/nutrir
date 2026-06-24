@@ -9,9 +9,7 @@ export function getPaymentMethodBanner(isLocal: boolean, isPatient: boolean): st
 }
 
 export function getLocalPaymentNotice(isPatient: boolean): string {
-  if (isPatient) {
-    return "Benefício para pacientes VIP: ao escolher pagamento no local, você declara estar em acompanhamento nutricional com a nutricionista Paula Pastorino. Identificaremos seu pedido, a produção será prioritária e o pagamento pode ser feito tanto online quanto na retirada do pedido.";
-  }
+  if (isPatient) return "";
   return "Ao selecionar essa opção você concorda que precisa realizar o pagamento no local dentro de 24h, dentro do horário de funcionamento e que atraso no pagamento pode ocasionar atraso na produção e entrega.";
 }
 

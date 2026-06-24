@@ -11,9 +11,10 @@ import {
   normalizePaymentMethod,
 } from "@/lib/payment-utils";
 import { isPixConfigured } from "@/lib/pix-brcode";
+import { generateUniqueOrderId } from "@/lib/order-id";
 import { findOrder, saveOrder, updateOrderPayment } from "@/lib/order-store";
 import { findPacienteByCpf } from "@/lib/supabase-db";
-import { formatOrderTelegramMessage, sendTelegramMessage } from "@/lib/telegram";
+import { sendOrderTelegramNotification } from "@/lib/order-telegram";
 import type { CreateOrderPayload, Order, PaymentStatus } from "@/lib/types";
 
 function validate(body: CreateOrderPayload): string | null {
@@ -47,11 +48,7 @@ async function notifyTelegram(order: Order): Promise<boolean> {
   const paciente = order.customer_cpf
     ? await findPacienteByCpf(order.customer_cpf)
     : null;
-  return sendTelegramMessage(
-    formatOrderTelegramMessage(order, new Date(order.created_at), {
-      isPatient: !!paciente,
-    })
-  );
+  return sendOrderTelegramNotification(order, { isPatient: !!paciente });
 }
 
 export async function POST(request: Request) {
@@ -71,11 +68,12 @@ export async function POST(request: Request) {
   const chargedItems = getChargedItems(body.items, payment_method);
   const pricing = computeOrderPricing(body.items, payment_method, body.coupon_code);
   const created_at = new Date().toISOString();
+  const orderId = await generateUniqueOrderId();
 
   const order: Order = {
     ...body,
     items: chargedItems,
-    id: `order-${Date.now()}`,
+    id: orderId,
     status: "pending",
     payment_method,
     payment_status: "pending",

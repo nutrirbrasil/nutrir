@@ -14,7 +14,6 @@ import {
   computeOrderPricing,
   getChargedItems,
 } from "@/lib/order-pricing";
-import { getReviewLocalPaymentNote } from "@/lib/local-payment-copy";
 import {
   isLocalPayment,
   isOnlineCardPayment,
@@ -25,7 +24,6 @@ import { formatPickupDisplayLines } from "@/lib/pickup-schedule";
 import { NUTRIR_STORE_ADDRESS, resolvePickupAddress } from "@/lib/store-info";
 import { useCart } from "@/lib/cart-context";
 import { useProfile } from "@/lib/profile-context";
-import { usePatientStatus } from "@/lib/use-patient-status";
 import type { CreateOrderPayload, Order, PaymentMethod } from "@/lib/types";
 
 function canReusePendingOrder(
@@ -59,9 +57,6 @@ export function ReviewStep() {
   const { draft, ready } = useCheckoutGuard();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const cpfForPatient = draft?.customer_cpf || profile.cpf;
-  const { isPatient } = usePatientStatus(cpfForPatient);
 
   if (!ready || !draft) return null;
 
@@ -160,16 +155,6 @@ export function ReviewStep() {
     }
   }
 
-  function onlinePaymentNote(): string {
-    if (isOnlinePixPayment(method)) {
-      return "Pagamento imediato via Pix no site. Produção começa após confirmarmos o pagamento.";
-    }
-    if (isOnlineCardPayment(method)) {
-      return "Pagamento com cartão de crédito via InfinitePay.";
-    }
-    return "";
-  }
-
   return (
     <CheckoutShell title="Revise os detalhes do seu pedido" backHref="/checkout/pagamento" layout="wide">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,300px)] lg:gap-8">
@@ -202,14 +187,6 @@ export function ReviewStep() {
             <p className="font-semibold text-nutrir-emerald">
               {PAYMENT_METHOD_SHORT_LABELS[method]}
             </p>
-            {isLocalPayment(method) && (
-              <p className="text-sm leading-relaxed text-nutrir-emerald/70">
-                {getReviewLocalPaymentNote(isPatient)}
-              </p>
-            )}
-            {onlinePaymentNote() && (
-              <p className="text-sm leading-relaxed text-nutrir-emerald/70">{onlinePaymentNote()}</p>
-            )}
           </div>
 
           <div className="card">

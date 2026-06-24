@@ -7,6 +7,7 @@ import { CheckoutShell } from "@/components/checkout/CheckoutShell";
 import { nutrirApi } from "@/lib/api";
 import { useCart } from "@/lib/cart-context";
 import { useCheckout } from "@/lib/checkout-context";
+import { formatOrderLabel } from "@/lib/order-id";
 import {
   getWhatsAppUrl,
   isLocalPayment,
@@ -40,12 +41,12 @@ function resolveOnlineViewState(order: Order): ViewState {
 }
 
 function whatsappMessage(orderId: string, order: Order | null, view: ViewState): string {
-  const label = orderId.replace("order-", "#");
+  const label = formatOrderLabel(orderId);
   if (view === "card_confirmed" && order && isOnlineCardPayment(order.payment_method)) {
     return `Olá! Paguei com cartão o pedido ${label} e gostaria de receber atualizações sobre a produção e retirada.`;
   }
   if (view === "local_patient" || view === "local_guest") {
-    return `Olá! Tenho dúvidas sobre meu pedido ${label}.`;
+    return `Olá! Quero receber atualizações sobre meu pedido ${label}.`;
   }
   return `Olá! Fiz o Pix do pedido ${label} e gostaria de receber atualizações sobre a produção e retirada.`;
 }
@@ -219,7 +220,7 @@ export function OrderThankYouStep() {
     );
   }
 
-  const orderLabel = orderId.replace("order-", "#");
+  const orderLabel = formatOrderLabel(orderId);
   const whatsappUpdatesUrl = getWhatsAppUrl(whatsappMessage(orderId, order, view));
   const showUpsell = view !== "local_patient";
 

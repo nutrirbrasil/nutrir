@@ -14,6 +14,7 @@ function mergeCached(id: string, base: Order): Order {
     infinitepay_transaction_nsu: cached.infinitepay_transaction_nsu ?? base.infinitepay_transaction_nsu,
     local_pay_deadline: cached.local_pay_deadline ?? base.local_pay_deadline,
     pix_telegram_notified: cached.pix_telegram_notified ?? base.pix_telegram_notified,
+    telegram_notified: cached.telegram_notified ?? base.telegram_notified,
   };
 }
 

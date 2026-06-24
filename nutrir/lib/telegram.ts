@@ -1,3 +1,4 @@
+import { formatOrderLabel } from "./order-id";
 import { PAYMENT_METHOD_SHORT_LABELS } from "./payment-labels";
 import type { CreateOrderPayload, Order } from "./types";
 
@@ -25,7 +26,7 @@ function formatMoney(cents: number): string {
 export function formatOrderTelegramMessage(
   order: Order,
   orderedAt: Date,
-  options?: { isPatient?: boolean; pixPending?: boolean }
+  options?: { isPatient?: boolean; pixPending?: boolean; isPaymentUpdate?: boolean }
 ): string {
   const namePhone = `${order.customer_name} - ${order.customer_phone.replace(/\D/g, "")}`;
   const items = formatItemsBlock(order.items);
@@ -48,8 +49,11 @@ export function formatOrderTelegramMessage(
   }
 
   const pickup = order.pickup_display ?? order.delivery_date;
+  const title = options?.isPaymentUpdate
+    ? "⚠️ *Atualização do Pagamento*"
+    : "🛒 *Novo pedido Nutrir*";
   const lines = [
-    `🛒 *Novo pedido Nutrir*`,
+    title,
     ``,
     `👤 ${escapeMarkdown(namePhone)}`,
     `📦 ${escapeMarkdown(items)}`,
@@ -57,7 +61,7 @@ export function formatOrderTelegramMessage(
     `💳 ${escapeMarkdown(paymentMethod)} — ${paymentStatus}`,
     `📅 Retirada: ${escapeMarkdown(pickup)}`,
     `🕐 Pedido: ${orderedAt.toLocaleString("pt-BR")}`,
-    `🆔 ${order.id.replace("order-", "#")}`,
+    `🆔 ${formatOrderLabel(order.id)}`,
   ];
 
   if (order.user_notes?.trim()) {

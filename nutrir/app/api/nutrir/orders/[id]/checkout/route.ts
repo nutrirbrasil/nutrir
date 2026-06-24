@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
-import { isOnlineCardPayment, normalizePaymentMethod } from "@/lib/payment-utils";
+import { switchOrderPaymentMethod } from "@/lib/order-payment-switch";
 import { findOrder, patchOrderCache, saveOrder } from "@/lib/order-store";
+import { isLocalPayment, isOnlineCardPayment, normalizePaymentMethod } from "@/lib/payment-utils";
 import type { PaymentMethod } from "@/lib/types";
 
 export async function POST(
@@ -41,13 +42,27 @@ export async function POST(
     );
   }
 
+  let orderToCheckout = order;
+  if (normalizePaymentMethod(order.payment_method) !== method) {
+    if (order.payment_status === "confirmed") {
+      return NextResponse.json({ error: "Pedido já pago." }, { status: 400 });
+    }
+    if (!isLocalPayment(order.payment_method) && !isOnlineCardPayment(order.payment_method)) {
+      return NextResponse.json(
+        { error: "Não é possível alterar a forma de pagamento deste pedido." },
+        { status: 400 }
+      );
+    }
+    orderToCheckout = await switchOrderPaymentMethod(order, method);
+  }
+
   const link = await createInfinitePayLink({
-    orderId: order.id,
-    totalCents: order.total_cents,
-    items: order.items,
-    customerName: order.customer_name,
-    customerEmail: order.customer_email,
-    customerPhone: order.customer_phone,
+    orderId: orderToCheckout.id,
+    totalCents: orderToCheckout.total_cents,
+    items: orderToCheckout.items,
+    customerName: orderToCheckout.customer_name,
+    customerEmail: orderToCheckout.customer_email,
+    customerPhone: orderToCheckout.customer_phone,
   });
 
   if (!link) {
@@ -58,12 +73,12 @@ export async function POST(
   }
 
   const updated = {
-    ...order,
+    ...orderToCheckout,
     checkout_url: link.url,
     payment_method: method,
   };
 
-  patchOrderCache(order.id, updated);
+  patchOrderCache(orderToCheckout.id, updated);
   await saveOrder(updated);
 
   return NextResponse.json({ checkout_url: link.url });

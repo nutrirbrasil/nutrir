@@ -72,9 +72,9 @@ export function PaymentMethodStep() {
 
   if (!ready || !draft) return null;
 
-  const options = cartAnalysis.hasCombo
-    ? [...ONLINE_OPTIONS, ...localOptions]
-    : ONLINE_OPTIONS;
+  const showLocalOptions = cartAnalysis.hasCombo || isPatient;
+  const options = showLocalOptions ? [...ONLINE_OPTIONS, ...localOptions] : ONLINE_OPTIONS;
+  const localNotice = getLocalPaymentNotice(isPatient);
 
   function handleContinue() {
     const next = { ...draft!, payment_method: method };
@@ -121,10 +121,10 @@ export function PaymentMethodStep() {
           ))}
         </div>
 
-        {isLocalPayment(method) && (
+        {isLocalPayment(method) && localNotice && (
           <div className="flex gap-3 rounded-lg border-2 border-amber-400/80 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950 dark:border-amber-500/50 dark:bg-amber-950/30 dark:text-amber-100">
             <FiAlertTriangle className="mt-0.5 shrink-0 text-lg text-amber-600 dark:text-amber-400" aria-hidden />
-            <p>{getLocalPaymentNotice(isPatient)}</p>
+            <p>{localNotice}</p>
           </div>
         )}
 

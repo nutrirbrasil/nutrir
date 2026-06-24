@@ -42,7 +42,7 @@ export interface KitTier {
 }
 
 export interface KitProduct {
-  id: "frango" | "carne" | "misto";
+  id: "frango" | "carne" | "misto" | "veg";
   name: string;
   description: string;
   tiers: KitTier[];
@@ -115,7 +115,7 @@ export const KIT_PRODUCTS: KitProduct[] = [
     id: "carne",
     name: "Kit Carne",
     description:
-      "Feitas de carne magra (patinho). Ideal para quem busca o sabor e a textura da carne vermelha, mas sem sair da dieta.",
+      "Feitas de carne magra (patinho). Ideal para quem busca sabor e textura da carne vermelha, sem sair da dieta.",
     tiers: [
       {
         meals: 7,
@@ -232,6 +232,67 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
     ],
   },
+  {
+    id: "veg",
+    name: "Kit Veg",
+    description:
+      "Marmitas 100% vegetarianas. Ideal para quem busca praticidade com proteína vegetal no dia a dia.",
+    tiers: [
+      {
+        meals: 7,
+        prices: {
+          P: {
+            card_total_cents: 16100,
+            cash_total_cents: 14000,
+            card_per_meal_cents: 2299,
+            cash_per_meal_cents: 1999,
+          },
+          G: {
+            card_total_cents: 17500,
+            cash_total_cents: 15400,
+            card_per_meal_cents: 2499,
+            cash_per_meal_cents: 2199,
+          },
+        },
+      },
+      {
+        meals: 14,
+        note: "Pode ser dividido em 2 encomendas",
+        prices: {
+          P: {
+            card_total_cents: 29400,
+            cash_total_cents: 24500,
+            card_per_meal_cents: 2099,
+            cash_per_meal_cents: 1750,
+          },
+          G: {
+            card_total_cents: 31500,
+            cash_total_cents: 27300,
+            card_per_meal_cents: 2250,
+            cash_per_meal_cents: 1950,
+          },
+        },
+      },
+      {
+        meals: 21,
+        note: "Pode ser dividido em até 3 encomendas",
+        prices: {
+          P: {
+            card_total_cents: 41300,
+            cash_total_cents: 33250,
+            card_per_meal_cents: 1967,
+            cash_per_meal_cents: 1583,
+          },
+          G: {
+            card_total_cents: 45150,
+            cash_total_cents: 38850,
+            card_per_meal_cents: 2150,
+            cash_per_meal_cents: 1850,
+          },
+        },
+      },
+    ],
+  },
 ];
 export interface MarmitaOption {
   id: string;
@@ -252,7 +313,7 @@ export interface MenuSection {
 const PRICES = {
   frango: { P: 2299, G: 2499 },
   carne: { P: 2799, G: 2999 },
-  vegetariano: { P: 2599, G: 2799 },
+  vegetariano: { P: 2199, G: 2399 },
 } as const;
 
 export const MENU_SECTIONS: MenuSection[] = [
