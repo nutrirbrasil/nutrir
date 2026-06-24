@@ -15,12 +15,6 @@ export function isInfinitePayConfigured(): boolean {
   return Boolean(getInfinitePayHandle() && getSiteUrl());
 }
 
-function formatPhoneE164(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("55") && digits.length >= 12) return `+${digits}`;
-  return `+55${digits}`;
-}
-
 export async function createInfinitePayLink(input: {
   orderId: string;
   /** Total com preços Pix (cupom já aplicado). */
@@ -29,7 +23,6 @@ export async function createInfinitePayLink(input: {
   items: OrderItem[];
   customerName: string;
   customerEmail?: string;
-  customerPhone: string;
 }): Promise<{ url: string } | null> {
   const handle = getInfinitePayHandle();
   const siteUrl = getSiteUrl();
@@ -37,17 +30,19 @@ export async function createInfinitePayLink(input: {
 
   const gatewayItems = buildGatewayItemsFromPixTotal(input.items, input.pixTotalCents);
 
+  const customer: Record<string, string> = { name: input.customerName };
+  if (input.customerEmail?.trim()) {
+    customer.email = input.customerEmail.trim().toLowerCase();
+  }
+  // Não enviamos phone_number: a InfinitePay dispara OTP no WhatsApp ao validar o celular.
+
   const payload = {
     handle,
     order_nsu: input.orderId,
     items: gatewayItems,
     redirect_url: `${siteUrl}/checkout/sucesso?order=${encodeURIComponent(input.orderId)}`,
     webhook_url: `${siteUrl}/api/nutrir/webhooks/infinitepay`,
-    customer: {
-      name: input.customerName,
-      ...(input.customerEmail ? { email: input.customerEmail } : {}),
-      phone_number: formatPhoneE164(input.customerPhone),
-    },
+    customer,
   };
 
   const res = await fetch(`${CHECKOUT_API}/links`, {
