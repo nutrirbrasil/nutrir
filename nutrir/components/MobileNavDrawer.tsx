@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { FiX } from "react-icons/fi";
+import { COMBO_MENU_LINKS } from "@/lib/combo-nav-links";
 import { NUTRIR_MENU_LINKS } from "@/components/NutrirNavMenu";
 
 const mainLinks = [
-  { href: "/", label: "Combos" },
   { href: "/marmitas", label: "Marmitas" },
   { href: "/perfil", label: "Perfil" },
 ] as const;
@@ -54,7 +54,37 @@ export function MobileNavDrawer({ open, onClose }: Props) {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-4 py-4">
-          <ul className="space-y-1">
+          <div>
+            <p className="px-4 text-xs font-bold uppercase tracking-[0.2em] text-nutrir-emerald/50">
+              Combos
+            </p>
+            <ul className="mt-2 space-y-1">
+              <li>
+                <Link
+                  href="/"
+                  className={`block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide transition ${
+                    pathname === "/"
+                      ? "bg-nutrir-burgundy text-nutrir-nude"
+                      : "text-nutrir-emerald hover:bg-nutrir-nude"
+                  }`}
+                >
+                  Ver todos
+                </Link>
+              </li>
+              {COMBO_MENU_LINKS.map((link) => (
+                <li key={link.sectionId}>
+                  <Link
+                    href={link.href}
+                    className="block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-nutrir-emerald/85 transition hover:bg-nutrir-nude"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <ul className="mt-4 space-y-1 border-t border-nutrir-nude-dark/50 pt-4">
             {mainLinks.map((link) => (
               <li key={link.href}>
                 <Link

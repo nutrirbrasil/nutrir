@@ -56,9 +56,9 @@ const VEG_LINES: Record<number, KitContentLine[]> = {
     { label: "Ervilha", count: 7 },
     { label: "Grão de Bico", count: 7 },
   ],
-  21: [
-    { label: "Ervilha", count: 11 },
-    { label: "Grão de Bico", count: 10 },
+  28: [
+    { label: "Ervilha", count: 14 },
+    { label: "Grão de Bico", count: 14 },
   ],
 };
 

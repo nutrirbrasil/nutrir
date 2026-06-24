@@ -5,16 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FiMenu, FiShoppingBag, FiUser } from "react-icons/fi";
+import { CombosNavMenu } from "@/components/CombosNavMenu";
 import { MobileNavDrawer } from "@/components/MobileNavDrawer";
 import { NutrirNavMenu } from "@/components/NutrirNavMenu";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
 import { logoUrl } from "@/lib/brand-assets";
 
-const links = [
-  { href: "/", label: "Combo" },
-  { href: "/marmitas", label: "Marmitas" },
-] as const;
+const links = [{ href: "/marmitas", label: "Marmitas" }] as const;
 
 export function Navbar() {
   const pathname = usePathname();
@@ -59,11 +57,9 @@ export function Navbar() {
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
+            <CombosNavMenu variant="desktop" />
             <Link href={links[0].href} className={navLinkClass(links[0].href)}>
               {links[0].label}
-            </Link>
-            <Link href={links[1].href} className={navLinkClass(links[1].href)}>
-              {links[1].label}
             </Link>
             <NutrirNavMenu variant="desktop" />
           </nav>

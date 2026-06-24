@@ -4,20 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
+import { COMBO_MENU_LINKS, isCombosHome } from "@/lib/combo-nav-links";
 
-export const NUTRIR_MENU_LINKS = [
-  { href: "/nutrir/sobre", label: "Sobre a Nutrir" },
-  { href: "/nutrir/como-funciona", label: "Como Funciona" },
-  { href: "/nutrir/formas-de-pagamento", label: "Formas de Pagamento" },
-] as const;
-
-function isNutrirSection(pathname: string) {
-  return pathname.startsWith("/nutrir");
-}
-
-export function NutrirNavMenu({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
+export function CombosNavMenu({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
   const pathname = usePathname();
-  const active = isNutrirSection(pathname);
+  const active = isCombosHome(pathname);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -72,7 +63,7 @@ export function NutrirNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
         onClick={variant === "mobile" ? () => setOpen((value) => !value) : undefined}
         className={triggerClass}
       >
-        Nutrir
+        Combos
         <FiChevronDown
           className={`text-base transition ${open ? "rotate-180" : ""}`}
           aria-hidden
@@ -82,16 +73,12 @@ export function NutrirNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
       {variant === "desktop" ? (
         <div className="absolute left-0 top-full z-50 pt-0.5">
           <ul className={panelClass} role="menu">
-            {NUTRIR_MENU_LINKS.map((item) => (
-              <li key={item.href} role="none">
+            {COMBO_MENU_LINKS.map((item) => (
+              <li key={item.sectionId} role="none">
                 <Link
                   href={item.href}
                   role="menuitem"
-                  className={`block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide transition hover:bg-nutrir-nude hover:text-nutrir-burgundy ${
-                    pathname === item.href
-                      ? "bg-nutrir-nude text-nutrir-burgundy"
-                      : "text-nutrir-emerald"
-                  }`}
+                  className="block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald transition hover:bg-nutrir-nude hover:text-nutrir-burgundy"
                 >
                   {item.label}
                 </Link>
@@ -101,16 +88,12 @@ export function NutrirNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
         </div>
       ) : (
         <ul className={panelClass} role="menu">
-          {NUTRIR_MENU_LINKS.map((item) => (
-            <li key={item.href} role="none">
+          {COMBO_MENU_LINKS.map((item) => (
+            <li key={item.sectionId} role="none">
               <Link
                 href={item.href}
                 role="menuitem"
-                className={`block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide transition hover:bg-nutrir-nude hover:text-nutrir-burgundy ${
-                  pathname === item.href
-                    ? "bg-nutrir-nude text-nutrir-burgundy"
-                    : "text-nutrir-emerald"
-                }`}
+                className="block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/90 transition hover:bg-nutrir-nude/10"
               >
                 {item.label}
               </Link>

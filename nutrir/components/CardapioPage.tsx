@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { COMBO_SECTION_IDS } from "@/lib/combo-nav-links";
 import { ComboBuilder } from "./ComboBuilder";
 import { KitCard } from "./KitCard";
 import { KIT_PRODUCTS } from "@/lib/menu-data";
@@ -12,8 +13,42 @@ const TABS: { id: CardapioTab; label: string }[] = [
   { id: "montar", label: "Monte seu Combo" },
 ];
 
+const KIT_SECTION_ID: Record<string, string> = {
+  frango: COMBO_SECTION_IDS.frango,
+  carne: COMBO_SECTION_IDS.carne,
+  misto: COMBO_SECTION_IDS.misto,
+  veg: COMBO_SECTION_IDS.veg,
+};
+
+function scrollToComboSection(sectionId: string) {
+  const el = document.getElementById(sectionId);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 export function CardapioPage() {
   const [tab, setTab] = useState<CardapioTab>("combos");
+
+  useEffect(() => {
+    function handleHash() {
+      const hash = window.location.hash.replace("#", "");
+      if (!hash.startsWith("combo-")) return;
+
+      if (hash === COMBO_SECTION_IDS.montar) {
+        setTab("montar");
+        window.requestAnimationFrame(() => scrollToComboSection(hash));
+        return;
+      }
+
+      setTab("combos");
+      window.requestAnimationFrame(() => scrollToComboSection(hash));
+    }
+
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
 
   return (
     <div>
@@ -51,10 +86,16 @@ export function CardapioPage() {
 
       <div className="mx-auto max-w-6xl space-y-16 px-4 py-12">
         {tab === "combos" && (
-          <section id="combos" className="scroll-mt-24">
-            <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <section id="combos" className="scroll-mt-28">
+            <div className="-mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-2 md:mx-0 md:gap-8 md:px-0">
               {KIT_PRODUCTS.map((kit) => (
-                <KitCard key={kit.id} kit={kit} />
+                <div
+                  key={kit.id}
+                  id={KIT_SECTION_ID[kit.id]}
+                  className="w-[min(88vw,22rem)] shrink-0 snap-center scroll-mt-28 md:w-[24rem] lg:w-[26rem]"
+                >
+                  <KitCard kit={kit} />
+                </div>
               ))}
             </div>
 
@@ -75,7 +116,7 @@ export function CardapioPage() {
         )}
 
         {tab === "montar" && (
-          <div className="py-4">
+          <div id={COMBO_SECTION_IDS.montar} className="scroll-mt-28 py-4">
             <ComboBuilder embedded />
           </div>
         )}
