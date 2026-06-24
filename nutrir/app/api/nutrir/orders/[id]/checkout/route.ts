@@ -44,9 +44,6 @@ export async function POST(
 
   let orderToCheckout = order;
   if (normalizePaymentMethod(order.payment_method) !== method) {
-    if (order.payment_status === "confirmed") {
-      return NextResponse.json({ error: "Pedido já pago." }, { status: 400 });
-    }
     if (!isLocalPayment(order.payment_method) && !isOnlineCardPayment(order.payment_method)) {
       return NextResponse.json(
         { error: "Não é possível alterar a forma de pagamento deste pedido." },
