@@ -1,112 +1,71 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { FiChevronDown } from "react-icons/fi";
-import { ComboNavLink, COMBO_MENU_LINKS } from "@/components/ComboNavLink";
-import { isCombosHome } from "@/lib/combo-nav-links";
+import { NavDropdown } from "@/components/NavDropdown";
+import {
+  COMBO_MENU_LINKS,
+  COMBO_SECTION_IDS,
+  isCombosHome,
+  navigateToComboSection,
+  type ComboSectionId,
+} from "@/lib/combo-nav-links";
+
+export function ComboNavLink({
+  href,
+  sectionId,
+  label,
+  className,
+  onNavigate,
+}: {
+  href: string;
+  sectionId: ComboSectionId;
+  label: string;
+  className: string;
+  onNavigate?: () => void;
+}) {
+  const pathname = usePathname();
+
+  function handleClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (!isCombosHome(pathname)) return;
+    event.preventDefault();
+    onNavigate?.();
+    navigateToComboSection(sectionId);
+  }
+
+  return (
+    <Link href={href} onClick={handleClick} className={className}>
+      {label}
+    </Link>
+  );
+}
 
 export function CombosNavMenu({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
   const pathname = usePathname();
-  const active = isCombosHome(pathname);
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (variant !== "mobile") return;
-    function onPointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
-  }, [variant]);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  const close = () => setOpen(false);
-
-  const triggerClass =
-    variant === "desktop"
-      ? `inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition ${
-          active
-            ? "bg-nutrir-nude text-nutrir-burgundy"
-            : "text-nutrir-nude/85 hover:bg-nutrir-nude/10 hover:text-nutrir-nude"
-        }`
-      : `flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition ${
-          active || open
-            ? "bg-nutrir-nude text-nutrir-burgundy"
-            : "text-nutrir-nude/90 hover:bg-nutrir-nude/10"
-        }`;
-
-  const panelClass =
-    variant === "desktop"
-      ? `min-w-[15.5rem] rounded-2xl border border-nutrir-nude-dark/50 bg-nutrir-cream p-2 shadow-xl transition duration-200 ${
-          open ? "visible opacity-100" : "invisible opacity-0"
-        }`
-      : `mt-1 space-y-1 overflow-hidden rounded-xl border border-nutrir-nude/20 bg-nutrir-burgundy-dark/40 p-2 transition-all ${
-          open ? "max-h-64 opacity-100" : "max-h-0 border-transparent p-0 opacity-0"
-        }`;
-
-  const linkClass =
-    variant === "desktop"
-      ? "block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald transition hover:bg-nutrir-nude hover:text-nutrir-burgundy"
-      : "block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/90 transition hover:bg-nutrir-nude/10";
 
   return (
-    <div
-      ref={rootRef}
-      className="relative"
-      onMouseEnter={variant === "desktop" ? () => setOpen(true) : undefined}
-      onMouseLeave={variant === "desktop" ? () => setOpen(false) : undefined}
+    <NavDropdown
+      label="Combos"
+      active={isCombosHome(pathname)}
+      variant={variant}
+      pathname={pathname}
+      panelMaxHeight="max-h-64"
     >
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-haspopup="true"
-        onClick={variant === "mobile" ? () => setOpen((value) => !value) : undefined}
-        className={triggerClass}
-      >
-        Combos
-        <FiChevronDown
-          className={`text-base transition ${open ? "rotate-180" : ""}`}
-          aria-hidden
-        />
-      </button>
-
-      {variant === "desktop" ? (
-        <div className="absolute left-0 top-full z-50 pt-0.5">
-          <ul className={panelClass} role="menu">
-            {COMBO_MENU_LINKS.map((item) => (
-              <li key={item.sectionId} role="none">
-                <ComboNavLink
-                  href={item.href}
-                  sectionId={item.sectionId}
-                  label={item.label}
-                  className={linkClass}
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <ul className={panelClass} role="menu">
-          {COMBO_MENU_LINKS.map((item) => (
-            <li key={item.sectionId} role="none">
-              <ComboNavLink
-                href={item.href}
-                sectionId={item.sectionId}
-                label={item.label}
-                className={linkClass}
-                onNavigate={close}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+      {({ close, linkClass }) =>
+        COMBO_MENU_LINKS.map((item) => (
+          <li key={item.sectionId} role="none">
+            <ComboNavLink
+              href={item.href}
+              sectionId={item.sectionId}
+              label={item.label}
+              className={linkClass}
+              onNavigate={variant === "mobile" ? close : undefined}
+            />
+          </li>
+        ))
+      }
+    </NavDropdown>
   );
 }
+
+export { COMBO_MENU_LINKS, COMBO_SECTION_IDS };

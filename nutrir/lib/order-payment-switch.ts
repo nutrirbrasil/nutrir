@@ -11,10 +11,6 @@ import {
 } from "./payment-utils";
 import type { Order, PaymentMethod } from "./types";
 
-export function canSwitchOrderPaymentMethod(order: Order): boolean {
-  return order.payment_status !== "confirmed" && isLocalPayment(order.payment_method);
-}
-
 export async function switchOrderPaymentMethod(
   order: Order,
   method: PaymentMethod

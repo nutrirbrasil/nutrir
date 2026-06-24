@@ -72,4 +72,4 @@ export function formatPrice(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_SHORT_LABELS } from "./payment-labels";
+export { PAYMENT_METHOD_SHORT_LABELS } from "./payment-labels";

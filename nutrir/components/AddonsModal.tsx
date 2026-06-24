@@ -157,13 +157,6 @@ export function AddonsModal({
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          {step === "ask" && (
-            <p className="text-sm leading-relaxed text-nutrir-emerald/75">
-              Queijo, molho da casa, leguminosas, milho, azeite e outros — por porção, com valor
-              adicional.
-            </p>
-          )}
-
           {step === "mode" && (
             <div className="space-y-3">
               <button
@@ -173,7 +166,7 @@ export function AddonsModal({
               >
                 <p className="font-semibold text-nutrir-emerald">Mesmo adicional em todas</p>
                 <p className="mt-1 text-xs text-nutrir-emerald/60">
-                  Uma lista aplicada às {pending.mealCount} marmitas do combo
+                  Escolha uma vez para todas marmitas.
                 </p>
               </button>
               <button
@@ -183,7 +176,7 @@ export function AddonsModal({
               >
                 <p className="font-semibold text-nutrir-emerald">Personalizar por marmita</p>
                 <p className="mt-1 text-xs text-nutrir-emerald/60">
-                  Escolha adicionais individualmente para cada uma
+                  Escolha adicionais individualmente para cada marmita.
                 </p>
               </button>
             </div>

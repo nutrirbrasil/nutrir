@@ -16,10 +16,3 @@ export function getLocalPaymentNotice(isPatient: boolean): string {
 export function getLocalOptionHint(isPatient: boolean): string {
   return isPatient ? "Benefício VIP: Pague na retirada." : "Produção mediante pagamento";
 }
-
-export function getReviewLocalPaymentNote(isPatient: boolean): string {
-  if (isPatient) {
-    return "Produção prioritária para pacientes. Pagamento em dinheiro ou cartão na retirada.";
-  }
-  return "Após a confirmação, efetue o pagamento em até 48 horas";
-}

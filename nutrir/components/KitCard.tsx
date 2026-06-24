@@ -37,7 +37,7 @@ function TierRow({
         item_id: `kit-${kit.id}-${tier.meals}${vegSuffix}`,
         section_id: "kit",
         size,
-        name: `${kit.name} — ${tier.meals} refeições — ${size}${
+        name: `${kit.name} ${size} (${tier.meals} unid.)${
           includeVeg ? " (com vegetarianas)" : ""
         }`,
         quantity: 1,

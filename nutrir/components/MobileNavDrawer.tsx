@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { FiX } from "react-icons/fi";
-import { ComboNavLink } from "@/components/ComboNavLink";
+import { ComboNavLink } from "@/components/CombosNavMenu";
 import { COMBO_MENU_LINKS } from "@/lib/combo-nav-links";
 import { NUTRIR_MENU_LINKS } from "@/components/NutrirNavMenu";
 

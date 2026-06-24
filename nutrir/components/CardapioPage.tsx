@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   COMBO_NAV_EVENT,
   COMBO_SECTION_IDS,
-  isMontarSection,
   navigateToComboSection,
 } from "@/lib/combo-nav-links";
 import { ComboBuilder } from "./ComboBuilder";
@@ -36,7 +35,7 @@ export function CardapioPage() {
   const [tab, setTab] = useState<CardapioTab>("combos");
 
   const goToSection = useCallback((sectionId: string) => {
-    if (isMontarSection(sectionId)) {
+    if (sectionId === COMBO_SECTION_IDS.montar) {
       setTab("montar");
     } else if (sectionId.startsWith("combo-")) {
       setTab("combos");
@@ -85,7 +84,7 @@ export function CardapioPage() {
           COMBOS
         </h1>
         <p className="hero-tagline-stroke mt-3 font-sans text-lg font-bold uppercase tracking-[0.4em] md:text-xl">
-          Kits
+          A partir de R$14,99
         </p>
         <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-nutrir-nude/85">
           Marmitas pensadas, desenvolvidas e montadas por nutricionistas.

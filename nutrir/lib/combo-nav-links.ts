@@ -43,7 +43,3 @@ export function navigateToComboSection(sectionId: ComboSectionId) {
     new CustomEvent(COMBO_NAV_EVENT, { detail: { sectionId } })
   );
 }
-
-export function isMontarSection(sectionId: string) {
-  return sectionId === COMBO_SECTION_IDS.montar;
-}

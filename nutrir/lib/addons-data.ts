@@ -24,7 +24,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     id: "add-queijo",
     name: "Queijo",
     baseCost: 1.0,
-    additionalPrice: 3.5,
+    additionalPrice: 2.5,
     portionLabel: "1 fatia",
     portionUnit: "fatia",
     portionUnitPlural: "fatias",
@@ -34,7 +34,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     name: "Ervilha",
     baseCost: 0.44,
     additionalPrice: 2.5,
-    portionLabel: "1 porção (20g)",
+    portionLabel: "1 porção (30g)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
   },
@@ -43,7 +43,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     name: "Lentilha",
     baseCost: 0.4,
     additionalPrice: 2.5,
-    portionLabel: "1 porção (20g)",
+    portionLabel: "1 porção (30g)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
   },
@@ -52,7 +52,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     name: "Grão de Bico",
     baseCost: 0.4,
     additionalPrice: 2.5,
-    portionLabel: "1 porção (20g)",
+    portionLabel: "1 porção (30g)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
   },
@@ -61,7 +61,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     name: "Milho",
     baseCost: 0.3,
     additionalPrice: 2.5,
-    portionLabel: "1 porção (20g)",
+    portionLabel: "1 porção (30g)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
   },
@@ -70,7 +70,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     name: "Azeite",
     baseCost: 0.4,
     additionalPrice: 2.5,
-    portionLabel: "5ml",
+    portionLabel: "10ml",
     portionUnit: "porção",
     portionUnitPlural: "porções",
   },
@@ -78,10 +78,10 @@ export const MEAL_ADDONS: MealAddon[] = [
 
 const ADDON_BY_ID = Object.fromEntries(MEAL_ADDONS.map((a) => [a.id, a]));
 
-/** Arredonda para cima ao múltiplo de R$ 0,50. */
+/** Arredonda para cima ao próximo ,99 (ex.: 2,90 → 2,99). */
 export function roundAddonPrice(price: number): number {
   if (price <= 0) return 0;
-  return Math.ceil(price * 2) / 2;
+  return Math.ceil(price) - 0.01;
 }
 
 export function getAddonUnitPriceReais(addon: MealAddon): number {
