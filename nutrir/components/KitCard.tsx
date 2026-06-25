@@ -11,6 +11,8 @@ interface Props {
   kit: KitProduct;
 }
 
+const KIT_MARMITA_TOTAL_G: Record<MarmitaSize, number> = { P: 220, G: 380 };
+
 function TierRow({
   kit,
   tier,
@@ -58,11 +60,13 @@ function TierRow({
             De{" "}
             <span className="line-through text-nutrir-emerald/60">
               {formatPrice(pricing.card_total_cents)}
-            </span>{" "}
-            por{" "}
-            <strong className="text-nutrir-emerald">{formatPrice(pricing.cash_total_cents)}</strong>
+            </span>
           </p>
-          <p className="mt-0.5 text-xs text-nutrir-emerald/60">no dinheiro ou pix</p>
+          <p className="text-sm text-nutrir-emerald/70">
+            por{" "}
+            <strong className="text-nutrir-emerald">{formatPrice(pricing.cash_total_cents)}</strong>{" "}
+            no dinheiro ou pix
+          </p>
         </div>
       </div>
 
@@ -120,21 +124,26 @@ export function KitCard({ kit }: Props) {
 
           <div className="flex min-w-0 flex-1 flex-col bg-nutrir-nude p-5 md:p-6">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex gap-2">
-                {(["P", "G"] as MarmitaSize[]).map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setSize(s)}
-                    className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
-                      size === s
-                        ? "bg-nutrir-burgundy text-nutrir-nude"
-                        : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
+              <div className="flex items-center gap-3">
+                <div className="flex gap-2">
+                  {(["P", "G"] as MarmitaSize[]).map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSize(s)}
+                      className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                        size === s
+                          ? "bg-nutrir-burgundy text-nutrir-nude"
+                          : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-xs text-nutrir-emerald/50">
+                  Total: {KIT_MARMITA_TOTAL_G[size]}g
+                </span>
               </div>
 
               {kit.id === "misto" && (

@@ -37,27 +37,25 @@ export function CouponField({ code, onApply, onRemove }: Props) {
 
   if (applied && code) {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50/80 px-3 py-2.5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Cupom aplicado</p>
-            <p className="font-semibold text-nutrir-emerald">
-              {code}
-              {applied.label && (
-                <span className="ml-1.5 text-sm font-normal text-nutrir-emerald/70">
-                  ({applied.label})
-                </span>
-              )}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleRemove}
-            className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy"
-          >
-            Remover
-          </button>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Cupom aplicado</p>
+          <p className="font-semibold text-nutrir-emerald">
+            {code}
+            {applied.label && (
+              <span className="ml-1.5 text-sm font-normal text-nutrir-emerald/70">
+                ({applied.label})
+              </span>
+            )}
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={handleRemove}
+          className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy hover:underline"
+        >
+          Remover
+        </button>
       </div>
     );
   }

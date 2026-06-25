@@ -156,49 +156,51 @@ export function ReviewStep() {
   }
 
   return (
-    <CheckoutShell title="Revise os detalhes do seu pedido" backHref="/checkout/pagamento" layout="wide">
+    <CheckoutShell title="Detalhes do seu pedido" backHref="/checkout/pagamento" layout="wide">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,300px)] lg:gap-8">
         <div className="min-w-0 space-y-4">
-          <div className="card space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Retirada</p>
-              <Link href="/agendar" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
-                Trocar
-              </Link>
-            </div>
-            <div className="space-y-2 font-semibold text-nutrir-emerald">
-              {pickupLines.map((line, i) => (
-                <div key={i}>
-                  {line.label && <p>{line.label}</p>}
-                  {line.value && <p className={line.label ? "font-normal" : ""}>{line.value}</p>}
-                </div>
-              ))}
-            </div>
-            <p className="text-sm leading-relaxed text-nutrir-emerald/70">{NUTRIR_STORE_ADDRESS}</p>
-          </div>
+          <div className="card divide-y divide-nutrir-nude-dark/40 p-0">
+            <section className="space-y-2 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Retirada</p>
+                <Link href="/agendar" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
+                  Trocar
+                </Link>
+              </div>
+              <div className="space-y-2 font-semibold text-nutrir-emerald">
+                {pickupLines.map((line, i) => (
+                  <div key={i}>
+                    {line.label && <p>{line.label}</p>}
+                    {line.value && <p className={line.label ? "font-normal" : ""}>{line.value}</p>}
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm leading-relaxed text-nutrir-emerald/70">{NUTRIR_STORE_ADDRESS}</p>
+            </section>
 
-          <div className="card space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Pagamento</p>
-              <Link href="/checkout/pagamento" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
-                Trocar
-              </Link>
-            </div>
-            <p className="font-semibold text-nutrir-emerald">
-              {PAYMENT_METHOD_SHORT_LABELS[method]}
-            </p>
-          </div>
+            <section className="space-y-2 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Pagamento</p>
+                <Link href="/checkout/pagamento" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
+                  Trocar
+                </Link>
+              </div>
+              <p className="font-semibold text-nutrir-emerald">
+                {PAYMENT_METHOD_SHORT_LABELS[method]}
+              </p>
+            </section>
 
-          <div className="card">
-            <CouponField
-              code={d.coupon_code}
-              onApply={(code) => patchDraft({ coupon_code: code, order_id: undefined })}
-              onRemove={() => patchDraft({ coupon_code: undefined, order_id: undefined })}
-            />
-          </div>
+            <section className="p-5">
+              <CouponField
+                code={d.coupon_code}
+                onApply={(code) => patchDraft({ coupon_code: code, order_id: undefined })}
+                onRemove={() => patchDraft({ coupon_code: undefined, order_id: undefined })}
+              />
+            </section>
 
-          <div className="card">
-            <CheckoutPriceSummary pricing={pricing} method={method} />
+            <section className="p-5">
+              <CheckoutPriceSummary pricing={pricing} method={method} />
+            </section>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

@@ -320,7 +320,7 @@ export const MENU_SECTIONS: MenuSection[] = [
   {
     id: "frango",
     title: "Opções com Frango",
-    subtitle: "Proteína magra, temperos caseiros",
+    subtitle: "Peito de frango, sem gordura",
     items: [
       {
         id: "frg-batata",
@@ -345,7 +345,7 @@ export const MENU_SECTIONS: MenuSection[] = [
   {
     id: "carne",
     title: "Opções com Carne",
-    subtitle: "Cortes magros, sabor de casa",
+    subtitle: "Carne magra, patinho",
     items: [
       {
         id: "car-massa",
@@ -370,7 +370,7 @@ export const MENU_SECTIONS: MenuSection[] = [
   {
     id: "vegetariano",
     title: "Opções Vegetarianas",
-    subtitle: "Proteína vegetal, muito sabor",
+    subtitle: "Vegetariano e vegano",
     items: [
       {
         id: "veg-ervilha",

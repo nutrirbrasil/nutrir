@@ -23,6 +23,9 @@ export function MarmitasPage() {
         {MENU_SECTIONS.map((section) => (
           <MenuSection key={section.id} section={section} />
         ))}
+        <p className="text-center text-xs leading-relaxed text-nutrir-emerald/55">
+          *Valor promocional válido apenas para pagamentos em dinheiro ou pix
+        </p>
       </div>
     </div>
   );

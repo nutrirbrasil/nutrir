@@ -69,19 +69,21 @@ export function MarmitaCard({ item, sectionId }: Props) {
           ))}
         </div>
 
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-2 border-t border-nutrir-nude-dark/50 pt-2 sm:mt-4 sm:flex-col sm:items-stretch sm:pt-4">
-          <p className="text-xs text-nutrir-emerald/70 sm:text-sm">
-            <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>{" "}
-            <strong className="text-base text-nutrir-burgundy sm:text-lg">{formatPrice(price)}</strong>
-          </p>
-          <button type="button" onClick={handleAdd} className="btn-primary shrink-0 px-4 py-1.5 text-xs sm:w-full sm:py-2.5 sm:text-sm">
+        <div className="mt-2 flex flex-col gap-2 border-t border-nutrir-nude-dark/50 pt-2 sm:mt-4 sm:pt-4">
+          <div className="text-xs text-nutrir-emerald/70 sm:text-sm">
+            <p>
+              De{" "}
+              <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>
+            </p>
+            <p>
+              por <strong className="text-nutrir-emerald">{formatPrice(price)}</strong> no dinheiro
+              ou pix
+            </p>
+          </div>
+          <button type="button" onClick={handleAdd} className="btn-primary w-full px-4 py-1.5 text-xs sm:py-2.5 sm:text-sm">
             Adicionar
           </button>
         </div>
-
-        <p className="mt-1 hidden text-center text-[10px] leading-snug text-nutrir-emerald/55 sm:mt-2 sm:block">
-          *Valor promocional válido apenas para pagamentos em dinheiro ou pix
-        </p>
       </div>
     </article>
   );

@@ -24,7 +24,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
             <span>Subtotal</span>
             <span>{formatPrice(pricing.subtotal_cents)}</span>
           </div>
-          <div className="flex justify-between text-sm text-green-600">
+          <div className="flex justify-between text-sm text-nutrir-emerald/75">
             <span>{discountLabel}</span>
             <span>− {formatPrice(pricing.pix_discount_cents)}</span>
           </div>
@@ -39,7 +39,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
       )}
 
       {pricing.show_coupon_discount && (
-        <div className="flex justify-between text-sm text-green-600">
+        <div className="flex justify-between text-sm text-nutrir-emerald/75">
           <span>Cupom {pricing.coupon_code}</span>
           <span>− {formatPrice(pricing.coupon_discount_cents)}</span>
         </div>

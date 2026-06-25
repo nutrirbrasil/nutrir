@@ -92,10 +92,10 @@ export function computeOrderPricing(
   );
 
   const coupon = getCoupon(couponCode);
-  const couponDiscount = coupon ? computeCouponDiscountCents(listTotal, coupon) : 0;
   const appliedCouponCode = coupon ? normalizeCouponCode(couponCode!) : undefined;
 
   if (isCardPayment(method)) {
+    const couponDiscount = coupon ? computeCouponDiscountCents(listTotal, coupon) : 0;
     const total = Math.max(0, listTotal - couponDiscount);
     return {
       subtotal_cents: listTotal,
@@ -109,6 +109,7 @@ export function computeOrderPricing(
   }
 
   const pixDiscount = Math.max(0, listTotal - cashTotal);
+  const couponDiscount = coupon ? computeCouponDiscountCents(cashTotal, coupon) : 0;
   const total = Math.max(0, cashTotal - couponDiscount);
 
   return {

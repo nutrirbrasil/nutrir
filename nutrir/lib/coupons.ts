@@ -1,11 +1,11 @@
 export interface CouponDefinition {
-  /** Percentual de desconto sobre o subtotal (0–100). */
+  /** Percentual de desconto (0–100) sobre a base informada no checkout. */
   percent: number;
   label?: string;
 }
 
 const COUPONS: Record<string, CouponDefinition> = {
-  ZEEDO5: { percent: 5, label: "5% no subtotal" },
+  ZEEDO5: { percent: 5, label: "5% DE DESCONTO" },
 };
 
 export function normalizeCouponCode(code: string): string {
@@ -21,7 +21,7 @@ export function isValidCouponCode(code: string): boolean {
   return getCoupon(code) !== null;
 }
 
-export function computeCouponDiscountCents(subtotalCents: number, coupon: CouponDefinition): number {
-  if (subtotalCents <= 0 || coupon.percent <= 0) return 0;
-  return Math.round((subtotalCents * coupon.percent) / 100);
+export function computeCouponDiscountCents(baseCents: number, coupon: CouponDefinition): number {
+  if (baseCents <= 0 || coupon.percent <= 0) return 0;
+  return Math.round((baseCents * coupon.percent) / 100);
 }

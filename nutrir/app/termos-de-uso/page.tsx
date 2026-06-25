@@ -60,6 +60,7 @@ export default function TermosUsoPage() {
           items={[
             "Os preços exibidos no cardápio são referência. O valor total confirmado na etapa de revisão do pedido, antes da finalização, é o que prevalece.",
             "Descontos promocionais (especialmente em Pix e dinheiro) não são fixos: podem variar conforme o produto, a forma de pagamento e condições de mercado, em geral entre 5% e 15% em relação ao preço de referência do cartão, sem garantia de percentual mínimo ou máximo.",
+            "Cupons percentuais incidem sobre o valor do pedido após os descontos da forma de pagamento escolhida, quando houver, conforme exibido no checkout.",
             "Por trabalharmos de forma artesanal e com foco em sustentabilidade, a produção do pedido depende da confirmação do pagamento ou do sinal acordado, conforme a forma escolhida e as regras exibidas no momento da compra — com o objetivo de evitar desperdício.",
             "Dinheiro e cartão físico na retirada são opções restritas a pacientes em acompanhamento com a nutricionista Paula Pastorino, identificados no sistema mediante CPF e cadastro válido.",
             "Para quem não se enquadra nessa condição, dinheiro e cartão físico podem estar disponíveis apenas mediante pagamento antecipado, como sinal para iniciar a produção, quando oferecidos no checkout.",

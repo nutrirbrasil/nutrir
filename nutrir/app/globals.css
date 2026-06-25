@@ -91,9 +91,10 @@ html {
   }
 
   .input-field {
-    @apply block w-full rounded-xl border bg-nutrir-nude px-4 py-2.5 text-sm focus:outline-none focus:ring-1;
+    @apply block w-full rounded-xl border bg-nutrir-nude px-4 py-2.5 focus:outline-none focus:ring-1;
     border-color: var(--nutrir-nude-dark);
     color: var(--nutrir-emerald-dark);
+    font-size: 16px;
   }
   .input-field:focus {
     border-color: var(--nutrir-emerald);
