@@ -28,6 +28,7 @@ import {
 } from "@/lib/auth-next";
 import { PAYMENT_METHOD_SHORT_LABELS } from "@/lib/payment-labels";
 import type { PaymentMethod } from "@/lib/types";
+import { OrderDetailsModal } from "@/components/OrderDetailsModal";
 
 const PAYMENT_LABELS = PAYMENT_METHOD_SHORT_LABELS;
 
@@ -71,6 +72,7 @@ export function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [recentOrders, setRecentOrders] = useState<SavedOrder[]>([]);
+  const [detailOrder, setDetailOrder] = useState<SavedOrder | null>(null);
 
   const [showChangePass, setShowChangePass] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -546,6 +548,7 @@ export function ProfilePage() {
 
   if (isLoggedIn) {
     return (
+      <>
       <div className="mx-auto max-w-lg px-4 py-10">
         <div className="flex flex-col items-center gap-2">
           <h1 className="section-title text-center">Meu perfil</h1>
@@ -727,9 +730,6 @@ export function ProfilePage() {
                             {formatPrice(order.total_cents)}
                           </p>
                           <p className="text-xs text-nutrir-emerald/60">
-                            Retirada: {order.pickup_display}
-                          </p>
-                          <p className="text-xs text-nutrir-emerald/60">
                             {PAYMENT_LABELS[order.payment_method]}
                           </p>
                         </div>
@@ -741,13 +741,13 @@ export function ProfilePage() {
                           Pedir novamente
                         </button>
                       </div>
-                      <ul className="mt-3 space-y-1 border-t border-nutrir-nude-dark/30 pt-3 text-sm text-nutrir-emerald/80">
-                        {order.items.map((item, i) => (
-                          <li key={`${order.id}-${i}`}>
-                            {item.quantity}x {item.name}
-                          </li>
-                        ))}
-                      </ul>
+                      <button
+                        type="button"
+                        onClick={() => setDetailOrder(order)}
+                        className="mt-3 text-sm font-semibold text-nutrir-emerald underline underline-offset-4 decoration-nutrir-emerald/40 hover:decoration-nutrir-burgundy"
+                      >
+                        Ver mais detalhes
+                      </button>
                     </li>
                   );
                 })}
@@ -756,6 +756,10 @@ export function ProfilePage() {
           </section>
         )}
       </div>
+      {detailOrder && (
+        <OrderDetailsModal order={detailOrder} onClose={() => setDetailOrder(null)} />
+      )}
+      </>
     );
   }
 
@@ -852,6 +856,18 @@ export function ProfilePage() {
         Continuar com Google
       </button>
 
+      <p className="mt-3 text-center text-xs leading-relaxed text-nutrir-emerald/60">
+        Ao continuar com Google, você declara estar de acordo com os{" "}
+        <Link href="/termos-de-uso" className="font-medium text-nutrir-burgundy hover:underline">
+          Termos de Uso
+        </Link>{" "}
+        e a{" "}
+        <Link href="/politica-de-privacidade" className="font-medium text-nutrir-burgundy hover:underline">
+          Política de Privacidade
+        </Link>
+        .
+      </p>
+
       {!authConfigured && (
         <p className="mt-2 text-center text-xs text-nutrir-emerald/50">
           Configure Supabase e o provedor Google para ativar este botão.
@@ -923,6 +939,20 @@ export function ProfilePage() {
 
         {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
+
+        {mode === "register" && (
+          <p className="text-xs leading-relaxed text-nutrir-emerald/60">
+            Ao criar sua conta, você declara estar de acordo com os{" "}
+            <Link href="/termos-de-uso" className="font-medium text-nutrir-burgundy hover:underline">
+              Termos de Uso
+            </Link>{" "}
+            e a{" "}
+            <Link href="/politica-de-privacidade" className="font-medium text-nutrir-burgundy hover:underline">
+              Política de Privacidade
+            </Link>
+            .
+          </p>
+        )}
 
         <button type="submit" disabled={loading || !authConfigured} className="btn-primary w-full py-3">
           {loading ? "Aguarde…" : mode === "register" ? "Criar conta" : "Entrar"}

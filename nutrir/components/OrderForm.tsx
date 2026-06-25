@@ -201,13 +201,18 @@ export function OrderForm() {
             Agende sua retirada
           </h2>
           {cartAnalysis.hasCombo && !cartAnalysis.hasRegular && (
-            <p className="mt-2 text-xs text-nutrir-emerald/60">
-              Combos: retirada seg ou sex, com mínimo de 48h de antecedência.
+            <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
+              Retirada apenas Segunda ou Sexta
+              <br />
+              Pedidos devem ser feitos com mínimo de 48h de antecedência (2 dias).
             </p>
           )}
           {!cartAnalysis.hasCombo && cartAnalysis.hasRegular && (
-            <p className="mt-2 text-xs text-nutrir-emerald/60">
-              Marmitas avulsas: retirada seg a sex. Pedido até 19h retira amanhã à tarde; após 19h, a partir de depois de amanhã.
+            <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
+              Retirada de Segunda a Sexta.
+              <br />
+              Pedidos para o dia seguinte só serão entregues no período da tarde e devem ser
+              realizados até as 19h.
             </p>
           )}
         </div>

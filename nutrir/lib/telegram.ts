@@ -7,15 +7,23 @@ function escapeMarkdown(text: string): string {
 }
 
 function formatItemsBlock(items: CreateOrderPayload["items"]): string {
-  return items
-    .map((item) => {
-      let line = `${item.quantity}× ${item.name}`;
-      if (item.addons_note?.trim()) {
-        line += `\n   ↳ ${item.addons_note.trim().replace(/\n/g, "\n   ↳ ")}`;
-      }
-      return line;
+  return items.map((item) => `${item.quantity}× ${item.name}`).join("\n");
+}
+
+function formatAddonsBlock(items: CreateOrderPayload["items"]): string | null {
+  const notes = items
+    .map((item) => item.addons_note?.trim())
+    .filter((note): note is string => Boolean(note));
+
+  if (notes.length === 0) return null;
+
+  return notes
+    .map((note) => {
+      const [header, ...rest] = note.split("\n");
+      if (rest.length === 0) return `➕ ${header}`;
+      return [`➕ ${header}`, ...rest.map((line) => `   ↳ ${line}`)].join("\n");
     })
-    .join("\n");
+    .join("\n\n");
 }
 
 function formatMoney(cents: number): string {
@@ -28,11 +36,12 @@ export function formatOrderTelegramMessage(
   orderedAt: Date,
   options?: { isPatient?: boolean; pixPending?: boolean; isPaymentUpdate?: boolean }
 ): string {
-  const namePhone = `${order.customer_name} - ${order.customer_phone.replace(/\D/g, "")}`;
   const items = formatItemsBlock(order.items);
+  const addons = formatAddonsBlock(order.items);
   const value = formatMoney(order.total_cents);
   const method = order.payment_method ?? "pix";
   const paymentMethod = PAYMENT_METHOD_SHORT_LABELS[method] ?? method;
+  const phone = order.customer_phone.replace(/\D/g, "");
 
   let paymentStatus =
     order.payment_status === "confirmed" ? "✅ Confirmado" : "⏳ Pendente";
@@ -50,29 +59,44 @@ export function formatOrderTelegramMessage(
 
   const pickup = order.pickup_display ?? order.delivery_date;
   const title = options?.isPaymentUpdate
-    ? "⚠️ *Atualização do Pagamento*"
-    : "🛒 *Novo pedido Nutrir*";
+    ? "⚠️ Atualização do Pagamento"
+    : "🛒 Novo pedido Nutrir";
+
   const lines = [
     title,
-    ``,
-    `👤 ${escapeMarkdown(namePhone)}`,
-    `📦 ${escapeMarkdown(items)}`,
-    `💰 ${value}`,
-    `💳 ${escapeMarkdown(paymentMethod)} — ${paymentStatus}`,
-    `📅 Retirada: ${escapeMarkdown(pickup)}`,
-    `🕐 Pedido: ${orderedAt.toLocaleString("pt-BR")}`,
+    "",
     `🆔 ${formatOrderLabel(order.id)}`,
+    `👤 ${escapeMarkdown(order.customer_name.trim())}`,
+    `📞 ${phone}`,
+    "",
+    `📦 ${escapeMarkdown(items)}`,
   ];
 
-  if (order.user_notes?.trim()) {
-    lines.push(`📝 ${escapeMarkdown(order.user_notes.trim())}`);
+  if (addons) {
+    lines.push("", escapeMarkdown(addons));
   }
+
+  lines.push(
+    "",
+    `💳 ${escapeMarkdown(paymentMethod)} — ${paymentStatus}`,
+    `💰 ${value}`
+  );
 
   if (order.coupon_code?.trim()) {
     const couponLine = order.coupon_discount_cents
       ? `Cupom ${order.coupon_code} (−${formatMoney(order.coupon_discount_cents)})`
       : `Cupom ${order.coupon_code}`;
-    lines.splice(6, 0, `🎟 ${escapeMarkdown(couponLine)}`);
+    lines.push(`🎟 ${escapeMarkdown(couponLine)}`);
+  }
+
+  lines.push(
+    "",
+    `🕐 Pedido: ${orderedAt.toLocaleString("pt-BR")}`,
+    `📅 Retirada: ${escapeMarkdown(pickup)}`
+  );
+
+  if (order.user_notes?.trim()) {
+    lines.push(`📝 ${escapeMarkdown(order.user_notes.trim())}`);
   }
 
   return lines.join("\n");

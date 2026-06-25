@@ -66,7 +66,7 @@ function PauliUpsell() {
         rel="noopener noreferrer"
         className="inline-flex w-full items-center justify-center rounded-xl border-2 border-nutrir-emerald py-3 text-sm font-bold text-nutrir-emerald transition hover:bg-nutrir-emerald/5"
       >
-        Conheça a Paula — pauli.nutrirpicarras.com.br
+        Conheça a Paula
       </a>
       <Link
         href="/beneficios"

@@ -15,17 +15,35 @@ export default function FormasDePagamentoPage() {
   return (
     <InfoPage title="Formas de Pagamento">
       <p>
-        Para tornar sua experiência de compra ainda mais fácil, oferecemos pagamento com{" "}
-        <strong>Pix</strong> e <strong>cartão online</strong> para todos os clientes.{" "}
-        <strong>Pacientes em acompanhamento com a nutricionista Paula Pastorino</strong> também podem
-        optar por <strong>dinheiro</strong> ou <strong>cartão físico na retirada</strong> — veja a
-        seção ao final desta página.
+        Para tornar sua experiência ainda mais fácil, oferecemos pagamento com{" "}
+        <strong>Pix e cartão online</strong> para todos os clientes.
       </p>
 
       <p>
-        Além disso, se você tem renda em outra moeda ou prefere privacidade fora do sistema
-        tradicional, trabalhamos com <strong>criptomoedas</strong>.
+        <strong>Dinheiro e cartão físico</strong> são aceitos em combos, porém como trabalhamos de
+        forma artesanal e com foco em sustentabilidade, no momento só aceitamos pagamento
+        antecipado, como sinal para iniciar a produção, com fim de{" "}
+        <strong>evitar desperdício</strong>.
       </p>
+
+      <p>
+        Porém <strong>pacientes em acompanhamento com a nutricionista Paula Pastorino</strong> podem
+        optar por <strong>dinheiro ou cartão físico na retirada</strong>.
+      </p>
+
+      <p>
+        Além disso, se você tem renda em outra moeda que não seja o real ou prefere{" "}
+        <strong>privacidade</strong> fora do sistema tradicional, nós trabalhamos também com{" "}
+        <strong>criptomoedas</strong>!
+      </p>
+
+      <InfoSection title="Descontos">
+        <p>
+          Os descontos não são fixos e podem variar em termos percentuais. A maioria dos descontos,
+          principalmente para Pix e dinheiro, se aproximam de 10%, mas podem ser mais ou menos,
+          variando de 5% a 15% dependendo do produto e das condições de mercado.
+        </p>
+      </InfoSection>
 
       <InfoSection title="Pix online">
         <p>
@@ -72,17 +90,17 @@ export default function FormasDePagamentoPage() {
           ))}
         </ul>
         <p>
-          Para valores, cotação e instruções de pagamento em cripto, fale conosco pelo WhatsApp. Nossa
-          equipe envia os dados da carteira e confirma o pedido após a compensação.
+          Para valores, cotação e instruções de pagamento com criptomoedas, entre em contato antes de
+          fazer o pedido, pelo WhatsApp.{" "}
+          <a
+            href={whatsappContactUrl("Olá! Gostaria de saber mais sobre pagamento com criptomoedas.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-nutrir-burgundy underline underline-offset-2"
+          >
+            Clique aqui para saber mais
+          </a>
         </p>
-        <a
-          href={whatsappContactUrl("Olá! Gostaria de pagar meu pedido com criptomoeda. Pode me passar as instruções?")}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary mt-2 inline-flex"
-        >
-          Pagar com cripto via WhatsApp
-        </a>
       </InfoSection>
 
       <InfoSection title="Pagamento na retirada — exclusivo para pacientes">
@@ -104,15 +122,6 @@ export default function FormasDePagamentoPage() {
           .
         </p>
       </InfoSection>
-
-      <p className="text-sm text-nutrir-emerald/75">
-        No checkout do site você pode escolher Pix ou cartão online. Pacientes podem escolher
-        dinheiro ou cartão físico ao{" "}
-        <Link href="/agendar" className="font-medium text-nutrir-burgundy hover:underline">
-          finalizar o pedido
-        </Link>
-        . Dúvidas? Fale conosco pelo WhatsApp.
-      </p>
     </InfoPage>
   );
 }
