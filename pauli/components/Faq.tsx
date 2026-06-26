@@ -3,6 +3,8 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { FAQ_ITEMS } from "@/lib/faq-data";
 import { whatsappLink } from "@/lib/site";
 
+const AGENDAR_MESSAGE = "Olá Paula! Quero agendar uma consulta.";
+
 export function Faq() {
   return (
     <section id="faq" className="scroll-mt-20 bg-transparent px-4 py-20 dark:bg-black">
@@ -27,11 +29,11 @@ export function Faq() {
             >
               <details className="surface-card group overflow-hidden">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 [&::-webkit-details-marker]:hidden">
-                  <span className="gold-text text-left font-display text-base font-bold leading-snug md:text-lg">
+                  <span className="text-left font-display text-base font-bold leading-snug text-pauli-charcoal/80 dark:text-pauli-sand/70 md:text-lg">
                     {item.question}
                   </span>
                   <FiChevronDown
-                    className="gold-icon shrink-0 text-lg transition-transform duration-200 group-open:rotate-180"
+                    className="shrink-0 text-lg text-pauli-charcoal/50 transition-transform duration-200 group-open:rotate-180 dark:text-pauli-sand/50"
                     aria-hidden
                   />
                 </summary>
@@ -58,7 +60,7 @@ export function Faq() {
                           href={whatsappLink(block.message)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="gold-text font-semibold underline-offset-2 hover:underline"
+                          className="font-semibold text-pauli-charcoal/80 underline-offset-2 hover:underline dark:text-pauli-sand/80"
                         >
                           {block.label}
                         </a>
@@ -71,6 +73,17 @@ export function Faq() {
             </ScrollReveal>
           ))}
         </ul>
+
+        <ScrollReveal animation="fade-up" delay={200} duration={700} className="mt-10 flex justify-center">
+          <a
+            href={whatsappLink(AGENDAR_MESSAGE)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary px-8 py-3"
+          >
+            Agendar
+          </a>
+        </ScrollReveal>
       </div>
     </section>
   );

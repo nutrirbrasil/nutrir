@@ -36,7 +36,7 @@ export function ProfilePhoto({
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden shadow-2xl ${isIcon ? "rounded-full bg-black" : "rounded-full ring-4 ring-white/25"} ${box} ${className}`}
+      className={`relative shrink-0 overflow-hidden shadow-2xl ${isIcon ? "rounded-full bg-black" : "rounded-full ring-4 ring-pauli-gold"} ${box} ${className}`}
     >
       <Image
         src={imageSrc(variant)}

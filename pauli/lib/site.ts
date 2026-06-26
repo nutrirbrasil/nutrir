@@ -8,7 +8,7 @@ export const site = {
   subtitle: "Nutricionista",
   title: "Nutricionista clínica e esportiva",
   city: "Balneário Piçarras, SC",
-  heroOnline: "Brasil e Exterior",
+  heroOnline: "Online: Brasil e Exterior",
   crn: "CRN 18489D",
   heroTitle: "Nutrição clínica e esportiva para resultados que cabem na sua rotina.",
   heroSubtitle:

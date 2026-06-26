@@ -18,8 +18,8 @@ export default function HomePage() {
       <Approach />
       <Plans />
       <Testimonials />
-      <Faq />
       <Contact />
+      <Faq />
     </>
   );
 }

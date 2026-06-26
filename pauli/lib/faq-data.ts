@@ -96,7 +96,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     id: "publico",
     question:
-      "Atende apenas atletas ou também pessoas que não treinam? Tem experiência com dietas vegetarianas, veganas, restrições alimentares e tratamentos para enfermidades?",
+      "Atende pessoas que não treinam? E pessoas veganas, com restrições alimentares ou com enfermidades?",
     blocks: [
       {
         type: "p",

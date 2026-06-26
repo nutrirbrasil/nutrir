@@ -1,15 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { logoImageUrl } from "@/lib/brand-assets";
-import { site } from "@/lib/site";
+import { site, whatsappLink } from "@/lib/site";
 
 const nav = [
   { href: "#sobre", label: "Sobre" },
   { href: "#abordagem", label: "Abordagem" },
   { href: "#acompanhamento", label: "Acompanhamento" },
   { href: "#depoimentos", label: "Depoimentos" },
-  { href: "#faq", label: "FAQ" },
   { href: "#contato", label: "Contato" },
+  { href: "#faq", label: "FAQ" },
 ];
 
 export function Header() {
@@ -40,7 +40,12 @@ export function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center">
-          <a href="#contato" className="btn-primary px-4 py-2 text-xs">
+          <a
+            href={whatsappLink("Olá Paula! Quero agendar uma consulta.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary px-4 py-2 text-xs"
+          >
             Agendar
           </a>
         </div>

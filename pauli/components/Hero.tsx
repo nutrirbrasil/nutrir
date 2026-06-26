@@ -1,4 +1,4 @@
-import { FiMapPin, FiMonitor } from "react-icons/fi";
+import { FiGlobe, FiMapPin } from "react-icons/fi";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { site, whatsappLink } from "@/lib/site";
@@ -11,7 +11,7 @@ export function Hero() {
 
       <div className="relative mx-auto grid max-w-5xl items-center gap-8 md:grid-cols-2 md:gap-12">
         <ScrollReveal animation="fade-up" eager delay={80} duration={800} className="order-2 md:order-1">
-          <h1 className="font-display text-3xl font-bold leading-[1.15] md:text-4xl lg:text-[2.65rem]">
+          <h1 className="text-center font-display text-3xl font-bold leading-[1.15] md:text-left md:text-4xl lg:text-[2.65rem]">
             {site.heroTitle}
           </h1>
           <p className="mt-4 text-lg leading-relaxed text-white/80 md:mt-5">{site.heroSubtitle}</p>
@@ -43,11 +43,11 @@ export function Hero() {
           <ProfilePhoto size="hero" variant="hero" priority />
           <div className="mt-3 flex w-full max-w-[16rem] flex-col items-center gap-1.5 sm:max-w-[20rem] md:mt-4 md:gap-2 md:max-w-[20rem]">
             <p className="flex w-full items-center justify-center gap-1.5 text-center text-xs font-medium uppercase tracking-[0.15em] text-white/55">
-              <FiMapPin className="shrink-0 text-sm" aria-hidden />
+              <FiMapPin className="gold-icon shrink-0 text-sm" aria-hidden />
               {site.city}
             </p>
             <p className="flex w-full items-center justify-center gap-1.5 text-center text-xs font-medium uppercase tracking-[0.15em] text-white/55">
-              <FiMonitor className="shrink-0 text-sm" aria-hidden />
+              <FiGlobe className="gold-icon shrink-0 text-sm" aria-hidden />
               {site.heroOnline}
             </p>
           </div>
