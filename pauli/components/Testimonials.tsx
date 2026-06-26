@@ -10,7 +10,9 @@ export function Testimonials() {
           <p className="dark-accent-label text-center text-xs font-semibold uppercase tracking-[0.3em]">
             Quem já passou por aqui
           </p>
-          <h2 className="section-title mt-2 text-center">Depoimentos</h2>
+          <h2 className="gold-text mt-2 text-center font-display text-3xl font-bold md:text-4xl">
+            Depoimentos
+          </h2>
           <p className="dark-accent-body mx-auto mt-3 max-w-xl text-center">
             Relatos reais de pessoas que transformaram a relação com a alimentação no acompanhamento
             nutricional.

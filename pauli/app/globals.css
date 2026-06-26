@@ -15,14 +15,50 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-pauli-gold px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-charcoal transition hover:bg-pauli-gold-dark hover:text-white;
-    @apply dark:bg-pauli-gold dark:hover:bg-pauli-gold-light;
+    @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-charcoal shadow-sm transition;
+    background-image: linear-gradient(
+      135deg,
+      #7a6240 0%,
+      #9a7d55 28%,
+      #c4a574 48%,
+      #dcc9a3 58%,
+      #a8875c 78%,
+      #8b7044 100%
+    );
+  }
+
+  .btn-primary:hover {
+    background-image: linear-gradient(
+      135deg,
+      #6f5736 0%,
+      #8b7044 30%,
+      #a8875c 55%,
+      #8b7044 100%
+    );
+    @apply text-white;
   }
 
   .btn-secondary {
     @apply gold-text inline-flex items-center justify-center rounded-full border-2 border-pauli-gold-dark px-6 py-3 text-sm font-bold uppercase tracking-wide transition;
-    @apply hover:bg-pauli-gold-dark hover:text-white;
-    @apply dark:border-pauli-gold/50 dark:text-pauli-gold-light dark:hover:border-pauli-gold dark:hover:bg-pauli-gold/15 dark:hover:text-pauli-gold-light;
+    @apply hover:border-pauli-gold-dark hover:bg-pauli-gold-dark;
+    @apply dark:border-pauli-gold/50 dark:hover:border-pauli-gold dark:hover:bg-pauli-gold/20;
+  }
+
+  .btn-secondary:hover {
+    color: white;
+    -webkit-text-fill-color: white;
+    background-image: none;
+  }
+
+  .gold-badge {
+    @apply text-pauli-charcoal shadow-sm;
+    background-image: linear-gradient(
+      135deg,
+      #8b7044 0%,
+      #b8945f 40%,
+      #dcc9a3 55%,
+      #a8875c 100%
+    );
   }
 
   .section-title {
@@ -39,11 +75,15 @@
   }
 
   .dark-accent-label {
-    @apply detail-text text-xs font-semibold uppercase tracking-[0.3em];
+    @apply gold-text text-xs font-semibold uppercase tracking-[0.3em];
   }
 
   .dark-accent-heading {
     @apply text-pauli-charcoal dark:text-pauli-cream;
+  }
+
+  .dark-accent-card-title {
+    @apply gold-text mt-2 font-display text-2xl font-bold md:text-3xl;
   }
 
   .dark-accent-body {
@@ -51,13 +91,42 @@
   }
 
   .dark-accent-title {
-    @apply detail-text font-semibold;
+    @apply gold-text font-semibold;
   }
 }
 
 @layer utilities {
   .gold-text {
-    @apply text-pauli-gold-dark dark:text-pauli-gold-light;
+    @apply bg-clip-text text-transparent;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      125deg,
+      #6f5736 0%,
+      #8b7044 20%,
+      #a8875c 38%,
+      #d4b896 50%,
+      #a8875c 65%,
+      #8b7044 82%,
+      #6f5736 100%
+    );
+  }
+
+  .dark .gold-text {
+    background-image: linear-gradient(
+      125deg,
+      #8b7044 0%,
+      #a8875c 22%,
+      #c4a574 40%,
+      #e8d9bc 52%,
+      #b8945f 68%,
+      #a8875c 85%,
+      #8b7044 100%
+    );
+  }
+
+  .gold-icon {
+    @apply text-pauli-gold dark:text-pauli-gold-light;
+    filter: drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.1));
   }
 }
 

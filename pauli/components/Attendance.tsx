@@ -12,14 +12,14 @@ export function Attendance() {
               <p className="dark-accent-label text-xs font-semibold uppercase tracking-[0.3em]">
                 Atendimento
               </p>
-              <h2 className="dark-accent-heading mt-2 font-display text-2xl font-bold md:text-3xl">
+              <h2 className="dark-accent-card-title">
                 Como funciona
               </h2>
 
               <dl className="mt-8 space-y-6">
                 <div className="flex gap-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-white/10">
-                    <FiUsers className="detail-text text-lg" />
+                    <FiUsers className="gold-icon text-lg" />
                   </div>
                   <div>
                     <dt className="dark-accent-title">Presencial</dt>
@@ -30,7 +30,7 @@ export function Attendance() {
                 </div>
                 <div className="flex gap-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-white/10">
-                    <FiMonitor className="detail-text text-lg" />
+                    <FiMonitor className="gold-icon text-lg" />
                   </div>
                   <div>
                     <dt className="dark-accent-title">Online</dt>
@@ -48,13 +48,13 @@ export function Attendance() {
               <p className="dark-accent-label text-xs font-semibold uppercase tracking-[0.3em]">
                 Localização
               </p>
-              <h2 className="dark-accent-heading mt-2 font-display text-2xl font-bold md:text-3xl">
+              <h2 className="dark-accent-card-title">
                 Academia Thom
               </h2>
 
               <div className="mt-8 flex gap-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-white/10">
-                  <FiMapPin className="detail-text text-lg" />
+                  <FiMapPin className="gold-icon text-lg" />
                 </div>
                 <address className="dark-accent-body not-italic text-sm leading-relaxed">
                   <a
@@ -76,7 +76,7 @@ export function Attendance() {
                 href={site.address.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="detail-text mt-6 inline-block text-sm font-semibold hover:opacity-80"
+                className="gold-text mt-6 inline-block text-sm font-semibold transition hover:opacity-80"
               >
                 Ver no Google Maps →
               </a>

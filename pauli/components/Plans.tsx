@@ -35,11 +35,11 @@ export function Plans() {
                 }`}
               >
                 {plan.featured && (
-                  <span className="mb-3 inline-block w-fit rounded-full bg-pauli-gold px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-pauli-charcoal">
+                  <span className="gold-badge mb-3 inline-block w-fit rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
                     Mais escolhido
                   </span>
                 )}
-                <h3 className="dark-accent-heading font-display text-xl font-bold">
+                <h3 className="gold-text font-display text-xl font-bold">
                   {plan.title}
                 </h3>
                 {plan.tagline ? (
@@ -48,7 +48,7 @@ export function Plans() {
                   </p>
                 ) : null}
                 <p
-                  className={`dark-accent-body flex-1 text-sm leading-relaxed ${plan.tagline ? "mt-3" : "mt-2"}`}
+                  className={`detail-text flex-1 text-sm leading-relaxed ${plan.tagline ? "mt-3" : "mt-2"}`}
                 >
                   {plan.description}
                 </p>

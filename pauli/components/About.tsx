@@ -24,9 +24,9 @@ export function About() {
           animation="fade-right"
           delay={120}
           duration={900}
-          className="order-1 mx-auto w-full max-w-[260px] sm:max-w-[300px] md:order-2"
+          className="order-1 mx-auto w-[260px] shrink-0 sm:w-[300px] md:order-2 md:mx-0"
         >
-          <div className="relative aspect-[3/5] overflow-hidden rounded-2xl shadow-xl">
+          <div className="relative aspect-[3/5] w-full overflow-hidden rounded-2xl shadow-xl">
             <Image
               src={aboutImageUrl()}
               alt={site.fullName}
