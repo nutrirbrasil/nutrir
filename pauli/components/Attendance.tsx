@@ -4,7 +4,7 @@ import { site } from "@/lib/site";
 
 export function Attendance() {
   return (
-    <section id="atendimento" className="scroll-mt-20 bg-transparent px-4 py-20 dark:bg-[#0f1412]">
+    <section id="atendimento" className="scroll-mt-20 bg-transparent px-4 py-20 dark:bg-black">
       <div className="mx-auto max-w-5xl">
         <div className="grid gap-8 md:grid-cols-2">
           <ScrollReveal animation="fade-left" duration={750}>
@@ -18,8 +18,8 @@ export function Attendance() {
 
               <dl className="mt-8 space-y-6">
                 <div className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-pauli-sand/10">
-                    <FiUsers className="gold-text text-lg dark:text-pauli-sand" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-burgundy/10 dark:bg-pauli-sand/10">
+                    <FiUsers className="burgundy-text text-lg" />
                   </div>
                   <div>
                     <dt className="dark-accent-title">Presencial</dt>
@@ -29,8 +29,8 @@ export function Attendance() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-pauli-sand/10">
-                    <FiMonitor className="gold-text text-lg dark:text-pauli-sand" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-burgundy/10 dark:bg-pauli-sand/10">
+                    <FiMonitor className="burgundy-text text-lg" />
                   </div>
                   <div>
                     <dt className="dark-accent-title">Online</dt>
@@ -53,15 +53,15 @@ export function Attendance() {
               </h2>
 
               <div className="mt-8 flex gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-pauli-sand/10">
-                  <FiMapPin className="gold-text text-lg dark:text-pauli-sand" />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-burgundy/10 dark:bg-pauli-sand/10">
+                  <FiMapPin className="burgundy-text text-lg" />
                 </div>
                 <address className="dark-accent-body not-italic text-sm leading-relaxed">
                   <a
                     href={site.address.mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="gold-text transition hover:underline dark:hover:text-pauli-gold-light"
+                    className="burgundy-text transition hover:underline dark:hover:text-pauli-burgundy-light"
                   >
                     {site.address.line}
                     <br />
@@ -76,7 +76,7 @@ export function Attendance() {
                 href={site.address.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="gold-text mt-6 inline-block text-sm font-semibold hover:underline dark:text-pauli-sand dark:hover:text-pauli-gold-light"
+                className="burgundy-text mt-6 inline-block text-sm font-semibold hover:underline"
               >
                 Ver no Google Maps →
               </a>

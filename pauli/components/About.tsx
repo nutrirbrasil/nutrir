@@ -14,9 +14,6 @@ export function About() {
           <h2 className="mt-2 font-display text-3xl font-bold text-pauli-charcoal dark:text-pauli-cream md:text-4xl">
             {site.formalName}
           </h2>
-          <p className="gold-text mt-1 font-display text-lg italic dark:text-pauli-sand/85">
-            {site.title} · {site.city}
-          </p>
 
           <p className="mt-6 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85">
             {site.aboutIntro}
@@ -29,11 +26,12 @@ export function About() {
           duration={900}
           className="order-1 md:order-2"
         >
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-xl">
+          <div className="relative aspect-[3/5] overflow-hidden rounded-2xl shadow-xl">
             <Image
               src={aboutImageUrl()}
               alt={site.fullName}
               fill
+              quality={90}
               className="object-cover object-center"
               sizes="(max-width: 768px) 100vw, 420px"
             />

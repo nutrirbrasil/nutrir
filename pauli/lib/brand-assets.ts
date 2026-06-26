@@ -1,12 +1,12 @@
 /** Incremente ao trocar imagens para forçar atualização no navegador. */
-export const IMAGE_VERSION = "2";
+export const IMAGE_VERSION = "3";
 /** Só o logo do hero — incremente quando trocar logo.png */
 export const LOGO_VERSION = "3";
 
 const FILES = {
-  hero: "1.png",
-  about: "3 com fundo.png",
-  profile: "foto perfil.png",
+  hero: "1.jpg",
+  about: "4.jpg",
+  profile: "2.jpg",
   icon: "p.png",
   logo: "logo.png",
 } as const;

@@ -14,7 +14,7 @@ const nav = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-pauli-gold/10 bg-pauli-cream/95 backdrop-blur dark:border-pauli-sand/15 dark:bg-[#0f1412]/95">
+    <header className="sticky top-0 z-50 border-b border-pauli-burgundy/10 bg-pauli-cream/95 backdrop-blur dark:border-pauli-sand/15 dark:bg-[#0f1412]/95">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex min-w-0 items-center">
           <Image
@@ -32,7 +32,7 @@ export function Header() {
             <a
               key={item.href}
               href={item.href}
-              className="gold-text text-sm font-medium text-pauli-charcoal/75 transition hover:opacity-100 dark:text-pauli-sand/80 dark:hover:text-pauli-gold-light"
+              className="burgundy-text text-sm font-medium transition hover:opacity-80"
             >
               {item.label}
             </a>

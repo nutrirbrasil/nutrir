@@ -11,10 +11,10 @@ const config: Config = {
       colors: {
         pauli: {
           charcoal: "#1C1C1C",
-          gold: {
-            DEFAULT: "#C9A227",
-            dark: "#A88620",
-            light: "#E2C96A",
+          burgundy: {
+            DEFAULT: "#722F37",
+            dark: "#5C2430",
+            light: "#B56B78",
           },
           gray: {
             DEFAULT: "#6B6B6B",

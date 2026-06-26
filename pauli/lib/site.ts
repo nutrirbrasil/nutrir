@@ -1,10 +1,10 @@
 import { iconImageUrl } from "./brand-assets";
 
 export const site = {
-  name: "Pauli",
-  fullName: "Pauli Pastorino",
+  name: "Paula",
+  fullName: "Paula Pastorino",
   formalName: "Paula Pastorino",
-  displayTitle: "Pαuli Pαstorino",
+  displayTitle: "Paula Pastorino",
   subtitle: "Nutricionista",
   title: "Nutricionista clínica e esportiva",
   city: "Balneário Piçarras, SC",
@@ -14,16 +14,16 @@ export const site = {
     "Estratégias individualizadas para melhorar sua saúde, potencializar sua performance e construir hábitos sustentáveis.",
   identificationBadges: [
     "Emagrecimento saudável",
-    "Ganho de massa muscular",
+    "Hipertrofia",
     "Corredores e atletas amadores",
     "Saúde da mulher",
     "Reeducação alimentar",
     "Longevidade",
-    "Materno-Infantil",
+    "Gestantes",
   ],
-  aboutTitle: "Quem é Pauli?",
+  aboutTitle: "Quem é Paula?",
   aboutIntro:
-    "Sou a Pauli, nutricionista clínica e esportiva, e acredito que a melhor estratégia alimentar é aquela que você consegue viver. Meu trabalho é transformar a ciência da nutrição em estratégias práticas e individualizadas para melhorar sua saúde, sua performance e sua relação com a alimentação, com um cuidado especial voltado aos atletas amadores que buscam evoluir sem abrir mão da vida real.",
+    "Sou a Paula, nutricionista clínica e esportiva, e acredito que a melhor estratégia alimentar é aquela que você consegue viver. Meu trabalho é transformar a ciência da nutrição em estratégias práticas e individualizadas para melhorar sua saúde, sua performance e sua relação com a alimentação, com um cuidado especial voltado aos atletas amadores que buscam evoluir sem abrir mão da vida real.",
   attendance: {
     inPerson: "Balneário Piçarras e região",
     online: "Todo o Brasil",
@@ -80,8 +80,6 @@ export const site = {
       },
     ],
   },
-  plansIntro:
-    "Cada pessoa possui objetivos, necessidades e rotinas diferentes. Por isso, você pode escolher a modalidade de acompanhamento que melhor se encaixa no seu momento.",
   plans: [
     {
       id: "inicial",
@@ -105,6 +103,7 @@ export const site = {
       tagline: "",
       description:
         "Perfeito para quem deseja uma transformação mais consistente e sustentável, com tempo para consolidar hábitos, acompanhar a evolução e realizar ajustes contínuos, promovendo resultados duradouros.",
+      bonus: "+ Bônus: Acesso a plataforma com materiais exclusivos",
       featured: false,
     },
   ],

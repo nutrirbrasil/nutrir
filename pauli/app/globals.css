@@ -11,27 +11,18 @@
     @apply bg-pauli-cream font-sans text-pauli-charcoal antialiased transition-colors duration-300;
     @apply dark:bg-[#0f1412] dark:text-pauli-sand;
   }
-
-  /* Contorno fino em textos dourados no tema claro */
-  html:not(.dark) .gold-text {
-    text-shadow:
-      0.4px 0 0 #1c1c1c,
-      -0.4px 0 0 #1c1c1c,
-      0 0.4px 0 #1c1c1c,
-      0 -0.4px 0 #1c1c1c;
-  }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-pauli-gold px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-charcoal transition hover:bg-pauli-gold-dark hover:text-white;
-    @apply dark:bg-pauli-gold dark:text-pauli-charcoal dark:hover:bg-pauli-gold-light;
+    @apply inline-flex items-center justify-center rounded-full bg-pauli-burgundy px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-pauli-burgundy-dark;
+    @apply dark:bg-pauli-burgundy dark:hover:bg-pauli-burgundy-light;
   }
 
   .btn-secondary {
-    @apply gold-text inline-flex items-center justify-center rounded-full border-2 border-pauli-gold-dark px-6 py-3 text-sm font-bold uppercase tracking-wide transition;
-    @apply hover:bg-pauli-gold-dark hover:text-white hover:[text-shadow:none];
-    @apply dark:border-pauli-gold/50 dark:text-pauli-gold-light dark:hover:border-pauli-gold dark:hover:bg-pauli-gold/15 dark:hover:text-pauli-gold-light;
+    @apply burgundy-text inline-flex items-center justify-center rounded-full border-2 border-pauli-burgundy-dark px-6 py-3 text-sm font-bold uppercase tracking-wide transition;
+    @apply hover:bg-pauli-burgundy-dark hover:text-white;
+    @apply dark:border-pauli-burgundy/50 dark:text-pauli-burgundy-light dark:hover:border-pauli-burgundy dark:hover:bg-pauli-burgundy/15 dark:hover:text-pauli-burgundy-light;
   }
 
   .section-title {
@@ -44,7 +35,7 @@
   }
 
   .dark-accent-label {
-    @apply gold-text text-pauli-gold-dark/90 dark:text-pauli-gold-light/80;
+    @apply burgundy-text text-pauli-burgundy-dark/90 dark:text-pauli-burgundy-light/90;
   }
 
   .dark-accent-heading {
@@ -56,13 +47,13 @@
   }
 
   .dark-accent-title {
-    @apply gold-text font-semibold text-pauli-gold-dark dark:text-pauli-gold-light;
+    @apply burgundy-text font-semibold text-pauli-burgundy-dark dark:text-pauli-burgundy-light;
   }
 }
 
 @layer utilities {
-  .gold-text {
-    @apply text-pauli-gold-dark dark:text-pauli-gold-light;
+  .burgundy-text {
+    @apply text-pauli-burgundy-dark dark:text-pauli-burgundy-light;
   }
 }
 

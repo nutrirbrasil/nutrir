@@ -68,9 +68,13 @@ export function formatOrderTelegramMessage(
     `🆔 ${formatOrderLabel(order.id)}`,
     `👤 ${escapeMarkdown(order.customer_name.trim())}`,
     `📞 ${phone}`,
-    "",
-    `📦 ${escapeMarkdown(items)}`,
   ];
+
+  if (options?.isPatient) {
+    lines.push("🌟 Este cliente é paciente!");
+  }
+
+  lines.push("", `📦 ${escapeMarkdown(items)}`);
 
   if (addons) {
     lines.push("", escapeMarkdown(addons));

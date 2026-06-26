@@ -40,7 +40,9 @@ export function ProfilePhoto({
         alt={isIcon ? site.name : `${site.fullName} — ${site.subtitle}`}
         width={px}
         height={px}
+        quality={90}
         priority={priority}
+        sizes={`${px}px`}
         className={`h-full w-full ${isIcon ? "object-contain p-1" : "object-cover object-center"}`}
       />
     </div>
