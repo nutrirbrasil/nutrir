@@ -1,4 +1,5 @@
-import { FiActivity, FiHeart, FiTrendingUp, type IconType } from "react-icons/fi";
+import type { IconType } from "react-icons";
+import { FiActivity, FiHeart, FiTrendingUp } from "react-icons/fi";
 import { LuBrain, LuUtensilsCrossed } from "react-icons/lu";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { site } from "@/lib/site";
