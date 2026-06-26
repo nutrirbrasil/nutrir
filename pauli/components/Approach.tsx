@@ -22,11 +22,11 @@ export function Approach() {
               as="li"
               className={`lg:col-span-2${index === 3 ? " lg:col-start-2" : ""}`}
             >
-              <div className="surface-card h-full p-6 transition hover:border-pauli-burgundy/25 hover:shadow-md dark:hover:border-pauli-sand/25">
+              <div className="surface-card h-full p-6 transition hover:border-pauli-gold/25 hover:shadow-md dark:hover:border-pauli-sand/25">
                 <span className="text-3xl" aria-hidden>
                   {pillar.icon}
                 </span>
-                <h3 className="burgundy-text mt-3 font-display text-lg font-bold">
+                <h3 className="gold-text mt-3 font-display text-lg font-bold">
                   {pillar.title}
                 </h3>
                 <p className="dark-accent-body mt-2 text-sm leading-relaxed">{pillar.description}</p>

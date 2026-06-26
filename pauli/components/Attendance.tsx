@@ -18,8 +18,8 @@ export function Attendance() {
 
               <dl className="mt-8 space-y-6">
                 <div className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-burgundy/10 dark:bg-pauli-sand/10">
-                    <FiUsers className="burgundy-text text-lg" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-white/10">
+                    <FiUsers className="detail-text text-lg" />
                   </div>
                   <div>
                     <dt className="dark-accent-title">Presencial</dt>
@@ -29,8 +29,8 @@ export function Attendance() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-burgundy/10 dark:bg-pauli-sand/10">
-                    <FiMonitor className="burgundy-text text-lg" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-white/10">
+                    <FiMonitor className="detail-text text-lg" />
                   </div>
                   <div>
                     <dt className="dark-accent-title">Online</dt>
@@ -53,15 +53,15 @@ export function Attendance() {
               </h2>
 
               <div className="mt-8 flex gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-burgundy/10 dark:bg-pauli-sand/10">
-                  <FiMapPin className="burgundy-text text-lg" />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pauli-gold/10 dark:bg-white/10">
+                  <FiMapPin className="detail-text text-lg" />
                 </div>
                 <address className="dark-accent-body not-italic text-sm leading-relaxed">
                   <a
                     href={site.address.mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="burgundy-text transition hover:underline dark:hover:text-pauli-burgundy-light"
+                    className="detail-text transition hover:opacity-80"
                   >
                     {site.address.line}
                     <br />
@@ -76,7 +76,7 @@ export function Attendance() {
                 href={site.address.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="burgundy-text mt-6 inline-block text-sm font-semibold hover:underline"
+                className="detail-text mt-6 inline-block text-sm font-semibold hover:opacity-80"
               >
                 Ver no Google Maps →
               </a>

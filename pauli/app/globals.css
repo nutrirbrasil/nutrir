@@ -15,14 +15,14 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-pauli-burgundy px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-pauli-burgundy-dark;
-    @apply dark:bg-pauli-burgundy dark:hover:bg-pauli-burgundy-light;
+    @apply inline-flex items-center justify-center rounded-full bg-pauli-gold px-6 py-3 text-sm font-bold uppercase tracking-wide text-pauli-charcoal transition hover:bg-pauli-gold-dark hover:text-white;
+    @apply dark:bg-pauli-gold dark:hover:bg-pauli-gold-light;
   }
 
   .btn-secondary {
-    @apply burgundy-text inline-flex items-center justify-center rounded-full border-2 border-pauli-burgundy-dark px-6 py-3 text-sm font-bold uppercase tracking-wide transition;
-    @apply hover:bg-pauli-burgundy-dark hover:text-white;
-    @apply dark:border-pauli-burgundy/50 dark:text-pauli-burgundy-light dark:hover:border-pauli-burgundy dark:hover:bg-pauli-burgundy/15 dark:hover:text-pauli-burgundy-light;
+    @apply gold-text inline-flex items-center justify-center rounded-full border-2 border-pauli-gold-dark px-6 py-3 text-sm font-bold uppercase tracking-wide transition;
+    @apply hover:bg-pauli-gold-dark hover:text-white;
+    @apply dark:border-pauli-gold/50 dark:text-pauli-gold-light dark:hover:border-pauli-gold dark:hover:bg-pauli-gold/15 dark:hover:text-pauli-gold-light;
   }
 
   .section-title {
@@ -34,8 +34,12 @@
     @apply dark:border-pauli-gray-muted/30 dark:bg-[#1a1816];
   }
 
+  .detail-text {
+    @apply text-pauli-charcoal dark:text-white;
+  }
+
   .dark-accent-label {
-    @apply burgundy-text text-pauli-burgundy-dark/90 dark:text-pauli-burgundy-light/90;
+    @apply detail-text text-xs font-semibold uppercase tracking-[0.3em];
   }
 
   .dark-accent-heading {
@@ -47,13 +51,13 @@
   }
 
   .dark-accent-title {
-    @apply burgundy-text font-semibold text-pauli-burgundy-dark dark:text-pauli-burgundy-light;
+    @apply detail-text font-semibold;
   }
 }
 
 @layer utilities {
-  .burgundy-text {
-    @apply text-pauli-burgundy-dark dark:text-pauli-burgundy-light;
+  .gold-text {
+    @apply text-pauli-gold-dark dark:text-pauli-gold-light;
   }
 }
 

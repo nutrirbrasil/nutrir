@@ -3,18 +3,21 @@ import { heroImageUrl, iconImageUrl, profileImageUrl } from "@/lib/brand-assets"
 import { site } from "@/lib/site";
 
 type Props = {
-  size?: "sm" | "md" | "lg" | "hero";
+  size?: Size;
   variant?: "hero" | "profile" | "icon";
   className?: string;
   priority?: boolean;
 };
 
-const sizes = {
-  sm: { box: "h-10 w-10", px: 40 },
-  md: { box: "h-28 w-28", px: 112 },
-  lg: { box: "h-72 w-72 md:h-80 md:w-80", px: 320 },
-  hero: { box: "h-64 w-64 md:h-80 md:w-80", px: 320 },
-};
+const sizeConfig = {
+  sm: { box: "h-10 w-10", sizes: "40px" },
+  md: { box: "h-28 w-28", sizes: "112px" },
+  contact: { box: "h-44 w-44 md:h-52 md:w-52", sizes: "(max-width: 768px) 176px, 208px" },
+  lg: { box: "h-72 w-72 md:h-80 md:w-80", sizes: "(max-width: 768px) 288px, 320px" },
+  hero: { box: "h-64 w-64 md:h-80 md:w-80", sizes: "(max-width: 768px) 256px, 320px" },
+} as const;
+
+type Size = keyof typeof sizeConfig;
 
 function imageSrc(variant: Props["variant"]) {
   if (variant === "hero") return heroImageUrl();
@@ -28,7 +31,7 @@ export function ProfilePhoto({
   className = "",
   priority = false,
 }: Props) {
-  const { box, px } = sizes[size];
+  const { box, sizes } = sizeConfig[size];
   const isIcon = variant === "icon";
 
   return (
@@ -38,12 +41,11 @@ export function ProfilePhoto({
       <Image
         src={imageSrc(variant)}
         alt={isIcon ? site.name : `${site.fullName} — ${site.subtitle}`}
-        width={px}
-        height={px}
+        fill
         quality={90}
         priority={priority}
-        sizes={`${px}px`}
-        className={`h-full w-full ${isIcon ? "object-contain p-1" : "object-cover object-center"}`}
+        sizes={sizes}
+        className={`${isIcon ? "object-contain p-1" : "object-cover object-center"}`}
       />
     </div>
   );

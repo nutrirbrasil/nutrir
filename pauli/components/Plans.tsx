@@ -30,20 +30,20 @@ export function Plans() {
               <div
                 className={`surface-card flex h-full flex-col p-6 transition hover:shadow-md ${
                   plan.featured
-                    ? "border-[3px] border-pauli-burgundy shadow-lg dark:border-pauli-burgundy-light/60"
-                    : "hover:border-pauli-burgundy/25 dark:hover:border-pauli-sand/25"
+                    ? "border-[3px] border-pauli-gold shadow-lg dark:border-pauli-gold-light/60"
+                    : "hover:border-pauli-gold/25 dark:hover:border-pauli-sand/25"
                 }`}
               >
                 {plan.featured && (
-                  <span className="mb-3 inline-block w-fit rounded-full bg-pauli-burgundy px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                  <span className="mb-3 inline-block w-fit rounded-full bg-pauli-gold px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-pauli-charcoal">
                     Mais escolhido
                   </span>
                 )}
-                <h3 className="burgundy-text font-display text-xl font-bold">
+                <h3 className="dark-accent-heading font-display text-xl font-bold">
                   {plan.title}
                 </h3>
                 {plan.tagline ? (
-                  <p className="burgundy-text mt-2 text-sm font-medium leading-snug">
+                  <p className="detail-text mt-2 text-sm font-medium leading-snug">
                     {plan.tagline}
                   </p>
                 ) : null}
@@ -53,7 +53,7 @@ export function Plans() {
                   {plan.description}
                 </p>
                 {"bonus" in plan && plan.bonus ? (
-                  <p className="burgundy-text mt-3 text-sm font-medium leading-snug">
+                  <p className="detail-text mt-3 text-sm font-medium leading-snug">
                     {plan.bonus}
                   </p>
                 ) : null}

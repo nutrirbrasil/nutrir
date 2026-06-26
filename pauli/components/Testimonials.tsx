@@ -20,14 +20,14 @@ export function Testimonials() {
         <ScrollReveal animation="fade-up" delay={160} duration={800} className="mt-12">
           <div className="grid grid-cols-2 gap-4 sm:gap-6">
             {TESTIMONIALS.map((item, index) => (
-              <figure key={item.id} className="surface-card rounded-xl p-2">
+              <figure key={item.id}>
                 <Image
                   src={testimonialImageUrl(item.file)}
                   alt={`Depoimentos de pacientes — parte ${item.id}`}
                   width={item.width}
                   height={item.height}
                   quality={90}
-                  className="h-auto w-full rounded-lg"
+                  className="h-auto w-full rounded-xl"
                   sizes="(max-width: 640px) 50vw, 400px"
                   priority={index === 0}
                 />

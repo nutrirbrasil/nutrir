@@ -9,11 +9,7 @@ export function Contact() {
     <section id="contato" className="scroll-mt-20 bg-pauli-charcoal px-4 py-20 text-white dark:bg-black">
       <div className="mx-auto grid max-w-4xl items-center gap-10 md:grid-cols-[auto_1fr] md:gap-12">
         <ScrollReveal animation="scale-up" duration={800} className="flex justify-center md:justify-start">
-          <ProfilePhoto
-            size="md"
-            variant="profile"
-            className="h-44 w-44 ring-4 ring-white/20 md:h-52 md:w-52"
-          />
+          <ProfilePhoto size="contact" variant="profile" className="ring-4 ring-white/20" />
         </ScrollReveal>
 
         <ScrollReveal animation="fade-left" delay={150} duration={750} className="text-center md:text-left">

@@ -6,7 +6,7 @@ import { site, whatsappLink } from "@/lib/site";
 export function Hero() {
   return (
     <section className="relative overflow-hidden bg-pauli-charcoal px-4 py-20 text-white dark:bg-black md:py-28">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(114,47,55,0.28),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(168,135,92,0.28),transparent_55%)]" />
       <div className="absolute inset-0 opacity-[0.04] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E')]" />
 
       <div className="relative mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-2">
