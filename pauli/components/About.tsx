@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export function About() {
   return (
     <section id="sobre" className="scroll-mt-20 bg-pauli-sand/60 px-4 py-20 dark:bg-[#1a1816]">
-      <div className="mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-[1fr_auto]">
+      <div className="mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-2">
         <ScrollReveal animation="fade-left" duration={800} className="order-2 md:order-1">
           <p className="dark-accent-label text-xs font-semibold uppercase tracking-[0.3em]">
             {site.aboutTitle}
@@ -24,20 +24,20 @@ export function About() {
           animation="fade-right"
           delay={120}
           duration={900}
-          className="order-1 mx-auto w-[260px] shrink-0 sm:w-[300px] md:order-2 md:mx-0"
+          className="order-1 md:order-2"
         >
-          <div className="relative aspect-[3/5] w-full overflow-hidden rounded-2xl shadow-xl">
+          <div className="relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-xl md:max-w-none">
             <Image
               src={aboutImageUrl()}
               alt={site.fullName}
               fill
               quality={90}
               className="object-cover object-center"
-              sizes="(max-width: 640px) 260px, 300px"
+              sizes="(max-width: 768px) 384px, 480px"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-pauli-charcoal/50 via-transparent to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4 text-white sm:p-5">
-              <p className="font-display text-xl font-bold sm:text-2xl">{site.displayTitle}</p>
+            <div className="absolute bottom-0 left-0 right-0 p-5 text-white md:p-6">
+              <p className="font-display text-2xl font-bold">{site.displayTitle}</p>
               <p className="text-sm text-white/80">{site.subtitle}</p>
               <p className="mt-1 text-xs text-white/65">{site.crn}</p>
             </div>
