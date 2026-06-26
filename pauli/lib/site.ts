@@ -8,6 +8,7 @@ export const site = {
   subtitle: "Nutricionista",
   title: "Nutricionista clínica e esportiva",
   city: "Balneário Piçarras, SC",
+  heroOnline: "Brasil e Exterior",
   crn: "CRN 18489D",
   heroTitle: "Nutrição clínica e esportiva para resultados que cabem na sua rotina.",
   heroSubtitle:
@@ -21,12 +22,16 @@ export const site = {
     "Longevidade",
     "Gestantes",
   ],
-  aboutTitle: "Quem é Paula?",
-  aboutIntro:
-    "Sou a Paula, nutricionista clínica e esportiva, e acredito que a melhor estratégia alimentar é aquela que você consegue viver. Meu trabalho é transformar a ciência da nutrição em estratégias práticas e individualizadas para melhorar sua saúde, sua performance e sua relação com a alimentação, com um cuidado especial voltado aos atletas amadores que buscam evoluir sem abrir mão da vida real.",
+  aboutTitle: "Quem sou eu?",
+  aboutParagraphs: [
+    "Nutricionista clínica e esportiva.",
+    "Apaixonada por esportes, academia, exercício físico e pela natureza.",
+    "Como nutricionista, acredito que a melhor estratégia alimentar é aquela que você consegue viver e encaixar na sua rotina.",
+    "Meu trabalho é trazer toda a ciência da nutrição para a realidade de forma simples e realista, com estratégias práticas e individualizadas para melhorar sua saúde, sua performance e sua relação com a alimentação, com um cuidado especial voltado às pessoas que buscam evoluir sem abrir mão da vida real.",
+  ],
   attendance: {
     inPerson: "Balneário Piçarras e região",
-    online: "Todo o Brasil",
+    online: "Todo o Brasil e exterior",
   },
   address: {
     line: "R. Itajaí, 162 - Centro",
@@ -49,31 +54,31 @@ export const site = {
       "Acredito em uma nutrição baseada em ciência, construída para a vida real e pensada para gerar resultados sustentáveis. Por isso, meu acompanhamento é baseado em cinco pilares:",
     pillars: [
       {
-        icon: "🧠",
+        icon: "science",
         title: "Ciência sem extremismos",
         description:
           "Condutas baseadas em evidências, sem terrorismo nutricional e sem regras impossíveis de seguir.",
       },
       {
-        icon: "🍽",
-        title: "Alimentação que se adapta à sua vida",
+        icon: "food",
+        title: "Alimentação adaptativa",
         description:
           "A melhor estratégia alimentar é aquela que você consegue manter no dia a dia, respeitando sua rotina, preferências e objetivos.",
       },
       {
-        icon: "🏋️",
-        title: "Saúde e performance caminhando juntas",
+        icon: "performance",
+        title: "Unir saúde e performance",
         description:
           "Seja para emagrecer, ganhar massa muscular ou melhorar o desempenho nos treinos e provas, a alimentação é ajustada de forma individualizada para potencializar seus resultados.",
       },
       {
-        icon: "📈",
-        title: "Construção de hábitos sustentáveis",
+        icon: "habits",
+        title: "Criar hábitos sustentáveis",
         description:
           "Mais do que entregar um plano alimentar, meu objetivo é ajudar você a desenvolver comportamentos que possam ser mantidos a longo prazo.",
       },
       {
-        icon: "❤️",
+        icon: "care",
         title: "Cuidado individualizado",
         description:
           "Cada pessoa tem uma história, uma rotina e necessidades diferentes. Por isso, o acompanhamento é personalizado, próximo e pensado para a sua realidade.",
@@ -103,7 +108,7 @@ export const site = {
       tagline: "",
       description:
         "Perfeito para quem deseja uma transformação mais consistente e sustentável, com tempo para consolidar hábitos, acompanhar a evolução e realizar ajustes contínuos, promovendo resultados duradouros.",
-      bonus: "+ Bônus: Acesso a plataforma com materiais exclusivos",
+      bonus: "+ Bônus: Acesso a materiais exclusivos",
       featured: false,
     },
   ],

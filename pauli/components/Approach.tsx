@@ -1,5 +1,15 @@
+import { FiActivity, FiHeart, FiTrendingUp, type IconType } from "react-icons/fi";
+import { LuBrain, LuUtensilsCrossed } from "react-icons/lu";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { site } from "@/lib/site";
+
+const pillarIcons: Record<(typeof site.approach.pillars)[number]["icon"], IconType> = {
+  science: LuBrain,
+  food: LuUtensilsCrossed,
+  performance: FiActivity,
+  habits: FiTrendingUp,
+  care: FiHeart,
+};
 
 export function Approach() {
   return (
@@ -13,26 +23,28 @@ export function Approach() {
         </ScrollReveal>
 
         <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-6">
-          {site.approach.pillars.map((pillar, index) => (
-            <ScrollReveal
-              key={pillar.title}
-              animation="fade-up"
-              delay={index * 90}
-              duration={650}
-              as="li"
-              className={`lg:col-span-2${index === 3 ? " lg:col-start-2" : ""}`}
-            >
-              <div className="surface-card h-full p-6 transition hover:border-pauli-gold/25 hover:shadow-md dark:hover:border-pauli-sand/25">
-                <span className="text-3xl" aria-hidden>
-                  {pillar.icon}
-                </span>
-                <h3 className="gold-text mt-3 font-display text-lg font-bold">
-                  {pillar.title}
-                </h3>
-                <p className="dark-accent-body mt-2 text-sm leading-relaxed">{pillar.description}</p>
-              </div>
-            </ScrollReveal>
-          ))}
+          {site.approach.pillars.map((pillar, index) => {
+            const Icon = pillarIcons[pillar.icon];
+
+            return (
+              <ScrollReveal
+                key={pillar.title}
+                animation="fade-up"
+                delay={index * 90}
+                duration={650}
+                as="li"
+                className={`lg:col-span-2${index === 3 ? " lg:col-start-2" : ""}`}
+              >
+                <div className="surface-card h-full p-6 transition hover:border-pauli-gold/25 hover:shadow-md dark:hover:border-pauli-sand/25">
+                  <h3 className="gold-text flex items-start gap-2.5 font-display text-lg font-bold leading-snug">
+                    <Icon className="gold-icon mt-0.5 shrink-0 text-xl" aria-hidden />
+                    <span>{pillar.title}</span>
+                  </h3>
+                  <p className="dark-accent-body mt-2 text-sm leading-relaxed">{pillar.description}</p>
+                </div>
+              </ScrollReveal>
+            );
+          })}
         </ul>
       </div>
     </section>

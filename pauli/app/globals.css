@@ -8,8 +8,7 @@
   }
 
   body {
-    @apply bg-pauli-cream font-sans text-pauli-charcoal antialiased transition-colors duration-300;
-    @apply dark:bg-[#0f1412] dark:text-pauli-sand;
+    @apply bg-[#0f1412] font-sans text-pauli-sand antialiased;
   }
 }
 
@@ -99,19 +98,6 @@
   .gold-text {
     @apply bg-clip-text text-transparent;
     -webkit-text-fill-color: transparent;
-    background-image: linear-gradient(
-      125deg,
-      #6f5736 0%,
-      #8b7044 20%,
-      #a8875c 38%,
-      #d4b896 50%,
-      #a8875c 65%,
-      #8b7044 82%,
-      #6f5736 100%
-    );
-  }
-
-  .dark .gold-text {
     background-image: linear-gradient(
       125deg,
       #8b7044 0%,

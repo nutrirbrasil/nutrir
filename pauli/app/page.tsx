@@ -2,6 +2,7 @@ import { About } from "@/components/About";
 import { Approach } from "@/components/Approach";
 import { Attendance } from "@/components/Attendance";
 import { Contact } from "@/components/Contact";
+import { Faq } from "@/components/Faq";
 import { Hero } from "@/components/Hero";
 import { IdentificationBadges } from "@/components/IdentificationBadges";
 import { Plans } from "@/components/Plans";
@@ -17,6 +18,7 @@ export default function HomePage() {
       <Approach />
       <Plans />
       <Testimonials />
+      <Faq />
       <Contact />
     </>
   );

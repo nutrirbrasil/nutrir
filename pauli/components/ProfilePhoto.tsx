@@ -14,7 +14,7 @@ const sizeConfig = {
   md: { box: "h-28 w-28", sizes: "112px" },
   contact: { box: "h-44 w-44 md:h-52 md:w-52", sizes: "(max-width: 768px) 176px, 208px" },
   lg: { box: "h-72 w-72 md:h-80 md:w-80", sizes: "(max-width: 768px) 288px, 320px" },
-  hero: { box: "h-64 w-64 md:h-80 md:w-80", sizes: "(max-width: 768px) 256px, 320px" },
+  hero: { box: "h-48 w-48 md:h-80 md:w-80", sizes: "(max-width: 768px) 192px, 320px" },
 } as const;
 
 type Size = keyof typeof sizeConfig;

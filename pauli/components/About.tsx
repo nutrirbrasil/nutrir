@@ -6,25 +6,21 @@ import { site } from "@/lib/site";
 export function About() {
   return (
     <section id="sobre" className="scroll-mt-20 bg-pauli-sand/60 px-4 py-20 dark:bg-[#1a1816]">
-      <div className="mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-2">
-        <ScrollReveal animation="fade-left" duration={800} className="order-2 md:order-1">
+      <div className="mx-auto grid max-w-5xl items-center gap-8 md:grid-cols-2 md:gap-12">
+        <ScrollReveal animation="fade-left" duration={800} className="order-1 md:col-start-1 md:row-start-1">
           <p className="dark-accent-label text-xs font-semibold uppercase tracking-[0.3em]">
             {site.aboutTitle}
           </p>
           <h2 className="mt-2 font-display text-3xl font-bold text-pauli-charcoal dark:text-pauli-cream md:text-4xl">
             {site.formalName}
           </h2>
-
-          <p className="mt-6 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85">
-            {site.aboutIntro}
-          </p>
         </ScrollReveal>
 
         <ScrollReveal
           animation="fade-right"
           delay={120}
           duration={900}
-          className="order-1 md:order-2"
+          className="order-2 md:col-start-2 md:row-span-2 md:row-start-1"
         >
           <div className="relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-xl md:max-w-none">
             <Image
@@ -37,10 +33,22 @@ export function About() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-pauli-charcoal/50 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-5 text-white md:p-6">
-              <p className="font-display text-2xl font-bold">{site.displayTitle}</p>
               <p className="text-sm text-white/80">{site.subtitle}</p>
               <p className="mt-1 text-xs text-white/65">{site.crn}</p>
             </div>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal
+          animation="fade-left"
+          delay={80}
+          duration={800}
+          className="order-3 md:col-start-1 md:row-start-2"
+        >
+          <div className="space-y-4 leading-relaxed text-pauli-charcoal/80 dark:text-pauli-sand/85 md:mt-6">
+            {site.aboutParagraphs.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
           </div>
         </ScrollReveal>
       </div>
