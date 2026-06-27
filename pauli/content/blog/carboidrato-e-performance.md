@@ -4,7 +4,7 @@ slug: carboidrato-performance
 description: |
   Como o carboidrato impacta sua energia, treino e resultados? 
 date: 2026-06-27
-published: false
+published: true
 ---
 Embora o carboidrato seja reconhecido como o principal substrato energético para exercícios de moderada e alta intensidade, sua influência sobre a performance no treinamento de força depende principalmente da demanda metabólica imposta pelo treino. Durante exercícios resistidos, o sistema glicolítico e os estoques de glicogênio muscular são amplamente utilizados para fornecer energia, especialmente quando o treinamento envolve múltiplas séries, elevado volume, intervalos curtos entre séries e exercícios para grandes grupos musculares.
 
