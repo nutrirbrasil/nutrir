@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "pauli/**"
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -16,10 +17,17 @@ jobs:
           host: ${{ secrets.PAULI_VPS_HOST }}
           username: ${{ secrets.PAULI_VPS_USER }}
           key: ${{ secrets.PAULI_VPS_SSH_KEY }}
+          script_stop: true
           script: |
+            set -e
             cd ~/nutricao
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
+            echo "Commit: $(git log -1 --oneline)"
+            echo "Posts:"
+            ls -la pauli/content/blog/ || true
             cd pauli
             npm ci
             npm run build
             pm2 restart pauli-web
+            echo "Deploy concluído."
