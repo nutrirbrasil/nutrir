@@ -4,14 +4,14 @@ import { logoImageUrl } from "@/lib/brand-assets";
 import { site, whatsappLink } from "@/lib/site";
 
 const nav = [
-  { href: "#sobre", label: "Sobre", external: false },
-  { href: "#abordagem", label: "Abordagem", external: false },
-  { href: "#acompanhamento", label: "Acompanhamento", external: false },
-  { href: "#depoimentos", label: "Depoimentos", external: false },
-  { href: "/blog", label: "Blog", external: true },
-  { href: "#contato", label: "Contato", external: false },
-  { href: "#faq", label: "FAQ", external: false },
-];
+  { href: "/#sobre", label: "Sobre" },
+  { href: "/#abordagem", label: "Abordagem" },
+  { href: "/#acompanhamento", label: "Acompanhamento" },
+  { href: "/#depoimentos", label: "Depoimentos" },
+  { href: "/#contato", label: "Contato" },
+  { href: "/#faq", label: "FAQ" },
+  { href: "/blog", label: "Blog", highlight: true },
+] as const;
 
 export function Header() {
   return (
@@ -29,25 +29,17 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          {nav.map((item) =>
-            item.external ? (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="detail-text text-sm font-medium transition hover:opacity-80"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <a
-                key={item.href}
-                href={item.href}
-                className="detail-text text-sm font-medium transition hover:opacity-80"
-              >
-                {item.label}
-              </a>
-            ),
-          )}
+          {nav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`text-sm font-medium transition hover:opacity-80 ${
+                "highlight" in item && item.highlight ? "gold-text" : "detail-text"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex shrink-0 items-center">
