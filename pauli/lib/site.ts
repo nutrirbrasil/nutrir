@@ -1,5 +1,11 @@
 import { iconImageUrl } from "./brand-assets";
 
+export function resolveSiteUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (raw) return raw.replace(/\/$/, "");
+  return "https://pauli.nutrirpicarras.com.br";
+}
+
 export const site = {
   name: "Paula",
   fullName: "Paula Pastorino",
@@ -46,7 +52,7 @@ export const site = {
   tiktok: "@pauliipastorino",
   tiktokUrl: "https://www.tiktok.com/@pauliipastorino",
   iconImage: iconImageUrl(),
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://pauli.nutrirpicarras.com.br",
+  siteUrl: resolveSiteUrl(),
   approach: {
     intro:
       "Acredito em uma nutrição baseada em ciência, construída para a vida real e pensada para gerar resultados sustentáveis. Por isso, meu acompanhamento é baseado em cinco pilares:",

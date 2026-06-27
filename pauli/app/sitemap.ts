@@ -1,10 +1,15 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog";
-import { site } from "@/lib/site";
+import { resolveSiteUrl } from "@/lib/site";
+
+function safeDate(value: string): Date {
+  const parsed = new Date(value.includes("T") ? value : `${value}T00:00:00.000Z`);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const base = resolveSiteUrl();
   const posts = await getAllPosts();
-  const base = site.siteUrl;
 
   return [
     {
@@ -21,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...posts.map((post) => ({
       url: `${base}/blog/${post.slug}`,
-      lastModified: new Date(post.date),
+      lastModified: safeDate(post.date),
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),

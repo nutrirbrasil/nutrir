@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { resolveSiteUrl } from "@/lib/site";
+
 function siteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://pauli.nutrirpicarras.com.br";
+  return resolveSiteUrl();
 }
 
 export async function GET(request: NextRequest) {
