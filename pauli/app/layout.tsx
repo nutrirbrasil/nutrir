@@ -20,23 +20,25 @@ export const metadata: Metadata = {
   title: `${site.fullName} — ${site.subtitle} | ${site.city}`,
   description: site.heroSubtitle,
   metadataBase: new URL(site.siteUrl),
+  applicationName: site.fullName,
   openGraph: {
+    siteName: site.fullName,
     title: `${site.fullName} — ${site.subtitle}`,
     description: site.heroSubtitle,
     images: [{ url: site.iconImage }],
   },
   icons: {
-    icon: site.iconImage,
-    apple: site.iconImage,
+    icon: "/p.png",
+    apple: "/p.png",
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`dark ${dmSans.variable} ${playfair.variable}`}>
-      <body>
+      <body className="flex min-h-screen flex-col">
         <Header />
-        <main>{children}</main>
+        <main className="flex-1">{children}</main>
         <Footer />
       </body>
     </html>

@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply bg-[#0f1412] font-sans text-pauli-sand antialiased;
+    @apply bg-black font-sans text-pauli-sand antialiased;
   }
 }
 
