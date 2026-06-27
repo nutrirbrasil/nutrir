@@ -36,15 +36,32 @@ function readPostFile(slug: string): { data: Record<string, unknown>; content: s
   return { data, content };
 }
 
+function normalizeDate(value: unknown): string | null {
+  if (typeof value === "string") return value;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  return null;
+}
+
+function normalizeDescription(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 function toMeta(slug: string, data: Record<string, unknown>): BlogPostMeta | null {
-  if (typeof data.title !== "string" || typeof data.description !== "string") return null;
-  if (typeof data.date !== "string") return null;
+  if (typeof data.title !== "string") return null;
+
+  const description = normalizeDescription(data.description);
+  const date = normalizeDate(data.date);
+  if (!description || !date) return null;
 
   return {
     slug,
     title: data.title,
-    description: data.description,
-    date: data.date,
+    description,
+    date,
     coverImage: typeof data.coverImage === "string" ? data.coverImage : undefined,
     published: data.published !== false,
   };
