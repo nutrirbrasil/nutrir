@@ -25,9 +25,7 @@ export const site = {
   aboutTitle: "Quem sou eu?",
   aboutParagraphs: [
     "Nutricionista clínica e esportiva.",
-    "Apaixonada por esportes, academia, exercício físico e pela natureza.",
-    "Como nutricionista, acredito que a melhor estratégia alimentar é aquela que você consegue viver e encaixar na sua rotina.",
-    "Meu trabalho é trazer toda a ciência da nutrição para a realidade de forma simples e realista, com estratégias práticas e individualizadas para melhorar sua saúde, sua performance e sua relação com a alimentação, com um cuidado especial voltado às pessoas que buscam evoluir sem abrir mão da vida real.",
+    "Meu trabalho é trazer a ciência da nutrição para a realidade do teu dia a dia, com estratégias individualizadas para melhorar a sua saúde, a sua performance e a sua relação com a alimentação.",
   ],
   attendance: {
     inPerson: "Balneário Piçarras e região",
