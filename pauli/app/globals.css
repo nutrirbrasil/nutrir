@@ -114,6 +114,47 @@
     @apply text-pauli-gold dark:text-pauli-gold-light;
     filter: drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.1));
   }
+
+  .blog-prose {
+    @apply text-base leading-relaxed;
+  }
+
+  .blog-prose h2 {
+    @apply gold-text mt-10 font-display text-2xl font-bold;
+  }
+
+  .blog-prose h3 {
+    @apply dark-accent-title mt-8 text-xl;
+  }
+
+  .blog-prose p {
+    @apply mt-4;
+  }
+
+  .blog-prose ul,
+  .blog-prose ol {
+    @apply mt-4 list-inside list-disc space-y-2 pl-2;
+  }
+
+  .blog-prose ol {
+    @apply list-decimal;
+  }
+
+  .blog-prose a {
+    @apply text-pauli-gold-light underline decoration-pauli-gold/40 underline-offset-2 transition hover:decoration-pauli-gold;
+  }
+
+  .blog-prose strong {
+    @apply font-semibold text-pauli-cream;
+  }
+
+  .blog-prose blockquote {
+    @apply mt-6 border-l-4 border-pauli-gold/50 pl-4 italic text-pauli-sand/80;
+  }
+
+  .blog-prose img {
+    @apply mt-6 rounded-xl;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

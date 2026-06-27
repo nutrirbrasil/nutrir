@@ -1,0 +1,34 @@
+backend:
+  name: github
+  repo: nutrirbrasil/nutrir
+  branch: main
+  base_url: https://pauli.nutrirpicarras.com.br
+  auth_endpoint: api/decap-auth
+
+media_folder: pauli/public/blog
+public_folder: /blog
+
+locale: pt
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: "-"
+
+collections:
+  - name: blog
+    label: Blog
+    label_singular: Artigo
+    folder: pauli/content/blog
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Título, name: title, widget: string }
+      - { label: Slug, name: slug, widget: string, hint: "URL do artigo, ex: emagrecimento-saudavel" }
+      - { label: Descrição, name: description, widget: text, hint: "Resumo curto para SEO e listagem" }
+      - { label: Data, name: date, widget: datetime, date_format: "YYYY-MM-DD", time_format: false }
+      - { label: Imagem de capa, name: coverImage, widget: image, required: false }
+      - { label: Publicado, name: published, widget: boolean, default: false }
+      - { label: Conteúdo, name: body, widget: markdown }

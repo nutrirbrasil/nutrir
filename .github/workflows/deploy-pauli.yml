@@ -1,0 +1,25 @@
+name: Deploy Paula site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pauli/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PAULI_VPS_HOST }}
+          username: ${{ secrets.PAULI_VPS_USER }}
+          key: ${{ secrets.PAULI_VPS_SSH_KEY }}
+          script: |
+            cd ~/nutricao
+            git pull origin main
+            cd pauli
+            npm ci
+            npm run build
+            pm2 restart pauli-web

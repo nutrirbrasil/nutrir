@@ -1,3 +1,5 @@
+export type MealStarchType = "massa" | "arroz";
+
 export interface MealAddon {
   id: string;
   name: string;
@@ -6,6 +8,8 @@ export interface MealAddon {
   portionLabel: string;
   portionUnit: string;
   portionUnitPlural: string;
+  /** Se definido, o adicional só aparece em marmitas com esse acompanhamento. */
+  forStarch?: MealStarchType;
 }
 
 export const MAX_ADDON_PORTIONS = 10;
@@ -74,6 +78,26 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionUnit: "porção",
     portionUnitPlural: "porções",
   },
+  {
+    id: "add-massa-sem-gluten",
+    name: "Massa sem glúten",
+    baseCost: 0,
+    additionalPrice: 2.99,
+    portionLabel: "substituição",
+    portionUnit: "porção",
+    portionUnitPlural: "porções",
+    forStarch: "massa",
+  },
+  {
+    id: "add-arroz-integral",
+    name: "Arroz Integral",
+    baseCost: 0,
+    additionalPrice: 0.99,
+    portionLabel: "substituição",
+    portionUnit: "porção",
+    portionUnitPlural: "porções",
+    forStarch: "arroz",
+  },
 ];
 
 const ADDON_BY_ID = Object.fromEntries(MEAL_ADDONS.map((a) => [a.id, a]));
@@ -94,6 +118,44 @@ export function getAddonUnitPriceCents(addon: MealAddon): number {
 
 export function getAddonById(id: string): MealAddon | undefined {
   return ADDON_BY_ID[id];
+}
+
+/** Detecta massa ou arroz a partir do rótulo da marmita ou do item_id. */
+export function getMealStarchType(hint: string): MealStarchType | undefined {
+  const lower = hint.toLowerCase();
+  if (lower.includes("massa")) return "massa";
+  if (
+    lower.includes("arroz") ||
+    lower.includes("ervilha") ||
+    lower.includes("grão") ||
+    lower.includes("grao")
+  ) {
+    return "arroz";
+  }
+  return undefined;
+}
+
+export function getAddonsForStarch(starch?: MealStarchType): MealAddon[] {
+  return MEAL_ADDONS.filter((addon) => !addon.forStarch || addon.forStarch === starch);
+}
+
+export function getAddonsForMealHint(hint: string): MealAddon[] {
+  return getAddonsForStarch(getMealStarchType(hint));
+}
+
+/** Adicionais no modo "mesmo em todas" — extras por tipo só se todas as marmitas forem do mesmo. */
+export function getAddonsForSameSelection(
+  mealLabels: string[],
+  itemId?: string
+): MealAddon[] {
+  if (mealLabels.length === 1) {
+    const hint = [itemId, mealLabels[0]].filter(Boolean).join(" ");
+    return getAddonsForMealHint(hint);
+  }
+
+  const starchTypes = mealLabels.map((label) => getMealStarchType(label));
+  const allSame = starchTypes.every((s) => s === starchTypes[0]);
+  return getAddonsForStarch(allSame ? starchTypes[0] : undefined);
 }
 
 export type AddonSelectionMap = Record<string, number>;

@@ -4,8 +4,10 @@ import { FiX } from "react-icons/fi";
 import { formatPrice } from "@/lib/api";
 import {
   getAddonUnitPriceCents,
+  getAddonsForMealHint,
+  getAddonsForSameSelection,
   MAX_ADDON_PORTIONS,
-  MEAL_ADDONS,
+  type MealAddon,
   selectionMapTotalCents,
   type AddonSelectionMap,
 } from "@/lib/addons-data";
@@ -34,9 +36,11 @@ interface Props {
 }
 
 function AddonPicker({
+  addons,
   selection,
   onChange,
 }: {
+  addons: MealAddon[];
   selection: AddonSelectionMap;
   onChange: (next: AddonSelectionMap) => void;
 }) {
@@ -49,7 +53,7 @@ function AddonPicker({
 
   return (
     <div className="space-y-2">
-      {MEAL_ADDONS.map((addon) => {
+      {addons.map((addon) => {
         const qty = selection[addon.id] ?? 0;
         const unitCents = getAddonUnitPriceCents(addon);
         return (
@@ -118,6 +122,14 @@ export function AddonsModal({
     0
   );
 
+  const sameModeAddons = getAddonsForSameSelection(
+    pending.mealLabels,
+    pending.baseItem.item_id
+  );
+  const customModeAddons = getAddonsForMealHint(
+    pending.mealLabels[activeMealIndex] ?? ""
+  );
+
   const title =
     step === "ask"
       ? "Deseja adicionais?"
@@ -184,7 +196,11 @@ export function AddonsModal({
 
           {step === "pick_same" && (
             <>
-              <AddonPicker selection={sameSelection} onChange={onSameSelectionChange} />
+              <AddonPicker
+                addons={sameModeAddons}
+                selection={sameSelection}
+                onChange={onSameSelectionChange}
+              />
               {previewSameTotal > 0 && (
                 <p className="mt-4 text-center text-sm text-nutrir-emerald/70">
                   Total adicionais:{" "}
@@ -221,6 +237,7 @@ export function AddonsModal({
                 {pending.mealLabels[activeMealIndex]}
               </p>
               <AddonPicker
+                addons={customModeAddons}
                 selection={perMealSelection[activeMealIndex] ?? {}}
                 onChange={(next) => {
                   const copy = [...perMealSelection];
