@@ -18,17 +18,24 @@ jobs:
           host: ${{ secrets.PAULI_VPS_HOST }}
           username: ${{ secrets.PAULI_VPS_USER }}
           key: ${{ secrets.PAULI_VPS_SSH_KEY }}
+          command_timeout: 15m
           script_stop: true
           script: |
             set -e
-            cd ~/nutricao
+            REPO=/home/zeedo/nutricao
+            cd "$REPO"
+            git remote -v
             git fetch origin main
             git reset --hard origin/main
             echo "Commit: $(git log -1 --oneline)"
-            echo "Posts:"
-            ls -la pauli/content/blog/ || true
+            echo "Posts no repo:"
+            ls -la pauli/content/blog/
+            test -n "$(ls -A pauli/content/blog/*.md 2>/dev/null)" || (echo "ERRO: nenhum post .md encontrado" && exit 1)
             cd pauli
             npm ci
             npm run build
             pm2 restart pauli-web
+            sleep 2
+            echo "Teste local (deve listar o post):"
+            curl -sS http://127.0.0.1:3002/blog | grep -o "Carboidrato" | head -1 || (echo "ERRO: post não apareceu no build" && exit 1)
             echo "Deploy concluído."
