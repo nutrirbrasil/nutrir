@@ -7,6 +7,9 @@ import {
 } from "./br-fields";
 import type { Order, OrderItem, PaymentMethod, PaymentStatus } from "./types";
 
+/** Máximo de pedidos guardados por cliente no Supabase. */
+export const MAX_ORDERS_PER_CUSTOMER = 5;
+
 export function normalizePhone(phone: string): string {
   return normalizePhoneStorage(phone);
 }
@@ -195,6 +198,34 @@ export async function getCustomerByPhone(phone: string): Promise<CustomerRecord 
   return (data as CustomerRecord) ?? null;
 }
 
+/** Remove pedidos além do limite por cliente (fallback se a migration ainda não rodou). */
+async function trimCustomerOrdersInSupabase(
+  customerId: string,
+  keep = MAX_ORDERS_PER_CUSTOMER
+): Promise<void> {
+  const db = getSupabaseAdmin();
+  if (!db) return;
+
+  const { data, error } = await db
+    .from("nutrir_orders")
+    .select("order_nsu")
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false })
+    .order("order_nsu", { ascending: false });
+
+  if (error || !data || data.length <= keep) return;
+
+  const toDelete = data.slice(keep).map((row) => row.order_nsu);
+  const { error: deleteError } = await db
+    .from("nutrir_orders")
+    .delete()
+    .in("order_nsu", toDelete);
+
+  if (deleteError) {
+    console.error("[Supabase] trimOrders:", deleteError.message);
+  }
+}
+
 export async function saveOrderToSupabase(order: Order): Promise<boolean> {
   const db = getSupabaseAdmin();
   if (!db) return false;
@@ -234,6 +265,8 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
     return false;
   }
 
+  await trimCustomerOrdersInSupabase(customer.id);
+
   return true;
 }
 
@@ -260,7 +293,7 @@ export async function updateOrderPaymentInSupabase(
 
 export async function getRecentOrdersByEmail(
   email: string,
-  limit = 2
+  limit = MAX_ORDERS_PER_CUSTOMER
 ): Promise<SavedOrderRecord[]> {
   const db = getSupabaseAdmin();
   if (!db) return [];

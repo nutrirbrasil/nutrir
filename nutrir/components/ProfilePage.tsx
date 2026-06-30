@@ -72,6 +72,7 @@ export function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [recentOrders, setRecentOrders] = useState<SavedOrder[]>([]);
+  const [ordersExpanded, setOrdersExpanded] = useState(false);
   const [detailOrder, setDetailOrder] = useState<SavedOrder | null>(null);
 
   const [showChangePass, setShowChangePass] = useState(false);
@@ -110,8 +111,12 @@ export function ProfilePage() {
       setRecentOrders([]);
       return;
     }
-    fetchRecentOrdersForEmail(accountEmail, 2).then(setRecentOrders);
+    fetchRecentOrdersForEmail(accountEmail, 5).then(setRecentOrders);
   }, [session?.user.email, profile.email, isLoggedIn, saved]);
+
+  useEffect(() => {
+    setOrdersExpanded(false);
+  }, [recentOrders]);
 
   function handleReorder(orderId: string) {
     const order = recentOrders.find((o) => o.id === orderId);
@@ -710,8 +715,9 @@ export function ProfilePage() {
                 Sem histórico. Você ainda não realizou nenhum pedido.
               </p>
             ) : (
+              <>
               <ul className="mt-4 space-y-4">
-                {recentOrders.map((order) => {
+                {(ordersExpanded ? recentOrders : recentOrders.slice(0, 1)).map((order) => {
                   const date = new Date(order.created_at);
                   const dateStr = date.toLocaleDateString("pt-BR", {
                     day: "2-digit",
@@ -752,6 +758,16 @@ export function ProfilePage() {
                   );
                 })}
               </ul>
+              {recentOrders.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setOrdersExpanded((v) => !v)}
+                  className="mt-4 w-full text-sm font-bold text-nutrir-burgundy hover:underline"
+                >
+                  {ordersExpanded ? "Ver menos" : "Ver mais"}
+                </button>
+              )}
+              </>
             )}
           </section>
         )}

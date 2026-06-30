@@ -18,7 +18,7 @@ export interface SavedOrder {
 
 export async function fetchRecentOrdersForEmail(
   email: string,
-  limit = 2
+  limit = 5
 ): Promise<SavedOrder[]> {
   const normalized = email.trim().toLowerCase();
   if (!normalized) return [];
