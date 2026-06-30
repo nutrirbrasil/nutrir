@@ -41,33 +41,31 @@ export function MarmitaCard({ item, sectionId }: Props) {
   const imageSrc = getMarmitaImageSrc(item.id);
 
   return (
-    <article className="card flex flex-row gap-3 p-3 transition hover:shadow-md sm:flex-col sm:gap-0 sm:p-6">
-      <div className="relative h-14 w-14 shrink-0 sm:mx-auto sm:mb-3 sm:h-28 sm:w-28">
+    <article className="card flex flex-col overflow-hidden !p-0 transition hover:shadow-md">
+      <div className="relative aspect-[5/4] w-full">
         {imageSrc && (
           <MarmitaPhoto
             src={imageSrc}
             alt={item.name}
             className="h-full w-full"
-            sizes="(max-width: 640px) 56px, 112px"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
           />
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex flex-1 flex-col p-4">
         <h3 className="font-display text-base font-bold leading-tight text-nutrir-emerald sm:text-lg">
           {item.name}
         </h3>
-        <p className="mt-0.5 line-clamp-2 flex-1 text-xs text-nutrir-emerald/70 sm:mt-1 sm:line-clamp-none sm:text-sm">
-          {item.description}
-        </p>
+        <p className="mt-1 flex-1 text-xs text-nutrir-emerald/70 sm:text-sm">{item.description}</p>
 
-        <div className="mt-2 flex gap-1.5 sm:mt-4 sm:gap-2">
+        <div className="mt-3 flex gap-2">
           {(["P", "G"] as MarmitaSize[]).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setSize(s)}
-              className={`flex-1 rounded-lg py-1.5 text-center text-xs font-bold transition sm:py-2 sm:text-sm ${
+              className={`flex-1 rounded-lg py-2 text-center text-xs font-bold transition sm:text-sm ${
                 size === s
                   ? "bg-nutrir-burgundy text-nutrir-nude"
                   : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
@@ -78,7 +76,7 @@ export function MarmitaCard({ item, sectionId }: Props) {
           ))}
         </div>
 
-        <div className="mt-2 flex flex-col gap-2 border-t border-nutrir-nude-dark/50 pt-2 sm:mt-4 sm:pt-4">
+        <div className="mt-3 flex flex-col gap-2 border-t border-nutrir-nude-dark/50 pt-3">
           <div className="text-xs text-nutrir-emerald/70 sm:text-sm">
             <p>
               De{" "}
@@ -89,7 +87,11 @@ export function MarmitaCard({ item, sectionId }: Props) {
               ou pix
             </p>
           </div>
-          <button type="button" onClick={handleAdd} className="btn-primary w-full px-4 py-1.5 text-xs sm:py-2.5 sm:text-sm">
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="btn-primary w-full px-4 py-2 text-sm"
+          >
             Adicionar
           </button>
         </div>

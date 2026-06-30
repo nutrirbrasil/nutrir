@@ -4,7 +4,7 @@ import type { OrderItem } from "./types";
 const SEM_FUNDO = "/marmitas/Sem fundo";
 
 /** Incremente ao trocar as fotos em public/marmitas para forçar atualização no navegador. */
-export const MARMITA_IMAGES_VERSION = "1";
+export const MARMITA_IMAGES_VERSION = "2";
 
 function imagePath(name: string): string {
   return `${encodeURI(`${SEM_FUNDO}/${name}.png`)}?v=${MARMITA_IMAGES_VERSION}`;
