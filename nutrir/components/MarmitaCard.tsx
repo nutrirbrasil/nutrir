@@ -53,19 +53,21 @@ export function MarmitaCard({ item, sectionId }: Props) {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="font-display text-base font-bold leading-tight text-nutrir-emerald sm:text-lg">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-4">
+        <h3 className="line-clamp-2 font-display text-sm font-bold leading-tight text-nutrir-emerald sm:text-base lg:text-lg">
           {item.name}
         </h3>
-        <p className="mt-1 flex-1 text-xs text-nutrir-emerald/70 sm:text-sm">{item.description}</p>
+        <p className="mt-1 line-clamp-2 flex-1 text-[10px] leading-snug text-nutrir-emerald/70 sm:text-sm">
+          {item.description}
+        </p>
 
-        <div className="mt-3 flex gap-2">
+        <div className="mt-2 flex gap-1.5 sm:mt-3 sm:gap-2">
           {(["P", "G"] as MarmitaSize[]).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setSize(s)}
-              className={`flex-1 rounded-lg py-2 text-center text-xs font-bold transition sm:text-sm ${
+              className={`flex-1 rounded-lg py-1.5 text-center text-[10px] font-bold transition sm:py-2 sm:text-sm ${
                 size === s
                   ? "bg-nutrir-burgundy text-nutrir-nude"
                   : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
@@ -76,13 +78,13 @@ export function MarmitaCard({ item, sectionId }: Props) {
           ))}
         </div>
 
-        <div className="mt-3 flex flex-col gap-2 border-t border-nutrir-nude-dark/50 pt-3">
-          <div className="text-xs text-nutrir-emerald/70 sm:text-sm">
+        <div className="mt-2 flex flex-col gap-1.5 border-t border-nutrir-nude-dark/50 pt-2 sm:mt-3 sm:gap-2 sm:pt-3">
+          <div className="text-[10px] text-nutrir-emerald/70 sm:text-sm">
             <p>
               De{" "}
               <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>
             </p>
-            <p>
+            <p className="leading-snug">
               por <strong className="text-nutrir-emerald">{formatPrice(price)}</strong> no dinheiro
               ou pix
             </p>
@@ -90,7 +92,7 @@ export function MarmitaCard({ item, sectionId }: Props) {
           <button
             type="button"
             onClick={handleAdd}
-            className="btn-primary w-full px-4 py-2 text-sm"
+            className="btn-primary w-full px-2 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
           >
             Adicionar
           </button>

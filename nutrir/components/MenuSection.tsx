@@ -21,7 +21,7 @@ export function MenuSection({ section }: Props) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {section.items.map((item) => (
             <MarmitaCard key={item.id} item={item} sectionId={section.id as "frango" | "carne" | "vegetariano"} />
           ))}
