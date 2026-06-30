@@ -115,7 +115,7 @@ function MealSidebar({
   return (
     <aside className="flex w-[7.5rem] shrink-0 flex-col gap-1 overflow-y-auto border-r border-nutrir-nude-dark/40 bg-nutrir-nude/70 p-2 sm:w-36">
       {labels.map((label, index) => {
-        const thumbSrc = getMarmitaImageFromLabel(label, "top");
+        const thumbSrc = getMarmitaImageFromLabel(label, true);
         const active = activeIndex === index;
 
         return (
@@ -136,7 +136,6 @@ function MealSidebar({
                   alt={shortMealLabel(label)}
                   className="h-full w-full"
                   sizes="44px"
-                  variant="top"
                 />
               )}
             </div>

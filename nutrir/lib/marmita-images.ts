@@ -3,115 +3,81 @@ import type { OrderItem } from "./types";
 
 const SEM_FUNDO = "/marmitas/Sem fundo";
 
-function imagePath(filename: string): string {
-  return encodeURI(`${SEM_FUNDO}/${filename}`);
+function imagePath(name: string): string {
+  return encodeURI(`${SEM_FUNDO}/${name}.png`);
 }
 
-/** Vista lateral — cardápio, sacola, combos. */
 export const MARMITA_IMAGES: Record<string, string> = {
-  "frg-batata": imagePath("Escondidinho de frango.jpg"),
-  "frg-arroz": imagePath("frango e arroz lado.jpg"),
-  "frg-massa": imagePath("frango e massa lado.jpg"),
-  "car-batata": imagePath("Escondidinho de carne.jpg"),
-  "car-arroz": imagePath("carne e arroz lado.jpg"),
-  "car-massa": imagePath("carne e massa lado.jpg"),
-  "veg-ervilha": imagePath("ervilha lado.jpg"),
-  "veg-grao": imagePath("grao de bico lado.jpg"),
+  "frg-batata": imagePath("Escondidinho de frango"),
+  "frg-arroz": imagePath("frango e arroz lado"),
+  "frg-massa": imagePath("frango e massa lado"),
+  "car-batata": imagePath("Escondidinho de carne"),
+  "car-arroz": imagePath("carne e arroz lado"),
+  "car-massa": imagePath("carne e massa lado"),
+  "veg-ervilha": imagePath("ervilha lado"),
+  "veg-grao": imagePath("grao de bico lado"),
 };
 
-/** Vista de cima — miniaturas no modal de adicionais. */
-export const MARMITA_IMAGES_TOP: Record<string, string> = {
-  "frg-batata": imagePath("Escondidinho de frango.jpg"),
-  "frg-arroz": imagePath("frango e arroz cima.jpg"),
-  "frg-massa": imagePath("frango e massa cima.jpg"),
-  "car-batata": imagePath("Escondidinho de carne.jpg"),
-  "car-arroz": imagePath("carne e arroz cima.jpg"),
-  "car-massa": imagePath("carne e massa cima.jpg"),
-  "veg-ervilha": imagePath("ervilha cima.jpg"),
-  "veg-grao": imagePath("grao de bico cima.jpg"),
+const MARMITA_IMAGES_TOP: Record<string, string> = {
+  "frg-batata": imagePath("Escondidinho de frango"),
+  "frg-arroz": imagePath("frango e arroz cima"),
+  "frg-massa": imagePath("frango e massa cima"),
+  "car-batata": imagePath("Escondidinho de carne"),
+  "car-arroz": imagePath("carne e arroz cima"),
+  "car-massa": imagePath("carne e massa cima"),
+  "veg-ervilha": imagePath("ervilha cima"),
+  "veg-grao": imagePath("grao de bico cima"),
 };
 
 export const KIT_IMAGES: Record<KitProduct["id"], string> = {
-  frango: imagePath("combo frango.jpg"),
-  carne: imagePath("combo carne.jpg"),
-  veg: imagePath("combo vegetariano.jpg"),
-  misto: imagePath("combo misto.jpg"),
+  frango: imagePath("combo frango"),
+  carne: imagePath("combo carne"),
+  veg: imagePath("combo vegetariano"),
+  misto: imagePath("combo misto"),
 };
 
-export const SECTION_IMAGES: Record<string, string> = {
-  frango: KIT_IMAGES.frango,
-  carne: KIT_IMAGES.carne,
-  vegetariano: KIT_IMAGES.veg,
+const SECTION_TO_KIT: Record<string, KitProduct["id"]> = {
+  frango: "frango",
+  carne: "carne",
+  vegetariano: "veg",
 };
 
-export function resolveMarmitaItemKeyFromLabel(label: string): string | undefined {
+function itemKeyFromLabel(label: string): string | undefined {
   const lower = label.toLowerCase();
-
-  const hasFrango = lower.includes("frango");
-  const hasCarne = lower.includes("carne");
-  const hasBatata = lower.includes("batata") || lower.includes("escondidinho");
-  const hasMassa = lower.includes("massa");
-  const hasArroz = lower.includes("arroz");
-  const hasErvilha = lower.includes("ervilha");
-  const hasGrao = lower.includes("grão") || lower.includes("grao");
-
-  if (hasFrango && hasBatata) return "frg-batata";
-  if (hasFrango && hasMassa) return "frg-massa";
-  if (hasFrango && hasArroz) return "frg-arroz";
-  if (hasCarne && hasBatata) return "car-batata";
-  if (hasCarne && hasMassa) return "car-massa";
-  if (hasCarne && hasArroz) return "car-arroz";
-  if (hasErvilha) return "veg-ervilha";
-  if (hasGrao) return "veg-grao";
-
+  if (lower.includes("frango") && (lower.includes("batata") || lower.includes("escondidinho")))
+    return "frg-batata";
+  if (lower.includes("frango") && lower.includes("massa")) return "frg-massa";
+  if (lower.includes("frango") && lower.includes("arroz")) return "frg-arroz";
+  if (lower.includes("carne") && (lower.includes("batata") || lower.includes("escondidinho")))
+    return "car-batata";
+  if (lower.includes("carne") && lower.includes("massa")) return "car-massa";
+  if (lower.includes("carne") && lower.includes("arroz")) return "car-arroz";
+  if (lower.includes("ervilha")) return "veg-ervilha";
+  if (lower.includes("grão") || lower.includes("grao")) return "veg-grao";
   return undefined;
 }
 
-export function getMarmitaImageSrc(
-  itemId?: string,
-  view: "side" | "top" = "side"
-): string | undefined {
+export function getMarmitaImageSrc(itemId?: string, topView = false): string | undefined {
   if (!itemId) return undefined;
-  const map = view === "top" ? MARMITA_IMAGES_TOP : MARMITA_IMAGES;
-  return map[itemId];
+  return (topView ? MARMITA_IMAGES_TOP : MARMITA_IMAGES)[itemId];
 }
 
-export function getMarmitaImageFromLabel(
-  label: string,
-  view: "side" | "top" = "side"
-): string | undefined {
-  const key = resolveMarmitaItemKeyFromLabel(label);
-  if (!key) return undefined;
-  return getMarmitaImageSrc(key, view);
-}
-
-export function getKitImageSrc(kitId: KitProduct["id"]): string {
-  return KIT_IMAGES[kitId];
-}
-
-export function parseKitIdFromItemId(itemId?: string): KitProduct["id"] | undefined {
-  if (!itemId?.startsWith("kit-")) return undefined;
-  const kitId = itemId.slice(4).split("-")[0];
-  if (kitId === "frango" || kitId === "carne" || kitId === "veg" || kitId === "misto") {
-    return kitId;
-  }
-  return undefined;
+export function getMarmitaImageFromLabel(label: string, topView = false): string | undefined {
+  const key = itemKeyFromLabel(label);
+  return key ? getMarmitaImageSrc(key, topView) : undefined;
 }
 
 export function getCartItemImageSrc(item: OrderItem): string | undefined {
-  const kitId = parseKitIdFromItemId(item.item_id);
-  if (kitId) return KIT_IMAGES[kitId];
-
+  if (item.item_id?.startsWith("kit-")) {
+    const kitId = item.item_id.slice(4).split("-")[0] as KitProduct["id"];
+    if (kitId in KIT_IMAGES) return KIT_IMAGES[kitId];
+  }
   if (item.section_id === "combo") return KIT_IMAGES.misto;
-
-  const marmitaSrc = getMarmitaImageSrc(item.item_id);
-  if (marmitaSrc) return marmitaSrc;
-
-  if (item.section_id) return SECTION_IMAGES[item.section_id];
-  return undefined;
+  if (item.item_id && MARMITA_IMAGES[item.item_id]) return MARMITA_IMAGES[item.item_id];
+  const kitId = item.section_id ? SECTION_TO_KIT[item.section_id] : undefined;
+  return kitId ? KIT_IMAGES[kitId] : undefined;
 }
 
-/** Rótulo curto para a lista lateral do modal de adicionais. */
 export function shortMealLabel(label: string): string {
   return label.replace(/\s*\(\d+\/\d+\)\s*$/, "").trim();
 }

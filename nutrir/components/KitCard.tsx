@@ -5,7 +5,7 @@ import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { KitProduct, KitTier, MarmitaSize } from "@/lib/menu-data";
 import { getKitMealLabels } from "@/lib/kit-contents-data";
-import { getKitImageSrc } from "@/lib/marmita-images";
+import { KIT_IMAGES } from "@/lib/marmita-images";
 import { KitContentModal } from "./KitContentModal";
 import { MarmitaPhoto } from "./MarmitaPhoto";
 
@@ -107,11 +107,10 @@ export function KitCard({ kit }: Props) {
           <div className="flex shrink-0 flex-col items-center justify-center bg-nutrir-emerald px-6 py-8 text-center md:w-56 md:py-10 lg:w-64">
             <div className="relative h-28 w-28 md:h-32 md:w-32">
               <MarmitaPhoto
-                src={getKitImageSrc(kit.id)}
+                src={KIT_IMAGES[kit.id]}
                 alt={kit.name}
                 className="h-full w-full"
                 sizes="128px"
-                variant="combo"
               />
             </div>
             <h3 className="mt-3 font-display text-2xl font-bold text-nutrir-nude">{kit.name}</h3>

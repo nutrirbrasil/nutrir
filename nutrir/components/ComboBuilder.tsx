@@ -14,8 +14,14 @@ import {
 } from "@/lib/combo-builder-data";
 import type { ComboMarmitaOption } from "@/lib/combo-builder-data";
 import type { MarmitaSize } from "@/lib/menu-data";
-import { getMarmitaImageSrc, SECTION_IMAGES } from "@/lib/marmita-images";
+import { KIT_IMAGES, getMarmitaImageSrc } from "@/lib/marmita-images";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
+
+const SECTION_KIT: Record<string, keyof typeof KIT_IMAGES> = {
+  frango: "frango",
+  carne: "carne",
+  vegetariano: "veg",
+};
 
 function SizeQtyControl({
   size,
@@ -204,13 +210,12 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
               <section key={section.id} className="card">
                 <h3 className="mb-4 flex items-center gap-3 border-b border-nutrir-nude-dark pb-2 font-display text-lg font-bold text-nutrir-emerald">
                   <div className="relative h-10 w-10 shrink-0">
-                    {SECTION_IMAGES[section.id] && (
+                    {SECTION_KIT[section.id] && (
                       <MarmitaPhoto
-                        src={SECTION_IMAGES[section.id]}
+                        src={KIT_IMAGES[SECTION_KIT[section.id]]}
                         alt={section.title}
                         className="h-full w-full"
                         sizes="40px"
-                        variant="combo"
                       />
                     )}
                   </div>
@@ -234,7 +239,6 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                                 alt={item.name}
                                 className="h-full w-full"
                                 sizes="56px"
-                                variant="side"
                               />
                             </div>
                           )}
