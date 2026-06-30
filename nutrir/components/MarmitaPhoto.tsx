@@ -26,7 +26,7 @@ export function MarmitaPhoto({
         fill
         className={
           cropped
-            ? "object-cover object-center scale-[1.55]"
+            ? "object-cover object-center scale-[1.45]"
             : "object-contain object-center"
         }
         sizes={sizes ?? "96px"}
