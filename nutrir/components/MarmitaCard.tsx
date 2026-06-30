@@ -42,13 +42,14 @@ export function MarmitaCard({ item, sectionId }: Props) {
 
   return (
     <article className="card flex flex-row gap-3 p-3 transition hover:shadow-md sm:flex-col sm:gap-0 sm:p-6">
-      <div className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-xl border-2 border-nutrir-burgundy bg-nutrir-nude-dark/25 sm:mb-4 sm:aspect-square sm:h-auto sm:w-full">
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 border-nutrir-burgundy bg-nutrir-nude sm:mx-auto sm:mb-3 sm:h-28 sm:w-28">
         {imageSrc && (
           <MarmitaPhoto
             src={imageSrc}
             alt={item.name}
             className="h-full w-full"
-            sizes="(max-width: 640px) 72px, 280px"
+            sizes="(max-width: 640px) 56px, 112px"
+            variant="side"
           />
         )}
       </div>

@@ -12,6 +12,8 @@ import {
   type AddonSelectionMap,
 } from "@/lib/addons-data";
 import type { PendingCartAdd } from "@/lib/addons-flow-context";
+import { getMarmitaImageFromLabel, shortMealLabel } from "@/lib/marmita-images";
+import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
 type ModalStep = "ask" | "mode" | "pick_same" | "pick_custom";
 
@@ -39,10 +41,12 @@ function AddonPicker({
   addons,
   selection,
   onChange,
+  compact = false,
 }: {
   addons: MealAddon[];
   selection: AddonSelectionMap;
   onChange: (next: AddonSelectionMap) => void;
+  compact?: boolean;
 }) {
   function setPortions(id: string, portions: number) {
     const next = { ...selection };
@@ -52,38 +56,42 @@ function AddonPicker({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {addons.map((addon) => {
         const qty = selection[addon.id] ?? 0;
         const unitCents = getAddonUnitPriceCents(addon);
         return (
           <div
             key={addon.id}
-            className="flex flex-col gap-2 rounded-xl border border-nutrir-nude-dark/60 bg-nutrir-cream/50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+            className={`flex items-center gap-2 rounded-xl border border-nutrir-nude-dark/60 bg-nutrir-cream/50 ${
+              compact ? "px-2.5 py-2" : "flex-col gap-2 px-3 py-3 sm:flex-row sm:items-center sm:gap-3"
+            }`}
           >
-            <div className="min-w-0">
-              <p className="font-semibold text-nutrir-emerald">{addon.name}</p>
+            <div className="min-w-0 flex-1">
+              <p className={`font-semibold text-nutrir-emerald ${compact ? "text-sm" : ""}`}>
+                {addon.name}
+              </p>
               <p className="text-xs text-nutrir-emerald/60">
                 {addon.portionLabel} · {formatPrice(unitCents)} cada
               </p>
             </div>
-            <div className="flex items-center gap-2 self-end sm:self-auto">
+            <div className="flex shrink-0 items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setPortions(addon.id, qty - 1)}
                 disabled={qty <= 0}
-                className="btn-secondary px-3 py-1 text-sm disabled:opacity-40"
+                className={`btn-secondary disabled:opacity-40 ${compact ? "px-2 py-0.5 text-sm" : "px-3 py-1 text-sm"}`}
               >
                 −
               </button>
-              <span className="min-w-[1.5rem] text-center text-sm font-bold tabular-nums text-nutrir-emerald">
+              <span className="min-w-[1.25rem] text-center text-sm font-bold tabular-nums text-nutrir-emerald">
                 {qty}
               </span>
               <button
                 type="button"
                 onClick={() => setPortions(addon.id, qty + 1)}
                 disabled={qty >= MAX_ADDON_PORTIONS}
-                className="btn-secondary px-3 py-1 text-sm disabled:opacity-40"
+                className={`btn-secondary disabled:opacity-40 ${compact ? "px-2 py-0.5 text-sm" : "px-3 py-1 text-sm"}`}
               >
                 +
               </button>
@@ -92,6 +100,57 @@ function AddonPicker({
         );
       })}
     </div>
+  );
+}
+
+function MealSidebar({
+  labels,
+  activeIndex,
+  onSelect,
+}: {
+  labels: string[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}) {
+  return (
+    <aside className="flex w-[7.5rem] shrink-0 flex-col gap-1 overflow-y-auto border-r border-nutrir-nude-dark/40 bg-nutrir-nude/70 p-2 sm:w-36">
+      {labels.map((label, index) => {
+        const thumbSrc = getMarmitaImageFromLabel(label, "top");
+        const active = activeIndex === index;
+
+        return (
+          <button
+            key={`${label}-${index}`}
+            type="button"
+            onClick={() => onSelect(index)}
+            className={`flex w-full flex-col items-center gap-1 rounded-lg border px-1.5 py-2 text-center transition ${
+              active
+                ? "border-nutrir-burgundy bg-nutrir-burgundy/10"
+                : "border-transparent hover:bg-nutrir-emerald/5"
+            }`}
+          >
+            <div className="relative h-11 w-11 overflow-hidden rounded-md border border-nutrir-nude-dark/40">
+              {thumbSrc && (
+                <MarmitaPhoto
+                  src={thumbSrc}
+                  alt={shortMealLabel(label)}
+                  className="h-full w-full"
+                  sizes="44px"
+                  variant="top"
+                />
+              )}
+            </div>
+            <span
+              className={`line-clamp-2 text-[10px] font-semibold leading-tight ${
+                active ? "text-nutrir-burgundy" : "text-nutrir-emerald"
+              }`}
+            >
+              {shortMealLabel(label)}
+            </span>
+          </button>
+        );
+      })}
+    </aside>
   );
 }
 
@@ -130,6 +189,8 @@ export function AddonsModal({
     pending.mealLabels[activeMealIndex] ?? ""
   );
 
+  const isCustomStep = step === "pick_custom";
+
   const title =
     step === "ask"
       ? "Deseja adicionais?"
@@ -152,7 +213,9 @@ export function AddonsModal({
       <div
         role="dialog"
         aria-modal="true"
-        className="fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] w-[min(92vw,480px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-cream shadow-2xl"
+        className={`fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-cream shadow-2xl ${
+          isCustomStep ? "w-[min(96vw,760px)]" : "w-[min(92vw,480px)]"
+        }`}
       >
         <header className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 px-5 py-4">
           <div>
@@ -168,96 +231,101 @@ export function AddonsModal({
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4">
-          {step === "mode" && (
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={onChooseSameMode}
-                className="w-full rounded-xl border-2 border-nutrir-emerald/25 bg-nutrir-nude px-4 py-4 text-left transition hover:border-nutrir-burgundy"
-              >
-                <p className="font-semibold text-nutrir-emerald">Mesmo adicional em todas</p>
-                <p className="mt-1 text-xs text-nutrir-emerald/60">
-                  Escolha uma vez para todas marmitas.
-                </p>
-              </button>
-              <button
-                type="button"
-                onClick={onChooseCustomMode}
-                className="w-full rounded-xl border-2 border-nutrir-emerald/25 bg-nutrir-nude px-4 py-4 text-left transition hover:border-nutrir-burgundy"
-              >
-                <p className="font-semibold text-nutrir-emerald">Personalizar por marmita</p>
-                <p className="mt-1 text-xs text-nutrir-emerald/60">
-                  Escolha adicionais individualmente para cada marmita.
-                </p>
-              </button>
-            </div>
+        <div
+          className={`flex min-h-0 flex-1 ${isCustomStep ? "flex-row overflow-hidden" : "overflow-y-auto px-5 py-4"}`}
+        >
+          {isCustomStep && (
+            <MealSidebar
+              labels={pending.mealLabels}
+              activeIndex={activeMealIndex}
+              onSelect={onActiveMealIndexChange}
+            />
           )}
 
-          {step === "pick_same" && (
-            <>
-              <AddonPicker
-                addons={sameModeAddons}
-                selection={sameSelection}
-                onChange={onSameSelectionChange}
-              />
-              {previewSameTotal > 0 && (
-                <p className="mt-4 text-center text-sm text-nutrir-emerald/70">
-                  Total adicionais:{" "}
-                  <strong className="text-nutrir-burgundy">{formatPrice(previewSameTotal)}</strong>
-                  {isMultiMeal && (
-                    <span className="block text-xs">
-                      ({formatPrice(sameTotalPerMeal)} × {pending.mealCount} marmitas)
-                    </span>
-                  )}
-                </p>
-              )}
-            </>
-          )}
+          <div className={`min-w-0 flex-1 overflow-y-auto ${isCustomStep ? "px-4 py-3" : ""}`}>
+            {!isCustomStep && (
+              <>
+                {step === "mode" && (
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={onChooseSameMode}
+                      className="w-full rounded-xl border-2 border-nutrir-emerald/25 bg-nutrir-nude px-4 py-4 text-left transition hover:border-nutrir-burgundy"
+                    >
+                      <p className="font-semibold text-nutrir-emerald">Mesmo adicional em todas</p>
+                      <p className="mt-1 text-xs text-nutrir-emerald/60">
+                        Escolha uma vez para todas marmitas.
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onChooseCustomMode}
+                      className="w-full rounded-xl border-2 border-nutrir-emerald/25 bg-nutrir-nude px-4 py-4 text-left transition hover:border-nutrir-burgundy"
+                    >
+                      <p className="font-semibold text-nutrir-emerald">Personalizar por marmita</p>
+                      <p className="mt-1 text-xs text-nutrir-emerald/60">
+                        Escolha adicionais individualmente para cada marmita.
+                      </p>
+                    </button>
+                  </div>
+                )}
 
-          {step === "pick_custom" && (
-            <>
-              <div className="mb-4 flex flex-wrap gap-2">
-                {pending.mealLabels.map((label, index) => (
-                  <button
-                    key={`${label}-${index}`}
-                    type="button"
-                    onClick={() => onActiveMealIndexChange(index)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                      activeMealIndex === index
-                        ? "bg-nutrir-burgundy text-nutrir-nude"
-                        : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
-                    }`}
-                  >
-                    {index + 1}. {label}
-                  </button>
-                ))}
-              </div>
-              <p className="mb-3 text-sm font-medium text-nutrir-emerald">
-                {pending.mealLabels[activeMealIndex]}
-              </p>
-              <AddonPicker
-                addons={customModeAddons}
-                selection={perMealSelection[activeMealIndex] ?? {}}
-                onChange={(next) => {
-                  const copy = [...perMealSelection];
-                  copy[activeMealIndex] = next;
-                  onPerMealSelectionChange(copy);
-                }}
-              />
-              {previewCustomTotal > 0 && (
-                <p className="mt-4 text-center text-sm text-nutrir-emerald/70">
-                  Total adicionais:{" "}
-                  <strong className="text-nutrir-burgundy">{formatPrice(previewCustomTotal)}</strong>
+                {step === "pick_same" && (
+                  <>
+                    <AddonPicker
+                      addons={sameModeAddons}
+                      selection={sameSelection}
+                      onChange={onSameSelectionChange}
+                    />
+                    {previewSameTotal > 0 && (
+                      <p className="mt-4 text-center text-sm text-nutrir-emerald/70">
+                        Total adicionais:{" "}
+                        <strong className="text-nutrir-burgundy">
+                          {formatPrice(previewSameTotal)}
+                        </strong>
+                        {isMultiMeal && (
+                          <span className="block text-xs">
+                            ({formatPrice(sameTotalPerMeal)} × {pending.mealCount} marmitas)
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+
+            {isCustomStep && (
+              <>
+                <p className="mb-2 text-sm font-semibold text-nutrir-emerald">
+                  {shortMealLabel(pending.mealLabels[activeMealIndex] ?? "")}
                 </p>
-              )}
-              {perMealTotal > 0 && (
-                <p className="mt-1 text-center text-xs text-nutrir-emerald/55">
-                  Esta marmita: {formatPrice(perMealTotal)}
-                </p>
-              )}
-            </>
-          )}
+                <AddonPicker
+                  compact
+                  addons={customModeAddons}
+                  selection={perMealSelection[activeMealIndex] ?? {}}
+                  onChange={(next) => {
+                    const copy = [...perMealSelection];
+                    copy[activeMealIndex] = next;
+                    onPerMealSelectionChange(copy);
+                  }}
+                />
+                {previewCustomTotal > 0 && (
+                  <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+                    Total adicionais:{" "}
+                    <strong className="text-nutrir-burgundy">
+                      {formatPrice(previewCustomTotal)}
+                    </strong>
+                  </p>
+                )}
+                {perMealTotal > 0 && (
+                  <p className="mt-1 text-center text-xs text-nutrir-emerald/55">
+                    Esta marmita: {formatPrice(perMealTotal)}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         <footer className="flex flex-wrap gap-2 border-t border-nutrir-nude-dark/40 px-5 py-4">

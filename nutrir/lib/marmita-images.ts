@@ -7,7 +7,20 @@ function imagePath(filename: string): string {
   return encodeURI(`${SEM_FUNDO}/${filename}`);
 }
 
+/** Vista lateral — cardápio, sacola, combos. */
 export const MARMITA_IMAGES: Record<string, string> = {
+  "frg-batata": imagePath("Escondidinho de frango.jpg"),
+  "frg-arroz": imagePath("frango e arroz lado.jpg"),
+  "frg-massa": imagePath("frango e massa lado.jpg"),
+  "car-batata": imagePath("Escondidinho de carne.jpg"),
+  "car-arroz": imagePath("carne e arroz lado.jpg"),
+  "car-massa": imagePath("carne e massa lado.jpg"),
+  "veg-ervilha": imagePath("ervilha lado.jpg"),
+  "veg-grao": imagePath("grao de bico lado.jpg"),
+};
+
+/** Vista de cima — miniaturas no modal de adicionais. */
+export const MARMITA_IMAGES_TOP: Record<string, string> = {
   "frg-batata": imagePath("Escondidinho de frango.jpg"),
   "frg-arroz": imagePath("frango e arroz cima.jpg"),
   "frg-massa": imagePath("frango e massa cima.jpg"),
@@ -31,9 +44,45 @@ export const SECTION_IMAGES: Record<string, string> = {
   vegetariano: KIT_IMAGES.veg,
 };
 
-export function getMarmitaImageSrc(itemId?: string): string | undefined {
+export function resolveMarmitaItemKeyFromLabel(label: string): string | undefined {
+  const lower = label.toLowerCase();
+
+  const hasFrango = lower.includes("frango");
+  const hasCarne = lower.includes("carne");
+  const hasBatata = lower.includes("batata") || lower.includes("escondidinho");
+  const hasMassa = lower.includes("massa");
+  const hasArroz = lower.includes("arroz");
+  const hasErvilha = lower.includes("ervilha");
+  const hasGrao = lower.includes("grão") || lower.includes("grao");
+
+  if (hasFrango && hasBatata) return "frg-batata";
+  if (hasFrango && hasMassa) return "frg-massa";
+  if (hasFrango && hasArroz) return "frg-arroz";
+  if (hasCarne && hasBatata) return "car-batata";
+  if (hasCarne && hasMassa) return "car-massa";
+  if (hasCarne && hasArroz) return "car-arroz";
+  if (hasErvilha) return "veg-ervilha";
+  if (hasGrao) return "veg-grao";
+
+  return undefined;
+}
+
+export function getMarmitaImageSrc(
+  itemId?: string,
+  view: "side" | "top" = "side"
+): string | undefined {
   if (!itemId) return undefined;
-  return MARMITA_IMAGES[itemId];
+  const map = view === "top" ? MARMITA_IMAGES_TOP : MARMITA_IMAGES;
+  return map[itemId];
+}
+
+export function getMarmitaImageFromLabel(
+  label: string,
+  view: "side" | "top" = "side"
+): string | undefined {
+  const key = resolveMarmitaItemKeyFromLabel(label);
+  if (!key) return undefined;
+  return getMarmitaImageSrc(key, view);
 }
 
 export function getKitImageSrc(kitId: KitProduct["id"]): string {
@@ -60,4 +109,9 @@ export function getCartItemImageSrc(item: OrderItem): string | undefined {
 
   if (item.section_id) return SECTION_IMAGES[item.section_id];
   return undefined;
+}
+
+/** Rótulo curto para a lista lateral do modal de adicionais. */
+export function shortMealLabel(label: string): string {
+  return label.replace(/\s*\(\d+\/\d+\)\s*$/, "").trim();
 }

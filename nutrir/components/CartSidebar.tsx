@@ -130,13 +130,14 @@ export function CartSidebar() {
               </div>
               {currentSuggestion && (
                 <div className="flex gap-3 rounded-xl border border-nutrir-nude-dark/50 bg-nutrir-cream p-3">
-                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-nutrir-emerald/10">
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
                     {getMarmitaImageSrc(currentSuggestion.item.id) && (
                       <MarmitaPhoto
                         src={getMarmitaImageSrc(currentSuggestion.item.id)!}
                         alt={currentSuggestion.item.name}
                         className="h-full w-full"
                         sizes="64px"
+                        variant="side"
                       />
                     )}
                   </div>
@@ -179,13 +180,14 @@ export function CartSidebar() {
                       key={`${itemKey(item)}-${i}`}
                       className="flex gap-3 border-b border-nutrir-nude-dark/30 pb-4 last:border-0"
                     >
-                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-nutrir-emerald/10">
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg">
                         {getCartItemImageSrc(item) && (
                           <MarmitaPhoto
                             src={getCartItemImageSrc(item)!}
                             alt={item.name}
                             className="h-full w-full"
                             sizes="56px"
+                            variant="side"
                           />
                         )}
                       </div>
