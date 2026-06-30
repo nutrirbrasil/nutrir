@@ -10,20 +10,34 @@ function formatItemsBlock(items: CreateOrderPayload["items"]): string {
   return items.map((item) => `${item.quantity}× ${item.name}`).join("\n");
 }
 
+function formatItemAddonsNote(itemName: string, note: string): string {
+  const trimmed = note.trim();
+  const lines = trimmed.split("\n");
+
+  if (lines.length > 1) {
+    const [header, ...rest] = lines;
+    return [`➕ ${header} — ${itemName}`, ...rest.map((line) => `   ↳ ${line}`)].join("\n");
+  }
+
+  if (trimmed.startsWith("Adicionais:")) {
+    return `➕ ${itemName}: ${trimmed.slice("Adicionais:".length).trim()}`;
+  }
+
+  if (trimmed.startsWith("Adicionais (")) {
+    return `➕ ${trimmed} — ${itemName}`;
+  }
+
+  return `➕ ${itemName}: ${trimmed}`;
+}
+
 function formatAddonsBlock(items: CreateOrderPayload["items"]): string | null {
-  const notes = items
-    .map((item) => item.addons_note?.trim())
-    .filter((note): note is string => Boolean(note));
+  const blocks = items
+    .filter((item) => item.addons_note?.trim())
+    .map((item) => formatItemAddonsNote(item.name.trim(), item.addons_note!.trim()));
 
-  if (notes.length === 0) return null;
+  if (blocks.length === 0) return null;
 
-  return notes
-    .map((note) => {
-      const [header, ...rest] = note.split("\n");
-      if (rest.length === 0) return `➕ ${header}`;
-      return [`➕ ${header}`, ...rest.map((line) => `   ↳ ${line}`)].join("\n");
-    })
-    .join("\n\n");
+  return blocks.join("\n\n");
 }
 
 function formatMoney(cents: number): string {
