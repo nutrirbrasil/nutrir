@@ -7,9 +7,11 @@ import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
 import { getItemCashTotalCents } from "@/lib/order-pricing";
 import { getCartSuggestions, type MarmitaSize } from "@/lib/menu-data";
+import { getCartItemImageSrc, getMarmitaImageSrc } from "@/lib/marmita-images";
 import { useProfile } from "@/lib/profile-context";
 import { buildPerfilUrl } from "@/lib/auth-next";
 import type { OrderItem } from "@/lib/types";
+import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
 function dominantSection(items: OrderItem[]): string | undefined {
   const counts: Record<string, number> = {};
@@ -128,8 +130,15 @@ export function CartSidebar() {
               </div>
               {currentSuggestion && (
                 <div className="flex gap-3 rounded-xl border border-nutrir-nude-dark/50 bg-nutrir-cream p-3">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-nutrir-emerald/10 text-2xl">
-                    {sectionId === "frango" ? "🍗" : sectionId === "carne" ? "🥩" : "🥗"}
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-nutrir-emerald/10">
+                    {getMarmitaImageSrc(currentSuggestion.item.id) && (
+                      <MarmitaPhoto
+                        src={getMarmitaImageSrc(currentSuggestion.item.id)!}
+                        alt={currentSuggestion.item.name}
+                        className="h-full w-full"
+                        sizes="64px"
+                      />
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 text-sm font-semibold text-nutrir-emerald">
@@ -170,16 +179,15 @@ export function CartSidebar() {
                       key={`${itemKey(item)}-${i}`}
                       className="flex gap-3 border-b border-nutrir-nude-dark/30 pb-4 last:border-0"
                     >
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-nutrir-emerald/10 text-xl">
-                        {item.section_id === "frango"
-                          ? "🍗"
-                          : item.section_id === "carne"
-                            ? "🥩"
-                            : item.section_id === "vegetariano"
-                              ? "🥗"
-                              : item.section_id === "kit" || item.section_id === "combo"
-                                ? "📦"
-                                : "🍱"}
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-nutrir-emerald/10">
+                        {getCartItemImageSrc(item) && (
+                          <MarmitaPhoto
+                            src={getCartItemImageSrc(item)!}
+                            alt={item.name}
+                            className="h-full w-full"
+                            sizes="56px"
+                          />
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 text-sm font-medium text-nutrir-emerald">

@@ -14,12 +14,8 @@ import {
 } from "@/lib/combo-builder-data";
 import type { ComboMarmitaOption } from "@/lib/combo-builder-data";
 import type { MarmitaSize } from "@/lib/menu-data";
-
-const SECTION_EMOJI: Record<string, string> = {
-  frango: "🍗",
-  carne: "🥩",
-  vegetariano: "🥗",
-};
+import { getMarmitaImageSrc, SECTION_IMAGES } from "@/lib/marmita-images";
+import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
 function SizeQtyControl({
   size,
@@ -206,8 +202,17 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
           <div className="space-y-8">
             {sections.map((section) => (
               <section key={section.id} className="card">
-                <h3 className="mb-4 flex items-center gap-2 border-b border-nutrir-nude-dark pb-2 font-display text-lg font-bold text-nutrir-emerald">
-                  <span>{SECTION_EMOJI[section.id]}</span>
+                <h3 className="mb-4 flex items-center gap-3 border-b border-nutrir-nude-dark pb-2 font-display text-lg font-bold text-nutrir-emerald">
+                  <div className="relative h-10 w-10 shrink-0">
+                    {SECTION_IMAGES[section.id] && (
+                      <MarmitaPhoto
+                        src={SECTION_IMAGES[section.id]}
+                        alt={section.title}
+                        className="h-full w-full"
+                        sizes="40px"
+                      />
+                    )}
+                  </div>
                   {section.title}
                 </h3>
                 <div className="space-y-2">
@@ -220,7 +225,19 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                         key={item.item_id}
                         className="flex flex-col gap-3 rounded-xl border-2 border-nutrir-nude-dark bg-nutrir-cream/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                       >
-                        <p className="min-w-0 font-semibold text-nutrir-emerald">{item.name}</p>
+                        <div className="flex min-w-0 items-center gap-3">
+                          {getMarmitaImageSrc(item.item_id) && (
+                            <div className="relative h-14 w-14 shrink-0">
+                              <MarmitaPhoto
+                                src={getMarmitaImageSrc(item.item_id)!}
+                                alt={item.name}
+                                className="h-full w-full"
+                                sizes="56px"
+                              />
+                            </div>
+                          )}
+                          <p className="min-w-0 font-semibold text-nutrir-emerald">{item.name}</p>
+                        </div>
                         <div className="flex flex-wrap items-center gap-4 sm:justify-end">
                           <SizeQtyControl
                             size="P"

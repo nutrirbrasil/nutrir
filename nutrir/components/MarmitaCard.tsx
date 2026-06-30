@@ -4,8 +4,10 @@ import { useState } from "react";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { MarmitaOption, MarmitaSize } from "@/lib/menu-data";
+import { getMarmitaImageSrc } from "@/lib/marmita-images";
 import { getMarmitaCardPriceCents } from "@/lib/order-pricing";
 import type { MenuSectionId } from "@/lib/types";
+import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
 interface Props {
   item: MarmitaOption;
@@ -36,12 +38,19 @@ export function MarmitaCard({ item, sectionId }: Props) {
     });
   }
 
-  const emoji = sectionId === "frango" ? "🍗" : sectionId === "carne" ? "🥩" : "🥗";
+  const imageSrc = getMarmitaImageSrc(item.id);
 
   return (
     <article className="card flex flex-row gap-3 p-3 transition hover:shadow-md sm:flex-col sm:gap-0 sm:p-6">
-      <div className="flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-xl border-2 border-nutrir-burgundy bg-nutrir-nude-dark/25 sm:mb-4 sm:aspect-square sm:h-auto sm:w-full">
-        <span className="text-2xl opacity-80 sm:text-4xl">{emoji}</span>
+      <div className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-xl border-2 border-nutrir-burgundy bg-nutrir-nude-dark/25 sm:mb-4 sm:aspect-square sm:h-auto sm:w-full">
+        {imageSrc && (
+          <MarmitaPhoto
+            src={imageSrc}
+            alt={item.name}
+            className="h-full w-full"
+            sizes="(max-width: 640px) 72px, 280px"
+          />
+        )}
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">

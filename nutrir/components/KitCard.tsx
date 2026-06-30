@@ -5,7 +5,9 @@ import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { KitProduct, KitTier, MarmitaSize } from "@/lib/menu-data";
 import { getKitMealLabels } from "@/lib/kit-contents-data";
+import { getKitImageSrc } from "@/lib/marmita-images";
 import { KitContentModal } from "./KitContentModal";
+import { MarmitaPhoto } from "./MarmitaPhoto";
 
 interface Props {
   kit: KitProduct;
@@ -93,13 +95,6 @@ function TierRow({
   );
 }
 
-function kitEmoji(kitId: KitProduct["id"]): string {
-  if (kitId === "frango") return "🍗";
-  if (kitId === "carne") return "🥩";
-  if (kitId === "veg") return "🥗";
-  return "🍗🥩";
-}
-
 export function KitCard({ kit }: Props) {
   const [size, setSize] = useState<MarmitaSize>("P");
   const [includeVeg, setIncludeVeg] = useState(false);
@@ -110,7 +105,14 @@ export function KitCard({ kit }: Props) {
       <article className="card overflow-hidden p-0">
         <div className="flex flex-col md:flex-row md:items-stretch">
           <div className="flex shrink-0 flex-col items-center justify-center bg-nutrir-emerald px-6 py-8 text-center md:w-56 md:py-10 lg:w-64">
-            <span className="text-4xl">{kitEmoji(kit.id)}</span>
+            <div className="relative h-28 w-28 md:h-32 md:w-32">
+              <MarmitaPhoto
+                src={getKitImageSrc(kit.id)}
+                alt={kit.name}
+                className="h-full w-full"
+                sizes="128px"
+              />
+            </div>
             <h3 className="mt-3 font-display text-2xl font-bold text-nutrir-nude">{kit.name}</h3>
             <p className="mt-2 text-sm leading-relaxed text-nutrir-nude/75">{kit.description}</p>
             <button
