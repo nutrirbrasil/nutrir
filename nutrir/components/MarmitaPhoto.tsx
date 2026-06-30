@@ -6,16 +6,29 @@ interface Props {
   className?: string;
   sizes?: string;
   priority?: boolean;
+  /** Amplia e recorta bordas transparentes do PNG para preencher melhor o espaço. */
+  cropped?: boolean;
 }
 
-export function MarmitaPhoto({ src, alt, className = "", sizes, priority }: Props) {
+export function MarmitaPhoto({
+  src,
+  alt,
+  className = "",
+  sizes,
+  priority,
+  cropped = false,
+}: Props) {
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative overflow-hidden ${className}`}>
       <Image
         src={src}
         alt={alt}
         fill
-        className="object-contain object-center"
+        className={
+          cropped
+            ? "object-cover object-center scale-[1.55]"
+            : "object-contain object-center"
+        }
         sizes={sizes ?? "96px"}
         priority={priority}
       />

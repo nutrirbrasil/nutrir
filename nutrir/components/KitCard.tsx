@@ -111,6 +111,7 @@ export function KitCard({ kit }: Props) {
                 alt={kit.name}
                 className="h-full w-full"
                 sizes="128px"
+                cropped
               />
             </div>
             <h3 className="mt-3 font-display text-2xl font-bold text-nutrir-nude">{kit.name}</h3>

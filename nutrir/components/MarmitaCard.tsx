@@ -49,6 +49,7 @@ export function MarmitaCard({ item, sectionId }: Props) {
             alt={item.name}
             className="h-full w-full"
             sizes="(max-width: 640px) 56px, 112px"
+            cropped
           />
         )}
       </div>

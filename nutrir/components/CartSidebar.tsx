@@ -137,6 +137,7 @@ export function CartSidebar() {
                         alt={currentSuggestion.item.name}
                         className="h-full w-full"
                         sizes="64px"
+                        cropped
                       />
                     )}
                   </div>
@@ -186,6 +187,7 @@ export function CartSidebar() {
                             alt={item.name}
                             className="h-full w-full"
                             sizes="56px"
+                            cropped
                           />
                         )}
                       </div>

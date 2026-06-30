@@ -324,8 +324,8 @@ export const MENU_SECTIONS: MenuSection[] = [
     items: [
       {
         id: "frg-batata",
-        name: "Frango & Batata",
-        description: "Frango acebolado, purê de batata e legumes",
+        name: "Escondidinho de Frango",
+        description: "Purê de batata com Frango e queijo",
         prices: { P: PRICES.frango.P, G: PRICES.frango.G },
       },
       {
@@ -361,8 +361,8 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         id: "car-batata",
-        name: "Carne & Batata",
-        description: "Carne em tiras/cubos, batata sauté e legumes",
+        name: "Escondidinho de Carne",
+        description: "Purê de batata com Carne moída magra e queijo",
         prices: { P: PRICES.carne.P, G: PRICES.carne.G },
       },
     ],
