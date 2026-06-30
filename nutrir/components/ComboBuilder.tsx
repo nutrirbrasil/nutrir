@@ -216,7 +216,6 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                         alt={section.title}
                         className="h-full w-full"
                         sizes="40px"
-                        cropped
                       />
                     )}
                   </div>
@@ -240,7 +239,6 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                                 alt={item.name}
                                 className="h-full w-full"
                                 sizes="56px"
-                                cropped
                               />
                             </div>
                           )}

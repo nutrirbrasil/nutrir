@@ -136,7 +136,6 @@ function MealSidebar({
                   alt={shortMealLabel(label)}
                   className="h-full w-full"
                   sizes="44px"
-                  cropped
                 />
               )}
             </div>
