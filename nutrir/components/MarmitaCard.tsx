@@ -42,7 +42,7 @@ export function MarmitaCard({ item, sectionId }: Props) {
 
   return (
     <article className="card flex flex-col overflow-hidden !p-0 transition hover:shadow-md">
-      <div className="relative aspect-[5/4] w-full">
+      <div className="relative aspect-[5/4] w-full bg-nutrir-burgundy">
         {imageSrc && (
           <MarmitaPhoto
             src={imageSrc}
