@@ -16,9 +16,19 @@ export interface MarmitaNutritionFacts {
   item_id: string;
   size: MarmitaSize;
   portion_g: number;
+  /** Medida caseira (RDC 429) */
+  household_measure: string;
+  servings_per_package: number;
   ingredients: MarmitaIngredient[];
+  /** Totais da porção (marmita inteira) */
   totals: TacoNutrientsPer100g;
-  /** % do valor diário de referência (RDC 429/2020, 2 000 kcal) */
+  /** Valores recalculados para 100 g da preparação */
+  per_100g: TacoNutrientsPer100g;
+  /** Açúcares e gordura trans (porção) — sem adição de açúcar nas receitas */
+  total_sugars_g: number;
+  added_sugars_g: number;
+  trans_fat_g: number;
+  /** % do valor diário de referência (RDC 429/2020, 2 000 kcal) — referente à porção */
   daily_values_pct: {
     kcal: number;
     protein_g: number;
@@ -27,6 +37,7 @@ export interface MarmitaNutritionFacts {
     fiber_g: number;
     sodium_mg: number;
     saturated_fat_g?: number;
+    added_sugars_g?: number;
   };
 }
 
@@ -38,6 +49,7 @@ const DV = {
   fiber_g: 25,
   sodium_mg: 2000,
   saturated_fat_g: 22,
+  added_sugars_g: 50,
 } as const;
 
 function pct(value: number, ref: number): number {
@@ -154,6 +166,19 @@ function roundNutrients(n: TacoNutrientsPer100g): TacoNutrientsPer100g {
   };
 }
 
+function scaleToPer100g(totals: TacoNutrientsPer100g, portion_g: number): TacoNutrientsPer100g {
+  const f = 100 / portion_g;
+  return roundNutrients({
+    kcal: totals.kcal * f,
+    protein_g: totals.protein_g * f,
+    carbs_g: totals.carbs_g * f,
+    fat_g: totals.fat_g * f,
+    fiber_g: totals.fiber_g * f,
+    sodium_mg: totals.sodium_mg * f,
+    saturated_fat_g: totals.saturated_fat_g != null ? totals.saturated_fat_g * f : undefined,
+  });
+}
+
 export function getMarmitaNutrition(
   itemId: string,
   size: MarmitaSize
@@ -167,13 +192,20 @@ export function getMarmitaNutrition(
     ingredients.map((i) => nutrientsForGrams(i.food, i.grams))
   );
   const totals = roundNutrients(raw);
+  const per_100g = scaleToPer100g(totals, portion_g);
 
   return {
     item_id: itemId,
     size,
     portion_g,
+    household_measure: "1 unidade",
+    servings_per_package: 1,
     ingredients,
     totals,
+    per_100g,
+    total_sugars_g: 0,
+    added_sugars_g: 0,
+    trans_fat_g: 0,
     daily_values_pct: {
       kcal: pct(totals.kcal, DV.kcal),
       protein_g: pct(totals.protein_g, DV.protein_g),
@@ -185,6 +217,7 @@ export function getMarmitaNutrition(
         totals.saturated_fat_g != null
           ? pct(totals.saturated_fat_g, DV.saturated_fat_g)
           : undefined,
+      added_sugars_g: 0,
     },
   };
 }

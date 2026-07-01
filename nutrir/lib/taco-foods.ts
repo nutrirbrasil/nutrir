@@ -23,6 +23,8 @@ export interface TacoFood {
 
 /** Fator cru → cozido (grão-de-bico), rendimento ~2,2× */
 const CHICKPEA_COOKED_FACTOR = 2.2;
+/** Fator cru → cozido (macarrão de trigo), rendimento ~2,5× */
+const PASTA_COOKED_FACTOR = 2.5;
 
 const grãoDeBicoCru: TacoNutrientsPer100g = {
   kcal: 355,
@@ -31,6 +33,15 @@ const grãoDeBicoCru: TacoNutrientsPer100g = {
   fat_g: 5.4,
   fiber_g: 12.4,
   sodium_mg: 10,
+};
+
+const macarraoTrigoCru: TacoNutrientsPer100g = {
+  kcal: 371,
+  protein_g: 10,
+  carbs_g: 77.9,
+  fat_g: 1.3,
+  fiber_g: 2.9,
+  sodium_mg: 17,
 };
 
 function cookedFromDry(dry: TacoNutrientsPer100g, factor: number): TacoNutrientsPer100g {
@@ -86,16 +97,9 @@ export const TACO_FOODS: Record<string, TacoFood> = {
   },
   massa_cozida: {
     id: "massa_cozida",
-    label: "Lasanha, massa fresca, cozida",
-    source: "TACO #37 (massa de trigo cozida)",
-    per100g: {
-      kcal: 164,
-      protein_g: 5.8,
-      carbs_g: 32.5,
-      fat_g: 1.2,
-      fiber_g: 1.6,
-      sodium_mg: 2,
-    },
+    label: "Macarrão, trigo, cozido",
+    source: `Derivado de TACO #40 (cru), fator ${PASTA_COOKED_FACTOR}×`,
+    per100g: cookedFromDry(macarraoTrigoCru, PASTA_COOKED_FACTOR),
   },
   batata_cozida: {
     id: "batata_cozida",

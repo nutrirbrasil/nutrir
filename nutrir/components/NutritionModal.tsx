@@ -23,7 +23,7 @@ export function NutritionModal({ marmitaName, facts, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="nutrition-modal-title"
-        className="fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,560px)] w-[min(92vw,420px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-cream shadow-2xl"
+        className="fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,640px)] w-[min(94vw,460px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-cream shadow-2xl"
       >
         <div className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 px-5 py-4">
           <div>
