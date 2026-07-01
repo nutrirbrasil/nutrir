@@ -140,31 +140,6 @@ export function NutritionTable({ facts, compact }: Props) {
           <p>*Percentual de valores diários fornecidos pela porção.</p>
         </div>
       </div>
-
-      {!compact && (
-        <>
-          <details className="mt-3 text-[10px] text-nutrir-emerald/55 sm:text-xs">
-            <summary className="cursor-pointer font-medium text-nutrir-emerald/70">
-              Composição da porção (ingredientes)
-            </summary>
-            <ul className="mt-2 space-y-1 pl-1">
-              {facts.ingredients.map((ing) => (
-                <li key={`${ing.food.id}-${ing.grams}`}>
-                  {ing.grams} g — {ing.food.label}{" "}
-                  <span className="text-nutrir-emerald/45">({ing.food.source})</span>
-                </li>
-              ))}
-            </ul>
-          </details>
-          <p className="mt-2 text-[10px] leading-snug text-nutrir-emerald/45">
-            Valores calculados com base na TACO (NEPA/UNICAMP, 4ª ed.). Sódio inclui sal de
-            cozimento (arroz, grão-de-bico e ervilha: 1% do peso cru; frango, carne e batata: 0,6%
-            do peso cru; massa: 2% na água, 3:1 água/massa, ~10% retido após escorrer). %VD com
-            em 2 000 kcal/dia (RDC 429/2020). Informação estimada; não substitui orientação
-            profissional.
-          </p>
-        </>
-      )}
     </div>
   );
 }
