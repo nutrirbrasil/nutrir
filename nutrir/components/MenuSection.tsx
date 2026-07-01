@@ -1,11 +1,39 @@
+import Link from "next/link";
 import { MarmitaCard } from "./MarmitaCard";
 import type { MenuSection as MenuSectionType } from "@/lib/menu-data";
+
+const INSTAGRAM_URL = "https://www.instagram.com/nutrirpicarras";
 
 interface Props {
   section: MenuSectionType;
 }
 
+function PremiumInstagramCard() {
+  return (
+    <article className="card flex flex-col items-center justify-center border-dashed py-10 text-center sm:py-16">
+      <span className="text-4xl opacity-60">✨</span>
+      <p className="mt-4 font-display text-lg font-bold text-nutrir-emerald sm:text-xl">
+        Em breve
+      </p>
+      <p className="mt-2 max-w-sm px-4 text-xs leading-relaxed text-nutrir-emerald/60 sm:text-sm">
+        Novas opções premium chegando em breve.{" "}
+        <Link
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-emerald"
+        >
+          Nos siga no Instagram
+        </Link>
+        .
+      </p>
+    </article>
+  );
+}
+
 export function MenuSection({ section }: Props) {
+  const isPremium = section.id === "premium";
+
   return (
     <section id={section.id} className="scroll-mt-24">
       <div className="mb-6 border-l-4 border-nutrir-burgundy pl-4">
@@ -13,18 +41,13 @@ export function MenuSection({ section }: Props) {
         {section.subtitle && <p className="section-subtitle">{section.subtitle}</p>}
       </div>
       {section.comingSoon ? (
-        <div className="card flex flex-col items-center justify-center border-dashed py-16 text-center">
-          <span className="text-4xl opacity-60">✨</span>
-          <p className="mt-4 font-display text-xl font-bold text-nutrir-emerald">Em breve</p>
-          <p className="mt-2 max-w-sm text-sm text-nutrir-emerald/60">
-            Novas opções premium chegando em breve. Fique de olho!
-          </p>
-        </div>
+        <PremiumInstagramCard />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {section.items.map((item) => (
-            <MarmitaCard key={item.id} item={item} sectionId={section.id as "frango" | "carne" | "vegetariano"} />
+            <MarmitaCard key={item.id} item={item} premiumBadge={isPremium} />
           ))}
+          {isPremium && <PremiumInstagramCard />}
         </div>
       )}
     </section>

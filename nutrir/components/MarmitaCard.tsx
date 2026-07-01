@@ -4,19 +4,19 @@ import { useState } from "react";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { MarmitaOption, MarmitaSize } from "@/lib/menu-data";
+import { getMarmitaCartSectionId } from "@/lib/menu-data";
 import { getMarmitaImageSrc } from "@/lib/marmita-images";
 import { getMarmitaNutrition } from "@/lib/marmita-nutrition";
 import { getMarmitaCardPriceCents } from "@/lib/order-pricing";
-import type { MenuSectionId } from "@/lib/types";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 import { NutritionModal } from "@/components/NutritionModal";
 
 interface Props {
   item: MarmitaOption;
-  sectionId: MenuSectionId;
+  premiumBadge?: boolean;
 }
 
-export function MarmitaCard({ item, sectionId }: Props) {
+export function MarmitaCard({ item, premiumBadge }: Props) {
   const { requestAdd } = useAddonsFlow();
   const [size, setSize] = useState<MarmitaSize>("P");
   const [showNutrition, setShowNutrition] = useState(false);
@@ -26,6 +26,7 @@ export function MarmitaCard({ item, sectionId }: Props) {
   const nutrition = getMarmitaNutrition(item.id, size);
 
   function handleAdd() {
+    const cartSectionId = getMarmitaCartSectionId(item.id);
     requestAdd({
       kind: "marmita",
       mealCount: 1,
@@ -33,7 +34,7 @@ export function MarmitaCard({ item, sectionId }: Props) {
       baseItem: {
         menu_id: `${item.id}-${size}`,
         item_id: item.id,
-        section_id: sectionId,
+        section_id: cartSectionId,
         size,
         name: `${item.name} — ${size}`,
         quantity: 1,
@@ -48,6 +49,14 @@ export function MarmitaCard({ item, sectionId }: Props) {
     <>
     <article className="card flex flex-col overflow-hidden !p-0 transition hover:shadow-md">
       <div className="relative aspect-[5/4] w-full bg-nutrir-burgundy">
+        {premiumBadge && (
+          <span
+            className="absolute left-2 top-2 z-10 text-xl leading-none text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] sm:left-2.5 sm:top-2.5 sm:text-2xl"
+            aria-hidden
+          >
+            ★
+          </span>
+        )}
         {imageSrc && (
           <MarmitaPhoto
             src={imageSrc}

@@ -309,12 +309,23 @@ export interface MenuSection {
   items: MarmitaOption[];
 }
 
-/** Preços avulsos por categoria (centavos) */
+/** Preços avulsos (pix/dinheiro) em centavos */
 const PRICES = {
-  frango: { P: 2299, G: 2499 },
-  carne: { P: 2799, G: 2999 },
+  frangoArrozMassa: { P: 2199, G: 2399 },
+  frangoEscondidinho: { P: 2399, G: 2599 },
+  carneArrozMassa: { P: 2599, G: 2799 },
+  carneEscondidinho: { P: 2799, G: 2999 },
   vegetariano: { P: 2199, G: 2399 },
 } as const;
+
+/** section_id no carrinho (adicionais / sugestões) a partir do item_id */
+export function getMarmitaCartSectionId(
+  itemId: string
+): "frango" | "carne" | "vegetariano" {
+  if (itemId.startsWith("frg-")) return "frango";
+  if (itemId.startsWith("car-")) return "carne";
+  return "vegetariano";
+}
 
 export const MENU_SECTIONS: MenuSection[] = [
   {
@@ -323,22 +334,16 @@ export const MENU_SECTIONS: MenuSection[] = [
     subtitle: "Peito de frango, sem gordura",
     items: [
       {
-        id: "frg-batata",
-        name: "Escondidinho de Frango",
-        description: "Purê de batata com Frango e queijo",
-        prices: { P: PRICES.frango.P, G: PRICES.frango.G },
-      },
-      {
         id: "frg-arroz",
         name: "Frango & Arroz",
         description: "Frango em cubos, arroz e legumes",
-        prices: { P: PRICES.frango.P, G: PRICES.frango.G },
+        prices: { P: PRICES.frangoArrozMassa.P, G: PRICES.frangoArrozMassa.G },
       },
       {
         id: "frg-massa",
         name: "Frango & Massa",
         description: "Frango em cubos, massa e legumes",
-        prices: { P: PRICES.frango.P, G: PRICES.frango.G },
+        prices: { P: PRICES.frangoArrozMassa.P, G: PRICES.frangoArrozMassa.G },
       },
     ],
   },
@@ -348,22 +353,16 @@ export const MENU_SECTIONS: MenuSection[] = [
     subtitle: "Carne magra, patinho",
     items: [
       {
-        id: "car-massa",
-        name: "Carne & Massa",
-        description: "Carne moída, massa e legumes",
-        prices: { P: PRICES.carne.P, G: PRICES.carne.G },
-      },
-      {
         id: "car-arroz",
         name: "Carne & Arroz",
         description: "Carne moída com milho, arroz e legumes",
-        prices: { P: PRICES.carne.P, G: PRICES.carne.G },
+        prices: { P: PRICES.carneArrozMassa.P, G: PRICES.carneArrozMassa.G },
       },
       {
-        id: "car-batata",
-        name: "Escondidinho de Carne",
-        description: "Purê de batata com Carne moída magra e queijo",
-        prices: { P: PRICES.carne.P, G: PRICES.carne.G },
+        id: "car-massa",
+        name: "Carne & Massa",
+        description: "Carne moída, massa e legumes",
+        prices: { P: PRICES.carneArrozMassa.P, G: PRICES.carneArrozMassa.G },
       },
     ],
   },
@@ -389,9 +388,21 @@ export const MENU_SECTIONS: MenuSection[] = [
   {
     id: "premium",
     title: "Opções Premium",
-    subtitle: "Em breve",
-    comingSoon: true,
-    items: [],
+    subtitle: "Escondidinhos e novidades",
+    items: [
+      {
+        id: "frg-batata",
+        name: "Escondidinho de Frango",
+        description: "Purê de batata com Frango e queijo",
+        prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
+      },
+      {
+        id: "car-batata",
+        name: "Escondidinho de Carne",
+        description: "Purê de batata com Carne moída magra e queijo",
+        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+      },
+    ],
   },
 ];
 
