@@ -22,9 +22,13 @@ export interface TacoFood {
 }
 
 /** Fator cru → cozido (grão-de-bico), rendimento ~2,2× */
-const CHICKPEA_COOKED_FACTOR = 2.2;
+export const CHICKPEA_COOKED_FACTOR = 2.2;
+/** Fator cru → cozido (ervilha seca), rendimento ~2,2× */
+export const LENTIL_COOKED_FACTOR = 2.2;
 /** Fator cru → cozido (macarrão de trigo), rendimento ~2,5× */
-const PASTA_COOKED_FACTOR = 2.5;
+export const PASTA_COOKED_FACTOR = 2.5;
+/** Fator cru → cozido (arroz tipo 1), rendimento ~2,7× */
+export const RICE_COOKED_FACTOR = 2.7;
 
 const grãoDeBicoCru: TacoNutrientsPer100g = {
   kcal: 355,

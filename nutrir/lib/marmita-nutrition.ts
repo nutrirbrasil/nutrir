@@ -1,4 +1,5 @@
 import type { MarmitaSize } from "./menu-data";
+import { ingredientSodiumMg } from "./seasoning-sodium";
 import {
   nutrientsForGrams,
   sumNutrients,
@@ -6,7 +7,6 @@ import {
   type TacoFood,
   type TacoNutrientsPer100g,
 } from "./taco-foods";
-
 export interface MarmitaIngredient {
   food: TacoFood;
   grams: number;
@@ -70,13 +70,6 @@ function veggiesG(): MarmitaIngredient[] {
   ];
 }
 
-function veggiesVegP(): MarmitaIngredient[] {
-  return [
-    { food: TACO_FOODS.brocolis_cozido, grams: 20 },
-    { food: TACO_FOODS.cenoura_cozida, grams: 20 },
-  ];
-}
-
 function veggiesVegG(): MarmitaIngredient[] {
   return [
     { food: TACO_FOODS.brocolis_cozido, grams: 20 },
@@ -107,8 +100,8 @@ const RECIPES: Record<string, RecipeBuilder> = {
     const isP = size === "P";
     return [
       { food: TACO_FOODS.frango_peito_cozido, grams: isP ? 75 : 100 },
-      { food: TACO_FOODS.batata_cozida, grams: isP ? 125 : 260 },
-      { food: TACO_FOODS.queijo_mussarela, grams: 15 },
+      { food: TACO_FOODS.batata_cozida, grams: isP ? 135 : 270 },
+      { food: TACO_FOODS.queijo_mussarela, grams: 10 },
     ];
   },
   "car-arroz": (size) => {
@@ -131,24 +124,24 @@ const RECIPES: Record<string, RecipeBuilder> = {
     const isP = size === "P";
     return [
       { food: TACO_FOODS.carne_patinho_grelhado, grams: isP ? 75 : 100 },
-      { food: TACO_FOODS.batata_cozida, grams: isP ? 125 : 260 },
-      { food: TACO_FOODS.queijo_mussarela, grams: 15 },
+      { food: TACO_FOODS.batata_cozida, grams: isP ? 135 : 270 },
+      { food: TACO_FOODS.queijo_mussarela, grams: 10 },
     ];
   },
   "veg-ervilha": (size) => {
     const isP = size === "P";
     return [
       { food: TACO_FOODS.ervilha_seca_cozida, grams: isP ? 100 : 120 },
-      { food: TACO_FOODS.arroz_branco_cozido, grams: isP ? 125 : 220 },
-      ...(isP ? veggiesVegP() : veggiesVegG()),
+      { food: TACO_FOODS.arroz_branco_cozido, grams: isP ? 100 : 220 },
+      ...(isP ? veggiesP() : veggiesVegG()),
     ];
   },
   "veg-grao": (size) => {
     const isP = size === "P";
     return [
       { food: TACO_FOODS.grao_de_bico_cozido, grams: isP ? 100 : 120 },
-      { food: TACO_FOODS.arroz_branco_cozido, grams: isP ? 125 : 220 },
-      ...(isP ? veggiesVegP() : veggiesVegG()),
+      { food: TACO_FOODS.arroz_branco_cozido, grams: isP ? 100 : 220 },
+      ...(isP ? veggiesP() : veggiesVegG()),
     ];
   },
 };
@@ -188,9 +181,14 @@ export function getMarmitaNutrition(
 
   const ingredients = build(size);
   const portion_g = ingredients.reduce((s, i) => s + i.grams, 0);
-  const raw = sumNutrients(
-    ingredients.map((i) => nutrientsForGrams(i.food, i.grams))
-  );
+  const parts = ingredients.map((i) => {
+    const n = nutrientsForGrams(i.food, i.grams);
+    return {
+      ...n,
+      sodium_mg: ingredientSodiumMg(i.food.id, i.grams, n.sodium_mg),
+    };
+  });
+  const raw = sumNutrients(parts);
   const totals = roundNutrients(raw);
   const per_100g = scaleToPer100g(totals, portion_g);
 
