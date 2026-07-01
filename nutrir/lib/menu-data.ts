@@ -345,6 +345,12 @@ export const MENU_SECTIONS: MenuSection[] = [
         description: "Frango em cubos, massa e legumes",
         prices: { P: PRICES.frangoArrozMassa.P, G: PRICES.frangoArrozMassa.G },
       },
+      {
+        id: "frg-batata",
+        name: "Escondidinho de Frango",
+        description: "Purê de batata com Frango e queijo",
+        prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
+      },
     ],
   },
   {
@@ -363,6 +369,12 @@ export const MENU_SECTIONS: MenuSection[] = [
         name: "Carne & Massa",
         description: "Carne moída, massa e legumes",
         prices: { P: PRICES.carneArrozMassa.P, G: PRICES.carneArrozMassa.G },
+      },
+      {
+        id: "car-batata",
+        name: "Escondidinho de Carne",
+        description: "Purê de batata com Carne moída magra e queijo",
+        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
       },
     ],
   },
@@ -405,6 +417,13 @@ export const MENU_SECTIONS: MenuSection[] = [
     ],
   },
 ];
+
+/** Escondidinhos — aparecem em Premium e na seção de frango/carne. */
+export const PREMIUM_MARMITA_IDS = new Set(["frg-batata", "car-batata"]);
+
+export function isPremiumMarmita(itemId: string): boolean {
+  return PREMIUM_MARMITA_IDS.has(itemId);
+}
 
 export type SuggestionItem = MarmitaOption & { section_id: string };
 

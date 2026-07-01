@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MarmitaCard } from "./MarmitaCard";
-import type { MenuSection as MenuSectionType } from "@/lib/menu-data";
+import { isPremiumMarmita, type MenuSection as MenuSectionType } from "@/lib/menu-data";
 
 const INSTAGRAM_URL = "https://www.instagram.com/nutrirpicarras";
 
@@ -45,7 +45,7 @@ export function MenuSection({ section }: Props) {
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {section.items.map((item) => (
-            <MarmitaCard key={item.id} item={item} premiumBadge={isPremium} />
+            <MarmitaCard key={`${section.id}-${item.id}`} item={item} premiumBadge={isPremiumMarmita(item.id)} />
           ))}
           {isPremium && <PremiumInstagramCard />}
         </div>
