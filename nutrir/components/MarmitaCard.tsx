@@ -5,9 +5,11 @@ import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { MarmitaOption, MarmitaSize } from "@/lib/menu-data";
 import { getMarmitaImageSrc } from "@/lib/marmita-images";
+import { getMarmitaNutrition } from "@/lib/marmita-nutrition";
 import { getMarmitaCardPriceCents } from "@/lib/order-pricing";
 import type { MenuSectionId } from "@/lib/types";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
+import { NutritionModal } from "@/components/NutritionModal";
 
 interface Props {
   item: MarmitaOption;
@@ -17,9 +19,11 @@ interface Props {
 export function MarmitaCard({ item, sectionId }: Props) {
   const { requestAdd } = useAddonsFlow();
   const [size, setSize] = useState<MarmitaSize>("P");
+  const [showNutrition, setShowNutrition] = useState(false);
 
   const price = item.prices[size];
   const cardPrice = getMarmitaCardPriceCents(price);
+  const nutrition = getMarmitaNutrition(item.id, size);
 
   function handleAdd() {
     requestAdd({
@@ -41,6 +45,7 @@ export function MarmitaCard({ item, sectionId }: Props) {
   const imageSrc = getMarmitaImageSrc(item.id);
 
   return (
+    <>
     <article className="card flex flex-col overflow-hidden !p-0 transition hover:shadow-md">
       <div className="relative aspect-[5/4] w-full bg-nutrir-burgundy">
         {imageSrc && (
@@ -96,8 +101,25 @@ export function MarmitaCard({ item, sectionId }: Props) {
           >
             Adicionar
           </button>
+          {nutrition && (
+            <button
+              type="button"
+              onClick={() => setShowNutrition(true)}
+              className="w-full text-center text-[10px] font-semibold text-nutrir-emerald underline underline-offset-2 decoration-nutrir-emerald/30 hover:decoration-nutrir-burgundy sm:text-xs"
+            >
+              Tabela nutricional
+            </button>
+          )}
         </div>
       </div>
     </article>
+    {showNutrition && nutrition && (
+      <NutritionModal
+        marmitaName={item.name}
+        facts={nutrition}
+        onClose={() => setShowNutrition(false)}
+      />
+    )}
+    </>
   );
 }
