@@ -1,6 +1,6 @@
 import { computeCouponDiscountCents, getCoupon, normalizeCouponCode } from "./coupons";
 import { getComboCardTotalCents } from "./combo-builder-data";
-import { KIT_PRODUCTS, type MarmitaSize } from "./menu-data";
+import { KIT_PRODUCTS, MENU_SECTIONS, type MarmitaSize } from "./menu-data";
 import { isCardPayment, isCashDiscountPayment, normalizePaymentMethod } from "./payment-utils";
 import type { OrderItem, PaymentMethod } from "./types";
 
@@ -121,6 +121,49 @@ export function computeOrderPricing(
     show_pix_discount: isCashDiscountPayment(method) && pixDiscount > 0,
     show_coupon_discount: couponDiscount > 0,
   };
+}
+
+function getMarmitaCatalogPriceCents(
+  itemId: string,
+  size: MarmitaSize | undefined
+): number | undefined {
+  if (!size) return undefined;
+  for (const section of MENU_SECTIONS) {
+    const found = section.items.find((item) => item.id === itemId);
+    if (found) return found.prices[size];
+  }
+  return undefined;
+}
+
+/**
+ * Confere o preço-base (sem adicionais) de itens conhecidos do cardápio contra
+ * o catálogo do servidor, para impedir que um cliente malicioso poste um
+ * price_cents arbitrário direto na API. Combos ainda não são cobertos aqui
+ * (dependem da composição de linhas, não só do total) — ver order-route.
+ */
+export function validateCatalogItemPrice(item: OrderItem): string | null {
+  const kit = parseKitMenuId(item.menu_id ?? undefined);
+  if (kit) {
+    const product = KIT_PRODUCTS.find((p) => p.id === kit.kitId);
+    const tier = product?.tiers.find((t) => t.meals === kit.meals);
+    const catalogPrice = tier?.prices[kit.size]?.cash_total_cents;
+    if (catalogPrice === undefined) return `Kit inválido: ${item.menu_id}`;
+    if (item.price_cents !== catalogPrice) {
+      return "Preço de um dos kits não confere com o cardápio.";
+    }
+    return null;
+  }
+
+  if (isSingleMarmitaItem(item) && item.item_id) {
+    const catalogPrice = getMarmitaCatalogPriceCents(item.item_id, item.size);
+    if (catalogPrice === undefined) return `Item inválido: ${item.item_id}`;
+    if (item.price_cents !== catalogPrice) {
+      return "Preço de um dos itens não confere com o cardápio.";
+    }
+    return null;
+  }
+
+  return null;
 }
 
 export function getChargedItems(items: OrderItem[], method?: PaymentMethod): OrderItem[] {

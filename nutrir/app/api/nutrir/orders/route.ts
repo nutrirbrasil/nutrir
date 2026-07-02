@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isValidCouponCode } from "@/lib/coupons";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
 import { isValidPhoneBR } from "@/lib/br-fields";
-import { computeOrderPricing, getChargedItems } from "@/lib/order-pricing";
+import { computeOrderPricing, getChargedItems, validateCatalogItemPrice } from "@/lib/order-pricing";
 import {
   calcLocalPaymentDeadline,
   isLocalPayment,
@@ -12,10 +12,10 @@ import {
 } from "@/lib/payment-utils";
 import { isPixConfigured } from "@/lib/pix-brcode";
 import { generateUniqueOrderId } from "@/lib/order-id";
-import { findOrder, saveOrder, updateOrderPayment } from "@/lib/order-store";
+import { saveOrder } from "@/lib/order-store";
 import { findPacienteByCpf } from "@/lib/supabase-db";
 import { sendOrderTelegramNotification } from "@/lib/order-telegram";
-import type { CreateOrderPayload, Order, PaymentStatus } from "@/lib/types";
+import type { CreateOrderPayload, Order } from "@/lib/types";
 
 function validate(body: CreateOrderPayload): string | null {
   if (!body.customer_name?.trim() || body.customer_name.trim().length < 2) {
@@ -37,6 +37,8 @@ function validate(body: CreateOrderPayload): string | null {
     if (!item.name?.trim()) return "Item inválido no pedido.";
     if (!item.quantity || item.quantity < 1) return "Quantidade inválida no pedido.";
     if (item.price_cents < 0) return "Preço inválido no pedido.";
+    const catalogError = validateCatalogItemPrice(item);
+    if (catalogError) return catalogError;
   }
   if (body.coupon_code?.trim() && !isValidCouponCode(body.coupon_code)) {
     return "Cupom inválido.";
@@ -135,28 +137,4 @@ export async function POST(request: Request) {
     notified,
     checkout_url,
   });
-}
-
-export async function PATCH(request: Request) {
-  let body: { order_id: string; payment_status: PaymentStatus };
-  try {
-    body = (await request.json()) as { order_id: string; payment_status: PaymentStatus };
-  } catch {
-    return NextResponse.json({ error: "Corpo inválido." }, { status: 400 });
-  }
-
-  const order = await findOrder(body.order_id);
-  if (!order) {
-    return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
-  }
-
-  const updated = await updateOrderPayment(body.order_id, body.payment_status);
-  if (!updated) {
-    return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
-  }
-
-  const notified =
-    body.payment_status === "confirmed" ? await notifyTelegram(updated) : false;
-
-  return NextResponse.json({ order: updated, notified });
 }

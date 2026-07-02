@@ -13,14 +13,14 @@ module.exports = {
     {
       name: "nutrir-web",
       script: "node_modules/.bin/next",
-      args: "start -p 3001",
+      args: "start -p 3001 -H 127.0.0.1",
       cwd: "/home/zeedo/nutricao/nutrir",
       env: { NODE_ENV: "production" },
     },
     {
       name: "pauli-web",
       script: "node_modules/.bin/next",
-      args: "start -p 3002",
+      args: "start -p 3002 -H 127.0.0.1",
       cwd: "/home/zeedo/nutricao/pauli",
       env: { NODE_ENV: "production" },
     },
