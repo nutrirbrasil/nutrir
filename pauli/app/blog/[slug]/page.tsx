@@ -123,19 +123,30 @@ export default async function BlogPostPage({ params }: Props) {
           <p className="dark-accent-body mt-2">
             Agende sua consulta e receba um plano alinhado à sua rotina e aos seus objetivos.
           </p>
-          <a
-            href={whatsappLink("Olá Paula! Li seu blog e gostaria de agendar uma consulta.")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary mt-5 inline-flex"
-          >
-            Agendar consulta
-          </a>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href={whatsappLink("Olá Paula! Li seu blog e gostaria de agendar uma consulta.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary inline-flex"
+            >
+              Agendar consulta
+            </a>
+            <Link href="/#atendimento" className="btn-secondary inline-flex">
+              Saiba mais
+            </Link>
+          </div>
           <p className="dark-accent-body mt-4 text-sm">
             Não mora na região?{" "}
-            <Link href="/#atendimento" className="font-semibold underline hover:text-pauli-gold-light">
-              Saiba mais sobre o Acompanhamento Online
-            </Link>
+            <a
+              href={whatsappLink("Olá Paula, vim do seu blog e gostaria de saber mais sobre o atendimento online")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline hover:text-pauli-gold-light"
+            >
+              Saiba mais sobre o atendimento online
+            </a>
+            .
           </p>
         </div>
 
