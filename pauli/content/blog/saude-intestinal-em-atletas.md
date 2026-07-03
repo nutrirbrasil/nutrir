@@ -1,11 +1,11 @@
 ---
-title: "Saúde Intestinal em Atletas "
-slug: "saúde-intestinal "
+title: "Saúde Intestinal em Atletas"
+slug: "saude-intestinal-em-atletas"
 description: Intestino e performance.
 date: 2026-07-02
 published: true
 ---
-# Não é só o treino que limita sua performance.
+**Não é só o treino que limita sua performance.**
 
 Quando pensamos em melhorar a performance esportiva, normalmente o foco está no treinamento: aumentar a carga, modificar a periodização, investir em suplementos ou buscar novas estratégias de recuperação.
 
@@ -83,7 +83,7 @@ Quando o intestino funciona bem e é treinado para suportar as demandas do exerc
 
 *Este conteúdo tem caráter informativo e não substitui uma avaliação individualizada com um nutricionista.*
 
-*Por: Paula Pastorino - Nutricionista | CRN 18489*
+*Por: Paula Pastorino - Nutricionista | CRN 18489D*
 
 ## Referências
 

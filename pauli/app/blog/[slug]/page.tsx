@@ -3,8 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PostBody } from "@/components/blog/PostBody";
+import { PostCard } from "@/components/blog/PostCard";
 import { formatPostDate, getAllPosts, getPostBySlug, getPostSlugs } from "@/lib/blog";
 import { site, whatsappLink } from "@/lib/site";
+
+const RELATED_POSTS_LIMIT = 3;
 
 type Props = {
   params: { slug: string };
@@ -43,6 +46,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const post = await getPostBySlug(params.slug);
   if (!post || !post.published) notFound();
+
+  const allPosts = await getAllPosts();
+  const relatedPosts = allPosts
+    .filter((p) => p.slug !== post.slug)
+    .slice(0, RELATED_POSTS_LIMIT);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -87,7 +95,7 @@ export default async function BlogPostPage({ params }: Props) {
           </h1>
           <p className="dark-accent-body mt-4 text-lg leading-relaxed">{post.description}</p>
           <p className="mt-4 text-sm text-pauli-gray-muted">
-            {site.fullName} · {site.crn}
+            {site.fullName} · {site.subtitle} · {site.crn}
           </p>
         </header>
 
@@ -110,7 +118,7 @@ export default async function BlogPostPage({ params }: Props) {
 
         <div className="mt-12 rounded-2xl border border-pauli-gold/20 bg-pauli-sand/40 p-6 text-center dark:bg-white/5 md:p-8">
           <p className="dark-accent-heading font-display text-xl font-bold md:text-2xl">
-            Quer um acompanhamento individualizado?
+            Mora em Balneário Piçarras ou região e quer um acompanhamento individualizado?
           </p>
           <p className="dark-accent-body mt-2">
             Agende sua consulta e receba um plano alinhado à sua rotina e aos seus objetivos.
@@ -123,7 +131,26 @@ export default async function BlogPostPage({ params }: Props) {
           >
             Agendar consulta
           </a>
+          <p className="dark-accent-body mt-4 text-sm">
+            Não mora na região?{" "}
+            <Link href="/#atendimento" className="font-semibold underline hover:text-pauli-gold-light">
+              Saiba mais sobre o Acompanhamento Online
+            </Link>
+          </p>
         </div>
+
+        {relatedPosts.length > 0 ? (
+          <div className="mt-16">
+            <h2 className="gold-text font-display text-xl font-bold md:text-2xl">
+              Outros artigos
+            </h2>
+            <div className="mt-6 grid gap-6 md:grid-cols-2 md:gap-8">
+              {relatedPosts.map((relatedPost) => (
+                <PostCard key={relatedPost.slug} post={relatedPost} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </article>
   );

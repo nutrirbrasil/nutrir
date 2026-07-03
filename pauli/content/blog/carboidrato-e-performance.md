@@ -1,6 +1,6 @@
 ---
 title: Carboidrato e Performance
-slug: carboidrato-performance
+slug: carboidrato-e-performance
 description: |
   Como o carboidrato impacta sua energia, treino e resultados? 
 date: 2026-06-27
