@@ -20,6 +20,22 @@ build/
 Thumbs.db
 desktop.ini
 
+# Claude Code local tool state (personal, per-machine — not app code)
+.claude/
+
+# Python (nootr/backend)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
 # Logs
 *.log
 npm-debug.log*
+
+# design-sync (claude.ai/design)
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

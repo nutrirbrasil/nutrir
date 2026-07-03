@@ -15,7 +15,7 @@ nutricao/
 ├── nutrir/            # Site da marmitaria (Next.js + API em app/api)
 ├── pauli/             # Site profissional da nutricionista (Next.js)
 ├── nootr/             # App de substituições alimentares (Next.js)
-├── backend/           # API FastAPI (Nootr)
+│   └── backend/       # API FastAPI (Nootr)
 ├── supabase/          # Migrations SQL
 ├── deploy/            # Configs nginx de referência
 └── ecosystem.config.js
@@ -64,9 +64,10 @@ npm run dev
 
 [http://localhost:3001](http://localhost:3001)
 
-API (em outro terminal, na raiz do monorepo):
+API (em outro terminal, dentro de `nootr/`):
 
 ```bash
+cd nootr
 pip install -r backend/requirements.txt
 uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 ```
