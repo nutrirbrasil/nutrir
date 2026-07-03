@@ -83,9 +83,7 @@ export function CardapioPage() {
         <h1 className="mt-2 font-display text-5xl font-bold tracking-tight text-nutrir-nude md:text-6xl">
           COMBOS
         </h1>
-        <p className="hero-tagline-stroke mt-3 font-sans text-lg font-bold uppercase tracking-[0.4em] md:text-xl">
-          A partir de R$14,99
-        </p>
+        <p className="hero-tagline mt-4">A partir de R$14,99</p>
         <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-nutrir-nude/85">
           Marmitas pensadas, desenvolvidas e montadas por nutricionistas.
           <br />

@@ -37,11 +37,11 @@ function DrawerAccordion({
         onClick={onToggle}
         className="flex w-full items-center justify-between rounded-xl px-4 py-2 transition hover:bg-nutrir-nude/60"
       >
-        <span className="text-xs font-bold uppercase tracking-[0.2em] text-nutrir-emerald/50">
+        <span className="text-sm font-bold uppercase tracking-wide text-nutrir-emerald">
           {title}
         </span>
         <FiChevronDown
-          className={`text-base text-nutrir-emerald/50 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`text-base text-nutrir-emerald transition-transform ${open ? "rotate-180" : ""}`}
           aria-hidden
         />
       </button>
@@ -113,11 +113,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
               <Link
                 href="/"
                 onClick={onClose}
-                className={`block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide transition ${
-                  pathname === "/"
-                    ? "bg-nutrir-burgundy text-nutrir-nude"
-                    : "text-nutrir-emerald hover:bg-nutrir-nude"
-                }`}
+                className="block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-nutrir-emerald/85 transition hover:bg-nutrir-nude"
               >
                 Ver todos
               </Link>
@@ -135,7 +131,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
             ))}
           </DrawerAccordion>
 
-          <ul className="mt-4 space-y-1 border-t border-nutrir-nude-dark/50 pt-4">
+          <ul className="mt-4 space-y-1">
             {mainLinks.map((link) => (
               <li key={link.href}>
                 <Link

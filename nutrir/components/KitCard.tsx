@@ -125,8 +125,11 @@ export function KitCard({ kit }: Props) {
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col bg-nutrir-nude p-5 md:p-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-nutrir-emerald/70">
+                  Tamanho:
+                </span>
                 <div className="flex gap-2">
                   {(["P", "G"] as MarmitaSize[]).map((s) => (
                     <button
@@ -149,7 +152,7 @@ export function KitCard({ kit }: Props) {
               </div>
 
               {kit.id === "misto" && (
-                <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2.5 rounded-lg border border-nutrir-emerald/15 bg-nutrir-cream/50 px-3 py-2.5 text-left text-sm leading-snug text-nutrir-emerald">
+                <label className="flex cursor-pointer items-start gap-2.5 bg-nutrir-cream/50 px-3 py-2.5 text-left text-sm leading-snug text-nutrir-emerald">
                   <input
                     type="checkbox"
                     checked={includeVeg}

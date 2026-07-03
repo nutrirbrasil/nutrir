@@ -115,9 +115,10 @@ html {
     color: var(--nutrir-burgundy);
   }
 
-  .hero-tagline-stroke {
-    -webkit-text-stroke: 1.5px var(--nutrir-cream);
-    paint-order: stroke fill;
-    color: var(--nutrir-burgundy);
+  .hero-tagline {
+    @apply inline-block rounded-full border px-5 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.2em] md:text-sm;
+    border-color: rgb(243 232 220 / 0.4);
+    background-color: rgb(243 232 220 / 0.08);
+    color: var(--nutrir-nude);
   }
 }
