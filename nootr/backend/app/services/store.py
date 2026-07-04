@@ -1,4 +1,10 @@
-"""Dados mock para desenvolvimento (substituir por Supabase depois)."""
+"""
+Dados mock das rotas legadas do Nutrir (menus/ingredientes/pedidos).
+
+As rotas do Nootr NÃO usam mais este módulo — dietas e substituições agora são
+persistidas no Supabase (ver services/repository.py). Isto aqui serve apenas ao
+grupo de rotas `nutrir`, que é legado e não conectado ao site Nutrir em produção.
+"""
 from datetime import date
 
 MENUS = [
@@ -56,46 +62,6 @@ INGREDIENTS = [
 ]
 
 ORDERS: list[dict] = []
-
-SAMPLE_DIET = {
-    "id": "diet-demo",
-    "user_id": "demo",
-    "name": "Plano padrão",
-    "daily_calories": 1800,
-    "daily_protein_g": 120,
-    "daily_carbs_g": 180,
-    "daily_fat_g": 60,
-    "meals": [
-        {
-            "id": "meal-1",
-            "name": "Café da manhã",
-            "time": "07:30",
-            "foods": [
-                {"name": "Ovos mexidos", "quantity": "2 un", "calories": 140, "protein_g": 12, "carbs_g": 1, "fat_g": 10},
-                {"name": "Pão integral", "quantity": "2 fatias", "calories": 160, "protein_g": 6, "carbs_g": 28, "fat_g": 2},
-            ],
-        },
-        {
-            "id": "meal-2",
-            "name": "Almoço",
-            "time": "12:30",
-            "foods": [
-                {"name": "Frango grelhado", "quantity": "150g", "calories": 250, "protein_g": 46, "carbs_g": 0, "fat_g": 6},
-                {"name": "Arroz integral", "quantity": "100g", "calories": 110, "protein_g": 2, "carbs_g": 23, "fat_g": 1},
-                {"name": "Salada", "quantity": "1 porção", "calories": 40, "protein_g": 2, "carbs_g": 6, "fat_g": 1},
-            ],
-        },
-        {
-            "id": "meal-3",
-            "name": "Jantar",
-            "time": "19:30",
-            "foods": [
-                {"name": "Peixe assado", "quantity": "150g", "calories": 220, "protein_g": 38, "carbs_g": 0, "fat_g": 8},
-                {"name": "Legumes", "quantity": "1 porção", "calories": 80, "protein_g": 3, "carbs_g": 12, "fat_g": 2},
-            ],
-        },
-    ],
-}
 
 
 def today_iso() -> str:

@@ -1,0 +1,598 @@
+taco_id,original,display
+1,"Arroz, integral, cozido",Arroz integral cozido
+2,"Arroz, integral, cru",Arroz integral cru
+3,"Arroz, tipo 1, cozido",Arroz tipo 1 cozido
+4,"Arroz, tipo 1, cru",Arroz tipo 1 cru
+5,"Arroz, tipo 2, cozido",Arroz tipo 2 cozido
+6,"Arroz, tipo 2, cru",Arroz tipo 2 cru
+7,"Aveia, flocos, crua",Aveia flocos crua
+8,"Biscoito, doce, maisena",Biscoito doce maisena
+9,"Biscoito, doce, recheado com chocolate",Biscoito doce recheado com chocolate
+10,"Biscoito, doce, recheado com morango",Biscoito doce recheado com morango
+11,"Biscoito, doce, wafer, recheado de chocolate",Biscoito doce wafer recheado de chocolate
+12,"Biscoito, doce, wafer, recheado de morango",Biscoito doce wafer recheado de morango
+13,"Biscoito, salgado, cream cracker",Biscoito salgado cream cracker
+14,"Bolo, mistura para",Bolo mistura para
+15,"Bolo, pronto, aipim",Bolo pronto aipim
+16,"Bolo, pronto, chocolate",Bolo pronto chocolate
+17,"Bolo, pronto, coco",Bolo pronto coco
+18,"Bolo, pronto, milho",Bolo pronto milho
+19,"Canjica, branca, crua",Canjica branca crua
+20,"Canjica, com leite integral",Canjica com leite integral
+21,"Cereais, milho, flocos, com sal",Cereais milho flocos com sal
+22,"Cereais, milho, flocos, sem sal",Cereais milho flocos sem sal
+23,"Cereais, mingau, milho, infantil",Cereais mingau milho infantil
+24,"Cereais, mistura para vitamina, trigo, cevada e aveia",Cereais mistura para vitamina trigo cevada e aveia
+25,"Cereal matinal, milho",Cereal matinal milho
+26,"Cereal matinal, milho, açúcar",Cereal matinal milho açúcar
+27,"Creme de arroz, pó",Creme de arroz pó
+28,"Creme de milho, pó",Creme de milho pó
+29,"Curau, milho verde",Curau milho verde
+30,"Curau, milho verde, mistura para",Curau milho verde mistura para
+31,"Farinha, de arroz, enriquecida",Farinha de arroz enriquecida
+32,"Farinha, de centeio, integral",Farinha de centeio integral
+33,"Farinha, de milho, amarela",Farinha de milho amarela
+34,"Farinha, de rosca",Farinha de rosca
+35,"Farinha, de trigo",Farinha de trigo
+36,"Farinha, láctea, de cereais",Farinha láctea de cereais
+37,"Lasanha, massa fresca, cozida",Lasanha massa fresca cozida
+38,"Lasanha, massa fresca, crua",Lasanha massa fresca crua
+39,"Macarrão, instantâneo",Macarrão instantâneo
+40,"Macarrão, trigo, cru",Macarrão cru
+41,"Macarrão, trigo, cru, com ovos",Macarrão cru com ovos
+42,"Milho, amido, cru",Milho amido cru
+43,"Milho, fubá, cru",Milho fubá cru
+44,"Milho, verde, cru",Milho verde cru
+45,"Milho, verde, enlatado, drenado",Milho verde enlatado drenado
+46,"Mingau tradicional, pó",Mingau tradicional pó
+47,"Pamonha, barra para cozimento, pré-cozida",Pamonha barra para cozimento pré-cozida
+48,"Pão, aveia, forma",Pão aveia forma
+49,"Pão, de soja",Pão de soja
+50,"Pão, glúten, forma",Pão glúten forma
+51,"Pão, milho, forma",Pão milho forma
+52,"Pão, trigo, forma, integral",Pão forma integral
+53,"Pão, trigo, francês",Pão francês
+54,"Pão, trigo, sovado",Pão sovado
+55,"Pastel, de carne, cru",Pastel de carne cru
+56,"Pastel, de carne, frito",Pastel de carne frito
+57,"Pastel, de queijo, cru",Pastel de queijo cru
+58,"Pastel, de queijo, frito",Pastel de queijo frito
+59,"Pastel, massa, crua",Pastel massa crua
+60,"Pastel, massa, frita",Pastel massa frita
+61,"Pipoca, com óleo de soja, sem sal",Pipoca com óleo de soja sem sal
+62,"Polenta, pré-cozida",Polenta pré-cozida
+63,"Torrada, pão francês",Torrada pão francês
+64,"Abóbora, cabotian, cozida",Abóbora cabotian cozida
+65,"Abóbora, cabotian, crua",Abóbora cabotian crua
+66,"Abóbora, menina brasileira, crua",Abóbora menina brasileira crua
+67,"Abóbora, moranga, crua",Abóbora moranga crua
+68,"Abóbora, moranga, refogada",Abóbora moranga refogada
+69,"Abóbora, pescoço, crua",Abóbora pescoço crua
+70,"Abobrinha, italiana, cozida",Abobrinha italiana cozida
+71,"Abobrinha, italiana, crua",Abobrinha italiana crua
+72,"Abobrinha, italiana, refogada",Abobrinha italiana refogada
+73,"Abobrinha, paulista, crua",Abobrinha paulista crua
+74,"Acelga, crua",Acelga crua
+75,"Agrião, cru",Agrião cru
+76,"Aipo, cru",Aipo cru
+77,"Alface, americana, crua",Alface americana crua
+78,"Alface, crespa, crua",Alface crespa crua
+79,"Alface, lisa, crua",Alface lisa crua
+80,"Alface, roxa, crua",Alface roxa crua
+81,"Alfavaca, crua",Alfavaca crua
+82,"Alho, cru",Alho cru
+83,"Alho-poró, cru",Alho-poró cru
+84,"Almeirão, cru",Almeirão cru
+85,"Almeirão, refogado",Almeirão refogado
+86,"Batata, baroa, cozida",Batata baroa cozida
+87,"Batata, baroa, crua",Batata baroa crua
+88,"Batata, doce, cozida",Batata doce cozida
+89,"Batata, doce, crua",Batata doce crua
+90,"Batata, frita, tipo chips, industrializada",Batata frita tipo chips industrializada
+91,"Batata, inglesa, cozida",Batata inglesa cozida
+92,"Batata, inglesa, crua",Batata inglesa crua
+93,"Batata, inglesa, frita",Batata inglesa frita
+94,"Batata, inglesa, sauté",Batata inglesa sauté
+95,"Berinjela, cozida",Berinjela cozida
+96,"Berinjela, crua",Berinjela crua
+97,"Beterraba, cozida",Beterraba cozida
+98,"Beterraba, crua",Beterraba crua
+99,"Biscoito, polvilho doce",Biscoito polvilho doce
+100,"Brócolis, cozido",Brócolis cozido
+101,"Brócolis, cru",Brócolis cru
+102,"Cará, cozido",Cará cozido
+103,"Cará, cru",Cará cru
+104,"Caruru, cru",Caruru cru
+105,"Catalonha, crua",Catalonha crua
+106,"Catalonha, refogada",Catalonha refogada
+107,"Cebola, crua",Cebola crua
+108,"Cebolinha, crua",Cebolinha crua
+109,"Cenoura, cozida",Cenoura cozida
+110,"Cenoura, crua",Cenoura crua
+111,"Chicória, crua",Chicória crua
+112,"Chuchu, cozido",Chuchu cozido
+113,"Chuchu, cru",Chuchu cru
+114,"Coentro, folhas desidratadas",Coentro folhas desidratadas
+115,"Couve, manteiga, crua",Couve manteiga crua
+116,"Couve, manteiga, refogada",Couve manteiga refogada
+117,"Couve-flor, crua",Couve-flor crua
+118,"Couve-flor, cozida",Couve-flor cozida
+119,"Espinafre, Nova Zelândia, cru",Espinafre nova zelândia cru
+120,"Espinafre, Nova Zelândia, refogado",Espinafre nova zelândia refogado
+121,"Farinha, de mandioca, crua",Farinha de mandioca crua
+122,"Farinha, de mandioca, torrada",Farinha de mandioca torrada
+123,"Farinha, de puba",Farinha de puba
+124,"Fécula, de mandioca",Fécula de mandioca
+125,"Feijão, broto, cru",Feijão broto cru
+126,"Inhame, cru",Inhame cru
+127,"Jiló, cru",Jiló cru
+128,"Jurubeba, crua",Jurubeba crua
+129,"Mandioca, cozida",Mandioca cozida
+130,"Mandioca, crua",Mandioca crua
+131,"Mandioca, farofa, temperada",Mandioca farofa temperada
+132,"Mandioca, frita",Mandioca frita
+133,"Manjericão, cru",Manjericão cru
+134,"Maxixe, cru",Maxixe cru
+135,"Mostarda, folha, crua",Mostarda folha crua
+136,"Nhoque, batata, cozido",Nhoque batata cozido
+137,"Nabo, cru",Nabo cru
+138,"Palmito, juçara, em conserva",Palmito juçara em conserva
+139,"Palmito, pupunha, em conserva",Palmito pupunha em conserva
+140,"Pão, de queijo, assado",Pão de queijo assado
+141,"Pão, de queijo, cru",Pão de queijo cru
+142,"Pepino, cru",Pepino cru
+143,"Pimentão, amarelo, cru",Pimentão amarelo cru
+144,"Pimentão, verde, cru",Pimentão verde cru
+145,"Pimentão, vermelho, cru",Pimentão vermelho cru
+146,"Polvilho, doce",Polvilho doce
+147,"Quiabo, cru",Quiabo cru
+148,"Rabanete, cru",Rabanete cru
+149,"Repolho, branco, cru",Repolho branco cru
+150,"Repolho, roxo, cru",Repolho roxo cru
+151,"Repolho, roxo, refogado",Repolho roxo refogado
+152,"Rúcula, crua",Rúcula crua
+153,"Salsa, crua",Salsa crua
+154,"Seleta de legumes, enlatada",Seleta de legumes enlatada
+155,"Serralha, crua",Serralha crua
+156,"Taioba, crua",Taioba crua
+157,"Tomate, com semente, cru",Tomate com semente cru
+158,"Tomate, extrato",Tomate extrato
+159,"Tomate, molho industrializado",Tomate molho industrializado
+160,"Tomate, purê",Tomate purê
+161,"Tomate, salada",Tomate salada
+162,"Vagem, crua",Vagem crua
+163,"Abacate, cru",Abacate cru
+164,"Abacaxi, cru",Abacaxi cru
+165,"Abacaxi, polpa, congelada",Abacaxi polpa congelada
+166,"Abiu, cru",Abiu cru
+167,"Açaí, polpa, com xarope de guaraná e glucose",Açaí polpa com xarope de guaraná e glucose
+168,"Açaí, polpa, congelada",Açaí polpa congelada
+169,"Acerola, crua",Acerola crua
+170,"Acerola, polpa, congelada",Acerola polpa congelada
+171,"Ameixa, calda, enlatada",Ameixa calda enlatada
+172,"Ameixa, crua",Ameixa crua
+173,"Ameixa, em calda, enlatada, drenada",Ameixa em calda enlatada drenada
+174,"Atemóia, crua",Atemóia crua
+175,"Banana, da terra, crua",Banana da terra crua
+176,"Banana, doce em barra",Banana doce em barra
+177,"Banana, figo, crua",Banana figo crua
+178,"Banana, maçã, crua",Banana maçã crua
+179,"Banana, nanica, crua",Banana nanica crua
+180,"Banana, ouro, crua",Banana ouro crua
+181,"Banana, pacova, crua",Banana pacova crua
+182,"Banana, prata, crua",Banana prata crua
+183,"Cacau, cru",Cacau cru
+184,"Cajá-Manga, cru",Cajá-Manga cru
+185,"Cajá, polpa, congelada",Cajá polpa congelada
+186,"Caju, cru",Caju cru
+187,"Caju, polpa, congelada",Caju polpa congelada
+188,"Caju, suco concentrado, envasado",Caju suco concentrado envasado
+189,"Caqui, chocolate, cru",Caqui chocolate cru
+190,"Carambola, crua",Carambola crua
+191,"Ciriguela, crua",Ciriguela crua
+192,"Cupuaçu, cru",Cupuaçu cru
+193,"Cupuaçu, polpa, congelada",Cupuaçu polpa congelada
+194,"Figo, cru",Figo cru
+195,"Figo, enlatado, em calda",Figo enlatado em calda
+196,"Fruta-pão, crua",Fruta-pão crua
+197,"Goiaba, branca, com casca, crua",Goiaba branca com casca crua
+198,"Goiaba, doce em pasta",Goiaba doce em pasta
+199,"Goiaba, doce, cascão",Goiaba doce cascão
+200,"Goiaba, vermelha, com casca, crua",Goiaba vermelha com casca crua
+201,"Graviola, crua",Graviola crua
+202,"Graviola, polpa, congelada",Graviola polpa congelada
+203,"Jabuticaba, crua",Jabuticaba crua
+204,"Jaca, crua",Jaca crua
+205,"Jambo, cru",Jambo cru
+206,"Jamelão, cru",Jamelão cru
+207,"Kiwi, cru",Kiwi cru
+208,"Laranja, baía, crua",Laranja baía crua
+209,"Laranja, baía, suco",Laranja baía suco
+210,"Laranja, da terra, crua",Laranja da terra crua
+211,"Laranja, da terra, suco",Laranja da terra suco
+212,"Laranja, lima, crua",Laranja lima crua
+213,"Laranja, lima, suco",Laranja lima suco
+214,"Laranja, pêra, crua",Laranja pêra crua
+215,"Laranja, pêra, suco",Laranja pêra suco
+216,"Laranja, valência, crua",Laranja valência crua
+217,"Laranja, valência, suco",Laranja valência suco
+218,"Limão, cravo, suco",Limão cravo suco
+219,"Limão, galego, suco",Limão galego suco
+220,"Limão, tahiti, cru",Limão tahiti cru
+221,"Maçã, Argentina, com casca, crua",Maçã Argentina com casca crua
+222,"Maçã, Fuji, com casca, crua",Maçã Fuji com casca crua
+223,"Macaúba, crua",Macaúba crua
+224,"Mamão, doce em calda, drenado",Mamão doce em calda drenado
+225,"Mamão, Formosa, cru",Mamão formosa cru
+226,"Mamão, Papaia, cru",Mamão papaia cru
+227,"Mamão verde, doce em calda, drenado",Mamão verde doce em calda drenado
+228,"Manga, Haden, crua",Manga Haden crua
+229,"Manga, Palmer, crua",Manga palmer crua
+230,"Manga, polpa, congelada",Manga polpa congelada
+231,"Manga, Tommy Atkins, crua",Manga Tommy atkins crua
+232,"Maracujá, cru",Maracujá cru
+233,"Maracujá, polpa, congelada",Maracujá polpa congelada
+234,"Maracujá, suco concentrado, envasado",Maracujá suco concentrado envasado
+235,"Melancia, crua",Melancia crua
+236,"Melão, cru",Melão cru
+237,"Mexerica, Murcote, crua",Mexerica murcote crua
+238,"Mexerica, Rio, crua",Mexerica rio crua
+239,"Morango, cru",Morango cru
+240,"Nêspera, crua",Nêspera crua
+241,"Pequi, cru",Pequi cru
+242,"Pêra, Park, crua",Pêra park crua
+243,"Pêra, Williams, crua",Pêra williams crua
+244,"Pêssego, Aurora, cru",Pêssego aurora cru
+245,"Pêssego, enlatado, em calda",Pêssego enlatado em calda
+246,"Pinha, crua",Pinha crua
+247,"Pitanga, crua",Pitanga crua
+248,"Pitanga, polpa, congelada",Pitanga polpa congelada
+249,"Romã, crua",Romã crua
+250,"Tamarindo, cru",Tamarindo cru
+251,"Tangerina, Poncã, crua",Tangerina poncã crua
+252,"Tangerina, Poncã, suco",Tangerina poncã suco
+253,"Tucumã, cru",Tucumã cru
+254,"Umbu, cru",Umbu cru
+255,"Umbu, polpa, congelada",Umbu polpa congelada
+256,"Uva, Itália, crua",Uva itália crua
+257,"Uva, Rubi, crua",Uva rubi crua
+258,"Uva, suco concentrado, envasado",Uva suco concentrado envasado
+259,"Azeite, de dendê",Azeite de dendê
+260,"Azeite, de oliva, extra virgem",Azeite de oliva extra virgem
+261,"Manteiga, com sal",Manteiga com sal
+262,"Manteiga, sem sal",Manteiga sem sal
+263,"Margarina, com óleo hidrogenado, com sal (65% de lipídeos)",Margarina com óleo hidrogenado com sal (65% de lipídeos)
+264,"Margarina, com óleo hidrogenado, sem sal (80% de lipídeos)",Margarina com óleo hidrogenado sem sal (80% de lipídeos)
+265,"Margarina, com óleo interesterificado, com sal (65%de lipídeos)",Margarina com óleo interesterificado com sal (65%de lipídeos)
+266,"Margarina, com óleo interesterificado, sem sal (65% de lipídeos)",Margarina com óleo interesterificado sem sal (65% de lipídeos)
+267,"Óleo, de babaçu",Óleo de babaçu
+268,"Óleo, de canola",Óleo de canola
+269,"Óleo, de girassol",Óleo de girassol
+270,"Óleo, de milho",Óleo de milho
+271,"Óleo, de pequi",Óleo de pequi
+272,"Óleo, de soja",Óleo de soja
+273,"Abadejo, filé, congelado, assado",Abadejo filé congelado assado
+274,"Abadejo, filé, congelado,cozido",Abadejo filé congelado cozido
+275,"Abadejo, filé, congelado, cru",Abadejo filé congelado cru
+276,"Abadejo, filé, congelado, grelhado",Abadejo filé congelado grelhado
+277,"Atum, conserva em óleo",Atum conserva em óleo
+278,"Atum, fresco, cru",Atum fresco cru
+279,"Bacalhau, salgado, cru",Bacalhau salgado cru
+280,"Bacalhau, salgado, refogado",Bacalhau salgado refogado
+281,"Cação, posta, com farinha de trigo, frita",Cação posta com farinha de trigo frita
+282,"Cação, posta, cozida",Cação posta cozida
+283,"Cação, posta, crua",Cação posta crua
+284,"Camarão, Rio Grande, grande, cozido",Camarão rio grande grande cozido
+285,"Camarão, Rio Grande, grande, cru",Camarão rio grande grande cru
+286,"Camarão, Sete Barbas, sem cabeça, com casca, frito",Camarão sete barbas sem cabeça com casca frito
+287,"Caranguejo, cozido",Caranguejo cozido
+288,"Corimba, cru",Corimba cru
+289,"Corimbatá, assado",Corimbatá assado
+290,"Corimbatá, cozido",Corimbatá cozido
+291,"Corvina de água doce, crua",Corvina de água doce crua
+292,"Corvina do mar, crua",Corvina do mar crua
+293,"Corvina grande, assada",Corvina grande assada
+294,"Corvina grande, cozida",Corvina grande cozida
+295,"Dourada de água doce, fresca",Dourada de água doce fresca
+296,"Lambari, congelado, cru",Lambari congelado cru
+297,"Lambari, congelado, frito",Lambari congelado frito
+298,"Lambari, fresco, cru",Lambari fresco cru
+299,"Manjuba, com farinha de trigo, frita",Manjuba com farinha de trigo frita
+300,"Manjuba, frita",Manjuba frita
+301,"Merluza, filé, assado",Merluza filé assado
+302,"Merluza, filé, cru",Merluza filé cru
+303,"Merluza, filé, frito",Merluza filé frito
+304,"Pescada, branca, crua",Pescada branca crua
+305,"Pescada, branca, frita",Pescada branca frita
+306,"Pescada, filé, com farinha de trigo, frito",Pescada filé com farinha de trigo frito
+307,"Pescada, filé, cru",Pescada filé cru
+308,"Pescada, filé, frito",Pescada filé frito
+309,"Pescada, filé, molho escabeche",Pescada filé molho escabeche
+310,"Pescadinha, crua",Pescadinha crua
+311,"Pintado, assado",Pintado assado
+312,"Pintado, cru",Pintado cru
+313,"Pintado, grelhado",Pintado grelhado
+314,"Porquinho, cru",Porquinho cru
+315,"Salmão, filé, com pele, fresco,  grelhado",Salmão filé com pele fresco grelhado
+316,"Salmão, sem pele, fresco, cru",Salmão sem pele fresco cru
+317,"Salmão, sem pele, fresco, grelhado",Salmão sem pele fresco grelhado
+318,"Sardinha, assada",Sardinha assada
+319,"Sardinha, conserva em óleo",Sardinha conserva em óleo
+320,"Sardinha, frita",Sardinha frita
+321,"Sardinha, inteira, crua",Sardinha inteira crua
+322,"Tucunaré, filé, congelado, cru",Tucunaré filé congelado cru
+323,Apresuntado,Apresuntado
+324,"Caldo de carne, tablete",Caldo de carne tablete
+325,"Caldo de galinha, tablete",Caldo de galinha tablete
+326,"Carne, bovina, acém, moído, cozido",Carne bovina acém moído cozido
+327,"Carne, bovina, acém, moído, cru",Carne bovina acém moído cru
+328,"Carne, bovina, acém, sem gordura, cozido",Carne bovina acém sem gordura cozido
+329,"Carne, bovina, acém, sem gordura, cru",Carne bovina acém sem gordura cru
+330,"Carne, bovina, almôndegas, cruas",Carne bovina almôndegas cruas
+331,"Carne, bovina, almôndegas, fritas",Carne bovina almôndegas fritas
+332,"Carne, bovina, bucho, cozido",Carne bovina bucho cozido
+333,"Carne, bovina, bucho, cru",Carne bovina bucho cru
+334,"Carne, bovina, capa de contra-filé, com gordura, crua",Carne bovina capa de contra-filé com gordura crua
+335,"Carne, bovina, capa de contra-filé, com gordura, grelhada",Carne bovina capa de contra-filé com gordura grelhada
+336,"Carne, bovina, capa de contra-filé, sem gordura, crua",Carne bovina capa de contra-filé sem gordura crua
+337,"Carne, bovina, capa de contra-filé, sem gordura, grelhada",Carne bovina capa de contra-filé sem gordura grelhada
+338,"Carne, bovina, charque, cozido",Carne bovina charque cozido
+339,"Carne, bovina, charque, cru",Carne bovina charque cru
+340,"Carne, bovina, contra-filé, à milanesa",Carne bovina contra-filé à milanesa
+341,"Carne, bovina, contra-filé de costela, cru",Carne bovina contra-filé de costela cru
+342,"Carne, bovina, contra-filé de costela, grelhado",Carne bovina contra-filé de costela grelhado
+343,"Carne, bovina, contra-filé, com gordura, cru",Carne bovina contra-filé com gordura cru
+344,"Carne, bovina, contra-filé, com gordura, grelhado",Carne bovina contra-filé com gordura grelhado
+345,"Carne, bovina, contra-filé, sem gordura, cru",Carne bovina contra-filé sem gordura cru
+346,"Carne, bovina, contra-filé, sem gordura, grelhado",Carne bovina contra-filé sem gordura grelhado
+347,"Carne, bovina, costela, assada",Carne bovina costela assada
+348,"Carne, bovina, costela, crua",Carne bovina costela crua
+349,"Carne, bovina, coxão duro, sem gordura, cozido",Carne bovina coxão duro sem gordura cozido
+350,"Carne, bovina, coxão duro, sem gordura, cru",Carne bovina coxão duro sem gordura cru
+351,"Carne, bovina, coxão mole, sem gordura, cozido",Carne bovina coxão mole sem gordura cozido
+352,"Carne, bovina, coxão mole, sem gordura, cru",Carne bovina coxão mole sem gordura cru
+353,"Carne, bovina, cupim, assado",Carne bovina cupim assado
+354,"Carne, bovina, cupim, cru",Carne bovina cupim cru
+355,"Carne, bovina, fígado, cru",Carne bovina fígado cru
+356,"Carne, bovina, fígado, grelhado",Carne bovina fígado grelhado
+357,"Carne, bovina, filé mingnon, sem gordura, cru",Carne bovina filé mingnon sem gordura cru
+358,"Carne, bovina, filé mingnon, sem gordura, grelhado",Carne bovina filé mingnon sem gordura grelhado
+359,"Carne, bovina, flanco, sem gordura, cozido",Carne bovina flanco sem gordura cozido
+360,"Carne, bovina, flanco, sem gordura, cru",Carne bovina flanco sem gordura cru
+361,"Carne, bovina, fraldinha, com gordura, cozida",Carne bovina fraldinha com gordura cozida
+362,"Carne, bovina, fraldinha, com gordura, crua",Carne bovina fraldinha com gordura crua
+363,"Carne, bovina, lagarto, cozido",Carne bovina lagarto cozido
+364,"Carne, bovina, lagarto, cru",Carne bovina lagarto cru
+365,"Carne, bovina, língua, cozida",Carne bovina língua cozida
+366,"Carne, bovina, língua, crua",Carne bovina língua crua
+367,"Carne, bovina, maminha, crua",Carne bovina maminha crua
+368,"Carne, bovina, maminha, grelhada",Carne bovina maminha grelhada
+369,"Carne, bovina, miolo de alcatra, sem gordura, cru",Carne bovina miolo de alcatra sem gordura cru
+370,"Carne, bovina, miolo de alcatra, sem gordura, grelhado",Carne bovina miolo de alcatra sem gordura grelhado
+371,"Carne, bovina, músculo, sem gordura, cozido",Carne bovina músculo sem gordura cozido
+372,"Carne, bovina, músculo, sem gordura, cru",Carne bovina músculo sem gordura cru
+373,"Carne, bovina, paleta, com gordura, crua",Carne bovina paleta com gordura crua
+374,"Carne, bovina, paleta, sem gordura, cozida",Carne bovina paleta sem gordura cozida
+375,"Carne, bovina, paleta, sem gordura, crua",Carne bovina paleta sem gordura crua
+376,"Carne, bovina, patinho, sem gordura, cru",Carne bovina patinho sem gordura cru
+377,"Carne, bovina, patinho, sem gordura, grelhado",Carne bovina patinho sem gordura grelhado
+378,"Carne, bovina, peito, sem gordura, cozido",Carne bovina peito sem gordura cozido
+379,"Carne, bovina, peito, sem gordura, cru",Carne bovina peito sem gordura cru
+380,"Carne, bovina, picanha, com gordura, crua",Carne bovina picanha com gordura crua
+381,"Carne, bovina, picanha, com gordura, grelhada",Carne bovina picanha com gordura grelhada
+382,"Carne, bovina, picanha, sem gordura, crua",Carne bovina picanha sem gordura crua
+383,"Carne, bovina, picanha, sem gordura, grelhada",Carne bovina picanha sem gordura grelhada
+384,"Carne, bovina, seca, cozida",Carne bovina seca cozida
+385,"Carne, bovina, seca, crua",Carne bovina seca crua
+386,"Coxinha de frango, frita",Coxinha de frango frita
+387,"Croquete, de carne, cru",Croquete de carne cru
+388,"Croquete, de carne, frito",Croquete de carne frito
+389,"Empada de frango, pré-cozida, assada",Empada de frango pré-cozida assada
+390,"Empada, de frango, pré-cozida",Empada de frango pré-cozida
+391,"Frango, asa, com pele, crua",Frango asa com pele crua
+392,"Frango, caipira, inteiro, com pele, cozido",Frango caipira inteiro com pele cozido
+393,"Frango, caipira, inteiro, sem pele, cozido",Frango caipira inteiro sem pele cozido
+394,"Frango, coração, cru",Frango coração cru
+395,"Frango, coração, grelhado",Frango coração grelhado
+396,"Frango, coxa, com pele, assada",Frango coxa com pele assada
+397,"Frango, coxa, com pele, crua",Frango coxa com pele crua
+398,"Frango, coxa, sem pele, cozida",Frango coxa sem pele cozida
+399,"Frango, coxa, sem pele, crua",Frango coxa sem pele crua
+400,"Frango, fígado, cru",Frango fígado cru
+401,"Frango, filé, à milanesa",Frango filé à milanesa
+402,"Frango, inteiro, com pele, cru",Frango inteiro com pele cru
+403,"Frango, inteiro, sem pele, assado",Frango inteiro sem pele assado
+404,"Frango, inteiro, sem pele, cozido",Frango inteiro sem pele cozido
+405,"Frango, inteiro, sem pele, cru",Frango inteiro sem pele cru
+406,"Frango, peito, com pele, assado",Frango peito com pele assado
+407,"Frango, peito, com pele, cru",Frango peito com pele cru
+408,"Frango, peito, sem pele, cozido",Frango peito sem pele cozido
+409,"Frango, peito, sem pele, cru",Frango peito sem pele cru
+410,"Frango, peito, sem pele, grelhado",Frango peito sem pele grelhado
+411,"Frango, sobrecoxa, com pele, assada",Frango sobrecoxa com pele assada
+412,"Frango, sobrecoxa, com pele, crua",Frango sobrecoxa com pele crua
+413,"Frango, sobrecoxa, sem pele, assada",Frango sobrecoxa sem pele assada
+414,"Frango, sobrecoxa, sem pele, crua",Frango sobrecoxa sem pele crua
+415,"Hambúrguer, bovino, cru",Hambúrguer bovino cru
+416,"Hambúrguer, bovino, frito",Hambúrguer bovino frito
+417,"Hambúrguer, bovino, grelhado",Hambúrguer bovino grelhado
+418,"Lingüiça, frango, crua",Lingüiça frango crua
+419,"Lingüiça, frango, frita",Lingüiça frango frita
+420,"Lingüiça, frango, grelhada",Lingüiça frango grelhada
+421,"Lingüiça, porco, crua",Lingüiça porco crua
+422,"Lingüiça, porco, frita",Lingüiça porco frita
+423,"Lingüiça, porco, grelhada",Lingüiça porco grelhada
+424,Mortadela,Mortadela
+425,"Peru, congelado, assado",Peru congelado assado
+426,"Peru, congelado, cru",Peru congelado cru
+427,"Porco, bisteca, crua",Porco bisteca crua
+428,"Porco, bisteca, frita",Porco bisteca frita
+429,"Porco, bisteca, grelhada",Porco bisteca grelhada
+430,"Porco, costela, assada",Porco costela assada
+431,"Porco, costela, crua",Porco costela crua
+432,"Porco, lombo, assado",Porco lombo assado
+433,"Porco, lombo, cru",Porco lombo cru
+434,"Porco, orelha, salgada, crua",Porco orelha salgada crua
+435,"Porco, pernil, assado",Porco pernil assado
+436,"Porco, pernil, cru",Porco pernil cru
+437,"Porco, rabo, salgado, cru",Porco rabo salgado cru
+438,"Presunto, com capa de gordura",Presunto com capa de gordura
+439,"Presunto, sem capa de gordura",Presunto sem capa de gordura
+440,"Quibe, assado",Quibe assado
+441,"Quibe, cru",Quibe cru
+442,"Quibe, frito",Quibe frito
+443,Salame,Salame
+444,"Toucinho, cru",Toucinho cru
+445,"Toucinho, frito",Toucinho frito
+446,"Bebida láctea, pêssego",Bebida láctea pêssego
+447,Creme de Leite,Creme de leite
+448,"Iogurte, natural",Iogurte natural
+449,"Iogurte, natural, desnatado",Iogurte natural desnatado
+450,"Iogurte, sabor abacaxi",Iogurte sabor abacaxi
+451,"Iogurte, sabor morango",Iogurte sabor morango
+452,"Iogurte, sabor pêssego",Iogurte sabor pêssego
+453,"Leite, condensado",Leite condensado
+454,"Leite, de cabra",Leite de cabra
+455,"Leite, de vaca, achocolatado",Leite de vaca achocolatado
+456,"Leite, de vaca, desnatado, pó",Leite de vaca desnatado pó
+457,"Leite, de vaca, desnatado, UHT",Leite de vaca desnatado UHT
+458,"Leite, de vaca, integral",Leite de vaca integral
+459,"Leite, de vaca, integral, pó",Leite de vaca integral pó
+460,"Leite, fermentado",Leite fermentado
+461,"Queijo, minas, frescal",Queijo minas frescal
+462,"Queijo, minas, meia cura",Queijo minas meia cura
+463,"Queijo, mozarela",Queijo mozarela
+464,"Queijo, parmesão",Queijo parmesão
+465,"Queijo, pasteurizado",Queijo pasteurizado
+466,"Queijo, petit suisse, morango",Queijo petit suisse morango
+467,"Queijo, prato",Queijo prato
+468,"Queijo, requeijão, cremoso",Queijo requeijão cremoso
+469,"Queijo, ricota",Queijo ricota
+470,"Bebida isotônica, sabores variados",Bebida isotônica sabores variados
+471,"Café, infusão 10%",Café infusão 10%
+472,"Cana, aguardente 1",Cana aguardente 1
+473,"Cana, caldo de",Cana caldo de
+474,"Cerveja, pilsen 2",Cerveja pilsen 2
+475,"Chá, erva-doce, infusão 5%",Chá erva-doce infusão 5%
+476,"Chá, mate, infusão 5%",Chá mate infusão 5%
+477,"Chá, preto, infusão 5%",Chá preto infusão 5%
+478,"Coco, água de",Coco água de
+479,"Refrigerante, tipo água tônica",Refrigerante tipo água tônica
+480,"Refrigerante, tipo cola",Refrigerante tipo cola
+481,"Refrigerante, tipo guaraná",Refrigerante tipo guaraná
+482,"Refrigerante, tipo laranja",Refrigerante tipo laranja
+483,"Refrigerante, tipo limão",Refrigerante tipo limão
+484,"Omelete, de queijo",Omelete de queijo
+485,"Ovo, de codorna, inteiro, cru",Ovo de codorna inteiro cru
+486,"Ovo, de galinha, clara, cozida/10minutos",Ovo clara cozida
+487,"Ovo, de galinha, gema, cozida/10minutos",Ovo gema cozida
+488,"Ovo, de galinha, inteiro, cozido/10minutos",Ovo inteiro cozido
+489,"Ovo, de galinha, inteiro, cru",Ovo inteiro cru
+490,"Ovo, de galinha, inteiro, frito",Ovo inteiro frito
+491,"Achocolatado, pó",Achocolatado pó
+492,"Açúcar, cristal",Açúcar cristal
+493,"Açúcar, mascavo",Açúcar mascavo
+494,"Açúcar, refinado",Açúcar refinado
+495,"Chocolate, ao leite",Chocolate ao leite
+496,"Chocolate, ao leite, com castanha do Pará",Chocolate ao leite com castanha do Pará
+497,"Chocolate, ao leite, dietético",Chocolate ao leite dietético
+498,"Chocolate, meio amargo",Chocolate meio amargo
+499,Cocada branca,Cocada branca
+500,"Doce, de abóbora, cremoso",Doce de abóbora cremoso
+501,"Doce, de leite, cremoso",Doce de leite cremoso
+502,"Geléia, mocotó, natural",Geléia mocotó natural
+503,Glicose de milho,Glicose de milho
+504,Maria mole,Maria mole
+505,"Maria mole, coco queimado",Maria mole coco queimado
+506,Marmelada,Marmelada
+507,"Mel, de abelha",Mel de abelha
+508,Melado,Melado
+509,Quindim,Quindim
+510,Rapadura,Rapadura
+511,"Café, pó, torrado",Café pó torrado
+512,"Capuccino, pó",Capuccino pó
+513,"Fermento em pó, químico",Fermento em pó químico
+514,"Fermento, biológico, levedura, tablete",Fermento biológico levedura tablete
+515,"Gelatina, sabores variados, pó",Gelatina sabores variados pó
+516,"Sal, dietético",Sal dietético
+517,"Sal, grosso",Sal grosso
+518,Shoyu,Shoyu
+519,Tempero a base de sal,Tempero a base de sal
+520,"Azeitona, preta, conserva",Azeitona preta conserva
+521,"Azeitona, verde, conserva",Azeitona verde conserva
+522,"Chantilly, spray, com gordura vegetal",Chantilly spray com gordura vegetal
+523,"Leite, de coco",Leite de coco
+524,"Maionese, tradicional com ovos",Maionese tradicional com ovos
+525,Acarajé,Acarajé
+526,Arroz carreteiro,Arroz carreteiro
+527,"Baião de dois, arroz e feijão-de-corda",Baião de dois arroz e feijão-de-corda
+528,Barreado,Barreado
+529,"Bife à cavalo, com contra filé",Bife à cavalo com contra filé
+530,Bolinho de arroz,Bolinho de arroz
+531,Camarão à baiana,Camarão à baiana
+532,"Charuto, de repolho",Charuto de repolho
+533,"Cuscuz, de milho, cozido com sal",Cuscuz de milho cozido com sal
+534,"Cuscuz, paulista",Cuscuz paulista
+535,"Cuxá, molho",Cuxá molho
+536,Dobradinha,Dobradinha
+537,Estrogonofe de carne,Estrogonofe de carne
+538,Estrogonofe de frango,Estrogonofe de frango
+539,Feijão tropeiro mineiro,Feijão tropeiro mineiro
+540,Feijoada,Feijoada
+541,"Frango, com açafrão",Frango com açafrão
+542,"Macarrão, molho bolognesa",Macarrão molho bolognesa
+543,Maniçoba,Maniçoba
+544,Quibebe,Quibebe
+545,"Salada, de legumes, com maionese",Salada de legumes com maionese
+546,"Salada, de legumes, cozida no vapor",Salada de legumes cozida no vapor
+547,"Salpicão, de frango",Salpicão de frango
+548,Sarapatel,Sarapatel
+549,Tabule,Tabule
+550,Tacacá,Tacacá
+551,"Tapioca, com manteiga",Tapioca com manteiga
+552,"Tucupi, com pimenta-de-cheiro",Tucupi com pimenta-de-cheiro
+553,Vaca atolada,Vaca atolada
+554,Vatapá,Vatapá
+555,Virado à paulista,Virado à paulista
+556,Yakisoba,Yakisoba
+557,"Amendoim, grão, cru",Amendoim grão cru
+558,"Amendoim, torrado, salgado",Amendoim torrado salgado
+559,"Ervilha, em vagem",Ervilha em vagem
+560,"Ervilha, enlatada, drenada",Ervilha enlatada drenada
+561,"Feijão, carioca, cozido",Feijão carioca cozido
+562,"Feijão, carioca, cru",Feijão carioca cru
+563,"Feijão, fradinho, cozido",Feijão fradinho cozido
+564,"Feijão, fradinho, cru",Feijão fradinho cru
+565,"Feijão, jalo, cozido",Feijão jalo cozido
+566,"Feijão, jalo, cru",Feijão jalo cru
+567,"Feijão, preto, cozido",Feijão preto cozido
+568,"Feijão, preto, cru",Feijão preto cru
+569,"Feijão, rajado, cozido",Feijão rajado cozido
+570,"Feijão, rajado, cru",Feijão rajado cru
+571,"Feijão, rosinha, cozido",Feijão rosinha cozido
+572,"Feijão, rosinha, cru",Feijão rosinha cru
+573,"Feijão, roxo, cozido",Feijão roxo cozido
+574,"Feijão, roxo, cru",Feijão roxo cru
+575,"Grão-de-bico, cru",Grão-de-bico cru
+576,"Guandu, cru",Guandu cru
+577,"Lentilha, cozida",Lentilha cozida
+578,"Lentilha, crua",Lentilha crua
+579,"Paçoca, amendoim",Paçoca amendoim
+580,"Pé-de-moleque, amendoim",Pé-de-moleque amendoim
+581,"Soja, farinha",Soja farinha
+582,"Soja, extrato solúvel, natural, fluido",Soja extrato solúvel natural fluido
+583,"Soja, extrato solúvel, pó",Soja extrato solúvel pó
+584,"Soja, queijo (tofu)",Soja queijo (tofu)
+585,"Tremoço, cru",Tremoço cru
+586,"Tremoço, em conserva",Tremoço em conserva
+587,"Amêndoa, torrada, salgada",Amêndoa torrada salgada
+588,"Castanha-de-caju, torrada, salgada",Castanha-de-caju torrada salgada
+589,"Castanha-do-Brasil, crua",Castanha-do-Brasil crua
+590,"Coco, cru",Coco cru
+591,"Coco,  verde, cru",Coco verde cru
+592,"Farinha, de mesocarpo de babaçu, crua",Farinha de mesocarpo de babaçu crua
+593,"Gergelim, semente",Gergelim semente
+594,"Linhaça, semente",Linhaça semente
+595,"Pinhão, cozido",Pinhão cozido
+596,"Pupunha, cozida",Pupunha cozida
+597,"Noz, crua",Noz crua

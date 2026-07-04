@@ -3,20 +3,91 @@
 @tailwind utilities;
 
 body {
-  @apply bg-nootr-light text-gray-900 antialiased;
+  @apply bg-nootr-black text-nootr-cream antialiased;
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    rgba(138, 30, 50, 0.13),
+    transparent
+  );
+  background-repeat: no-repeat;
+}
+
+::selection {
+  @apply bg-nootr-bordo text-nootr-cream;
+}
+
+/* Scrollbar discreta, coerente com o tema */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0b;
+}
+::-webkit-scrollbar-thumb {
+  background: #232326;
+  border-radius: 8px;
+  border: 2px solid #0a0a0b;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5c1422;
 }
 
 @layer components {
   .btn-primary {
-    @apply rounded-xl bg-nootr-blue px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-nootr-dark focus:outline-none focus:ring-2 focus:ring-nootr-blue focus:ring-offset-2 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-nootr-bordo px-5 py-2.5 text-sm font-semibold text-nootr-cream transition-all duration-200 hover:bg-nootr-bordoDeep hover:shadow-[0_0_24px_rgba(138,30,50,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-nootr-bordoSoft focus-visible:ring-offset-2 focus-visible:ring-offset-nootr-black disabled:opacity-40 disabled:hover:shadow-none;
   }
   .btn-secondary {
-    @apply rounded-xl border border-nootr-blue/30 bg-white px-5 py-2.5 text-sm font-semibold text-nootr-dark transition hover:bg-nootr-blue/5;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-nootr-line bg-transparent px-5 py-2.5 text-sm font-semibold text-nootr-cream transition-colors duration-200 hover:border-nootr-bordo hover:text-nootr-bordoSoft focus:outline-none focus-visible:ring-2 focus-visible:ring-nootr-bordoSoft;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-1.5 text-sm font-medium text-nootr-bordoSoft transition-colors hover:text-nootr-cream;
   }
   .card {
-    @apply rounded-2xl border border-nootr-blue/15 bg-white p-6 shadow-sm;
+    @apply rounded-2xl border border-nootr-line bg-nootr-card p-6;
+  }
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-0.5 hover:border-nootr-bordo/50;
   }
   .input-field {
-    @apply block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-nootr-blue focus:outline-none focus:ring-1 focus:ring-nootr-blue;
+    @apply block w-full rounded-lg border border-nootr-line bg-nootr-black px-4 py-2.5 text-sm text-nootr-cream placeholder-nootr-faint transition-colors focus:border-nootr-bordo focus:outline-none focus:ring-1 focus:ring-nootr-bordo;
   }
+  .label-caps {
+    @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-caps text-nootr-muted;
+  }
+  .divider-bordo {
+    @apply h-px w-12 bg-gradient-to-r from-nootr-bordo to-transparent;
+  }
+  .chip {
+    @apply rounded-full border border-nootr-line px-3.5 py-1.5 text-xs font-medium text-nootr-muted transition-all duration-200 hover:border-nootr-bordo/60 hover:text-nootr-cream;
+  }
+  .chip-active {
+    @apply border-nootr-bordo bg-nootr-wine text-nootr-cream;
+  }
+  .prose-legal {
+    @apply space-y-4 text-sm leading-relaxed text-nootr-muted;
+  }
+  .prose-legal h2 {
+    @apply pt-4 font-display text-xl text-nootr-cream;
+  }
+}
+
+/* select escuro coerente entre navegadores */
+select.input-field option {
+  background-color: #161618;
+  color: #ede8e2;
+}
+
+/* animação sutil de entrada para cartões de resultado */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise-in {
+  animation: rise-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

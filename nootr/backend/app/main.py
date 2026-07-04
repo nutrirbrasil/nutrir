@@ -5,8 +5,9 @@ Rodar na raiz: uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 800
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.app.config import get_settings
 from backend.app.routes.nutrir import menus, orders, custom_meals
-from backend.app.routes.nootr import diets, substitutions
+from backend.app.routes.nootr import diets, substitutions, foods, profile
 
 app = FastAPI(
     title="Nutrir Ecosystem API",
@@ -19,7 +20,7 @@ _cors_origins = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
-]
+] + get_settings().extra_cors_origins_list
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,6 +35,8 @@ app.include_router(orders.router)
 app.include_router(custom_meals.router)
 app.include_router(diets.router)
 app.include_router(substitutions.router)
+app.include_router(foods.router)
+app.include_router(profile.router)
 
 
 @app.get("/")
