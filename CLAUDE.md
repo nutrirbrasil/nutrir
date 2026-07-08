@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Responda sempre em português.
+
 ## Repository
 
 Monorepo with three independent Next.js sites, all deployed to a single Hetzner VPS. The root folder is named `nutricao` specifically to avoid confusion with `nutrir/` (the marmitaria site) — the two are not interchangeable. Nootr additionally has its own FastAPI backend, co-located under `nootr/backend/` (moved there from the repo root so each project is self-contained).
