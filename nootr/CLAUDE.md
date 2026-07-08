@@ -2,9 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Responda sempre em português.
+
 ## Project
 
-Nootr — a Next.js 14 (App Router) frontend plus its own FastAPI backend (`backend/`, inside this folder) for a food-substitution app ("comeu fora do plano? o Nootr ajusta o resto do dia"). **Not deployed** — no pm2 entry, no nginx config, no production domain. Treat this as early-stage/MVP: the backend returns placeholder logic and mock data, not real ones. This project is fully self-contained under `nootr/` (frontend + backend); see the repo root `CLAUDE.md` for the monorepo overview.
+Nootr — a Next.js 14 (App Router) frontend plus its own FastAPI backend (`backend/`, inside this folder) for a food-substitution app ("comeu fora do plano? o Nootr ajusta o resto do dia"). **Not deployed yet** — no pm2 entry or nginx config live on the VPS, though `deploy/` now has the ready-to-apply artifacts. The core is real, not mock: a TACO-backed nutrition base (597 foods), a working substitution engine, per-user persistence + auth via a dedicated Supabase project, and a pytest suite. This project is fully self-contained under `nootr/` (frontend + backend); see the repo root `CLAUDE.md` for the monorepo overview.
+
+**Supabase (Nootr's own project, separate from Nutrir):** ref `wdzzipprerboclayrcvw` ("nootr"), same org/region as Nutrir. Tables `profiles` (plano basic/pro + dados corporais + fórmula/alvo calórico), `diets` (templates montados pelo usuário; `weekday` null = dieta única do Basic, 0–6 = seg–dom no Pro), `day_plans` (cópia materializada e ajustável do dia — onde as substituições salvas vivem), `substitution_logs` (auditoria). All RLS owner-only (`auth.uid() = user_id`). The backend never uses the service key: it forwards the user's access token to PostgREST so RLS enforces isolation; the anon key is only the `apikey`.
+
+**Modelo de produto:** a dieta NASCE VAZIA (sem auto-provisionamento) — o usuário monta em `/dieta` (modo de edição, componente `DietBuilder`) com alimentos da TACO (medidas caseiras ou gramas). Basic = 1 dieta (vale todos os dias, `weekday=null`). Pro escolhe entre dois modos na própria UI: "Dias diferentes" (1 dieta por dia da semana, `weekday` 0–6, seg–dom, preenchidos individualmente — copiando de outro dia via `copyFromDiet`, ou importando PDF/Word/Excel) ou "Plano único" (1 dieta só, `weekday=null`, igual ao Basic — útil quando a pessoa não varia a dieta por dia; ao salvar nesse modo, dietas por dia da semana que tenham sobrado de um uso anterior de "Dias diferentes" são apagadas para não haver ambiguidade). Calorias: manuais ou calculadas por Harris-Benedict / Mifflin-St Jeor (`services/energy.py`) a partir do perfil. Nomes de exibição da TACO ("Pão francês" em vez de "Pão, trigo, francês") vêm de `backend/app/data/taco_display_names.csv` — editável, revisável item a item.
+
+**Visual:** preto profundo + bordô, minimalista (tailwind: cores `nootr.*` em `tailwind.config.ts`; tipografia Inter + Cormorant Garamond via next/font; classes utilitárias em `app/globals.css`). Páginas: `/`, `/login`, `/dieta` (visualização do dia + edição/montagem, alternadas por estado local — não é mais uma rota separada), `/substituir`, `/perfil`, `/termos`, `/privacidade`.
 
 ## Commands
 
@@ -14,38 +22,50 @@ npm run dev      # localhost:3001
 npm run build
 npm run start    # -p 3001
 npm run lint
-npx tsc --noEmit # no test suite exists — this + build are the correctness checks
+npx tsc --noEmit # + build são as checagens de tipo do frontend
 ```
 
-Copy `.env.example` to `.env.local` — only variable is `NEXT_PUBLIC_NOOTR_API_URL` (defaults to `http://127.0.0.1:8000` if unset). The frontend needs the FastAPI backend running to show anything beyond the home page.
+Copy `.env.example` to `.env.local`. Frontend vars: `NEXT_PUBLIC_NOOTR_API_URL` (default `http://127.0.0.1:8000`), `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`. The frontend needs both the FastAPI backend running AND Supabase auth configured — `/dieta` and `/substituir` exigem login (redirecionam para `/login`).
 
 Backend (run from **this `nootr/` folder** — the `backend.app.*` module path resolves because `backend/` is a subpackage here; it will NOT resolve from the repo root anymore):
 ```bash
 pip install -r backend/requirements.txt
 uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+python -m pytest          # 23 testes (engine, matcher, portion, rotas)
 ```
-`backend/app/config.py` derives its `.env` location as three parents up from itself, which now resolves to this `nootr/` folder — so it reads `nootr/.env` (not the repo-root `.env`). Nothing in the `nootr` routes uses those settings yet, so this is inert today, but keep it in mind if you wire up Supabase/Telegram later.
+The backend reads `nootr/.env` (SUPABASE_URL, SUPABASE_ANON_KEY, optional EXTRA_CORS_ORIGINS). `config.py` derives the `.env` path as three parents up from itself → resolves to this `nootr/` folder.
 
 ## Architecture
 
-### Frontend is a thin client over the FastAPI backend
+### Frontend: client-side, autenticado
 
-`lib/api.ts` (`nootrApi`) is the entire data layer — two calls, both hitting `NEXT_PUBLIC_NOOTR_API_URL`:
-- `getTodayDiet()` → `GET /nootr/diets/today`, used by `app/dieta/page.tsx` (server component, fetches at render time).
-- `suggestSubstitution(body)` → `POST /nootr/substitutions`, used by `app/substituir/page.tsx` via `components/SubstitutionPanel`.
+Auth via `@supabase/supabase-js` (`lib/supabase.ts` + `components/AuthProvider.tsx`, contexto com a sessão). O browser chama a API **diretamente** (páginas viraram client components) — por isso `/dieta` e `/substituir` usam `components/RequireAuth.tsx` (redireciona para `/login` sem sessão) e passam o `access_token` para `lib/api.ts`. **Implicação de deploy:** a API precisa ser pública em produção (não é proxy interno do Next) e o CORS do backend precisa liberar o domínio do frontend (`EXTRA_CORS_ORIGINS`).
 
-Types in `lib/types.ts` (`Diet`, `Meal`, `Food`, `SubstitutionAction`, `SubstitutionResult`) mirror the FastAPI Pydantic models in `backend/app/routes/nootr/*.py` (relative to this folder) by hand — there's no shared schema/codegen, so if you change one side, update the other manually.
+`lib/api.ts` (`nootrApi`) é a camada de dados — toda chamada recebe o `token` e manda `Authorization: Bearer`:
+- `getTodayDiet(token)` → `GET /nootr/diets/today`
+- `suggestSubstitution(token, body)` → `POST /nootr/substitutions` (aceita `food_taco_id`/`grams` para escolha manual)
+- `searchFoods(token, q)` → `GET /nootr/foods/search` (autocomplete da TACO, usado pelo picker de baixa confiança)
 
-Three pages total: `/` (home, static), `/dieta` (today's diet + macros), `/substituir` (log an off-plan meal or missing ingredient and get an adjusted plan for the rest of the day).
+Types em `lib/types.ts` espelham à mão os modelos Pydantic em `backend/app/routes/nootr/*.py` — sem codegen, atualize os dois lados juntos.
+
+Pages: `/` (home estática), `/login`, `/dieta` (dieta do dia + macros), `/substituir` (registra desvio/falta e ajusta o dia).
 
 ### Backend (`backend/app/`) — only the `nootr` route group is relevant here
 
-`backend/app/main.py` mounts two route groups: `nootr` (`diets.py`, `substitutions.py`) and `nutrir` (`menus.py`, `orders.py`, `custom_meals.py`). **The `nutrir` route group is legacy and not used by the live Nutrir site** — the real `nutrir/` Next.js app has its own `app/api/nutrir/*` routes backed by Supabase and doesn't call this FastAPI backend at all. Don't assume changes here affect production ordering; if working on Nootr, you only need `backend/app/routes/nootr/`.
+`backend/app/main.py` mounts two route groups: `nootr` (`diets.py`, `substitutions.py`, `foods.py`) and `nutrir` (`menus.py`, `orders.py`, `custom_meals.py`). **O grupo `nutrir` é legado e não é usado pelo site Nutrir em produção** — o app `nutrir/` tem suas próprias rotas `app/api/nutrir/*` no Supabase. Para Nootr, só interessa `backend/app/routes/nootr/`.
 
-`backend/app/services/store.py` is explicitly mock data ("Dados mock para desenvolvimento (substituir por Supabase depois)") — a single hardcoded `SAMPLE_DIET` and a static menu list, no persistence, no per-user data. `substitutions.py`'s `suggest_substitution()` is an explicit placeholder ("MVP: retorna sugestão estruturada... Lógica completa em desenvolvimento") — it doesn't actually compute macro adjustments, it returns the same sample diet's meals with a hardcoded calorie/protein deduction regardless of input. If asked to build out "real" substitution logic or persistence, this is greenfield work, not a bug fix — there's no existing engine or Supabase schema for Nootr to extend yet.
+**Fluxo de dados (real, não mais mock):**
+- `data/taco.py` + `taco.csv` — base TACO (597 alimentos), cacheada em memória.
+- `services/nutrition.py` — escala macros da TACO por gramas.
+- `services/portion.py` — interpreta porções em PT ("2 fatias", "1 colher de sopa", "meia xícara") → gramas.
+- `services/food_matcher.py` — casa texto livre com um alimento: `_COMMON_FOODS` (fast-food/industrializados que a TACO não cobre) → busca ranqueada na TACO (prefere ingrediente principal, evita miúdos, respeita preparo) → estimativa genérica (baixa confiança). Também `food_from_taco_id` para escolha manual.
+- `services/diet_engine.py` — o motor: substitui a refeição alvo, calcula o delta de kcal e redistribui nas refeições seguintes do dia (protege proteína). Na última refeição, informa honestamente o saldo do dia em vez de fingir redistribuição.
+- `services/diet_provisioning.py` — monta a dieta-template padrão da TACO para usuário novo.
+- `services/repository.py` + `supabase_client.py` + `auth.py` — persistência via PostgREST sob o token do usuário (RLS), auth via GoTrue.
+- `services/store.py` — agora só dados mock das rotas legadas do `nutrir` (menus/ingredientes/pedidos); as rotas do Nootr não o usam mais.
 
-`backend/app/config.py` reads Supabase/Telegram settings from `nootr/.env` (via `pydantic-settings`), but nothing in the `nootr` routes currently uses Supabase — it's provisioned for future use, not wired up.
+Testes em `backend/tests/` (`python -m pytest` a partir de `nootr/`) cobrem engine, matcher, portion e as rotas (com repository fake em memória, sem tocar a rede).
 
 ### Deploy
 
-None yet — no pm2 process, no nginx site, no domain. If this project moves toward production, it'll need its own `ecosystem.config.js` entry and nginx config following the pattern already used for `nutrir-web`/`pauli-web` (see root `CLAUDE.md`), plus a deploy story for the FastAPI backend (now co-located under `nootr/backend/`, so it can ship alongside the Nootr frontend rather than as a separate root-level service).
+Artefatos prontos em `deploy/` (`DEPLOY.md`, `ecosystem.nootr.config.js`, `nginx-nootr.conf`) — **ainda não aplicados na VPS** (blast radius compartilhado, ver root `CLAUDE.md`). São **dois processos**: nootr-web (Next, 127.0.0.1:3003) e nootr-api (uvicorn, 127.0.0.1:8010), cada um com seu subdomínio, porque o frontend chama a API pelo browser. Ver `deploy/DEPLOY.md` para o runbook completo.

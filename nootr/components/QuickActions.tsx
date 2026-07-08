@@ -1,27 +1,23 @@
 import Link from "next/link";
-import { FiArrowRight, FiRefreshCw, FiHelpCircle } from "react-icons/fi";
 
 const actions = [
   {
     href: "/substituir?acao=ate_different",
-    icon: FiRefreshCw,
+    numeral: "01",
     title: "Comi algo diferente",
     desc: "Registre o que comeu e ajustamos o resto do dia.",
-    color: "bg-orange-50 text-orange-700 border-orange-200",
   },
   {
     href: "/substituir?acao=will_eat_different",
-    icon: FiArrowRight,
+    numeral: "02",
     title: "Vou comer algo diferente",
-    desc: "Planeje uma refeição diferente antes de comer.",
-    color: "bg-blue-50 text-blue-700 border-blue-200",
+    desc: "Planeje uma refeição fora do plano antes de comer.",
   },
   {
     href: "/substituir?acao=missing_food",
-    icon: FiHelpCircle,
+    numeral: "03",
     title: "Estou em falta",
-    desc: "Substitua alimentos que não tem ou não consegue fazer.",
-    color: "bg-purple-50 text-purple-700 border-purple-200",
+    desc: "Troque um alimento que não tem por outro equivalente.",
   },
 ];
 
@@ -32,11 +28,16 @@ export function QuickActions() {
         <Link
           key={action.href}
           href={action.href}
-          className={`card border transition hover:shadow-md ${action.color}`}
+          className="group card card-hover relative overflow-hidden"
         >
-          <action.icon className="text-2xl" />
-          <h3 className="mt-3 font-bold">{action.title}</h3>
-          <p className="mt-1 text-sm opacity-80">{action.desc}</p>
+          <span className="font-display text-3xl text-nootr-bordo/70 transition-colors group-hover:text-nootr-bordoSoft">
+            {action.numeral}
+          </span>
+          <h3 className="mt-4 text-[15px] font-semibold text-nootr-cream">{action.title}</h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-nootr-muted">{action.desc}</p>
+          <span className="mt-4 inline-block text-xs font-medium text-nootr-bordoSoft opacity-0 transition-opacity group-hover:opacity-100">
+            Começar →
+          </span>
         </Link>
       ))}
     </div>

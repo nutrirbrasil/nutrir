@@ -1,40 +1,71 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/components/AuthProvider";
 
 const links = [
-  { href: "/", label: "Início" },
-  { href: "/dieta", label: "Minha dieta" },
+  { href: "/dieta", label: "Dieta" },
   { href: "/substituir", label: "Substituir" },
+  { href: "/perfil", label: "Perfil" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { session, signOut } = useAuth();
+
+  async function handleSignOut() {
+    await signOut();
+    router.push("/login");
+  }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-nootr-blue/10 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-        <Link href="/" className="flex items-center gap-2 font-bold text-nootr-dark">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-nootr-blue text-white">
-            N
+    <header className="sticky top-0 z-50 border-b border-nootr-line bg-nootr-black/85 backdrop-blur-md">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
+        <Link href="/" className="group flex items-baseline gap-0.5">
+          <span className="font-display text-2xl font-semibold tracking-wide text-nootr-cream">
+            Nootr
           </span>
-          Nootr
+          <span className="text-2xl leading-none text-nootr-bordo transition-colors group-hover:text-nootr-bordoSoft">
+            .
+          </span>
         </Link>
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-0.5 sm:gap-1">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+              className={`rounded-md px-2.5 py-2 text-[13px] font-medium transition-colors sm:px-3.5 ${
                 pathname === link.href
-                  ? "bg-nootr-blue/10 text-nootr-dark"
-                  : "text-gray-600 hover:bg-gray-50"
+                  ? "text-nootr-cream"
+                  : "text-nootr-muted hover:text-nootr-cream"
               }`}
             >
-              {link.label}
+              <span className="relative">
+                {link.label}
+                {pathname === link.href && (
+                  <span className="absolute -bottom-2 left-0 right-0 mx-auto h-px w-4 bg-nootr-bordo" />
+                )}
+              </span>
             </Link>
           ))}
+          <span className="mx-2 hidden h-4 w-px bg-nootr-line sm:block" />
+          {session ? (
+            <button
+              onClick={handleSignOut}
+              className="rounded-md px-2.5 py-2 text-[13px] font-medium text-nootr-muted transition-colors hover:text-nootr-bordoSoft sm:px-3.5"
+            >
+              Sair
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-lg border border-nootr-bordo/60 px-4 py-1.5 text-[13px] font-semibold text-nootr-cream transition-all hover:bg-nootr-bordo"
+            >
+              Entrar
+            </Link>
+          )}
         </nav>
       </div>
     </header>
