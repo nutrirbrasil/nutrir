@@ -1,11 +1,11 @@
 ---
-title: "Saúde Intestinal em Atletas"
-slug: "saude-intestinal-em-atletas"
-description: Intestino e performance.
-date: 2026-07-02
+title: Saúde Intestinal em Atletas
+slug: saude-intestinal-em-atletas
+description: Intestino e performance
+date: 2026-07-01
 published: true
 ---
-**Não é só o treino que limita sua performance.**
+## Não é só o treino que limita sua performance
 
 Quando pensamos em melhorar a performance esportiva, normalmente o foco está no treinamento: aumentar a carga, modificar a periodização, investir em suplementos ou buscar novas estratégias de recuperação.
 
