@@ -89,6 +89,10 @@ _OFFAL = {
     "coracao", "figado", "moela", "miolo", "miolos", "lingua",
     "rim", "rins", "bucho", "sangue", "tripa", "dobradinha",
 }
+# Variedades/qualificadores menos comuns — só fazem sentido se a pessoa pediu
+# explicitamente (ex: "arroz" sozinho deve preferir tipo 1, não integral;
+# "feijão" sozinho deve preferir carioca/preto, não broto/jalo/rajado).
+_VARIETY_DISFAVORED = {"integral", "integrais", "broto", "jalo", "rajado", "roxo", "fradinho", "guandu"}
 
 
 @dataclass
@@ -101,6 +105,7 @@ class MatchResult:
     grams: float | None
     source: str  # "common" | "taco" | "estimate"
     confidence: str  # "alta" | "media" | "baixa"
+    taco_id: int | None = None  # preenchido quando source == "taco"
 
 
 def normalize(text: str) -> str:
@@ -109,8 +114,37 @@ def normalize(text: str) -> str:
     return re.sub(r"[^a-z0-9 ]", " ", text)
 
 
+def _singular(token: str) -> str:
+    """Singularização leve PT: 'ovos'->'ovo', 'fatias'->'fatia', 'pães'->'pão' (aprox)."""
+    if len(token) > 4 and token.endswith("oes"):  # ex: feijoes -> feijao
+        return token[:-3] + "ao"
+    if len(token) > 3 and token.endswith("s"):
+        return token[:-1]
+    return token
+
+
+# Temperos puros (sem uso relevante como alimento por si só) — se aparecerem
+# JUNTO de outra palavra na busca (ex: "peito de frango com açafrão"), são
+# ignorados pra não desviar o casamento pra um prato pronto que leve o mesmo
+# tempero (ex: "Frango, com açafrão"). Isolados (busca só "açafrão"), continuam
+# valendo normalmente.
+_SEASONING_WORDS = {"acafrao", "oregano", "cominho", "canela", "louro", "colorau", "curcuma"}
+
+# Conectores sem valor de busca — "com" em particular é perigoso: se sobrar
+# sozinho na query (ex: depois de remover um tempero de "... com açafrão"),
+# ele bate por acaso com qualificadores de outros alimentos (ex: "com pele").
+# NÃO inclui "sem": esse carrega negação relevante (distingue "sem pele").
+_STOPWORDS = {"com", "para", "por", "uma", "um", "dos", "das"}
+
+
 def tokens(text: str) -> set[str]:
-    return {t for t in normalize(text).split() if len(t) > 2}
+    toks = {_singular(t) for t in normalize(text).split() if len(t) > 2}
+    toks -= _STOPWORDS
+    if len(toks) > 1:
+        without_seasoning = toks - _SEASONING_WORDS
+        if without_seasoning:
+            return without_seasoning
+    return toks
 
 
 def score_match(query_tokens: set[str], candidate_norm: str) -> int:
@@ -122,21 +156,41 @@ def score_match(query_tokens: set[str], candidate_norm: str) -> int:
 def _rank_key(query_tokens: set[str], food: TacoFood) -> tuple:
     """
     Chave de ordenação (maior = melhor via negação nos desempates).
-    - match: tokens exatos valem o dobro de tokens por substring;
+    - match: tokens exatos valem o dobro de tokens por substring — considera
+      tanto o nome original da TACO quanto o nome de exibição curado (um
+      apelido comum, tipo "Castanha do pará", pode não bater com o nome
+      científico original "Castanha-do-Brasil");
     - preparo: preferido > neutro > evitado (só quando a query não cita preparo);
+    - variedade: penaliza qualificador que a pessoa não pediu (ex: "integral",
+      "com pele", variedades incomuns de feijão) — evita defaults arbitrários;
     - especificidade: nomes mais curtos (menos palavras) ganham;
     - estável por id.
     """
-    cand_words = normalize(food.name).split()
-    cand_tokens = set(cand_words)
+    name_words = normalize(food.name).split()
+    display_words = normalize(food.display_name).split()
+    cand_tokens = set(name_words) | set(display_words)
     exact = sum(1 for t in query_tokens if t in cand_tokens)
     partial = sum(1 for t in query_tokens if t not in cand_tokens and any(t in c for c in cand_tokens))
     match_score = exact * 2 + partial
 
-    # O ingrediente principal da TACO é a primeira palavra do nome. Se ela está
-    # na query, é forte sinal de que é o alimento em si (ex: "Frango, peito...")
-    # e não um derivado que apenas cita o ingrediente ("Linguiça, frango...").
-    head_match = 1 if cand_words and cand_words[0] in query_tokens else 0
+    # Um candidato cujo nome de exibição é EXATAMENTE a query (nem mais, nem
+    # menos palavras) é o que a pessoa quis dizer de verdade — bate acima de
+    # um nome composto mais longo que só contém as mesmas palavras "no meio"
+    # (ex: "fruta" deve preferir um item chamado só "Fruta" a "Fruta-pão").
+    # TAMBÉM: se o nome é uma palavra só E essa palavra está na query (mesmo que
+    # a query tenha mais palavras depois, como "2 frutas médias"), ganha — porque
+    # a pessoa falou claramente o alimento, e a query tem só contexto extra.
+    exact_full_match = 0
+    if set(display_words) == query_tokens:
+        exact_full_match = 1
+    elif len(display_words) == 1 and display_words[0] in query_tokens:
+        exact_full_match = 1
+
+    # O ingrediente principal da TACO é a primeira palavra do nome ORIGINAL
+    # (convenção da tabela, ex: "Frango, peito..."). Se ela está na query, é
+    # forte sinal de que é o alimento em si, não um derivado que só cita o
+    # ingrediente ("Linguiça, frango...").
+    head_match = 1 if name_words and name_words[0] in query_tokens else 0
 
     query_specifies_prep = bool(query_tokens & (_PREP_PREFERRED | _PREP_DISFAVORED))
     if query_specifies_prep:
@@ -151,9 +205,20 @@ def _rank_key(query_tokens: set[str], food: TacoFood) -> tuple:
     # Miúdos são fortemente despreferidos como default do nome genérico do animal.
     offal_penalty = 1 if (cand_tokens & _OFFAL) and not (query_tokens & _OFFAL) else 0
 
-    # Ordena por: match desc, ingrediente-principal, sem-miúdo, preparo asc,
-    # nº de palavras asc, id asc.
-    return (match_score, head_match, -offal_penalty, -prep_rank, -len(cand_tokens), -food.id)
+    variety_penalty = 0
+    if (cand_tokens & _VARIETY_DISFAVORED) and not (query_tokens & _VARIETY_DISFAVORED):
+        variety_penalty = 1
+    bigrams = set(zip(name_words, name_words[1:])) | set(zip(display_words, display_words[1:]))
+    if ("com", "pele") in bigrams and "pele" not in query_tokens:
+        variety_penalty = 1
+
+    # Ordena por: match desc, nome-igual-à-query, ingrediente-principal,
+    # sem-miúdo, sem-variedade-não-pedida, preparo asc, nº de palavras
+    # (nome original) asc, id asc.
+    return (
+        match_score, exact_full_match, head_match,
+        -offal_penalty, -variety_penalty, -prep_rank, -len(name_words), -food.id,
+    )
 
 
 def search_taco(query: str, limit: int = 5) -> list[TacoFood]:
@@ -225,9 +290,10 @@ def find_food(description: str, anchor_kcal: float | None = None) -> MatchResult
             grams = 150.0
         scaled = scale_food(food, grams)
         return MatchResult(
-            name=food.name, calories=scaled["calories"], protein_g=scaled["protein_g"],
+            name=scaled["name"], calories=scaled["calories"], protein_g=scaled["protein_g"],
             carbs_g=scaled["carbs_g"], fat_g=scaled["fat_g"], grams=grams,
             source="taco", confidence="alta" if len(tokens(description)) > 1 else "media",
+            taco_id=food.id,
         )
 
     # Nenhuma correspondência: estimativa genérica ancorada na refeição original.
@@ -257,9 +323,9 @@ def food_from_taco_id(
         )
     scaled = scale_food(food, grams)
     return MatchResult(
-        name=food.name, calories=scaled["calories"], protein_g=scaled["protein_g"],
+        name=scaled["name"], calories=scaled["calories"], protein_g=scaled["protein_g"],
         carbs_g=scaled["carbs_g"], fat_g=scaled["fat_g"], grams=grams,
-        source="taco", confidence="alta",
+        source="taco", confidence="alta", taco_id=food.id,
     )
 
 
@@ -267,3 +333,24 @@ def best_available_substitute(available_foods: list[str], target_kcal: float) ->
     """Entre os alimentos disponíveis, escolhe o mais próximo em calorias do item que falta."""
     candidates = [find_food(name, anchor_kcal=target_kcal) for name in available_foods]
     return min(candidates, key=lambda c: abs(c.calories - target_kcal))
+
+
+_PROFILE_DOMINANCE = 0.4  # macro precisa ser >=40% das calorias pra "dominar" o perfil
+
+
+def macro_profile(calories: float, protein_g: float, carbs_g: float, fat_g: float) -> str:
+    """
+    Classifica um alimento pelo macro que domina suas calorias: 'protein' |
+    'carb' | 'fat' | 'balanced' (nenhum domina, ex: prato misto). Usado em
+    "Estou em falta" pra filtrar a despensa por itens do mesmo "papel" na
+    refeição (ex: arroz em falta -> sugere outros carboidratos da despensa).
+    """
+    if calories <= 0:
+        return "balanced"
+    shares = {
+        "protein": protein_g * 4 / calories,
+        "carb": carbs_g * 4 / calories,
+        "fat": fat_g * 9 / calories,
+    }
+    macro, share = max(shares.items(), key=lambda kv: kv[1])
+    return macro if share >= _PROFILE_DOMINANCE else "balanced"

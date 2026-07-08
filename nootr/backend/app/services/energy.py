@@ -27,6 +27,15 @@ def bmr_harris_benedict(sex: str, weight_kg: float, height_cm: float, age: int) 
     return 447.593 + 9.247 * weight_kg + 3.098 * height_cm - 4.330 * age
 
 
+def macro_targets_g(calories: float, protein_pct: float, carbs_pct: float, fat_pct: float) -> dict:
+    """Converte calorias + % de macros em metas de gramas (prot/carb=4kcal/g, gord=9kcal/g)."""
+    return {
+        "protein_g": round(calories * (protein_pct / 100) / 4),
+        "carbs_g": round(calories * (carbs_pct / 100) / 4),
+        "fat_g": round(calories * (fat_pct / 100) / 9),
+    }
+
+
 def daily_calories(
     formula: str, sex: str, weight_kg: float, height_cm: float, age: int, activity_level: str
 ) -> float | None:

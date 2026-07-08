@@ -20,6 +20,34 @@ from typing import Optional
 
 _CSV_PATH = Path(__file__).resolve().parent / "taco.csv"
 _DISPLAY_CSV_PATH = Path(__file__).resolve().parent / "taco_display_names.csv"
+_EXTRA_CSV_PATH = Path(__file__).resolve().parent / "taco_extra.csv"
+
+# Detecta mudanças nos arquivos CSV pra invalidar cache automaticamente
+_last_mtime = {"display": None, "extra": None, "taco": None}
+
+
+def _check_file_changed() -> bool:
+    """Retorna True se qualquer CSV foi modificado desde a última leitura."""
+    changed = False
+
+    if _DISPLAY_CSV_PATH.exists():
+        mtime = _DISPLAY_CSV_PATH.stat().st_mtime
+        if _last_mtime["display"] is not None and _last_mtime["display"] != mtime:
+            changed = True
+        _last_mtime["display"] = mtime
+
+    if _EXTRA_CSV_PATH.exists():
+        mtime = _EXTRA_CSV_PATH.stat().st_mtime
+        if _last_mtime["extra"] is not None and _last_mtime["extra"] != mtime:
+            changed = True
+        _last_mtime["extra"] = mtime
+
+    mtime = _CSV_PATH.stat().st_mtime
+    if _last_mtime["taco"] is not None and _last_mtime["taco"] != mtime:
+        changed = True
+    _last_mtime["taco"] = mtime
+
+    return changed
 
 
 @dataclass(frozen=True)
@@ -52,13 +80,53 @@ def _load_display_names() -> dict[int, str]:
         return {int(row["taco_id"]): row["display"] for row in csv.DictReader(f)}
 
 
+def load_display_names() -> dict[int, str]:
+    """Wrapper público que invalida cache se CSV mudou."""
+    if _check_file_changed():
+        _load_display_names.cache_clear()
+    return _load_display_names()
+
+
 @lru_cache
-def load_taco_foods() -> list[TacoFood]:
-    """Lê e cacheia a tabela completa na primeira chamada."""
-    display = _load_display_names()
+def _load_extras() -> list[TacoFood]:
+    """
+    Itens curados que a TACO não cobre (ex: macarrão cozido) — ids >= 9000.
+    Editável em taco_extra.csv, revisável item a item.
+    """
+    if not _EXTRA_CSV_PATH.exists():
+        return []
+    with open(_EXTRA_CSV_PATH, encoding="utf-8") as f:
+        return [
+            TacoFood(
+                id=int(row["id"]),
+                category=row["category"],
+                name=row["display"],
+                display_name=row["display"],
+                kcal=_parse_float(row["kcal"]),
+                protein_g=_parse_float(row["protein_g"]),
+                carbs_g=_parse_float(row["carbs_g"]),
+                fat_g=_parse_float(row["fat_g"]),
+                fiber_g=_parse_float(row["fiber_g"]),
+                sodium_mg=_parse_float(row["sodium_mg"]),
+            )
+            for row in csv.DictReader(f)
+        ]
+
+
+def load_extras() -> list[TacoFood]:
+    """Wrapper público que invalida cache se CSV mudou."""
+    if _check_file_changed():
+        _load_extras.cache_clear()
+    return _load_extras()
+
+
+@lru_cache
+def _load_taco_foods_cached() -> list[TacoFood]:
+    """Carrega a tabela completa (TACO + extras). Cacheado internamente."""
+    display = load_display_names()
     with open(_CSV_PATH, encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        return [
+        foods = [
             TacoFood(
                 id=int(row["Número do Alimento"]),
                 category=row["Categoria do alimento"],
@@ -75,3 +143,11 @@ def load_taco_foods() -> list[TacoFood]:
             )
             for row in reader
         ]
+    return foods + load_extras()
+
+
+def load_taco_foods() -> list[TacoFood]:
+    """Wrapper público que invalida cache se qualquer CSV mudou."""
+    if _check_file_changed():
+        _load_taco_foods_cached.cache_clear()
+    return _load_taco_foods_cached()

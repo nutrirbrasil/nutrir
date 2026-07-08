@@ -16,7 +16,8 @@ from datetime import date
 from backend.app.auth import CurrentUser
 from backend.app import supabase_client
 
-_PROFILE_FIELDS = "user_id,plan,sex,age,weight_kg,height_cm,activity_level,formula,target_calories"
+_PROFILE_FIELDS = "user_id,plan,sex,age,weight_kg,height_cm,activity_level,formula,target_calories,protein_pct,carbs_pct,fat_pct"
+_PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes"
 _DIET_FIELDS = "id,name,weekday,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals"
 _DAY_PLAN_FIELDS = "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals"
 
@@ -44,6 +45,26 @@ def get_profile(user: CurrentUser) -> dict | None:
 def upsert_profile(user: CurrentUser, patch: dict) -> dict:
     return supabase_client.upsert(
         "profiles",
+        user.token,
+        {"user_id": user.id, **patch},
+        on_conflict="user_id",
+    )
+
+
+# ---------- preferences ----------
+
+def get_preferences(user: CurrentUser) -> dict | None:
+    rows = supabase_client.select(
+        "preferences",
+        user.token,
+        {"select": _PREFERENCES_FIELDS, "user_id": f"eq.{user.id}", "limit": "1"},
+    )
+    return rows[0] if rows else None
+
+
+def upsert_preferences(user: CurrentUser, patch: dict) -> dict:
+    return supabase_client.upsert(
+        "preferences",
         user.token,
         {"user_id": user.id, **patch},
         on_conflict="user_id",
@@ -89,6 +110,25 @@ def delete_diet(user: CurrentUser, diet_id: str) -> None:
         "diets",
         user.token,
         {"id": f"eq.{diet_id}", "user_id": f"eq.{user.id}"},
+    )
+
+
+def delete_all_diets(user: CurrentUser) -> None:
+    """Apaga todas as dietas do usuário (todos os slots — base e dias da semana)."""
+    supabase_client.delete(
+        "diets",
+        user.token,
+        {"user_id": f"eq.{user.id}"},
+    )
+
+
+def clear_diet(user: CurrentUser, diet_id: str) -> dict:
+    """Esvazia os alimentos de uma dieta (mantém nome/dia da semana)."""
+    return supabase_client.update(
+        "diets",
+        user.token,
+        {"id": f"eq.{diet_id}", "user_id": f"eq.{user.id}"},
+        {"meals": [], "daily_calories": 0, "daily_protein_g": 0, "daily_carbs_g": 0, "daily_fat_g": 0},
     )
 
 

@@ -5,9 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 
 const links = [
-  { href: "/dieta", label: "Minha dieta" },
+  { href: "/dieta", label: "Dieta" },
   { href: "/substituir", label: "Substituir" },
-  { href: "/montar-dieta", label: "Montar dieta" },
   { href: "/perfil", label: "Perfil" },
 ];
 

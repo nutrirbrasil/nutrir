@@ -1,0 +1,19 @@
+id,category,display,kcal,protein_g,carbs_g,fat_g,fiber_g,sodium_mg
+9001,Cereais e derivados,Macarrão cozido,158,5.8,30.9,0.9,1.8,1
+9002,Cereais e derivados,Macarrão integral cozido,124,5,26,0.6,3.9,2
+9003,Cereais e derivados,Nhoque de batata cozido,150,3.5,29,2,1.5,120
+9004,Carnes e derivados,Patinho bovino grelhado,219,32,0,9,0,52
+9005,Carnes e derivados,Contrafilé bovino grelhado,278,32,0,16,0,50
+9006,Carnes e derivados,Tilápia filé grelhada,128,26,0,2.7,0,56
+9007,Carnes e derivados,Salmão grelhado,231,25,0,14,0,60
+9008,Leite e derivados,Queijo minas frescal,264,17.4,3.2,20,0,30
+9009,Leite e derivados,Iogurte natural integral,61,3.8,4.7,3.3,0,46
+9010,Ovos e derivados,Omelete simples,154,10.6,1,11.7,0,155
+9011,Suplementos,Whey protein concentrado (pó),400,78,8,6,0,150
+9012,Suplementos,Whey protein isolado (pó),380,85,4,2,0,120
+9013,Suplementos,Albumina (pó),370,85,4,0,0,500
+9014,Suplementos,Creatina (pó),0,0,0,0,0,0
+9015,Cereais e derivados,Sucrilhos de milho,378,7,84,1,3,760
+9016,Cereais e derivados,Granola,471,10,64,20,7,15
+9017,Cereais e derivados,Pão de forma sem glúten,265,3.5,52,4,2.5,450
+9018,Frutas e derivados,Fruta,58,0.3,15,0.2,2,1

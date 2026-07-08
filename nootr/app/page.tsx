@@ -28,7 +28,7 @@ export default function HomePage() {
             <Link href="/dieta" className="btn-primary px-7 py-3">
               Ver minha dieta
             </Link>
-            <Link href="/montar-dieta" className="btn-ghost">
+            <Link href="/dieta" className="btn-ghost">
               Montar dieta do zero →
             </Link>
           </div>

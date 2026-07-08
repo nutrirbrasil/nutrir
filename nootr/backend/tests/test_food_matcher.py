@@ -1,4 +1,10 @@
+from backend.app.data.taco import load_taco_foods
 from backend.app.services import food_matcher as fm
+
+
+def _raw_name(taco_id: int) -> str:
+    """Nome original da TACO (não o `display_name`, que é editável em taco_display_names.csv)."""
+    return {f.id: f for f in load_taco_foods()}[taco_id].name
 
 
 def test_common_food_match():
@@ -22,15 +28,17 @@ def test_common_food_count_cap():
 
 def test_taco_head_ingredient_preferred():
     # "frango" deve casar um item cujo ingrediente principal é frango,
-    # não um derivado (linguiça/coração de frango).
+    # não um derivado (linguiça/coração de frango). Checa o nome ORIGINAL da
+    # TACO (via taco_id), não o display_name — esse é editável pelo usuário
+    # em taco_display_names.csv e não deve quebrar o teste de ranking.
     m = fm.find_food("frango", anchor_kcal=300)
     assert m.source == "taco"
-    assert m.name.lower().startswith("frango")
+    assert _raw_name(m.taco_id).lower().startswith("frango")
 
 
 def test_taco_preparation_from_query():
     m = fm.find_food("frango grelhado", anchor_kcal=300)
-    assert "grelhado" in m.name.lower()
+    assert "grelhado" in _raw_name(m.taco_id).lower()
 
 
 def test_taco_uses_parsed_portion():

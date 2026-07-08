@@ -46,14 +46,27 @@ def test_ate_different_replaces_meal(diet):
     assert almoco["foods"][0]["name"] == pizza["name"]
 
 
-def test_ate_different_rebalances_following_meals(diet):
-    # Refeição bem mais calórica que o planejado → refeições seguintes encolhem.
-    big = _scaled(3, 600)  # 600g de arroz ~768 kcal
+def test_ate_different_rebalances_by_protein(diet):
+    # Come um item muito proteico no almoço -> a proteína do dia já é suprida,
+    # então as refeições seguintes ENCOLHEM e as quantidades (gramas) mudam.
+    protein_rich = _scaled(410, 400)  # 400g de frango grelhado (muita proteína)
     before_dinner = _total_kcal([m for m in diet["meals"] if m["id"] == "meal-4"])
-    r = diet_engine.log_ate_different(diet, [big], "meal-2")
-    after_dinner = _total_kcal([m for m in r["adjusted_meals"] if m["id"] == "meal-4"])
+    r = diet_engine.log_ate_different(diet, [protein_rich], "meal-2")
+    dinner_after = next(m for m in r["adjusted_meals"] if m["id"] == "meal-4")
+    after_dinner = _total_kcal([dinner_after])
     assert after_dinner < before_dinner
-    assert "Redistribuímos" in r["suggestion"]
+    assert r["rebalanced"] is True
+    # A mudança principal é na quantidade: gramas do jantar caíram.
+    orig_dinner = next(m for m in diet["meals"] if m["id"] == "meal-4")
+    assert dinner_after["foods"][0]["grams"] < orig_dinner["foods"][0]["grams"]
+
+
+def test_result_reports_before_after_and_targets(diet):
+    r = diet_engine.log_ate_different(diet, [_scaled(410, 200)], "meal-2")
+    for key in ("macros_before", "macros_after", "targets"):
+        assert key in r
+    assert "protein_pct" in r["macros_after"]
+    assert r["targets"]["protein_g"] > 0
 
 
 def test_multiple_foods_summed(diet):
@@ -63,11 +76,11 @@ def test_multiple_foods_summed(diet):
     assert len(almoco["foods"]) == 2
 
 
-def test_last_meal_reports_day_balance_not_fake_rebalance(diet):
+def test_last_meal_has_no_rebalance(diet):
     big = _scaled(3, 600)
     r = diet_engine.log_ate_different(diet, [big], "meal-4")
-    assert "Redistribuímos" not in r["suggestion"]
-    assert "não há refeições seguintes" in r["suggestion"].lower()
+    assert r["rebalanced"] is False
+    assert "não havia refeições seguintes" in r["suggestion"].lower()
     assert r["remaining_calories"] < 0  # fechou o dia acima da meta
 
 

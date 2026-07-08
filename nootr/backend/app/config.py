@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     # precisa entrar aqui. Ex: "https://nootr.nutrirpicarras.com.br"
     extra_cors_origins: str = ""
 
+    # IA de interpretação de refeição em linguagem natural.
+    # Provider atual: "gemini" (grátis para testes); trocar para "claude" depois.
+    ia_provider: str = "gemini"
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-3.1-flash-lite"
+
     telegram_bot_token: str = ""
     telegram_admin_chat_id: str = ""
 
