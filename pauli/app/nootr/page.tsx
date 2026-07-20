@@ -1,14 +1,18 @@
-import { Metadata } from "next";
-import { whatsappLink, site } from "@/lib/site";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Desconto Exclusivo Nootr | Paula Pastorino",
-  description:
-    "20% de desconto em consultas nutricionais para usuários do Plano Pro Anual do Nootr",
-};
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { whatsappLink } from "@/lib/site";
 
-export default function NootrPage() {
-  const discountMessage = `Olá! Sou usuária(o) do Plano Pro Anual do Nootr e gostaria de agendar uma consulta com o desconto exclusivo de 20% oferecido. Qual seria a disponibilidade?`;
+function NootrPageContent() {
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan") || "annual";
+
+  const isAnnual = plan === "annual";
+  const discount = isAnnual ? 20 : 10;
+  const planLabel = isAnnual ? "Plano Pro Anual" : "Plano Pro Mensal";
+
+  const discountMessage = `Olá! Sou usuária(o) do ${planLabel} do Nootr e gostaria de agendar uma consulta com o desconto exclusivo de ${discount}% oferecido. Qual seria a disponibilidade?`;
 
   return (
     <div className="min-h-screen bg-black px-6 py-16 md:py-24">
@@ -43,14 +47,14 @@ export default function NootrPage() {
           </p>
           <div className="mb-4">
             <span className="bg-gradient-to-r from-pauli-gold to-pauli-sand bg-clip-text text-6xl font-bold text-transparent md:text-7xl">
-              20%
+              {discount}%
             </span>
           </div>
           <p className="text-pauli-cream">
             De desconto em consultas nutricionais
           </p>
           <p className="mt-2 text-pauli-sand/60">
-            Exclusivo para usuários do Plano Pro Anual
+            Exclusivo para usuários do {planLabel}
           </p>
           <p className="mt-4 text-xs text-pauli-sand/50">
             *Esse desconto é exclusivo e válido apenas para a primeira consulta
@@ -67,7 +71,7 @@ export default function NootrPage() {
           <p className="text-pauli-sand">
             Como agradecimento pelo seu compromisso com a saúde através do Nootr,
             Paula Pastorino, nutricionista clínica e esportiva, oferece um
-            desconto especial de 20% em suas consultas nutricionais.
+            desconto especial de {discount}% em suas consultas nutricionais.
           </p>
           <p className="text-sm text-pauli-sand/70">
             Combine a inteligência do Nootr com a experiência de uma nutricionista
@@ -79,7 +83,7 @@ export default function NootrPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
           {/* Botão 1: Saber mais sobre Paula */}
           <a
-            href="/?promo=nootr20"
+            href="/?promo=nootr"
             className="btn-secondary flex items-center justify-center gap-2"
           >
             <span>Conhecer Paula</span>
@@ -112,5 +116,13 @@ export default function NootrPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NootrPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <NootrPageContent />
+    </Suspense>
   );
 }

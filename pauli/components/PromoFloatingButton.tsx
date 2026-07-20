@@ -4,10 +4,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { whatsappLink } from "@/lib/site";
 
-const STORAGE_KEY = "pauli_promo_nootr20";
-
-const discountMessage =
-  "Olá! Sou usuária(o) do Plano Pro Anual do Nootr e gostaria de agendar uma consulta com o desconto exclusivo de 20% oferecido. Qual seria a disponibilidade?";
+const STORAGE_KEY = "pauli_promo_nootr";
+const STORAGE_PLAN_KEY = "pauli_promo_nootr_plan";
 
 export function PromoFloatingButton() {
   const searchParams = useSearchParams();
@@ -15,8 +13,10 @@ export function PromoFloatingButton() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get("promo") === "nootr20") {
+    if (searchParams.get("promo") === "nootr") {
+      const plan = searchParams.get("plan") || "annual";
       sessionStorage.setItem(STORAGE_KEY, "1");
+      sessionStorage.setItem(STORAGE_PLAN_KEY, plan);
     }
     if (sessionStorage.getItem(STORAGE_KEY) === "1") {
       setVisible(true);
@@ -24,6 +24,12 @@ export function PromoFloatingButton() {
   }, [searchParams]);
 
   if (!visible || dismissed) return null;
+
+  const plan = sessionStorage.getItem(STORAGE_PLAN_KEY) || "annual";
+  const isAnnual = plan === "annual";
+  const discount = isAnnual ? 20 : 10;
+  const planLabel = isAnnual ? "Plano Pro Anual" : "Plano Pro Mensal";
+  const discountMessage = `Olá! Sou usuária(o) do ${planLabel} do Nootr e gostaria de agendar uma consulta com o desconto exclusivo de ${discount}% oferecido. Qual seria a disponibilidade?`;
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2">
