@@ -45,154 +45,161 @@ function NootricionistaContent({ token }: { token: string }) {
   return (
     <article className="mx-auto max-w-2xl">
       <div className="divider-bordo mb-4" />
-      <p className="label-caps text-nootr-bordoSoft">Transformação Nutricional</p>
-      <h1 className="mt-2 font-display text-4xl text-nootr-cream">Por que Contratar um Nutricionista</h1>
+      <p className="label-caps text-nootr-bordoSoft">Nutricionista + Nootr</p>
+      <h1 className="mt-2 font-display text-4xl text-nootr-cream">A Dupla Que Funciona</h1>
       <p className="mt-4 text-sm leading-relaxed text-nootr-muted">
-        Você já sabe que precisa mudar. Sabe que "dieta da internet" não funciona. O que você ainda não
-        tem é alguém que entende VOCÊ — sua rotina, seu corpo, seus objetivos. É aí que tudo muda.
+        Uma dieta feita por um profissional é transformadora. Mas entre uma consulta e outra você precisa
+        de um companheiro de verdade — alguém que entende seu plano e te ajuda nos momentos críticos.
       </p>
 
-      {/* Seção 1: O Problema Real */}
+      {/* Seção 1: Por que Nutricionista é Essencial */}
       <div className="card mt-8">
-        <p className="label-caps text-nootr-bordoSoft">A realidade</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Por que Você Ainda Não Conseguiu</h2>
+        <p className="label-caps text-nootr-bordoSoft">O Alicerce</p>
+        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Por que Você Precisa de um Nutricionista</h2>
         <ul className="mt-4 space-y-3 text-sm text-nootr-muted">
           <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">✗</span>
+            <span className="shrink-0 text-nootr-bordoSoft">✓</span>
             <span>
-              <strong>Dietas genéricas não funcionam.</strong> Aquela "dieta perfeita" que funciona pra
-              sua amiga? Pode ser exatamente o oposto do que seu corpo precisa. Só um profissional
-              consegue ler os sinais.
+              <strong>Dieta PERSONALIZADA é fundação.</strong> Não é receita do YouTube ou do seu colega
+              de academia. É VOCÊ — seu metabolismo, sua história, seus objetivos. Só um profissional
+              consegue desenhar isso certo.
             </span>
           </li>
           <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">✗</span>
+            <span className="shrink-0 text-nootr-bordoSoft">✓</span>
             <span>
-              <strong>Você precisa de orientação, não de restrição.</strong> Quando você come fora do
-              plano (e isso vai acontecer), você não sabe como se recuperar. Fica frustrado. Desiste.
+              <strong>Acompanhamento de verdade.</strong> Ajustes conforme você evolui, estratégia que
+              muda quando precisa, alguém monitorando pra evitar platôs e frustração.
             </span>
           </li>
           <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">✗</span>
+            <span className="shrink-0 text-nootr-bordoSoft">✓</span>
             <span>
-              <strong>Ninguém tá olhando pra você.</strong> Sem acompanhamento, você não vê o que tá
-              funcionando e o que não tá. Segue a mesma receita meses inteiros, mesmo sabendo que não
-              funciona.
+              <strong>Você aprende de verdade.</strong> Entende por que come cada coisa, como seu corpo
+              funciona, e consegue fazer escolhas inteligentes pro resto da vida.
             </span>
           </li>
         </ul>
       </div>
 
-      {/* Seção 2: A Solução */}
+      {/* Seção 2: Como Nootr Ajuda */}
       <div className="card mt-6">
-        <p className="label-caps text-nootr-bordoSoft">A diferença</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Um Nutricionista Muda Tudo</h2>
+        <p className="label-caps text-nootr-bordoSoft">O Companheiro</p>
+        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Nootr: Sua Rede de Segurança</h2>
+        <p className="mt-3 text-sm text-nootr-muted">
+          Entre as consultas com o nutricionista, a vida acontece. Você come fora do plano, surge um
+          imprevisto, tudo muda. O Nootr tá ali pra isso — não pra substituir o profissional, mas pra
+          te dar inteligência nos momentos críticos.
+        </p>
         <ul className="mt-4 space-y-3 text-sm text-nootr-muted">
           <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">✓</span>
+            <span className="shrink-0 text-nootr-bordoSoft">→</span>
             <span>
-              <strong>Seu plano é SEU.</strong> Análise do seu metabolismo, sua história, seus
-              objetivos. Não é genérico. Não é copiado. É construído pra você funcionar.
+              <strong>Você comeu diferente?</strong> O Nootr ajusta o resto do seu dia pra você não
+              perder o progresso — sem sobrecarregar seu nutricionista com corrigendas.
             </span>
           </li>
           <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">✓</span>
+            <span className="shrink-0 text-nootr-bordoSoft">→</span>
             <span>
-              <strong>Você aprende a se recuperar.</strong> Comeu fora? Conhece alguém que ajusta seu
-              dia em tempo real pra você não perder o progresso. Fica em controle.
+              <strong>Precisa de alternativas rápido?</strong> Nootr busca substituições que fazem sentido
+              pro seu plano — respeitando o trabalho do profissional.
             </span>
           </li>
           <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">✓</span>
+            <span className="shrink-0 text-nootr-bordoSoft">→</span>
             <span>
-              <strong>Alguém tá de olho em você.</strong> Acompanhamento real, ajustes conforme você
-              evolui, estratégia que muda quando precisa. Nenhum platô, nenhuma frustração.
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">✓</span>
-            <span>
-              <strong>Você finalmente entende nutrição.</strong> Não é seguir regras à risca. É
-              aprender como seu corpo funciona pra fazer escolhas inteligentes pro resto da vida.
+              <strong>Você fica autossuficiente.</strong> Com a dieta do profissional + inteligência do
+              Nootr, você consegue navegar sozinho entre consultas, sem perder a direção.
             </span>
           </li>
         </ul>
       </div>
 
-      {/* Seção 3: Por que Paula */}
+      {/* Seção 3: Oferta de Desconto */}
       <div className="card mt-6 border-nootr-bordoSoft/40 shadow-[0_0_0_1px_rgba(138,30,50,0.25)]">
-        <p className="label-caps text-nootr-bordoSoft">Sobre</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Paula Pastorino</h2>
-        <p className="text-xs uppercase tracking-caps text-nootr-muted">
-          Nutricionista Clínica e Esportiva · CRN 18489D
+        <p className="label-caps text-nootr-bordoSoft">Seu desconto</p>
+        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Isso Você Ganhou</h2>
+        <p className="mt-3 text-sm text-nootr-muted">
+          Como agradecimento por já estar investindo em si mesmo com o Nootr Pro, a gente conseguiu um
+          desconto especial com um nutricionista de verdade pra você dar o próximo passo.
         </p>
 
-        <p className="mt-4 text-sm text-nootr-cream">
-          Paula não acredita em terrorismo nutricional. Não vai pedir pra você comer frango com brócolis
-          por seis meses. Acredita que nutrição funciona quando <strong>se encaixa na sua vida real</strong>
-          .
-        </p>
+        <div className="mt-6 space-y-4">
+          {/* 20% Anual */}
+          <div className="rounded-lg border border-nootr-bordoSoft/40 bg-nootr-bordoSoft/5 p-4">
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-3xl text-nootr-cream">20%</span>
+              <span className="text-xs text-nootr-muted">de desconto</span>
+            </div>
+            <p className="mt-2 text-xs font-semibold text-nootr-bordoSoft">Plano Pro Anual</p>
+            <p className="mt-2 text-xs text-nootr-muted">
+              Você se comprometeu com um ano de transformação. Por isso essa primeira consulta ou plano
+              sai <strong>20% mais barato</strong> — um investimento na dupla Nootr + Nutricionista.
+            </p>
+          </div>
 
-        <div className="mt-4 space-y-2 text-xs text-nootr-muted">
-          <p>✓ Atendimento presencial em Balneário Piçarras (SC) ou online (Brasil e exterior)</p>
-          <p>
-            ✓ Especializada em: emagrecimento saudável, hipertrofia, performance esportiva, saúde da
-            mulher, longevidade
+          {/* 10% Mensal */}
+          <div className="rounded-lg border border-nootr-line/40 bg-nootr-line/5 p-4">
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-3xl text-nootr-cream">10%</span>
+              <span className="text-xs text-nootr-muted">de desconto</span>
+            </div>
+            <p className="mt-2 text-xs font-semibold text-nootr-cream">Plano Pro Mensal</p>
+            <p className="mt-2 text-xs text-nootr-muted">
+              Você tá testando a jornada mês a mês. A primeira consulta ou plano sai{" "}
+              <strong>10% mais barato</strong> pra você experimentar acompanhamento profissional junto
+              com o Nootr.
+            </p>
+          </div>
+
+          <p className="text-xs text-nootr-faint">
+            Válido pra primeira consulta ou primeira contratação de plano com nutricionista. Presencial
+            (Balneário Piçarras - SC) ou online (Brasil e exterior).
           </p>
-          <p>✓ Acompanhamento real com ajustes conforme você evolui</p>
         </div>
-      </div>
 
-      {/* Seção 4: O Desconto */}
-      <div className="card mt-6">
-        <p className="label-caps">Seu desconto</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Isso Você Ganhou Hoje</h2>
+        {/* CTAs Dinâmicas */}
+        <div className="mt-6 border-t border-nootr-line/30 pt-6">
+          {showBasicCTA && (
+            <>
+              <p className="text-sm text-nootr-muted">
+                Você tá no Plano Basic. Pra acessar desconto com o nutricionista, migre pro Plano Pro.
+              </p>
+              <Link href="/plano" className="btn-primary mt-5 inline-flex">
+                Migrar para Plano Pro →
+              </Link>
+            </>
+          )}
 
-        {showBasicCTA && (
-          <>
-            <p className="mt-3 text-sm text-nootr-muted">
-              Você tá no Plano Basic. Pra acessar desconto com Paula, migre pro Plano Pro.
-            </p>
-            <Link href="/plano" className="btn-primary mt-5 inline-flex">
-              Migrar para Plano Pro →
-            </Link>
-          </>
-        )}
+          {showMonthlyCTA && (
+            <>
+              <p className="text-sm text-nootr-cream">
+                Você tá no Plano Pro Mensal — seu desconto tá pronto.
+              </p>
+              <a
+                href={pauliNootrMonthlyUrl}
+                className="btn-primary mt-5 inline-flex"
+              >
+                Conhecer Nutricionista (10% off) →
+              </a>
+            </>
+          )}
 
-        {showMonthlyCTA && (
-          <>
-            <p className="mt-3 text-sm text-nootr-cream">
-              <strong>10% de desconto</strong> na sua primeira consulta com Paula.
-            </p>
-            <p className="mt-2 text-xs text-nootr-muted">
-              É o bastante pra você testar o acompanhamento profissional sem grande compromisso.
-            </p>
-            <a
-              href={pauliNootrMonthlyUrl}
-              className="btn-primary mt-5 inline-flex"
-            >
-              Conhecer Paula (10% off) →
-            </a>
-          </>
-        )}
-
-        {showAnnualCTA && (
-          <>
-            <p className="mt-3 text-sm text-nootr-cream">
-              <strong>20% de desconto</strong> na sua primeira consulta com Paula.
-            </p>
-            <p className="mt-2 text-xs text-nootr-muted">
-              Você se comprometeu com um ano de transformação real. Isso merece um profissional de
-              verdade.
-            </p>
-            <a
-              href={pauliNootrAnnualUrl}
-              className="btn-primary mt-5 inline-flex"
-            >
-              Conhecer Paula (20% off) →
-            </a>
-          </>
-        )}
+          {showAnnualCTA && (
+            <>
+              <p className="text-sm text-nootr-cream">
+                Você tá no Plano Pro Anual — seu desconto tá pronto.
+              </p>
+              <a
+                href={pauliNootrAnnualUrl}
+                className="btn-primary mt-5 inline-flex"
+              >
+                Conhecer Nutricionista (20% off) →
+              </a>
+            </>
+          )}
+        </div>
       </div>
     </article>
   );
