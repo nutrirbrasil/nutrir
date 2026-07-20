@@ -1,3 +1,6 @@
 # Pasta de trabalho interno (planejamento de conteúdo, SEO, rascunhos etc.)
 # Não tem relação com o código do site e não deve ir para a VPS.
 /planejamento/
+
+# Arquivos de referência local (documentos, imagens — não é código do site)
+/local-assets/

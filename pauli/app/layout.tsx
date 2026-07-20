@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { PromoFloatingButton } from "@/components/PromoFloatingButton";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -40,6 +42,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <Suspense fallback={null}>
+          <PromoFloatingButton />
+        </Suspense>
       </body>
     </html>
   );
