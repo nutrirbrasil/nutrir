@@ -177,11 +177,6 @@ export function formatPickupDayLabel(d: Date): { day: number; weekday: string } 
   };
 }
 
-export function formatMonthYear(d: Date): string {
-  const month = d.toLocaleDateString("pt-BR", { month: "long" });
-  return `${month.charAt(0).toUpperCase()}${month.slice(1)} de ${d.getFullYear()}`;
-}
-
 export interface PickupDisplayLine {
   label: string;
   value: string;

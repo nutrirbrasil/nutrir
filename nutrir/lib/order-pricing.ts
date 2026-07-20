@@ -72,6 +72,7 @@ export interface OrderPricing {
   pix_discount_cents: number;
   coupon_code?: string;
   coupon_discount_cents: number;
+  delivery_fee_cents: number;
   total_cents: number;
   show_pix_discount: boolean;
   show_coupon_discount: boolean;
@@ -80,7 +81,8 @@ export interface OrderPricing {
 export function computeOrderPricing(
   items: OrderItem[],
   method?: PaymentMethod,
-  couponCode?: string | null
+  couponCode?: string | null,
+  deliveryFeeCents = 0
 ): OrderPricing {
   const listTotal = items.reduce(
     (sum, item) => sum + getItemListPriceCents(item) * item.quantity,
@@ -96,12 +98,13 @@ export function computeOrderPricing(
 
   if (isCardPayment(method)) {
     const couponDiscount = coupon ? computeCouponDiscountCents(listTotal, coupon) : 0;
-    const total = Math.max(0, listTotal - couponDiscount);
+    const total = Math.max(0, listTotal - couponDiscount) + deliveryFeeCents;
     return {
       subtotal_cents: listTotal,
       pix_discount_cents: 0,
       coupon_code: appliedCouponCode,
       coupon_discount_cents: couponDiscount,
+      delivery_fee_cents: deliveryFeeCents,
       total_cents: total,
       show_pix_discount: false,
       show_coupon_discount: couponDiscount > 0,
@@ -110,13 +113,14 @@ export function computeOrderPricing(
 
   const pixDiscount = Math.max(0, listTotal - cashTotal);
   const couponDiscount = coupon ? computeCouponDiscountCents(cashTotal, coupon) : 0;
-  const total = Math.max(0, cashTotal - couponDiscount);
+  const total = Math.max(0, cashTotal - couponDiscount) + deliveryFeeCents;
 
   return {
     subtotal_cents: listTotal,
     pix_discount_cents: pixDiscount,
     coupon_code: appliedCouponCode,
     coupon_discount_cents: couponDiscount,
+    delivery_fee_cents: deliveryFeeCents,
     total_cents: total,
     show_pix_discount: isCashDiscountPayment(method) && pixDiscount > 0,
     show_coupon_discount: couponDiscount > 0,

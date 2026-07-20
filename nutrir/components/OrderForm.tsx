@@ -8,6 +8,8 @@ import { useCart } from "@/lib/cart-context";
 import { useCheckout } from "@/lib/checkout-context";
 import { useProfile } from "@/lib/profile-context";
 import { PickupScheduler } from "@/components/PickupScheduler";
+import { DeliveryScheduler } from "@/components/DeliveryScheduler";
+import { DeliveryAddressForm, type DeliveryAddressValue } from "@/components/DeliveryAddressForm";
 import { formatItemAddonsLabel } from "@/lib/item-addons-label";
 import {
   analyzeCartItems,
@@ -16,8 +18,25 @@ import {
   type MixedPickupMode,
   type PickupSelection,
 } from "@/lib/pickup-schedule";
+import {
+  formatDeliveryShort,
+  formatDeliverySummary,
+  isDeliveryDateEligible,
+  type DeliverySelection,
+} from "@/lib/delivery-schedule";
+import { composeDeliveryAddressPreview, getDeliveryFeeCents, isBairroDeliverable } from "@/lib/delivery-fees";
 import { getItemCashTotalCents } from "@/lib/order-pricing";
-import { NUTRIR_STORE_ADDRESS, resolvePickupAddress } from "@/lib/store-info";
+import { resolvePickupAddress } from "@/lib/store-info";
+import type { FulfillmentType } from "@/lib/types";
+
+const EMPTY_DELIVERY_ADDRESS: DeliveryAddressValue = {
+  municipio: "",
+  bairroId: "",
+  street: "",
+  number: "",
+  complement: "",
+  reference: "",
+};
 
 export function OrderForm() {
   const router = useRouter();
@@ -27,10 +46,13 @@ export function OrderForm() {
 
   const items = cart.items;
   const [error, setError] = useState("");
+  const [fulfillmentType, setFulfillmentType] = useState<FulfillmentType>("pickup");
   const [mixedMode, setMixedMode] = useState<MixedPickupMode | null>(null);
   const [pickupUnified, setPickupUnified] = useState<PickupSelection | null>(null);
   const [pickupCombo, setPickupCombo] = useState<PickupSelection | null>(null);
   const [pickupRegular, setPickupRegular] = useState<PickupSelection | null>(null);
+  const [deliverySelection, setDeliverySelection] = useState<DeliverySelection | null>(null);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddressValue>(EMPTY_DELIVERY_ADDRESS);
 
   const cartAnalysis = useMemo(() => analyzeCartItems(items), [items]);
 
@@ -66,6 +88,10 @@ export function OrderForm() {
   const total = items.reduce((sum, i) => sum + getItemCashTotalCents(i) * i.quantity, 0);
 
   function buildPickupDisplay(): string {
+    if (fulfillmentType === "delivery") {
+      return deliverySelection ? formatDeliveryShort(deliverySelection) : "";
+    }
+
     if (cartAnalysis.isMixed && mixedMode === "separate") {
       const parts: string[] = [];
       if (pickupCombo) parts.push(`Combo: ${formatPickupShort(pickupCombo)}`);
@@ -79,6 +105,13 @@ export function OrderForm() {
 
   function buildInternalNotes(): string | undefined {
     const parts: string[] = [];
+
+    if (fulfillmentType === "delivery") {
+      if (deliverySelection) parts.push(formatDeliverySummary(deliverySelection));
+      if (form.notes) parts.push(form.notes);
+      parts.push("Entrega");
+      return parts.filter(Boolean).join(" · ") || undefined;
+    }
 
     if (cartAnalysis.isMixed && mixedMode === "separate") {
       if (pickupCombo) parts.push(`Combo: ${formatPickupSummary(pickupCombo)}`);
@@ -94,6 +127,10 @@ export function OrderForm() {
   }
 
   function getPrimaryDeliveryDate(): string {
+    if (fulfillmentType === "delivery") {
+      return deliverySelection?.date ?? "";
+    }
+
     if (cartAnalysis.isMixed && mixedMode === "separate") {
       return pickupCombo?.date ?? pickupRegular?.date ?? "";
     }
@@ -101,6 +138,19 @@ export function OrderForm() {
   }
 
   function validatePickup(): string | null {
+    if (fulfillmentType === "delivery") {
+      if (!deliverySelection?.date || !isDeliveryDateEligible(deliverySelection.date)) {
+        return "Selecione um domingo válido para entrega.";
+      }
+      if (!deliveryAddress.bairroId || !isBairroDeliverable(deliveryAddress.bairroId)) {
+        return "Selecione um bairro dentro da área de entrega.";
+      }
+      if (!deliveryAddress.street.trim() || !deliveryAddress.number.trim()) {
+        return "Informe o endereço de entrega (rua e número).";
+      }
+      return null;
+    }
+
     if (cartAnalysis.isMixed && !mixedMode) {
       return "Escolha se deseja retirar tudo junto ou em dias separados.";
     }
@@ -141,6 +191,7 @@ export function OrderForm() {
     }
 
     const phone = formatPhoneBR(form.customer_phone);
+    const isDelivery = fulfillmentType === "delivery";
 
     setDraft({
       items: [...items],
@@ -148,7 +199,15 @@ export function OrderForm() {
       customer_phone: phone,
       customer_email: form.customer_email?.trim() || undefined,
       customer_cpf: profile.cpf || undefined,
-      delivery_address: resolvePickupAddress(),
+      delivery_address: isDelivery
+        ? composeDeliveryAddressPreview(
+            deliveryAddress.bairroId,
+            deliveryAddress.street.trim(),
+            deliveryAddress.number.trim(),
+            deliveryAddress.complement,
+            deliveryAddress.reference
+          )
+        : resolvePickupAddress(),
       delivery_date: getPrimaryDeliveryDate(),
       pickup_display: buildPickupDisplay(),
       user_notes: form.notes.trim() || undefined,
@@ -157,6 +216,14 @@ export function OrderForm() {
       pickup_unified: pickupUnified,
       pickup_combo: pickupCombo,
       pickup_regular: pickupRegular,
+      fulfillment_type: fulfillmentType,
+      delivery_selection: isDelivery ? deliverySelection : null,
+      delivery_street: isDelivery ? deliveryAddress.street.trim() : undefined,
+      delivery_number: isDelivery ? deliveryAddress.number.trim() : undefined,
+      delivery_complement: isDelivery ? deliveryAddress.complement.trim() || undefined : undefined,
+      delivery_reference: isDelivery ? deliveryAddress.reference.trim() || undefined : undefined,
+      delivery_bairro_id: isDelivery ? deliveryAddress.bairroId : undefined,
+      delivery_fee_cents: isDelivery ? getDeliveryFeeCents(deliveryAddress.bairroId) ?? 0 : 0,
     });
 
     router.push("/checkout/pagamento");
@@ -195,91 +262,140 @@ export function OrderForm() {
         </div>
       )}
 
-      <div className="card space-y-6">
-        <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-emerald">
-            Agende sua retirada
-          </h2>
-          {cartAnalysis.hasCombo && !cartAnalysis.hasRegular && (
+      <div className="card space-y-3">
+        <p className="text-sm font-medium text-nutrir-emerald">Como você quer receber o pedido?</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setFulfillmentType("pickup")}
+            className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
+              fulfillmentType === "pickup"
+                ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+            }`}
+          >
+            Retirar na loja
+          </button>
+          <button
+            type="button"
+            onClick={() => setFulfillmentType("delivery")}
+            className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
+              fulfillmentType === "delivery"
+                ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+            }`}
+          >
+            Receber em casa
+          </button>
+        </div>
+      </div>
+
+      {fulfillmentType === "delivery" ? (
+        <div className="card space-y-6">
+          <div>
+            <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-emerald">
+              Agende sua entrega
+            </h2>
             <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
-              Retirada apenas Segunda ou Sexta
-              <br />
-              Pedidos devem ser feitos com mínimo de 48h de antecedência (2 dias).
+              Pedidos para entrega devem ser feito até sexta-feira, se perder a data você pode
+              optar pela retirada no local.
             </p>
+          </div>
+
+          <DeliveryScheduler value={deliverySelection} onChange={setDeliverySelection} />
+
+          <DeliveryAddressForm
+            value={deliveryAddress}
+            onChange={(patch) => setDeliveryAddress((prev) => ({ ...prev, ...patch }))}
+          />
+        </div>
+      ) : (
+        <div className="card space-y-6">
+          <div>
+            <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-emerald">
+              Agende sua retirada
+            </h2>
+            {cartAnalysis.hasCombo && !cartAnalysis.hasRegular && (
+              <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
+                Retirada apenas Segunda ou Sexta
+                <br />
+                Pedidos devem ser feitos com mínimo de 48h de antecedência (2 dias).
+              </p>
+            )}
+            {!cartAnalysis.hasCombo && cartAnalysis.hasRegular && (
+              <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
+                Retirada de Segunda a Sexta.
+                <br />
+                Pedidos para o dia seguinte só serão entregues no período da tarde e devem ser
+                realizados até as 19h.
+              </p>
+            )}
+          </div>
+
+          {cartAnalysis.isMixed && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-nutrir-emerald">
+                Você tem combo e marmitas avulsas. Como prefere retirar?
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMixedMode("together");
+                    setPickupCombo(null);
+                    setPickupRegular(null);
+                    setPickupUnified(null);
+                  }}
+                  className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
+                    mixedMode === "together"
+                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                  }`}
+                >
+                  Tudo junto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMixedMode("separate");
+                    setPickupUnified(null);
+                    setPickupCombo(null);
+                    setPickupRegular(null);
+                  }}
+                  className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
+                    mixedMode === "separate"
+                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
+                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                  }`}
+                >
+                  Separado
+                </button>
+              </div>
+            </div>
           )}
-          {!cartAnalysis.hasCombo && cartAnalysis.hasRegular && (
-            <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
-              Retirada de Segunda a Sexta.
-              <br />
-              Pedidos para o dia seguinte só serão entregues no período da tarde e devem ser
-              realizados até as 19h.
-            </p>
+
+          {cartAnalysis.isMixed && mixedMode === "separate" && (
+            <>
+              <PickupScheduler
+                rule="combo"
+                title="Retirada do combo"
+                value={pickupCombo}
+                onChange={setPickupCombo}
+              />
+              <PickupScheduler
+                rule="regular"
+                title="Retirada das marmitas"
+                value={pickupRegular}
+                onChange={setPickupRegular}
+              />
+            </>
+          )}
+
+          {pickupRule && (
+            <PickupScheduler rule={pickupRule} value={pickupUnified} onChange={setPickupUnified} />
           )}
         </div>
-
-        {cartAnalysis.isMixed && (
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-nutrir-emerald">
-              Você tem combo e marmitas avulsas. Como prefere retirar?
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setMixedMode("together");
-                  setPickupCombo(null);
-                  setPickupRegular(null);
-                  setPickupUnified(null);
-                }}
-                className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
-                  mixedMode === "together"
-                    ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                    : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
-                }`}
-              >
-                Tudo junto
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMixedMode("separate");
-                  setPickupUnified(null);
-                  setPickupCombo(null);
-                  setPickupRegular(null);
-                }}
-                className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
-                  mixedMode === "separate"
-                    ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                    : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
-                }`}
-              >
-                Separado
-              </button>
-            </div>
-          </div>
-        )}
-
-        {cartAnalysis.isMixed && mixedMode === "separate" && (
-          <>
-            <PickupScheduler
-              rule="combo"
-              title="Retirada do combo"
-              value={pickupCombo}
-              onChange={setPickupCombo}
-            />
-            <PickupScheduler
-              rule="regular"
-              title="Retirada das marmitas"
-              value={pickupRegular}
-              onChange={setPickupRegular}
-            />
-          </>
-        )}
-
-        {pickupRule && (
-          <PickupScheduler rule={pickupRule} value={pickupUnified} onChange={setPickupUnified} />
-        )}
-      </div>
+      )}
 
       <div className="card grid gap-4 md:grid-cols-2">
         <div>

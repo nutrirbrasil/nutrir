@@ -5,7 +5,7 @@ import {
   normalizePhoneStorage,
   stripCpfDigits,
 } from "./br-fields";
-import type { Order, OrderItem, PaymentMethod, PaymentStatus } from "./types";
+import type { FulfillmentType, Order, OrderItem, PaymentMethod, PaymentStatus } from "./types";
 
 /** Máximo de pedidos guardados por cliente no Supabase. */
 export const MAX_ORDERS_PER_CUSTOMER = 5;
@@ -256,6 +256,14 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
       total_cents: order.total_cents,
       status: order.status,
       created_at: order.created_at,
+      fulfillment_type: order.fulfillment_type ?? "pickup",
+      delivery_bairro: order.delivery_bairro ?? null,
+      delivery_municipio: order.delivery_municipio ?? null,
+      delivery_fee_cents: order.delivery_fee_cents ?? 0,
+      delivery_street: order.delivery_street ?? null,
+      delivery_number: order.delivery_number ?? null,
+      delivery_complement: order.delivery_complement ?? null,
+      delivery_reference: order.delivery_reference ?? null,
     },
     { onConflict: "order_nsu" }
   );
@@ -337,7 +345,7 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
   const { data, error } = await db
     .from("nutrir_orders")
     .select(
-      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at"
+      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference"
     )
     .eq("order_nsu", orderNsu)
     .maybeSingle();
@@ -363,5 +371,13 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
     total_cents: data.total_cents as number,
     status: (data.status as string) ?? "pending",
     created_at: data.created_at as string,
+    fulfillment_type: (data.fulfillment_type as FulfillmentType) ?? "pickup",
+    delivery_bairro: (data.delivery_bairro as string) ?? undefined,
+    delivery_municipio: (data.delivery_municipio as string) ?? undefined,
+    delivery_fee_cents: (data.delivery_fee_cents as number) ?? 0,
+    delivery_street: (data.delivery_street as string) ?? undefined,
+    delivery_number: (data.delivery_number as string) ?? undefined,
+    delivery_complement: (data.delivery_complement as string) ?? undefined,
+    delivery_reference: (data.delivery_reference as string) ?? undefined,
   };
 }

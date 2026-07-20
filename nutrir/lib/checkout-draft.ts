@@ -1,6 +1,7 @@
 import { isValidCpf, isValidPhoneBR } from "./br-fields";
+import type { DeliverySelection } from "./delivery-schedule";
 import type { MixedPickupMode, PickupSelection } from "./pickup-schedule";
-import type { OrderItem, PaymentMethod } from "./types";
+import type { FulfillmentType, OrderItem, PaymentMethod } from "./types";
 
 export interface CheckoutDraft {
   items: OrderItem[];
@@ -20,6 +21,16 @@ export interface CheckoutDraft {
   payment_method?: PaymentMethod;
   coupon_code?: string;
   order_id?: string;
+  /** Padrão "pickup" quando ausente (rascunhos antigos). */
+  fulfillment_type?: FulfillmentType;
+  delivery_selection?: DeliverySelection | null;
+  delivery_street?: string;
+  delivery_number?: string;
+  delivery_complement?: string;
+  delivery_reference?: string;
+  delivery_bairro_id?: string;
+  /** Estimativa só pra exibição — quem calcula de verdade é o servidor. */
+  delivery_fee_cents?: number;
 }
 
 export const CHECKOUT_STORAGE_KEY = "nutrir-checkout-draft";

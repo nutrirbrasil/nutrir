@@ -45,6 +45,13 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         </div>
       )}
 
+      {pricing.delivery_fee_cents > 0 && (
+        <div className="flex justify-between text-sm">
+          <span>Taxa de entrega</span>
+          <span>{formatPrice(pricing.delivery_fee_cents)}</span>
+        </div>
+      )}
+
       <div
         className={`flex justify-between font-bold ${
           compact ? "text-sm" : "border-t border-nutrir-nude-dark/40 pt-3 text-lg"

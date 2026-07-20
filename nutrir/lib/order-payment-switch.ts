@@ -26,7 +26,12 @@ export async function switchOrderPaymentMethod(
 
   const baseItems = restoreBaseOrderItems(order.items, fromMethod);
   const chargedItems = getChargedItems(baseItems, payment_method);
-  const pricing = computeOrderPricing(baseItems, payment_method, order.coupon_code);
+  const pricing = computeOrderPricing(
+    baseItems,
+    payment_method,
+    order.coupon_code,
+    order.delivery_fee_cents ?? 0
+  );
 
   const updated: Order = {
     ...order,

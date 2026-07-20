@@ -219,6 +219,3 @@ export function getMarmitaNutrition(
     },
   };
 }
-
-/** Todas as marmitas do cardápio com tabela calculada. */
-export const MARMITA_IDS_WITH_NUTRITION = Object.keys(RECIPES);

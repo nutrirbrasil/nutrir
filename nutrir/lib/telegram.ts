@@ -60,11 +60,15 @@ export function formatOrderTelegramMessage(
   let paymentStatus =
     order.payment_status === "confirmed" ? "✅ Confirmado" : "⏳ Pendente";
 
+  const isDelivery = order.fulfillment_type === "delivery";
+
   if (options?.pixPending && order.payment_status === "pending") {
     paymentStatus = "⏳ Pix Pendente";
   } else if (order.local_pay_deadline && order.payment_status === "pending") {
     if (options?.isPatient) {
-      paymentStatus += " (pagamento na retirada — paciente)";
+      paymentStatus += isDelivery
+        ? " (pagamento na entrega — paciente)"
+        : " (pagamento na retirada — paciente)";
     } else {
       const deadline = new Date(order.local_pay_deadline).toLocaleString("pt-BR");
       paymentStatus += ` (pagar até ${deadline})`;
@@ -107,11 +111,19 @@ export function formatOrderTelegramMessage(
     lines.push(`🎟 ${escapeMarkdown(couponLine)}`);
   }
 
-  lines.push(
-    "",
-    `🕐 Pedido: ${orderedAt.toLocaleString("pt-BR")}`,
-    `📅 Retirada: ${escapeMarkdown(pickup)}`
-  );
+  lines.push("", `🕐 Pedido: ${orderedAt.toLocaleString("pt-BR")}`);
+
+  if (isDelivery) {
+    lines.push(`🛵 Entrega: ${escapeMarkdown(pickup)}`);
+    if (order.delivery_address?.trim()) {
+      lines.push(`📍 ${escapeMarkdown(order.delivery_address.trim())}`);
+    }
+    if (order.delivery_fee_cents) {
+      lines.push(`🚚 Taxa de entrega: ${formatMoney(order.delivery_fee_cents)}`);
+    }
+  } else {
+    lines.push(`📅 Retirada: ${escapeMarkdown(pickup)}`);
+  }
 
   if (order.user_notes?.trim()) {
     lines.push(`📝 ${escapeMarkdown(order.user_notes.trim())}`);

@@ -20,15 +20,16 @@ export default function FormasDePagamentoPage() {
       </p>
 
       <p>
-        <strong>Dinheiro e cartão físico</strong> são aceitos em combos, porém como trabalhamos de
-        forma artesanal e com foco em sustentabilidade, no momento só aceitamos pagamento
-        antecipado, como sinal para iniciar a produção, com fim de{" "}
-        <strong>evitar desperdício</strong>.
+        <strong>Dinheiro e cartão físico</strong> são aceitos em combos retirados na loja, porém
+        como trabalhamos de forma artesanal e com foco em sustentabilidade, no momento só
+        aceitamos pagamento antecipado, como sinal para iniciar a produção, com fim de{" "}
+        <strong>evitar desperdício</strong>. Em pedidos com <strong>entrega</strong>, o pagamento
+        antecipado (Pix ou cartão online) é obrigatório para todos, exceto pacientes.
       </p>
 
       <p>
         Porém <strong>pacientes em acompanhamento com a nutricionista Paula Pastorino</strong> podem
-        optar por <strong>dinheiro ou cartão físico na retirada</strong>.
+        optar por <strong>dinheiro ou cartão físico na retirada ou na entrega</strong>.
       </p>
 
       <p>
@@ -60,25 +61,27 @@ export default function FormasDePagamentoPage() {
         </p>
       </InfoSection>
 
-      <InfoSection title="Dinheiro na retirada">
+      <InfoSection title="Dinheiro na retirada ou entrega">
         <p>
           Exclusivo para <strong>pacientes da nutricionista Paula Pastorino</strong>. Você faz o
           pedido pelo site, escolhe pagamento em dinheiro e, estando{" "}
           <strong>cadastrado com os dados corretos</strong>, identificamos seu perfil de paciente. A
           produção é <strong>prioritária</strong> e o pagamento em dinheiro é feito{" "}
-          <strong>na retirada</strong> — sem necessidade de pagamento antecipado no Nutrir.
+          <strong>na retirada ou na entrega</strong> — sem necessidade de pagamento antecipado no
+          Nutrir.
         </p>
         <p>
           Também oferece <strong>aproximadamente 10% de desconto</strong>, como no Pix.
         </p>
       </InfoSection>
 
-      <InfoSection title="Cartão físico na retirada">
+      <InfoSection title="Cartão físico na retirada ou entrega">
         <p>
-          Também exclusivo para pacientes em acompanhamento. Aceitamos cartão de crédito e débito nas
-          maquininhas do Nutrir <strong>no momento da retirada</strong>, após identificarmos seu
-          cadastro como paciente. A produção entra em <strong>prioridade</strong> assim que o pedido
-          é confirmado — o pagamento no cartão ocorre quando você busca as marmitas.
+          Também exclusivo para pacientes em acompanhamento. Aceitamos cartão de crédito e débito
+          nas maquininhas do Nutrir <strong>no momento da retirada</strong>, ou com o entregador{" "}
+          <strong>no momento da entrega</strong>, após identificarmos seu cadastro como paciente. A
+          produção entra em <strong>prioridade</strong> assim que o pedido é confirmado — o
+          pagamento no cartão ocorre quando você recebe as marmitas.
         </p>
       </InfoSection>
 
@@ -103,9 +106,9 @@ export default function FormasDePagamentoPage() {
         </p>
       </InfoSection>
 
-      <InfoSection title="Pagamento na retirada — exclusivo para pacientes">
+      <InfoSection title="Pagamento na retirada ou entrega — exclusivo para pacientes">
         <p>
-          Pagamento em dinheiro ou cartão físico na retirada é exclusivo para{" "}
+          Pagamento em dinheiro ou cartão físico na retirada ou na entrega é exclusivo para{" "}
           <strong>pacientes da nutricionista Paula Pastorino</strong>, cadastrados no site com os
           dados corretos para identificação.
         </p>

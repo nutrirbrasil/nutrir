@@ -72,7 +72,8 @@ export function PaymentMethodStep() {
 
   if (!ready || !draft) return null;
 
-  const showLocalOptions = cartAnalysis.hasCombo || isPatient;
+  const isDelivery = draft.fulfillment_type === "delivery";
+  const showLocalOptions = isDelivery ? isPatient : cartAnalysis.hasCombo || isPatient;
   const options = showLocalOptions ? [...ONLINE_OPTIONS, ...localOptions] : ONLINE_OPTIONS;
   const localNotice = getLocalPaymentNotice(isPatient);
 
@@ -90,7 +91,11 @@ export function PaymentMethodStep() {
   const paymentBanner = getPaymentMethodBanner(isLocalPayment(method), isPatient);
 
   return (
-    <CheckoutShell title="Qual é a melhor forma de pagamento para você?" backHref="/agendar" backLabel="Alterar retirada">
+    <CheckoutShell
+      title="Qual é a melhor forma de pagamento para você?"
+      backHref="/agendar"
+      backLabel={isDelivery ? "Alterar entrega" : "Alterar retirada"}
+    >
       <div className="card space-y-4">
         {paymentBanner && (
           <p className="rounded-lg bg-nutrir-emerald/5 p-3 text-sm text-nutrir-emerald/80">

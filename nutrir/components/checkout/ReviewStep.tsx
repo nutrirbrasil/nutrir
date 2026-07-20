@@ -21,6 +21,8 @@ import {
   normalizePaymentMethod,
 } from "@/lib/payment-utils";
 import { formatPickupDisplayLines } from "@/lib/pickup-schedule";
+import { DELIVERY_WINDOW } from "@/lib/delivery-schedule";
+import { composeDeliveryAddressPreview } from "@/lib/delivery-fees";
 import { NUTRIR_STORE_ADDRESS, resolvePickupAddress } from "@/lib/store-info";
 import { useCart } from "@/lib/cart-context";
 import { useProfile } from "@/lib/profile-context";
@@ -34,7 +36,12 @@ function canReusePendingOrder(
   if (existing.payment_status !== "pending") return false;
   if (normalizePaymentMethod(existing.payment_method) !== method) return false;
 
-  const pricing = computeOrderPricing(draft.items, method, draft.coupon_code);
+  const pricing = computeOrderPricing(
+    draft.items,
+    method,
+    draft.coupon_code,
+    draft.delivery_fee_cents ?? 0
+  );
   if (existing.total_cents !== pricing.total_cents) return false;
   if ((existing.coupon_code ?? "") !== (draft.coupon_code ?? "")) return false;
 
@@ -62,7 +69,8 @@ export function ReviewStep() {
 
   const d = draft;
   const method = normalizePaymentMethod(d.payment_method);
-  const pricing = computeOrderPricing(d.items, method, d.coupon_code);
+  const isDelivery = d.fulfillment_type === "delivery";
+  const pricing = computeOrderPricing(d.items, method, d.coupon_code, d.delivery_fee_cents ?? 0);
   const pickupLines = formatPickupDisplayLines(d.pickup_display);
 
   function buildPayload(): CreateOrderPayload {
@@ -72,7 +80,15 @@ export function ReviewStep() {
       customer_phone: d.customer_phone,
       customer_email: d.customer_email?.trim().toLowerCase() || accountEmail || undefined,
       customer_cpf: d.customer_cpf,
-      delivery_address: resolvePickupAddress(),
+      delivery_address: isDelivery
+        ? composeDeliveryAddressPreview(
+            d.delivery_bairro_id ?? "",
+            d.delivery_street ?? "",
+            d.delivery_number ?? "",
+            d.delivery_complement,
+            d.delivery_reference
+          )
+        : resolvePickupAddress(),
       delivery_date: d.delivery_date,
       pickup_display: d.pickup_display,
       payment_method: method,
@@ -80,6 +96,12 @@ export function ReviewStep() {
       notes: d.internal_notes,
       coupon_code: d.coupon_code,
       items: d.items,
+      fulfillment_type: d.fulfillment_type,
+      delivery_street: isDelivery ? d.delivery_street : undefined,
+      delivery_number: isDelivery ? d.delivery_number : undefined,
+      delivery_complement: isDelivery ? d.delivery_complement : undefined,
+      delivery_reference: isDelivery ? d.delivery_reference : undefined,
+      delivery_bairro_id: isDelivery ? d.delivery_bairro_id : undefined,
     };
   }
 
@@ -162,20 +184,47 @@ export function ReviewStep() {
           <div className="card divide-y divide-nutrir-nude-dark/40 p-0">
             <section className="space-y-2 p-5">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Retirada</p>
+                <p className="text-xs font-bold uppercase text-nutrir-emerald/60">
+                  {isDelivery ? "Entrega" : "Retirada"}
+                </p>
                 <Link href="/agendar" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
                   Trocar
                 </Link>
               </div>
-              <div className="space-y-2 font-semibold text-nutrir-emerald">
-                {pickupLines.map((line, i) => (
-                  <div key={i}>
-                    {line.label && <p>{line.label}</p>}
-                    {line.value && <p className={line.label ? "font-normal" : ""}>{line.value}</p>}
+              {isDelivery ? (
+                <>
+                  <p className="font-semibold text-nutrir-emerald">
+                    {d.delivery_selection
+                      ? `Domingo — ${DELIVERY_WINDOW.label}`
+                      : d.pickup_display}
+                  </p>
+                  <p className="text-sm leading-relaxed text-nutrir-emerald/70">
+                    {composeDeliveryAddressPreview(
+                      d.delivery_bairro_id ?? "",
+                      d.delivery_street ?? "",
+                      d.delivery_number ?? "",
+                      d.delivery_complement,
+                      d.delivery_reference
+                    )}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2 font-semibold text-nutrir-emerald">
+                    {pickupLines.map((line, i) => (
+                      <div key={i}>
+                        {line.label && <p>{line.label}</p>}
+                        {line.value && (
+                          <p className={line.label ? "font-normal" : ""}>{line.value}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <p className="text-sm leading-relaxed text-nutrir-emerald/70">{NUTRIR_STORE_ADDRESS}</p>
+                  <p className="text-sm leading-relaxed text-nutrir-emerald/70">
+                    {NUTRIR_STORE_ADDRESS}
+                  </p>
+                </>
+              )}
             </section>
 
             <section className="space-y-2 p-5">
