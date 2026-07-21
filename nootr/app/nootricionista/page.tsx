@@ -122,27 +122,16 @@ function NootricionistaContent({ token }: { token: string }) {
 
       {/* Seção 3: Oferta de Desconto */}
       <div className="card mt-6 border-nootr-bordoSoft/40 shadow-[0_0_0_1px_rgba(138,30,50,0.25)]">
-        <p className="label-caps text-nootr-bordoSoft">Seu desconto</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Isso Você Ganhou</h2>
+        <p className="label-caps text-nootr-bordoSoft">Bônus Exclusivo Nootr Pro</p>
+        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Você Ganhou um Desconto Exclusivo!</h2>
         <p className="mt-3 text-sm text-nootr-muted">
-          Como agradecimento por já estar investindo em si mesmo com o Nootr Pro, a gente conseguiu um
-          desconto especial com a nutricionista cofundadora do Nootr pra você dar o próximo passo.
+          Como agradecimento por já estar investindo em si mesmo com o Nootr Pro e entendendo que o Nootr
+          NÃO SUBSTITUI um nutricionista, estamos entregando a você uma oportunidade de ter um
+          acompanhamento nutricional com a própria nutricionista cofundadora do Nootr com um desconto
+          único, para você dar o próximo passo.
         </p>
 
         <div className="mt-6 space-y-4">
-          {/* 20% Anual */}
-          <div className="rounded-lg border border-nootr-bordoSoft/40 bg-nootr-bordoSoft/5 p-4">
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-3xl text-nootr-cream">20%</span>
-              <span className="text-xs text-nootr-muted">de desconto</span>
-            </div>
-            <p className="mt-2 text-xs font-semibold text-nootr-bordoSoft">Plano Pro Anual</p>
-            <p className="mt-2 text-xs text-nootr-muted">
-              Você se comprometeu com um ano de transformação. Por isso essa primeira consulta ou plano
-              sai <strong>20% mais barato</strong>, um investimento na dupla Nootr + Nutricionista.
-            </p>
-          </div>
-
           {/* 10% Mensal */}
           <div className="rounded-lg border border-nootr-line/40 bg-nootr-line/5 p-4">
             <div className="flex items-baseline gap-2">
@@ -151,9 +140,22 @@ function NootricionistaContent({ token }: { token: string }) {
             </div>
             <p className="mt-2 text-xs font-semibold text-nootr-cream">Plano Pro Mensal</p>
             <p className="mt-2 text-xs text-nootr-muted">
-              Você tá testando a jornada mês a mês. A primeira consulta ou plano sai{" "}
-              <strong>10% mais barato</strong> pra você experimentar acompanhamento profissional junto
-              com o Nootr.
+              Você está testando a jornada mês a mês. Para incentivar você a continuar motivado, a
+              primeira consulta ou plano sai <strong>10% mais barato</strong> pra você experimentar o
+              acompanhamento profissional junto com o Nootr.
+            </p>
+          </div>
+
+          {/* 20% Anual */}
+          <div className="rounded-lg border border-nootr-bordoSoft/40 bg-nootr-bordoSoft/5 p-4">
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-3xl text-nootr-cream">20%</span>
+              <span className="text-xs text-nootr-muted">de desconto</span>
+            </div>
+            <p className="mt-2 text-xs font-semibold text-nootr-bordoSoft">Plano Pro Anual</p>
+            <p className="mt-2 text-xs text-nootr-muted">
+              Você já se comprometeu com um ano de transformação. Por isso, em forma de agradecimento e
+              de incentivo, você receberá o <strong>desconto máximo</strong>.
             </p>
           </div>
 
@@ -173,6 +175,13 @@ function NootricionistaContent({ token }: { token: string }) {
               <Link href="/plano" className="btn-primary mt-5 inline-flex">
                 Migrar para Plano Pro →
               </Link>
+              <p className="mt-4 text-sm text-nootr-muted">
+                Assine o Plano Pro Anual e garanta 20% de desconto na mensalidade do Nootr e no
+                acompanhamento nutricional.
+              </p>
+              <Link href="/plano" className="btn-secondary mt-3 inline-flex">
+                Assinar Plano Pro Anual →
+              </Link>
             </>
           )}
 
@@ -187,6 +196,13 @@ function NootricionistaContent({ token }: { token: string }) {
               >
                 Conhecer Nutricionista (10% off) →
               </a>
+              <p className="mt-4 text-sm text-nootr-muted">
+                Assine o Plano Pro Anual e garanta 20% de desconto na mensalidade do Nootr e no
+                acompanhamento nutricional.
+              </p>
+              <Link href="/plano" className="btn-secondary mt-3 inline-flex">
+                Assinar Plano Pro Anual →
+              </Link>
             </>
           )}
 
