@@ -17,7 +17,7 @@ declare global {
 
 /**
  * Escaneia um código de barras pela câmera (traseira, quando disponível).
- * Só deve ser montado em contexto mobile com suporte a BarcodeDetector —
+ * Só deve ser montado em contexto mobile com suporte a BarcodeDetector,
  * o chamador é responsável por essa checagem (ver lib/device.ts).
  */
 export function BarcodeScanner({
@@ -68,7 +68,7 @@ export function BarcodeScanner({
               return; // para o loop; o chamador fecha o scanner
             }
           } catch {
-            // frame ilegível — ignora e tenta o próximo
+            // frame ilegível, ignora e tenta o próximo
           }
           rafId = requestAnimationFrame(tick);
         };

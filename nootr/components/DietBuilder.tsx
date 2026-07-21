@@ -2,9 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { FoodAdder, AddedFoodList, addedFoodToInput, type AddedFood } from "@/components/FoodAdder";
+import { DishReviewModal, detectDishes, applyDishDecisions, type DetectedDish, type DishDecision } from "@/components/DishReviewModal";
 import { nootrApi } from "@/lib/api";
-import type { DietSummary, Meal, Plan, Profile } from "@/lib/types";
+import {
+  PRO_DIET_DISCLAIMER,
+  GENERATE_DIET_WARNING,
+  GENERATE_DIET_STEPS,
+  NOOTRICIONISTA_PATH,
+} from "@/lib/plan";
+import type { DietImportPreview, DietSummary, Meal, Plan, Profile } from "@/lib/types";
 
 interface MealDraft {
   name: string;
@@ -22,7 +30,7 @@ function todayWeekday(): number {
   return (new Date().getDay() + 6) % 7;
 }
 
-function mealFoodToAdded(f: Meal["foods"][number]): AddedFood {
+export function mealFoodToAdded(f: Meal["foods"][number]): AddedFood {
   const grams = f.grams ?? 0;
   const r = grams > 0 ? 100 / grams : 1;
   return {
@@ -64,11 +72,20 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
   const [error, setError] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
 
-  // Import (Pro) — PDF/Word/Excel da dieta, lido pela IA
+  // Import (Pro), PDF/Word/Excel da dieta, lido pela IA
   const [showImport, setShowImport] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [importNote, setImportNote] = useState("");
+  // Gerar dieta pronta (Pro), IA monta batendo a meta do perfil, revisada
+  // por nutricionista parceiro antes de aparecer (ver app/dieta/page.tsx).
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateMsg, setGenerateMsg] = useState("");
+  // Revisão de pratos compostos (ver DishReviewModal), preenchido entre o
+  // preview e a confirmação, só quando o documento tem algum prato detectado.
+  const [importPreview, setImportPreview] = useState<DietImportPreview | null>(null);
+  const [reviewDishes, setReviewDishes] = useState<DetectedDish[]>([]);
 
   const loadSlot = useCallback((weekday: number | null, existing: DietSummary[]) => {
     const diet = existing.find((d) => d.weekday === weekday);
@@ -136,6 +153,22 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
 
   const targets = profile?.macro_targets_g ?? null;
 
+  function mealTotals(foods: AddedFood[]) {
+    const t = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+    for (const f of foods) {
+      t.calories += f.calories;
+      t.protein += f.protein_g;
+      t.carbs += f.carbs_g;
+      t.fat += f.fat_g;
+    }
+    return {
+      calories: Math.round(t.calories),
+      protein: Math.round(t.protein),
+      carbs: Math.round(t.carbs),
+      fat: Math.round(t.fat),
+    };
+  }
+
   function switchSlot(weekday: number | null) {
     setSlot(weekday);
     setSavedMsg("");
@@ -163,7 +196,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
     setTargetCalories(String(Math.round(source.daily_calories)));
     setMeals(dietToDrafts(source));
     setError("");
-    setSavedMsg(`Copiado de "${source.name}" — edite o que precisar e salve.`);
+    setSavedMsg(`Copiado de "${source.name}", edite o que precisar e salve.`);
   }
 
   function updateMeal(index: number, patch: Partial<MealDraft>) {
@@ -193,7 +226,34 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
     setImportNote("");
     setError("");
     try {
-      const res = await nootrApi.importDietFile(token, importFile, "Dieta importada");
+      const preview = await nootrApi.previewDietImport(token, importFile);
+      const dishes = detectDishes(preview.menus);
+      if (dishes.length > 0) {
+        // Pausa aqui, DishReviewModal decide prato a prato antes de confirmar.
+        setImportPreview(preview);
+        setReviewDishes(dishes);
+        setImporting(false);
+      } else {
+        await finishImport(preview, [], []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao importar");
+      setImporting(false);
+    }
+  }
+
+  async function finishImport(preview: DietImportPreview, dishes: DetectedDish[], decisions: DishDecision[]) {
+    setImporting(true);
+    setError("");
+    try {
+      const { menus, recipesToSave } = applyDishDecisions(preview.menus, dishes, decisions);
+      const res = await nootrApi.confirmDietImport(token, {
+        name: "Dieta importada",
+        menus,
+        preferences: preview.preferences,
+        targets: preview.targets,
+        recipes_to_save: recipesToSave,
+      });
       const refreshed = await reload();
       setDietMode("dias");
       const todaySlot = todayWeekday();
@@ -201,13 +261,15 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
       loadSlot(todaySlot, refreshed.diets);
       setImportFile(null);
       setShowImport(false);
+      setImportPreview(null);
+      setReviewDishes([]);
       setSavedMsg(
         res.menus_found > 1
-          ? `Dieta importada — ${res.menus_found} cardápios distribuídos pelos 7 dias.`
+          ? `Dieta importada, ${res.menus_found} cardápios distribuídos pelos 7 dias.`
           : "Dieta importada e salva para os 7 dias da semana."
       );
       const notes: string[] = [];
-      if (res.unmatched.length) notes.push(`não casei com a TACO: ${res.unmatched.join(", ")}`);
+      if (preview.unmatched.length) notes.push(`não casei com a TACO: ${preview.unmatched.join(", ")}`);
       const p = res.preferences;
       const learned: string[] = [];
       if (p?.allergies?.length) learned.push(`alergias: ${p.allergies.join(", ")}`);
@@ -217,13 +279,41 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
       if (prof?.protein_pct != null && prof?.carbs_pct != null && prof?.fat_pct != null) {
         learned.push(`macros: ${prof.protein_pct}% proteína / ${prof.carbs_pct}% carbo / ${prof.fat_pct}% gordura`);
       }
-      if (learned.length) notes.push(`aprendi do PDF — ${learned.join("; ")}`);
+      if (recipesToSave.length) learned.push(`${recipesToSave.length} receita(s) salva(s), pendente(s) de aprovação`);
+      if (learned.length) notes.push(`aprendi do PDF, ${learned.join("; ")}`);
       setImportNote(notes.join(" · "));
       onSaved?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao importar");
     } finally {
       setImporting(false);
+    }
+  }
+
+  function handleDishReviewFinish(decisions: DishDecision[]) {
+    if (!importPreview) return;
+    finishImport(importPreview, reviewDishes, decisions);
+  }
+
+  function handleDishReviewCancel() {
+    setImportPreview(null);
+    setReviewDishes([]);
+    setImporting(false);
+  }
+
+  async function handleGenerate() {
+    setError("");
+    setGenerateMsg("");
+    setGenerating(true);
+    try {
+      await nootrApi.generateDiet(token);
+      setShowGenerate(false);
+      setGenerateMsg("Pedido enviado, sua dieta chega em até 24h, após revisão de um nutricionista parceiro.");
+      onSaved?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao gerar dieta");
+    } finally {
+      setGenerating(false);
     }
   }
 
@@ -271,17 +361,74 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
     <div>
       <div className="flex flex-wrap items-center justify-end gap-3">
         {plan === "pro" && (
+          <button onClick={() => setShowGenerate((v) => !v)} className="btn-secondary text-xs">
+            {showGenerate ? "Fechar" : "Gerar dieta pronta (IA)"}
+          </button>
+        )}
+        {plan === "pro" && (
           <button onClick={() => setShowImport((v) => !v)} className="btn-secondary text-xs">
             {showImport ? "Fechar importação" : "Importar dieta (IA)"}
           </button>
         )}
       </div>
 
+      {plan === "pro" && showGenerate && (
+        <div className="card mt-5">
+          <p className="label-caps">Gerar Dieta (Receba em até 24h)</p>
+          {profile?.ai_diet_generated_at ? (
+            <p className="mt-2 text-xs text-nootr-faint">
+              Você já utilizou sua geração gratuita de dieta, esse recurso vale uma única vez por conta.
+            </p>
+          ) : (
+            <>
+              <p className="mt-2 text-xs text-nootr-bordoSoft">
+                <strong>{GENERATE_DIET_WARNING.split("! ")[0]}!</strong> {GENERATE_DIET_WARNING.split("! ")[1]}
+              </p>
+
+              <ol className="mt-4 space-y-2 text-xs text-nootr-muted">
+                {GENERATE_DIET_STEPS.map((step, i) => (
+                  <li key={step} className="flex gap-2">
+                    <span className="shrink-0 font-semibold text-nootr-bordoSoft">{i + 1}.</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+
+              <p className="mt-4 text-xs text-nootr-faint">
+                <span className="font-semibold">Obs:</span> {PRO_DIET_DISCLAIMER} Se você quiser um
+                acompanhamento nutricional e um desconto exclusivo para usuários do Nootr Pro, acesse{" "}
+                <Link
+                  href={NOOTRICIONISTA_PATH}
+                  className="text-nootr-bordoSoft underline decoration-nootr-bordo/50 hover:text-nootr-cream"
+                >
+                  &quot;Nootricionista&quot;
+                </Link>
+                .
+              </p>
+
+              {!profile?.target_calories && (
+                <p className="mt-4 text-xs text-nootr-bordoSoft">
+                  Defina sua meta calórica em Perfil antes de gerar.
+                </p>
+              )}
+              {generateMsg && <p className="mt-3 text-xs text-emerald-400/90">{generateMsg}</p>}
+              <button
+                onClick={handleGenerate}
+                disabled={generating || !profile?.target_calories}
+                className="btn-primary mt-4 text-xs disabled:opacity-60"
+              >
+                {generating ? "Enviando…" : "Gerar minha dieta"}
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       {plan === "pro" && showImport && (
         <div className="card mt-5">
           <p className="label-caps">Importar dieta (Pro)</p>
           <p className="mb-3 mt-1 text-xs text-nootr-muted">
-            Envie o arquivo da dieta montada pela nutricionista — PDF, Word (.docx) ou Excel (.xlsx). A IA
+            Envie o arquivo da dieta montada pela nutricionista, PDF, Word (.docx) ou Excel (.xlsx). A IA
             lê o documento, monta as refeições e também guarda alergias, gostos e substituições que ela já
             tenha sugerido.
           </p>
@@ -351,7 +498,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
                       .filter((d) => d.weekday !== slot && d.weekday !== null)
                       .map((d) => (
                         <option key={d.weekday} value={d.weekday as number}>
-                          {WEEKDAYS[d.weekday as number]} — {d.name}
+                          {WEEKDAYS[d.weekday as number]}, {d.name}
                         </option>
                       ))}
                   </select>
@@ -360,13 +507,13 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
             </div>
           ) : (
             <p className="mt-3 text-xs text-nootr-muted">
-              Uma única dieta vale para todos os dias da semana — como no plano Basic.
+              Uma única dieta vale para todos os dias da semana, como no plano Basic.
             </p>
           )}
         </>
       ) : (
         <p className="mt-8 rounded-xl border border-nootr-line bg-nootr-wine/30 px-4 py-3 text-xs text-nootr-muted">
-          Plano <strong className="text-nootr-cream">Basic</strong> — 1 dieta base para todos os dias. No{" "}
+          Plano <strong className="text-nootr-cream">Basic</strong>, 1 dieta base para todos os dias. No{" "}
           <strong className="text-nootr-bordoSoft">Pro</strong>: uma dieta por dia da semana (ou um plano único,
           se preferir) e importação por IA.
         </p>
@@ -386,7 +533,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
                   <input
                     className="input-field"
                     inputMode="numeric"
-                    placeholder={`automático (${totals.calories || "—"})`}
+                    placeholder={`automático (${totals.calories || "0"})`}
                     value={targetCalories}
                     onChange={(e) => setTargetCalories(e.target.value)}
                   />
@@ -436,6 +583,14 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
                 onRemove={(fi) => updateMeal(i, { foods: meal.foods.filter((_, j) => j !== fi) })}
                 onEdit={(fi, f) => updateMeal(i, { foods: meal.foods.map((x, j) => (j === fi ? f : x)) })}
               />
+              {meal.foods.length > 0 && (() => {
+                const mt = mealTotals(meal.foods);
+                return (
+                  <p className="text-xs text-nootr-faint">
+                    {mt.calories} kcal · P {mt.protein}g · C {mt.carbs}g · G {mt.fat}g
+                  </p>
+                );
+              })()}
               <FoodAdder token={token} onAdd={(f) => updateMeal(i, { foods: [...meal.foods, f] })} />
             </div>
           ))}
@@ -497,6 +652,15 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
           </div>
         </aside>
       </div>
+
+      {importPreview && reviewDishes.length > 0 && (
+        <DishReviewModal
+          token={token}
+          dishes={reviewDishes}
+          onFinish={handleDishReviewFinish}
+          onCancel={handleDishReviewCancel}
+        />
+      )}
     </div>
   );
 }

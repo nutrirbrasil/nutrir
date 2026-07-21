@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     telegram_admin_chat_id: str = ""
 
+    # Único usuário com acesso à página /aprovar (fila de aprovação global de
+    # receitas/alimentos customizados), ver routes/nootr/admin.py.
+    admin_email: str = "contatonutrirbrasil@gmail.com"
+
     @property
     def extra_cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.extra_cors_origins.split(",") if o.strip()]

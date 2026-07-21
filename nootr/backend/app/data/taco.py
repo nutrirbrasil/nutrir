@@ -6,10 +6,10 @@ Fonte: https://github.com/machine-learning-mocha/taco (formatados/alimentos.csv)
 que redistribui os valores publicados em nepa.unicamp.br/taco. Baixado em 2026-07-03.
 Um item foi conferido manualmente contra `nutrir/lib/taco-foods.ts` (Arroz tipo 1
 cozido: 128 kcal, 2.5g proteína, 28.1g carboidrato, 0.2g gordura, 1.6g fibra,
-1mg sódio) — os valores batem exatamente.
+1mg sódio), os valores batem exatamente.
 
 597 alimentos. Nem todo alimento tem todos os nutrientes medidos na tabela
-original (fibra em especial: ~39% dos itens não têm esse valor) — por isso os
+original (fibra em especial: ~39% dos itens não têm esse valor), por isso os
 campos são Optional.
 """
 import csv
@@ -90,7 +90,7 @@ def load_display_names() -> dict[int, str]:
 @lru_cache
 def _load_extras() -> list[TacoFood]:
     """
-    Itens curados que a TACO não cobre (ex: macarrão cozido) — ids >= 9000.
+    Itens curados que a TACO não cobre (ex: macarrão cozido), ids >= 9000.
     Editável em taco_extra.csv, revisável item a item.
     """
     if not _EXTRA_CSV_PATH.exists():
@@ -120,29 +120,42 @@ def load_extras() -> list[TacoFood]:
     return _load_extras()
 
 
+# A fonte original da TACO tem uns poucos itens sem energia/macros medidos
+# (ficam None, ver docstring do módulo). Pra alimentos raros isso é só uma
+# lacuna sem impacto prático, mas "leite integral"/"leite desnatado UHT" são
+# básicos frequentes em dieta e apareceriam com 0 kcal, o que é enganoso.
+# Valores de referência nutricional padrão (não vêm da TACO, mas de tabelas
+# de composição comuns) só pra esses casos de alto impacto, não editamos o
+# CSV vendorizado.
+_NUTRIENT_PATCHES: dict[int, dict[str, float]] = {
+    457: {"kcal": 35.0, "protein_g": 3.4, "carbs_g": 4.9, "fat_g": 0.2},  # Leite, de vaca, desnatado, UHT
+    458: {"kcal": 61.0, "protein_g": 2.9, "carbs_g": 4.3, "fat_g": 3.2},  # Leite, de vaca, integral
+    450: {"kcal": 68.0, "protein_g": 2.6, "carbs_g": 9.5, "fat_g": 2.3},  # Iogurte, sabor abacaxi
+}
+
+
 @lru_cache
 def _load_taco_foods_cached() -> list[TacoFood]:
     """Carrega a tabela completa (TACO + extras). Cacheado internamente."""
     display = load_display_names()
     with open(_CSV_PATH, encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        foods = [
-            TacoFood(
-                id=int(row["Número do Alimento"]),
+        foods = []
+        for row in reader:
+            food_id = int(row["Número do Alimento"])
+            patch = _NUTRIENT_PATCHES.get(food_id, {})
+            foods.append(TacoFood(
+                id=food_id,
                 category=row["Categoria do alimento"],
                 name=row["Descrição dos alimentos"],
-                display_name=display.get(
-                    int(row["Número do Alimento"]), row["Descrição dos alimentos"]
-                ),
-                kcal=_parse_float(row["Energia..kcal."]),
-                protein_g=_parse_float(row["Proteína..g."]),
-                carbs_g=_parse_float(row["Carboidrato..g."]),
-                fat_g=_parse_float(row["Lipídeos..g."]),
+                display_name=display.get(food_id, row["Descrição dos alimentos"]),
+                kcal=patch.get("kcal", _parse_float(row["Energia..kcal."])),
+                protein_g=patch.get("protein_g", _parse_float(row["Proteína..g."])),
+                carbs_g=patch.get("carbs_g", _parse_float(row["Carboidrato..g."])),
+                fat_g=patch.get("fat_g", _parse_float(row["Lipídeos..g."])),
                 fiber_g=_parse_float(row["Fibra.Alimentar..g."]),
                 sodium_mg=_parse_float(row["Sódio..mg."]),
-            )
-            for row in reader
-        ]
+            ))
     return foods + load_extras()
 
 

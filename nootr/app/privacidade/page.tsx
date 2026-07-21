@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Política de privacidade — Nootr",
+  title: "Política de privacidade, Nootr",
 };
 
 export default function PrivacidadePage() {

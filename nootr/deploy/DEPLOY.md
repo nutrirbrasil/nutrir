@@ -2,7 +2,7 @@
 
 > **Ainda não implantado.** Este runbook prepara o deploy; aplicá-lo na VPS é um
 > passo manual e de maior risco (a VPS `zeedo`/Hetzner é compartilhada com
-> nutrir, pauli e um projeto de trading — ver `../../CLAUDE.md`). Nada aqui roda
+> nutrir, pauli e um projeto de trading, ver `../../CLAUDE.md`). Nada aqui roda
 > sozinho.
 
 ## Arquitetura em produção

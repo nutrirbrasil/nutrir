@@ -1,9 +1,10 @@
-"""Rotas Nootr — busca de alimentos (TACO) e código de barras (Open Food Facts)."""
+"""Rotas Nootr, busca de alimentos (TACO + itens próprios do usuário) e código de barras (Open Food Facts)."""
 import httpx
 from fastapi import APIRouter, HTTPException, Path, Query
+from pydantic import BaseModel, Field
 
 from backend.app.auth import CurrentUser, CurrentUserDep
-from backend.app.services import food_matcher
+from backend.app.services import food_matcher, repository
 
 router = APIRouter(prefix="/nootr/foods", tags=["Nootr - Alimentos"])
 
@@ -14,14 +15,26 @@ _OFF_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
 def search_foods(
     q: str = Query(min_length=2, max_length=80),
     limit: int = Query(default=8, ge=1, le=25),
-    _user: CurrentUser = CurrentUserDep,
+    user: CurrentUser = CurrentUserDep,
 ):
-    """Busca alimentos na TACO por texto. Valores por 100g."""
-    results = food_matcher.search_taco(q, limit=limit)
+    """
+    Busca alimentos na TACO + itens próprios do usuário (cadastrados à mão via
+    "Adicionar novo alimento"). Valores por 100g.
+    """
+    taco_results = food_matcher.search_taco(q, limit=limit)
+    custom_results = repository.search_custom_foods(user, q, limit=limit)
+    # Alimentos aprovados de OUTROS usuários (ver /aprovar), dedupe por id
+    # com os próprios, que já vêm em custom_results independente do status.
+    own_ids = {c["id"] for c in custom_results}
+    custom_results += [
+        c for c in repository.search_global_custom_foods(user, q, limit=limit)
+        if c["id"] not in own_ids
+    ]
     return {
         "results": [
             {
                 "taco_id": f.id,
+                "custom_id": None,
                 "name": f.display_name,
                 "full_name": f.name,
                 "category": f.category,
@@ -29,10 +42,57 @@ def search_foods(
                 "protein_g": f.protein_g,
                 "carbs_g": f.carbs_g,
                 "fat_g": f.fat_g,
+                "pending_approval": False,
             }
-            for f in results
-        ]
+            for f in taco_results
+        ] + [
+            {
+                "taco_id": None,
+                "custom_id": c["id"],
+                "name": c["name"],
+                "full_name": c["name"],
+                "category": "Meus alimentos",
+                "kcal": c["kcal_100g"],
+                "protein_g": c["protein_100g"],
+                "carbs_g": c["carbs_100g"],
+                "fat_g": c["fat_100g"],
+                "pending_approval": c["status"] == "pending",
+            }
+            for c in custom_results
+        ][:limit]
     }
+
+
+class CustomFoodIn(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    kcal_100g: float = Field(ge=0, le=900)
+    protein_100g: float = Field(ge=0, le=100)
+    carbs_100g: float = Field(ge=0, le=100)
+    fat_100g: float = Field(ge=0, le=100)
+    fiber_100g: float | None = Field(default=None, ge=0, le=100)
+    sodium_100mg: float | None = Field(default=None, ge=0, le=30000)
+
+
+@router.get("/custom")
+def list_custom_foods(user: CurrentUser = CurrentUserDep):
+    """Alimentos que o próprio usuário cadastrou à mão (permanentes na conta dele)."""
+    return {"results": repository.list_custom_foods(user)}
+
+
+@router.post("/custom")
+def create_custom_food(body: CustomFoodIn, user: CurrentUser = CurrentUserDep):
+    """
+    Cadastra um alimento novo, permanente na conta do usuário e já disponível
+    pra busca. Nasce "pending", entra na base TACO geral só após revisão
+    manual (mesmo processo curado de taco_extra.csv).
+    """
+    return repository.insert_custom_food(user, body.model_dump())
+
+
+@router.delete("/custom/{food_id}")
+def delete_custom_food(food_id: str, user: CurrentUser = CurrentUserDep):
+    repository.delete_custom_food(user, food_id)
+    return {"ok": True}
 
 
 @router.get("/barcode/{code}")

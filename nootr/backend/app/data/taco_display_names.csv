@@ -329,7 +329,7 @@ taco_id,original,display
 328,"Carne, bovina, acém, sem gordura, cozido",Carne vermelha (acém)
 329,"Carne, bovina, acém, sem gordura, cru",Carne vermelha (acém) cru
 330,"Carne, bovina, almôndegas, cruas",Almôndega (crua)
-331,"Carne, bovina, almôndegas, fritas",Almôndegas de carne frita
+331,"Carne, bovina, almôndegas, fritas",Almôndegas de carne
 332,"Carne, bovina, bucho, cozido",Bucho cozido
 333,"Carne, bovina, bucho, cru",Carne de bucho cru
 334,"Carne, bovina, capa de contra-filé, com gordura, crua",Contra-filé com gordura (cru)
@@ -344,7 +344,7 @@ taco_id,original,display
 343,"Carne, bovina, contra-filé, com gordura, cru",Contra-filé com gordura cru
 344,"Carne, bovina, contra-filé, com gordura, grelhado",Contra-filé com gordura grelhado
 345,"Carne, bovina, contra-filé, sem gordura, cru",Contra-filé sem gordura cru
-346,"Carne, bovina, contra-filé, sem gordura, grelhado",Carne grelhada
+346,"Carne, bovina, contra-filé, sem gordura, grelhado",Carne
 347,"Carne, bovina, costela, assada",Costela assada
 348,"Carne, bovina, costela, crua",Costela crua
 349,"Carne, bovina, coxão duro, sem gordura, cozido",Coxão duro
@@ -373,7 +373,7 @@ taco_id,original,display
 372,"Carne, bovina, músculo, sem gordura, cru",Músculo cru
 373,"Carne, bovina, paleta, com gordura, crua",Paleta crua
 374,"Carne, bovina, paleta, sem gordura, cozida",Paleta (Carne)
-375,"Carne, bovina, paleta, sem gordura, crua",Paleta crua
+375,"Carne, bovina, paleta, sem gordura, crua",Paleta crua sem gordura
 376,"Carne, bovina, patinho, sem gordura, cru",Patinho cru
 377,"Carne, bovina, patinho, sem gordura, grelhado",Patinho (Carne magra)
 378,"Carne, bovina, peito, sem gordura, cozido",Carne vermelha peito

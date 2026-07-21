@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { RequireAuth } from "@/components/RequireAuth";
+import { TagListInput } from "@/components/TagListInput";
 import { nootrApi } from "@/lib/api";
-import { PRO_SOON } from "@/lib/plan";
-import type { ActivityLevel, Formula, Plan, Profile } from "@/lib/types";
+import { COUNTRY_OPTIONS } from "@/lib/countries";
+import type { ActivityLevel, Formula, Profile, TacoFoodResult } from "@/lib/types";
 
 function mergeUnique(a: string[], b: string[]): string[] {
   const merged = [...a];
@@ -22,10 +24,9 @@ const ACTIVITY_OPTIONS: { id: ActivityLevel; label: string; hint: string }[] = [
   { id: "atleta", label: "Atleta", hint: "2x por dia" },
 ];
 
-const FORMULA_OPTIONS: { id: Formula; label: string; hint: string }[] = [
-  { id: "manual", label: "Definir manualmente", hint: "você informa as calorias" },
-  { id: "mifflin_st_jeor", label: "Mifflin-St Jeor", hint: "recomendada pela ADA" },
-  { id: "harris_benedict", label: "Harris-Benedict", hint: "revisada, 1984" },
+const OBJECTIVE_OPTIONS = [
+  { id: "weight_loss", label: "Perda de Peso", formula: "mifflin_st_jeor" as Formula },
+  { id: "muscle_gain", label: "Ganho de Massa", formula: "harris_benedict" as Formula },
 ];
 
 function PerfilContent({ token }: { token: string }) {
@@ -41,6 +42,7 @@ function PerfilContent({ token }: { token: string }) {
   const [height, setHeight] = useState("");
   const [activity, setActivity] = useState<ActivityLevel | "">("");
   const [formula, setFormula] = useState<Formula>("manual");
+  const [objective, setObjective] = useState<"weight_loss" | "muscle_gain">("weight_loss");
   const [manualCalories, setManualCalories] = useState("");
   const [proteinPct, setProteinPct] = useState(30);
   const [carbsPct, setCarbsPct] = useState(40);
@@ -59,7 +61,13 @@ function PerfilContent({ token }: { token: string }) {
         setHeight(p.height_cm ? String(p.height_cm) : "");
         setActivity(p.activity_level ?? "");
         setFormula(p.formula);
-        setManualCalories(p.formula === "manual" && p.target_calories ? String(Math.round(p.target_calories)) : "");
+        if (p.formula === "manual") {
+          setManualCalories(p.target_calories ? String(Math.round(p.target_calories)) : "");
+        } else if (p.formula === "harris_benedict") {
+          setObjective("muscle_gain");
+        } else {
+          setObjective("weight_loss");
+        }
         setProteinPct(p.protein_pct ?? 30);
         setCarbsPct(p.carbs_pct ?? 40);
         setFatPct(p.fat_pct ?? 30);
@@ -71,13 +79,13 @@ function PerfilContent({ token }: { token: string }) {
     };
   }, [token]);
 
-  async function switchPlan(plan: Plan) {
+  async function switchCountry(country: string) {
     setError("");
     try {
-      const updated = await nootrApi.updateProfile(token, { plan });
+      const updated = await nootrApi.updateProfile(token, { country });
       setProfile(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao trocar de plano");
+      setError(err instanceof Error ? err.message : "Erro ao trocar o país");
     }
   }
 
@@ -98,6 +106,8 @@ function PerfilContent({ token }: { token: string }) {
       if (activity) body.activity_level = activity;
       if (formula === "manual" && manualCalories)
         body.target_calories = parseFloat(manualCalories.replace(",", "."));
+      else if (formula !== "manual")
+        body.formula = objective === "weight_loss" ? "mifflin_st_jeor" : "harris_benedict";
       body.protein_pct = proteinPct;
       body.carbs_pct = carbsPct;
       body.fat_pct = fatPct;
@@ -105,7 +115,7 @@ function PerfilContent({ token }: { token: string }) {
       setProfile(updated);
       setSavedMsg(
         updated.target_calories
-          ? `Salvo — alvo diário: ${Math.round(updated.target_calories)} kcal.`
+          ? `Salvo, alvo diário: ${Math.round(updated.target_calories)} kcal.`
           : "Salvo."
       );
     } catch (err) {
@@ -118,82 +128,51 @@ function PerfilContent({ token }: { token: string }) {
   if (loading) return <p className="text-sm text-nootr-muted">Carregando…</p>;
 
   const currentPlan = profile?.plan ?? "basic";
+  const currentCountry = profile?.country ?? "BR";
 
   return (
     <div className="mx-auto max-w-3xl">
       <div className="divider-bordo mb-4" />
-      <h1 className="font-display text-4xl text-nootr-cream">Perfil</h1>
-      <p className="mt-2 text-sm text-nootr-muted">
-        Seu plano e os dados usados para calcular suas calorias diárias.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-4xl text-nootr-cream">Perfil</h1>
+          <p className="mt-2 text-sm text-nootr-muted">
+            Seu plano e os dados usados para calcular suas calorias diárias.
+          </p>
+        </div>
+        <div className="w-40">
+          <label className="label-caps">País</label>
+          <select
+            className="input-field"
+            value={currentCountry}
+            onChange={(e) => switchCountry(e.target.value)}
+          >
+            {COUNTRY_OPTIONS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Plano */}
-      <section className="mt-10">
-        <p className="label-caps">Plano</p>
-        <div className="mt-2 grid gap-4 sm:grid-cols-2">
-          {(
-            [
-              {
-                id: "basic" as Plan,
-                nome: "Basic",
-                preco: "Gratuito",
-                itens: ["1 dieta base para todos os dias", "Substituições ilimitadas", "Base TACO completa"],
-                soon: [] as string[],
-              },
-              {
-                id: "pro" as Plan,
-                nome: "Pro",
-                preco: "Em breve",
-                itens: ["Até 7 dietas — uma por dia da semana", "Tudo do Basic"],
-                soon: PRO_SOON,
-              },
-            ]
-          ).map((p) => {
-            const active = currentPlan === p.id;
-            return (
-              <div
-                key={p.id}
-                className={`card card-hover relative ${active ? "border-nootr-bordo" : ""}`}
-              >
-                {active && (
-                  <span className="absolute right-4 top-4 rounded-full bg-nootr-bordo px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-caps text-nootr-cream">
-                    Atual
-                  </span>
-                )}
-                <p className="font-display text-2xl text-nootr-cream">{p.nome}</p>
-                <p className="mt-0.5 text-xs text-nootr-bordoSoft">{p.preco}</p>
-                <ul className="mt-4 space-y-1.5 text-sm text-nootr-muted">
-                  {p.itens.map((item) => (
-                    <li key={item} className="flex gap-2">
-                      <span className="text-nootr-bordo">—</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                {p.soon.length > 0 && (
-                  <>
-                    <p className="mt-5 text-[11px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
-                      Em breve no Pro
-                    </p>
-                    <ul className="mt-2 space-y-1.5 text-sm text-nootr-faint">
-                      {p.soon.map((item) => (
-                        <li key={item}>· {item}</li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-                {!active && (
-                  <button onClick={() => switchPlan(p.id)} className="btn-secondary mt-5 w-full text-xs">
-                    {p.id === "pro" ? "Ativar Pro" : "Voltar para o Basic"}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <p className="mt-2 text-xs text-nootr-faint">
-          Pagamento ainda não integrado — a troca de plano é liberada durante o período de testes.
+      <section className="mt-10 flex items-center justify-between rounded-xl border border-nootr-line bg-nootr-black px-4 py-3.5">
+        <p className="text-sm text-nootr-cream">
+          Plano:{" "}
+          <span className="font-semibold text-nootr-bordoSoft">
+            {currentPlan === "pro" ? "Pro" : "Basic"}
+          </span>
         </p>
+        {currentPlan === "basic" ? (
+          <Link href="/plano" className="btn-primary px-4 py-1.5 text-xs">
+            Fazer upgrade
+          </Link>
+        ) : (
+          <Link href="/plano" className="text-xs text-nootr-muted transition-colors hover:text-nootr-bordoSoft">
+            Alterar
+          </Link>
+        )}
       </section>
 
       {/* Dados corporais + fórmula */}
@@ -201,16 +180,20 @@ function PerfilContent({ token }: { token: string }) {
         <div>
           <p className="label-caps">Cálculo de calorias</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {FORMULA_OPTIONS.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setFormula(f.id)}
-                className={`chip ${formula === f.id ? "chip-active" : ""}`}
-                title={f.hint}
-              >
-                {f.label}
-              </button>
-            ))}
+            <button
+              onClick={() => setFormula("manual")}
+              className={`chip ${formula === "manual" ? "chip-active" : ""}`}
+            >
+              Definir manualmente
+            </button>
+            <button
+              onClick={() =>
+                setFormula(objective === "weight_loss" ? "mifflin_st_jeor" : "harris_benedict")
+              }
+              className={`chip ${formula !== "manual" ? "chip-active" : ""}`}
+            >
+              Calcular
+            </button>
           </div>
         </div>
 
@@ -227,6 +210,23 @@ function PerfilContent({ token }: { token: string }) {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="label-caps">Objetivo</label>
+              <div className="flex flex-wrap gap-2">
+                {OBJECTIVE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => {
+                      setObjective(opt.id as "weight_loss" | "muscle_gain");
+                      setFormula(opt.formula);
+                    }}
+                    className={`chip ${objective === opt.id ? "chip-active" : ""}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div>
               <label className="label-caps">Sexo</label>
               <div className="flex gap-2">
@@ -289,7 +289,7 @@ function PerfilContent({ token }: { token: string }) {
             </div>
           </div>
           <p className={`mt-3 text-xs ${proteinPct + carbsPct + fatPct === 100 ? "text-nootr-faint" : "text-nootr-bordoSoft"}`}>
-            Soma: {proteinPct + carbsPct + fatPct}% {proteinPct + carbsPct + fatPct !== 100 && "— o ideal é somar 100%"}
+            Soma: {proteinPct + carbsPct + fatPct}%{proteinPct + carbsPct + fatPct !== 100 && ", o ideal é somar 100%"}
           </p>
         </div>
 
@@ -319,45 +319,164 @@ function PerfilContent({ token }: { token: string }) {
   );
 }
 
-function TagListInput({
+interface SelectedFood {
+  full_name: string;
+  display_name: string;
+}
+
+/** Igual ao TagListInput, mas os itens vêm de uma busca na base TACO (autocomplete)
+ * em vez de texto livre, garante que a preferência é um alimento real, com id, que o
+ * matching consegue usar como desempate (ex: "banana" na dieta + "Banana, nanica" aqui). */
+function TacoTagListInput({
+  token,
   label,
   hint,
   value,
   onChange,
 }: {
+  token: string;
   label: string;
   hint: string;
   value: string[];
   onChange: (v: string[]) => void;
 }) {
-  const [draft, setDraft] = useState("");
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<TacoFoodResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [selected, setSelected] = useState<SelectedFood[]>([]);
+  const [resolving, setResolving] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
 
-  function commitDraft() {
-    const items = draft
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (items.length) onChange([...value, ...items]);
-    setDraft("");
+  // Sincronizar quando value muda (reload da página), resolve todos os
+  // nomes em paralelo (não um de cada vez) pra não parecer que os itens
+  // salvos sumiram enquanto carrega.
+  useEffect(() => {
+    let active = true;
+    const syncFromProp = async () => {
+      if (value.length === 0) {
+        setSelected([]);
+        return;
+      }
+      setResolving(true);
+      const newSelected = await Promise.all(
+        value.map(async (fullName) => {
+          const existing = selected.find((s) => s.full_name === fullName);
+          if (existing) return existing;
+          try {
+            const data = await nootrApi.searchFoods(token, fullName);
+            const match = data.results.find((r) => r.full_name === fullName);
+            return { full_name: fullName, display_name: match?.name || fullName };
+          } catch {
+            return { full_name: fullName, display_name: fullName };
+          }
+        })
+      );
+      if (active) {
+        setSelected(newSelected);
+        setResolving(false);
+      }
+    };
+    syncFromProp();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, token]);
+
+  useEffect(() => {
+    if (query.trim().length < 2) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+    const t = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const data = await nootrApi.searchFoods(token, query.trim());
+        // Preferência precisa referenciar um item estável da TACO (é o que o
+        // desempate de matching usa), alimentos próprios do usuário ficam de
+        // fora daqui, mesmo que a busca geral os traga.
+        setResults(data.results.filter((r) => r.taco_id != null));
+        setOpen(true);
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [query, token]);
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  function addItem(result: TacoFoodResult) {
+    if (!selected.some((s) => s.full_name.toLowerCase() === result.full_name.toLowerCase())) {
+      const newSelected = [...selected, { full_name: result.full_name, display_name: result.name }];
+      setSelected(newSelected);
+      onChange(newSelected.map((s) => s.full_name));
+    }
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+  }
+
+  function removeItem(index: number) {
+    const newSelected = selected.filter((_, j) => j !== index);
+    setSelected(newSelected);
+    onChange(newSelected.map((s) => s.full_name));
   }
 
   return (
-    <div>
+    <div ref={boxRef} className="relative">
       <label className="label-caps">{label}</label>
       <p className="mb-1.5 text-xs text-nootr-faint">{hint}</p>
-      {value.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-1.5">
-          {value.map((item, i) => (
+      <input
+        className="input-field"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Buscar alimento na TACO (ex: banana nanica)"
+      />
+      {open && (
+        <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-nootr-line bg-nootr-black shadow-lg">
+          {searching && <p className="px-3 py-2 text-xs text-nootr-faint">Buscando…</p>}
+          {!searching && results.length === 0 && (
+            <p className="px-3 py-2 text-xs text-nootr-faint">Nenhum alimento encontrado.</p>
+          )}
+          {results.map((r) => (
+            <button
+              key={r.taco_id ?? r.full_name}
+              type="button"
+              onClick={() => addItem(r)}
+              className="block w-full px-3 py-2 text-left text-sm text-nootr-cream transition-colors hover:bg-nootr-line/40"
+            >
+              {r.name}
+            </button>
+          ))}
+        </div>
+      )}
+      {resolving && selected.length === 0 && (
+        <p className="mt-2 text-xs text-nootr-faint">Carregando itens salvos…</p>
+      )}
+      {selected.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {selected.map((item, i) => (
             <span
-              key={`${item}-${i}`}
+              key={`${item.full_name}-${i}`}
               className="flex items-center gap-1.5 rounded-full border border-nootr-line bg-nootr-black px-3 py-1 text-xs text-nootr-cream"
             >
-              {item}
+              {item.display_name}
               <button
                 type="button"
-                onClick={() => onChange(value.filter((_, j) => j !== i))}
+                onClick={() => removeItem(i)}
                 className="text-nootr-faint hover:text-nootr-bordoSoft"
-                aria-label={`Remover ${item}`}
+                aria-label={`Remover ${item.display_name}`}
               >
                 ×
               </button>
@@ -365,19 +484,6 @@ function TagListInput({
           ))}
         </div>
       )}
-      <input
-        className="input-field"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === ",") {
-            e.preventDefault();
-            commitDraft();
-          }
-        }}
-        onBlur={commitDraft}
-        placeholder="Digite e pressione Enter (separe vários por vírgula)"
-      />
     </div>
   );
 }
@@ -434,8 +540,7 @@ function PreferencesSection({ token }: { token: string }) {
       <div>
         <p className="label-caps">Preferências alimentares</p>
         <p className="mt-1 text-xs text-nootr-muted">
-          Usamos isso para a IA sugerir substituições realistas — nunca com o que você não pode ou
-          não gosta de comer, e de preferência com o que você já costuma ter em casa.
+          Usamos isso para ajudar a buscar substituições próximas da sua realidade, personalize da sua forma, quanto mais informações, melhor o resultado.
         </p>
       </div>
 
@@ -446,13 +551,14 @@ function PreferencesSection({ token }: { token: string }) {
           <div className="grid gap-6 sm:grid-cols-2">
             <TagListInput
               label="Alergias / Não gosto"
-              hint="Evitados pela IA — nunca sugeridos."
+              hint="Esses itens serão evitados pelo Nootr"
               value={avoid}
               onChange={setAvoid}
             />
-            <TagListInput
+            <TacoTagListInput
+              token={token}
               label="Gosto / Costumo ter em casa"
-              hint="Priorizados nas sugestões e usados em 'Estou em falta' e nas trocas da IA."
+              hint="Esses itens escolhidos serão priorizados nas escolhas do Nootr"
               value={likesPantry}
               onChange={setLikesPantry}
             />
@@ -460,6 +566,7 @@ function PreferencesSection({ token }: { token: string }) {
 
           <div>
             <label className="label-caps">Observações</label>
+            <p className="mb-1.5 text-xs text-nootr-faint">Escreva aqui detalhes para ajudar o Nootr a fazer as melhores escolhas de substituições</p>
             <textarea
               className="input-field min-h-[80px]"
               value={notes}

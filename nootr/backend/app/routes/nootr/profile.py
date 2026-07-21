@@ -1,4 +1,4 @@
-"""Rotas Nootr — perfil do usuário (plano + dados corporais + cálculo calórico + macros)."""
+"""Rotas Nootr, perfil do usuário (plano + dados corporais + cálculo calórico + macros)."""
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
@@ -9,6 +9,12 @@ router = APIRouter(prefix="/nootr/profile", tags=["Nootr - Perfil"])
 
 _DEFAULT_PROFILE = {
     "plan": "basic",
+    # Sem cobrança real ainda (ver ProfileUpdate.billing_cycle), só guarda a
+    # escolha mensal/anual pra decidir elegibilidade a benefícios (ex: desconto
+    # da nutricionista, hoje exclusivo do Pro Anual, ver POST /nootr/diets/generate
+    # e lib/plan.ts NUTRITIONIST_DISCOUNT).
+    "billing_cycle": "mensal",
+    "country": "BR",
     "sex": None,
     "age": None,
     "weight_kg": None,
@@ -19,11 +25,19 @@ _DEFAULT_PROFILE = {
     "protein_pct": 30,
     "carbs_pct": 40,
     "fat_pct": 30,
+    "ai_diet_generated_at": None,
 }
 
 
 class ProfileUpdate(BaseModel):
     plan: str | None = Field(default=None, pattern="^(basic|pro)$")
+    # Sem cobrança real ainda, só a escolha declarada (ver _DEFAULT_PROFILE).
+    billing_cycle: str | None = Field(default=None, pattern="^(mensal|anual)$")
+    # ISO 3166-1 alpha-2. Hoje só afeta o desempate de "variedade mais comum"
+    # do matching (ver food_matcher._COMMON_DEFAULT_BR) quando for "BR", a
+    # TACO é uma base só brasileira, então outros países ainda não têm um
+    # equivalente próprio; o campo já fica disponível pra quando existir.
+    country: str | None = Field(default=None, pattern="^[A-Z]{2}$")
     sex: str | None = Field(default=None, pattern="^(m|f)$")
     age: int | None = Field(default=None, ge=10, le=120)
     weight_kg: float | None = Field(default=None, gt=0, lt=500)
@@ -69,8 +83,15 @@ def _with_macro_targets(profile: dict) -> dict:
 
 @router.get("")
 def get_profile(user: CurrentUser = CurrentUserDep):
-    profile = repository.get_profile(user) or {**_DEFAULT_PROFILE, "user_id": user.id}
-    return _with_macro_targets(dict(profile))
+    """
+    `has_profile=False` quando o usuário nunca salvou nada (nenhuma linha na
+    tabela ainda), a resposta já vem com valores default pra UI não travar,
+    mas o frontend usa esse flag pra saber que a conta é nova e ainda precisa
+    passar pelo onboarding (país + plano, ver app/onboarding).
+    """
+    existing = repository.get_profile(user)
+    profile = existing or {**_DEFAULT_PROFILE, "user_id": user.id}
+    return {**_with_macro_targets(dict(profile)), "has_profile": existing is not None}
 
 
 @router.put("")
@@ -80,4 +101,4 @@ def update_profile(body: ProfileUpdate, user: CurrentUser = CurrentUserDep):
     merged = {**{k: current.get(k, _DEFAULT_PROFILE.get(k)) for k in _DEFAULT_PROFILE}, **patch}
     merged = _with_computed_calories(merged)
     saved = repository.upsert_profile(user, merged)
-    return _with_macro_targets(dict(saved))
+    return {**_with_macro_targets(dict(saved)), "has_profile": True}

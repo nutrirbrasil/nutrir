@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 /**
  * Card de plano (Basic/Pro), usado no onboarding (dois lado a lado,
  * selecionáveis) e em Perfil (card único de upgrade). Visual único pra as
- * duas telas não divergirem — features de plano moram em lib/plan.ts.
+ * duas telas não divergirem, features de plano moram em lib/plan.ts.
  */
 export function PlanCard({
   name,
@@ -21,10 +21,10 @@ export function PlanCard({
 }: {
   name: string;
   price: string;
-  // Nota abaixo do preço (ex: "cobrado R$ 597,00/ano") — ver lib/plan.ts
+  // Nota abaixo do preço (ex: "cobrado R$ 597,00/ano"), ver lib/plan.ts
   // PRO_ANNUAL_BILLING_NOTE, exibida só quando o ciclo anual está selecionado.
   billingNote?: string;
-  // Alternância mensal/anual — só o card Pro tem ciclo (ver lib/plan.ts
+  // Alternância mensal/anual, só o card Pro tem ciclo (ver lib/plan.ts
   // PLAN_PRICES, Basic não tem opção anual).
   cycleToggle?: {
     value: "mensal" | "anual";
@@ -35,7 +35,7 @@ export function PlanCard({
   soon?: { title: string; description: string }[];
   highlighted?: boolean;
   // Bônus de destaque do plano (ex: dieta pronta revisada por nutricionista)
-  // — ver lib/plan.ts PRO_BONUS, exibido só no card Pro.
+  //, ver lib/plan.ts PRO_BONUS, exibido só no card Pro.
   bonus?: string[];
   cta: ReactNode;
 }) {

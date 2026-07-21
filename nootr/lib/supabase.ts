@@ -10,7 +10,7 @@ if (!url || !anonKey) {
   );
 }
 
-// Cliente de browser (auth via localStorage). Usado só para autenticação —
+// Cliente de browser (auth via localStorage). Usado só para autenticação,
 // os dados passam pelo backend FastAPI, que respeita o RLS com o token do usuário.
 export const supabase = createClient(url, anonKey, {
   auth: {

@@ -1,8 +1,8 @@
 """
-Rotas Nootr — preferências alimentares do usuário.
+Rotas Nootr, preferências alimentares do usuário.
 
 Guarda o contexto que a IA precisa para sugerir substituições realistas:
-alergias/restrições, alimentos que não gosta, que gosta, e a "despensa" —
+alergias/restrições, alimentos que não gosta, que gosta, e a "despensa",
 o que a pessoa costuma ter em casa (usado no "Estou em falta" e nas
 substituições sugeridas pela IA, para não propor algo fora da realidade dela).
 """

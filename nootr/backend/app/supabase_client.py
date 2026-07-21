@@ -5,7 +5,7 @@ Estratégia de segurança: o backend NÃO usa a service key. Cada request do
 frontend traz o `access_token` do usuário (Bearer). O backend repassa esse
 token ao GoTrue (para identificar o usuário) e ao PostgREST (para ler/gravar
 dados). Assim, todas as operações rodam sob o RLS do Postgres com
-`auth.uid() = user_id` — o backend nunca consegue acessar dados de outro
+`auth.uid() = user_id`, o backend nunca consegue acessar dados de outro
 usuário mesmo que houvesse um bug. A `anon key` (pública) entra só como
 `apikey`, exigida pelo PostgREST/GoTrue.
 """

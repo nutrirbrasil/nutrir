@@ -2,12 +2,16 @@
 Motor de ajuste de dieta.
 
 Quando o usuário reporta um desvio (comeu/vai comer algo diferente, ou trocou
-um ingrediente), substituímos a refeição alvo e reajustamos as PORÇÕES das
-refeições seguintes do dia buscando DOIS alvos ao mesmo tempo: as CALORIAS e a
-PROTEÍNA do dia (proteína com tolerância de ~5%).
+um ingrediente), a refeição alvo é ajustada por TROCA: só os alimentos
+planejados que a pessoa diz que não comeu saem (`skipped_names`), o que ela
+comeu no lugar entra (`new_foods`, pode ser vazio = nada no lugar), e tudo
+mais que já estava na refeição continua igual, a pessoa nunca precisa
+redescrever a refeição inteira, só o que mudou. Depois reajustamos as
+PORÇÕES das refeições seguintes do dia buscando DOIS alvos ao mesmo tempo: as
+CALORIAS e a PROTEÍNA do dia (proteína com tolerância de ~5%).
 
 Como um único fator por alimento não permite acertar dois alvos independentes,
-separamos os alimentos restantes em dois grupos — proteicos e energéticos — e
+separamos os alimentos restantes em dois grupos, proteicos e energéticos, e
 resolvemos um sistema linear 2x2 para o fator de cada grupo. As quantidades
 (gramas + rótulo) são atualizadas de verdade, porque a mudança principal é
 justamente na quantidade de cada alimento.
@@ -106,7 +110,7 @@ def _solve_two_group(cal_a: float, prot_a: float, cal_b: float, prot_b: float,
     Fatores (a, b) para o grupo proteico (A) e energético (B).
 
     Prioridade: as CALORIAS do dia batem a meta (sem tolerância pedida pelo
-    usuário) — é a restrição rígida. Dentro do que sobra de liberdade (a,b
+    usuário), é a restrição rígida. Dentro do que sobra de liberdade (a,b
     fisicamente possíveis, entre _MIN_FACTOR e _MAX_FACTOR), escolhemos o
     ponto que deixa a PROTEÍNA o mais perto possível da meta. Isso evita o
     problema do sistema 2x2 "exato": ele podia pedir um fator negativo
@@ -150,22 +154,32 @@ def _solve_two_group(cal_a: float, prot_a: float, cal_b: float, prot_b: float,
     return f, f
 
 
-def _rebalance(meals: list[dict], from_meal_id: str, targets: dict) -> tuple[list[dict], bool]:
+def _meals_after(meals: list[dict], meal_id: str) -> set[str]:
+    """IDs das refeições que vêm depois de `meal_id` na ordem da lista."""
+    idx = next(i for i, m in enumerate(meals) if m["id"] == meal_id)
+    return {m["id"] for m in meals[idx + 1:]}
+
+
+def _rebalance(meals: list[dict], adjustable_ids: set[str], targets: dict) -> tuple[list[dict], bool, bool]:
     """
-    Ajusta as porções das refeições após `from_meal_id` para o dia bater as
+    Ajusta as porções das refeições em `adjustable_ids` para o dia bater as
     CALORIAS e a PROTEÍNA do alvo ao mesmo tempo (grupos proteico/energético).
-    Devolve (refeições, rebalanceou?).
+    Devolve (refeições, rebalanceou?, havia refeição ajustável?), o terceiro
+    valor diferencia "não havia nada pra ajustar" de "havia, mas o fator ficou
+    ~1 (já estava dentro da meta)", pra decidir se vale a pena tentar um
+    ajuste extra (adicionar/remover alimento) além da escala de quantidade.
     """
-    idx = next(i for i, m in enumerate(meals) if m["id"] == from_meal_id)
-    remaining = meals[idx + 1:]
+    remaining = [m for m in meals if m["id"] in adjustable_ids]
+    had_adjustable = bool(remaining)
     if not remaining:
-        return meals, False
+        return meals, False, False
 
     consumed = {"calories": 0.0, "protein_g": 0.0}
-    for m in meals[: idx + 1]:
-        mm = _meal_macros(m)
-        consumed["calories"] += mm["calories"]
-        consumed["protein_g"] += mm["protein_g"]
+    for m in meals:
+        if m["id"] not in adjustable_ids:
+            mm = _meal_macros(m)
+            consumed["calories"] += mm["calories"]
+            consumed["protein_g"] += mm["protein_g"]
 
     need_cal = targets["calories"] - consumed["calories"]
     need_prot = targets["protein_g"] - consumed["protein_g"]
@@ -182,24 +196,53 @@ def _rebalance(meals: list[dict], from_meal_id: str, targets: dict) -> tuple[lis
 
     solution = _solve_two_group(cal_a, prot_a, cal_b, prot_b, need_cal, need_prot)
     if solution is None:
-        return meals, False
+        return meals, False, had_adjustable
     a, b = solution
     if abs(a - 1) < 0.02 and abs(b - 1) < 0.02:
-        return meals, False
+        return meals, False, had_adjustable
 
     adjusted = []
     for m in meals:
-        if m not in remaining:
+        if m["id"] not in adjustable_ids:
             adjusted.append(m)
         else:
             adjusted.append({
                 **m,
                 "foods": [_scale_food(f, a if _is_protein_food(f) else b) for f in m["foods"]],
             })
-    return adjusted, True
+    return adjusted, True, had_adjustable
 
 
-def _build_result(diet: dict, adjusted_meals: list[dict], targets: dict, headline: str, rebalanced: bool) -> dict:
+def day_macros(meals: list[dict]) -> dict:
+    """Wrapper público de `_day_macros`, usado pra recalcular o dia depois de
+    um ajuste extra (top-up) aplicado fora do motor (ver `apply_meal_changes`)."""
+    return _day_macros(meals)
+
+
+def apply_meal_changes(
+    meals: list[dict], meal_name: str, new_foods: list[dict], removal_names: list[str],
+) -> list[dict] | None:
+    """
+    Aplica um ajuste extra numa refeição pelo NOME (case-insensitive): remove
+    os alimentos cujo nome está em `removal_names` e adiciona `new_foods` (já
+    resolvidos/escalados, ver food_matcher, chamado pela rota, não aqui).
+    Devolve None se a refeição não existir. Usado pro "top-up" sugerido pela
+    IA quando só escalar as quantidades não é suficiente pra bater a meta.
+    """
+    idx = next((i for i, m in enumerate(meals) if m["name"].lower() == meal_name.lower()), None)
+    if idx is None:
+        return None
+    meal = meals[idx]
+    removal_set = {r.lower() for r in removal_names}
+    kept = [f for f in meal["foods"] if f["name"].lower() not in removal_set]
+    updated_meal = {**meal, "foods": kept + new_foods}
+    return [updated_meal if i == idx else m for i, m in enumerate(meals)]
+
+
+def _build_result(
+    diet: dict, adjusted_meals: list[dict], targets: dict, headline: str,
+    rebalanced: bool, had_adjustable: bool = False, adjustable_meal_ids: set[str] | None = None,
+) -> dict:
     before = _day_macros(diet["meals"])
     after = _day_macros(adjusted_meals)
     tgt = {
@@ -216,8 +259,10 @@ def _build_result(diet: dict, adjusted_meals: list[dict], targets: dict, headlin
             "Ajustamos as quantidades das refeições seguintes para o dia bater a meta de "
             "calorias e ficar dentro de ~5% da meta de proteína."
         )
+    elif had_adjustable:
+        adj = "As refeições seguintes já estavam dentro da meta, nenhum ajuste de quantidade foi necessário."
     else:
-        adj = "Não havia refeições seguintes para reajustar hoje — veja abaixo como o dia fechou."
+        adj = "Não havia refeições seguintes para reajustar hoje, veja abaixo como o dia fechou."
 
     return {
         "adjusted_meals": adjusted_meals,
@@ -228,40 +273,82 @@ def _build_result(diet: dict, adjusted_meals: list[dict], targets: dict, headlin
         "remaining_calories": remaining_calories,
         "remaining_protein_g": remaining_protein,
         "rebalanced": rebalanced,
+        # se há refeição ajustável e a rota decidir que a diferença que sobrou
+        # ainda é grande, ela pode pedir um "top-up" (adicionar/remover
+        # alimento) pra IA nessas refeições, ver suggest_day_topup.
+        "can_top_up": had_adjustable,
+        "adjustable_meal_ids": sorted(adjustable_meal_ids or set()),
     }
 
 
-def _apply_deviation(diet: dict, meal: dict, foods: list[dict], targets: dict | None) -> dict:
+def _apply_deviation(
+    diet: dict, meal: dict, skipped_names: list[str], new_foods: list[dict],
+    adjustable_ids: set[str], targets: dict | None,
+) -> dict:
+    """
+    Aplica um desvio na refeição por TROCA, não por descrição completa: os
+    alimentos do plano cujo nome está em `skipped_names` saem, `new_foods`
+    entra no lugar (pode ser vazio = "não comi nada no lugar"), e tudo mais
+    que já estava na refeição permanece exatamente como estava, a pessoa só
+    precisa dizer o que mudou, não descrever a refeição inteira de novo.
+    """
     tgt = _targets(diet, targets)
-    planned_kcal = _meal_macros(meal)["calories"]
-    eaten_kcal = sum(f["calories"] for f in foods)
-    delta_kcal = eaten_kcal - planned_kcal
+    skipped_set = set(skipped_names)
+    kept_foods = [f for f in meal["foods"] if f["name"] not in skipped_set]
+    skipped_foods = [f for f in meal["foods"] if f["name"] in skipped_set]
+    updated_foods = kept_foods + new_foods
 
-    replaced_meal = {**meal, "foods": foods}
+    skipped_kcal = sum(f["calories"] for f in skipped_foods)
+    new_kcal = sum(f["calories"] for f in new_foods)
+    delta_kcal = new_kcal - skipped_kcal
+
+    replaced_meal = {**meal, "foods": updated_foods}
     meals = [replaced_meal if m["id"] == meal["id"] else m for m in diet["meals"]]
-    adjusted_meals, rebalanced = _rebalance(meals, meal["id"], tgt)
+    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt)
 
-    names = ", ".join(f["name"] for f in foods)
-    direction = "acima" if delta_kcal > 0 else "abaixo"
-    headline = (
-        f"Registramos {names} (~{round(eaten_kcal)} kcal) em {meal['name']}, "
-        f"{abs(round(delta_kcal))} kcal {direction} do planejado."
-    )
-    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced)
-    result["matched_food"] = names
+    skipped_label = ", ".join(f["name"] for f in skipped_foods)
+    new_label = ", ".join(f["name"] for f in new_foods)
+    if skipped_foods and new_foods:
+        headline = (
+            f"Trocamos {skipped_label} por {new_label} em {meal['name']} "
+            f"(diferença de {abs(round(delta_kcal))} kcal)."
+        )
+    elif skipped_foods and not new_foods:
+        headline = f"Registramos que você não comeu {skipped_label} em {meal['name']} ({round(delta_kcal)} kcal)."
+    elif new_foods:
+        headline = f"Registramos {new_label} (~{round(new_kcal)} kcal) a mais em {meal['name']}."
+    else:
+        headline = f"Nenhuma mudança registrada em {meal['name']}."
+
+    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids)
+    result["matched_food"] = new_label or skipped_label
     result["match_confidence"] = "alta"
     result["delta_calories"] = round(delta_kcal, 1)
     return result
 
 
-def log_ate_different(diet: dict, foods: list[dict], meal_id: str | None, targets: dict | None = None) -> dict:
+def log_ate_different(
+    diet: dict, skipped_names: list[str], new_foods: list[dict], meal_id: str | None, targets: dict | None = None,
+) -> dict:
     meal = next((m for m in diet["meals"] if m["id"] == meal_id), None) or _pick_default_meal(diet, forward_looking=False)
-    return _apply_deviation(diet, meal, foods, targets)
+    adjustable_ids = _meals_after(diet["meals"], meal["id"])
+    return _apply_deviation(diet, meal, skipped_names, new_foods, adjustable_ids, targets)
 
 
-def log_will_eat_different(diet: dict, foods: list[dict], meal_id: str | None, targets: dict | None = None) -> dict:
+def log_will_eat_different(
+    diet: dict, skipped_names: list[str], new_foods: list[dict], meal_id: str | None,
+    already_eaten_ids: list[str] | None = None, targets: dict | None = None,
+) -> dict:
+    """
+    `already_eaten_ids`: refeições que a pessoa já comeu hoje (informado por
+    ela, não dá pra inferir só pelo horário planejado) e por isso NÃO devem
+    ser mexidas no reajuste. Todas as outras (menos a própria refeição sendo
+    trocada) são ajustáveis, independente da ordem na lista.
+    """
     meal = next((m for m in diet["meals"] if m["id"] == meal_id), None) or _pick_default_meal(diet, forward_looking=True)
-    return _apply_deviation(diet, meal, foods, targets)
+    already_eaten = set(already_eaten_ids or [])
+    adjustable_ids = {m["id"] for m in diet["meals"] if m["id"] not in already_eaten and m["id"] != meal["id"]}
+    return _apply_deviation(diet, meal, skipped_names, new_foods, adjustable_ids, targets)
 
 
 def log_missing_food(diet: dict, missing_food_name: str, meal_id: str, substitutes: list[dict], targets: dict | None = None) -> dict:
@@ -284,14 +371,15 @@ def log_missing_food(diet: dict, missing_food_name: str, meal_id: str, substitut
             new_foods.append(f)
     updated_meal = {**meal, "foods": new_foods}
     meals = [updated_meal if m["id"] == meal["id"] else m for m in diet["meals"]]
-    adjusted_meals, rebalanced = _rebalance(meals, meal["id"], tgt)
+    adjustable_ids = _meals_after(meals, meal["id"])
+    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt)
 
     names = ", ".join(f["name"] for f in substitutes)
     headline = (
         f"Trocamos {missing_food['name']} por {names} em {meal['name']} "
         f"(diferença de {abs(round(delta_kcal))} kcal)."
     )
-    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced)
+    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids)
     result["matched_food"] = names
     result["match_confidence"] = "alta"
     result["delta_calories"] = round(delta_kcal, 1)

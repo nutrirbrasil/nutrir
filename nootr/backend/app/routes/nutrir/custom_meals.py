@@ -1,4 +1,4 @@
-"""Rotas Nutrir — monte sua marmita."""
+"""Rotas Nutrir, monte sua marmita."""
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 

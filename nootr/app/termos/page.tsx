@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Termos de uso — Nootr",
+  title: "Termos de uso, Nootr",
 };
 
 export default function TermosPage() {
@@ -19,7 +19,7 @@ export default function TermosPage() {
         <p>
           O Nootr é um aplicativo de organização alimentar: você monta sua dieta, registra o que
           comeu fora do plano e recebe sugestões de ajuste para o restante do dia, com base na
-          Tabela Brasileira de Composição de Alimentos (TACO — NEPA/UNICAMP).
+          Tabela Brasileira de Composição de Alimentos (TACO, NEPA/UNICAMP).
         </p>
 
         <h2>2. O Nootr não substitui um profissional de saúde</h2>
@@ -29,7 +29,7 @@ export default function TermosPage() {
           exclusivamente informativo e educacional. Eles <strong>não constituem orientação
           nutricional, prescrição dietética nem aconselhamento médico</strong>. Consulte sempre
           um(a) nutricionista ou médico(a) antes de iniciar, alterar ou interromper qualquer plano
-          alimentar — especialmente em caso de gestação, condições clínicas, transtornos
+          alimentar, especialmente em caso de gestação, condições clínicas, transtornos
           alimentares ou uso de medicamentos.
         </p>
 

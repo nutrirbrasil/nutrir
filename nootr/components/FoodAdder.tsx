@@ -86,7 +86,7 @@ export function rescaleFood(f: AddedFood, quantity: number, unitId: string): Add
 
 export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: AddedFood) => void }) {
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<"search" | "barcode">("search");
+  const [mode, setMode] = useState<"search" | "barcode" | "new">("search");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TacoFoodResult[]>([]);
   const [open, setOpen] = useState(false);
@@ -99,6 +99,14 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
   const [quantity, setQuantity] = useState("100");
   const [unitId, setUnitId] = useState("g");
   const boxRef = useRef<HTMLDivElement>(null);
+
+  const [newName, setNewName] = useState("");
+  const [newKcal, setNewKcal] = useState("");
+  const [newProtein, setNewProtein] = useState("");
+  const [newCarbs, setNewCarbs] = useState("");
+  const [newFat, setNewFat] = useState("");
+  const [newSaving, setNewSaving] = useState(false);
+  const [newError, setNewError] = useState("");
 
   useEffect(() => {
     if (selected || query.trim().length < 2) {
@@ -152,6 +160,51 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
       setBarcodeError(err instanceof Error ? err.message : "Produto não encontrado");
     } finally {
       setBarcodeLoading(false);
+    }
+  }
+
+  async function createNewFood() {
+    setNewError("");
+    const kcal = parseFloat(newKcal.replace(",", "."));
+    const protein = parseFloat(newProtein.replace(",", ".")) || 0;
+    const carbs = parseFloat(newCarbs.replace(",", ".")) || 0;
+    const fat = parseFloat(newFat.replace(",", ".")) || 0;
+    if (!newName.trim()) {
+      setNewError("Dê um nome para o alimento.");
+      return;
+    }
+    if (!(kcal >= 0)) {
+      setNewError("Informe as calorias por 100g.");
+      return;
+    }
+    setNewSaving(true);
+    try {
+      const created = await nootrApi.createCustomFood(token, {
+        name: newName.trim(),
+        kcal_100g: kcal,
+        protein_100g: protein,
+        carbs_100g: carbs,
+        fat_100g: fat,
+      });
+      setSelected({
+        taco_id: null,
+        name: created.name,
+        kcal_100g: created.kcal_100g,
+        protein_100g: created.protein_100g,
+        carbs_100g: created.carbs_100g,
+        fat_100g: created.fat_100g,
+      });
+      setUnitId("g");
+      setQuantity("100");
+      setNewName("");
+      setNewKcal("");
+      setNewProtein("");
+      setNewCarbs("");
+      setNewFat("");
+    } catch (err) {
+      setNewError(err instanceof Error ? err.message : "Erro ao salvar alimento");
+    } finally {
+      setNewSaving(false);
     }
   }
 
@@ -209,7 +262,7 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
 
   return (
     <div ref={boxRef} className="relative">
-      <div className="mb-2 flex gap-2">
+      <div className="mb-2 flex flex-wrap gap-2">
         <button type="button" onClick={() => setMode("search")} className={`chip ${mode === "search" ? "chip-active" : ""}`}>
           Buscar Alimento
         </button>
@@ -225,29 +278,39 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
             📷 Escanear código de barras
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => {
+            setMode("new");
+            setNewError("");
+          }}
+          className={`chip ${mode === "new" ? "chip-active" : ""}`}
+        >
+          + Adicionar novo alimento
+        </button>
       </div>
 
-      {mode === "search" ? (
+      {mode === "search" && (
         <div>
           <input
             className="input-field"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Busque um alimento — ex: pão, arroz, doce de leite"
+            placeholder="Busque um alimento, ex: pão, arroz, doce de leite"
           />
           {open && (
             <ul className="absolute z-20 mt-2 max-h-64 w-full overflow-auto rounded-xl border border-nootr-line bg-nootr-card shadow-[0_16px_48px_rgba(0,0,0,0.6)]">
               {searching && <li className="px-4 py-3 text-sm text-nootr-faint">Buscando…</li>}
               {!searching && searchError && (
                 <li className="px-4 py-3 text-sm text-nootr-bordoSoft">
-                  Não foi possível buscar — verifique se a API está no ar e tente de novo.
+                  Não foi possível buscar, verifique se a API está no ar e tente de novo.
                 </li>
               )}
               {!searching && !searchError && results.length === 0 && (
                 <li className="px-4 py-3 text-sm text-nootr-faint">Nenhum alimento encontrado.</li>
               )}
               {results.map((food) => (
-                <li key={food.taco_id}>
+                <li key={food.custom_id ?? `taco-${food.taco_id}`}>
                   <button
                     type="button"
                     onClick={() => {
@@ -265,7 +328,14 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
                     }}
                     className="flex w-full items-baseline justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-nootr-wine"
                   >
-                    <span className="text-sm text-nootr-cream">{food.name}</span>
+                    <span className="text-sm text-nootr-cream">
+                      {food.name}
+                      {food.custom_id && (
+                        <span className="ml-1.5 text-xs text-nootr-faint">
+                          (seu{food.pending_approval ? ", pendente" : ""})
+                        </span>
+                      )}
+                    </span>
                     {food.kcal != null && <span className="shrink-0 text-xs text-nootr-faint">{Math.round(food.kcal)} kcal/100g</span>}
                   </button>
                 </li>
@@ -273,24 +343,62 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
             </ul>
           )}
         </div>
-      ) : scanning ? (
-        <BarcodeScanner onDetected={(code) => void lookupBarcode(code)} onClose={() => setScanning(false)} />
-      ) : (
-        <div>
-          {barcodeLoading ? (
-            <p className="text-sm text-nootr-muted">Buscando produto…</p>
-          ) : hasBarcodeDetector() ? (
-            <button type="button" onClick={() => setScanning(true)} className="btn-secondary w-full">
-              📷 Abrir câmera para escanear
-            </button>
-          ) : (
-            <p className="text-sm text-nootr-bordoSoft">
-              Seu navegador não suporta leitura de código de barras (funciona no Chrome para Android).
-            </p>
-          )}
-        </div>
+      )}
+
+      {mode === "barcode" && (
+        scanning ? (
+          <BarcodeScanner onDetected={(code) => void lookupBarcode(code)} onClose={() => setScanning(false)} />
+        ) : (
+          <div>
+            {barcodeLoading ? (
+              <p className="text-sm text-nootr-muted">Buscando produto…</p>
+            ) : hasBarcodeDetector() ? (
+              <button type="button" onClick={() => setScanning(true)} className="btn-secondary w-full">
+                📷 Abrir câmera para escanear
+              </button>
+            ) : (
+              <p className="text-sm text-nootr-bordoSoft">
+                Seu navegador não suporta leitura de código de barras (funciona no Chrome para Android).
+              </p>
+            )}
+          </div>
+        )
       )}
       {mode === "barcode" && barcodeError && <p className="mt-2 text-xs text-nootr-bordoSoft">{barcodeError}</p>}
+
+      {mode === "new" && (
+        <div className="space-y-2.5 rounded-xl border border-nootr-line bg-nootr-black p-3.5">
+          <p className="text-xs text-nootr-faint">
+            Fica salvo na sua conta e disponível pra usar de novo. Valores por 100g. Passa por uma revisão antes de entrar na base geral do Nootr.
+          </p>
+          <div>
+            <label className="label-caps">Nome</label>
+            <input className="input-field" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Ex: Bolo da vovó" />
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div>
+              <label className="label-caps">Kcal</label>
+              <input className="input-field" inputMode="decimal" value={newKcal} onChange={(e) => setNewKcal(e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <label className="label-caps">Prot. (g)</label>
+              <input className="input-field" inputMode="decimal" value={newProtein} onChange={(e) => setNewProtein(e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <label className="label-caps">Carb. (g)</label>
+              <input className="input-field" inputMode="decimal" value={newCarbs} onChange={(e) => setNewCarbs(e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <label className="label-caps">Gord. (g)</label>
+              <input className="input-field" inputMode="decimal" value={newFat} onChange={(e) => setNewFat(e.target.value)} placeholder="0" />
+            </div>
+          </div>
+          {newError && <p className="text-xs text-nootr-bordoSoft">{newError}</p>}
+          <button type="button" onClick={createNewFood} disabled={newSaving} className="btn-primary w-full">
+            {newSaving ? "Salvando…" : "Salvar alimento"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

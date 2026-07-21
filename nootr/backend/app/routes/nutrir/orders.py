@@ -1,4 +1,4 @@
-"""Rotas Nutrir — pedidos."""
+"""Rotas Nutrir, pedidos."""
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
@@ -43,7 +43,7 @@ async def create_order(body: CreateOrder):
     store.ORDERS.append(order)
 
     items_text = "\n".join(
-        f"  • {i.quantity}x {i.name} — R$ {i.price_cents * i.quantity / 100:.2f}"
+        f"  • {i.quantity}x {i.name}, R$ {i.price_cents * i.quantity / 100:.2f}"
         for i in body.items
     )
     message = (

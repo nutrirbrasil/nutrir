@@ -32,6 +32,40 @@ body {
   background: #5c1422;
 }
 
+/* Impressão/"salvar como PDF" da dieta (ver app/dieta/page.tsx), isola só o
+   conteúdo marcado, escondendo navbar/rodapé/botões, e força cores claras
+   (o app é escuro por padrão, ruim pra impressão). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #diet-print-area,
+  #diet-print-area * {
+    visibility: visible;
+  }
+  #diet-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff;
+    color: #000;
+  }
+  #diet-print-area .card {
+    border-color: #ccc;
+    background: #fff;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  #diet-print-area * {
+    color: #111 !important;
+    border-color: #ccc !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg bg-nootr-bordo px-5 py-2.5 text-sm font-semibold text-nootr-cream transition-all duration-200 hover:bg-nootr-bordoDeep hover:shadow-[0_0_24px_rgba(138,30,50,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-nootr-bordoSoft focus-visible:ring-offset-2 focus-visible:ring-offset-nootr-black disabled:opacity-40 disabled:hover:shadow-none;
@@ -90,4 +124,151 @@ select.input-field option {
 }
 .rise-in {
   animation: rise-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ---------- Landing page (/lp): movimento premium, escopo lp-* ---------- */
+
+/* reveal on scroll (controlado por IntersectionObserver em app/lp/Reveal.tsx) */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.lp-reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* brilho bordô "respirando" nos fundos radiais */
+@keyframes lp-breathe {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+.lp-glow {
+  animation: lp-breathe 9s ease-in-out infinite;
+  transform-origin: 80% 0%;
+}
+.lp-glow-bottom {
+  animation: lp-breathe 11s ease-in-out infinite;
+  transform-origin: 50% 120%;
+}
+
+/* flutuação suave dos cards de demonstração */
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.lp-float {
+  animation: lp-float 7s ease-in-out infinite;
+}
+.lp-float-delayed {
+  animation: lp-float 7s ease-in-out 1.6s infinite;
+}
+
+/* entrada do hero (uma vez, no load) */
+@keyframes lp-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.lp-hero-in {
+  animation: lp-hero-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.lp-hero-in-2 {
+  animation: lp-hero-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+.lp-hero-in-3 {
+  animation: lp-hero-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/* linha de brilho que percorre a borda superior de um cartão */
+@keyframes lp-sheen {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(350%);
+  }
+}
+.lp-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.lp-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(176, 74, 92, 0.8), transparent);
+  animation: lp-sheen 6s ease-in-out infinite;
+}
+
+/* pulso de brilho no CTA principal */
+@keyframes lp-cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(138, 30, 50, 0);
+  }
+  50% {
+    box-shadow: 0 0 32px rgba(138, 30, 50, 0.45);
+  }
+}
+.lp-cta-pulse {
+  animation: lp-cta-pulse 3.5s ease-in-out infinite;
+}
+
+/* lift mais pronunciado no hover dos cards da landing */
+.lp-card-lift {
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s,
+    box-shadow 0.4s;
+}
+.lp-card-lift:hover {
+  transform: translateY(-6px);
+  border-color: rgba(138, 30, 50, 0.55);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-glow,
+  .lp-glow-bottom,
+  .lp-float,
+  .lp-float-delayed,
+  .lp-hero-in,
+  .lp-hero-in-2,
+  .lp-hero-in-3,
+  .lp-cta-pulse {
+    animation: none;
+  }
+  .lp-sheen::after {
+    display: none;
+  }
+  .lp-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

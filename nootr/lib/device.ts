@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 /**
  * true só depois da hidratação, em telas de toque/estreitas (celular).
- * Usado para só oferecer "escanear código de barras" em mobile — em desktop
+ * Usado para só oferecer "escanear código de barras" em mobile, em desktop
  * não há câmera traseira nem sentido em digitar o código à mão.
  */
 export function useIsMobile(): boolean {

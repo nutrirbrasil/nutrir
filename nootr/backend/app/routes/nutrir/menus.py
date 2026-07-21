@@ -1,4 +1,4 @@
-"""Rotas Nutrir — cardápios."""
+"""Rotas Nutrir, cardápios."""
 from fastapi import APIRouter, HTTPException
 
 from backend.app.services import store

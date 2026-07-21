@@ -1,7 +1,7 @@
 """
 Dados mock das rotas legadas do Nutrir (menus/ingredientes/pedidos).
 
-As rotas do Nootr NÃO usam mais este módulo — dietas e substituições agora são
+As rotas do Nootr NÃO usam mais este módulo, dietas e substituições agora são
 persistidas no Supabase (ver services/repository.py). Isto aqui serve apenas ao
 grupo de rotas `nutrir`, que é legado e não conectado ao site Nutrir em produção.
 """

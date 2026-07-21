@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { HamburgerMenu } from "@/components/HamburgerMenu";
 
 const links = [
   { href: "/dieta", label: "Dieta" },
   { href: "/substituir", label: "Substituir" },
-  { href: "/perfil", label: "Perfil" },
 ];
 
 export function Navbar() {
@@ -52,12 +52,7 @@ export function Navbar() {
           ))}
           <span className="mx-2 hidden h-4 w-px bg-nootr-line sm:block" />
           {session ? (
-            <button
-              onClick={handleSignOut}
-              className="rounded-md px-2.5 py-2 text-[13px] font-medium text-nootr-muted transition-colors hover:text-nootr-bordoSoft sm:px-3.5"
-            >
-              Sair
-            </button>
+            <HamburgerMenu onSignOut={handleSignOut} />
           ) : (
             <Link
               href="/login"

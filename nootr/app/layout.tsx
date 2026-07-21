@@ -19,7 +19,7 @@ const display = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Nootr — Dieta adaptável",
+  title: "Nootr, Dieta adaptável",
   description: "App de substituições alimentares. Adapte sua dieta quando sair do plano.",
 };
 

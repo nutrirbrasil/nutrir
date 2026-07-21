@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { QuickActions } from "@/components/QuickActions";
-import { PRO_SOON } from "@/lib/plan";
 
 export default function HomePage() {
   return (
@@ -22,7 +21,7 @@ export default function HomePage() {
           </h1>
           <p className="mt-6 max-w-lg text-[15px] leading-relaxed text-nootr-muted">
             Monte sua dieta com a base TACO, registre o que saiu do plano e receba o dia
-            rebalanceado — mantendo calorias e proteína, sem culpa.
+            rebalanceado, mantendo calorias e proteína, sem culpa.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link href="/dieta" className="btn-primary px-7 py-3">
@@ -41,43 +40,6 @@ export default function HomePage() {
         <h2 className="font-display text-2xl text-nootr-cream">Ações rápidas</h2>
         <div className="mt-6">
           <QuickActions />
-        </div>
-      </section>
-
-      {/* Planos */}
-      <section className="mt-16">
-        <div className="divider-bordo mb-4" />
-        <h2 className="font-display text-2xl text-nootr-cream">Planos</h2>
-        <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <div className="card card-hover">
-            <p className="font-display text-2xl text-nootr-cream">Basic</p>
-            <p className="mt-1 text-xs uppercase tracking-caps text-nootr-muted">Gratuito</p>
-            <ul className="mt-5 space-y-2 text-sm text-nootr-muted">
-              <li>— 1 dieta base para todos os dias</li>
-              <li>— Substituições com a base TACO (597 alimentos)</li>
-              <li>— Cálculo calórico por Harris-Benedict ou Mifflin-St Jeor</li>
-            </ul>
-          </div>
-          <div className="card card-hover border-nootr-bordo/50">
-            <div className="flex items-center justify-between">
-              <p className="font-display text-2xl text-nootr-cream">Pro</p>
-              <span className="rounded-full bg-nootr-bordo px-3 py-1 text-[10px] font-bold uppercase tracking-caps text-nootr-cream">
-                7 dietas
-              </span>
-            </div>
-            <ul className="mt-5 space-y-2 text-sm text-nootr-muted">
-              <li>— Uma dieta para cada dia da semana</li>
-              <li>— Tudo do Basic</li>
-            </ul>
-            <p className="mt-5 text-[11px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
-              Em breve no Pro
-            </p>
-            <ul className="mt-2 space-y-1.5 text-sm text-nootr-faint">
-              {PRO_SOON.map((f) => (
-                <li key={f}>· {f}</li>
-              ))}
-            </ul>
-          </div>
         </div>
       </section>
     </div>

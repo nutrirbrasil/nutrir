@@ -2,9 +2,11 @@
 from backend.app.data.taco import TacoFood, load_taco_foods
 
 
-def scale_food(food: TacoFood, grams: float, quantity_label: str | None = None) -> dict:
+def scale_food(
+    food: TacoFood, grams: float, quantity_label: str | None = None, dish_name: str | None = None,
+) -> dict:
     ratio = grams / 100
-    return {
+    result = {
         "name": food.display_name,
         "quantity": quantity_label or f"{round(grams)}g",
         "calories": round((food.kcal or 0) * ratio, 1),
@@ -14,15 +16,19 @@ def scale_food(food: TacoFood, grams: float, quantity_label: str | None = None) 
         "taco_id": food.id,
         "grams": round(grams, 1),
     }
+    if dish_name:
+        result["dish_name"] = dish_name
+    return result
 
 
 def scale_custom(
     name: str, grams: float, kcal_100: float, protein_100: float,
     carbs_100: float, fat_100: float, quantity_label: str | None = None,
+    dish_name: str | None = None,
 ) -> dict:
-    """Escala um alimento customizado (ex: código de barras) — sem taco_id."""
+    """Escala um alimento customizado (ex: código de barras), sem taco_id."""
     ratio = grams / 100
-    return {
+    result = {
         "name": name,
         "quantity": quantity_label or f"{round(grams)}g",
         "calories": round(kcal_100 * ratio, 1),
@@ -32,6 +38,9 @@ def scale_custom(
         "taco_id": None,
         "grams": round(grams, 1),
     }
+    if dish_name:
+        result["dish_name"] = dish_name
+    return result
 
 
 def resolve_food(item) -> dict | None:
@@ -39,13 +48,17 @@ def resolve_food(item) -> dict | None:
     Resolve um item de entrada (pydantic) num alimento escalado.
     Aceita `taco_id`+`grams` (TACO) OU `name`+macros por 100g (customizado).
     Devolve None se o taco_id não existir.
+    `dish_name` (opcional, ver import de dieta) só sobrevive no dict de saída
+    quando o item veio de decompor um prato composto, usado transitoriamente
+    pra revisão no frontend, nunca persistido na dieta final.
     """
+    dish_name = getattr(item, "dish_name", None)
     if item.taco_id is not None:
         taco = {f.id: f for f in load_taco_foods()}
         food = taco.get(item.taco_id)
         if food is None:
             return None
-        return scale_food(food, item.grams, item.quantity_label)
+        return scale_food(food, item.grams, item.quantity_label, dish_name)
     return scale_custom(
         item.name or "Alimento",
         item.grams,
@@ -54,4 +67,5 @@ def resolve_food(item) -> dict | None:
         item.carbs_100g or 0,
         item.fat_100g or 0,
         item.quantity_label,
+        dish_name,
     )
