@@ -66,7 +66,7 @@ function NootricionistaContent({ token }: { token: string }) {
             <span className="shrink-0 text-nootr-bordoSoft">→</span>
             <span>
               <strong>Você comeu diferente.</strong> O Nootr ajusta o resto do seu dia pra você não perder
-              o progresso, sem sobrecarregar seu nutricionista com corrigendas.
+              o progresso, sem sobrecarregar seu nutricionista.
             </span>
           </li>
           <li className="flex gap-3">
@@ -172,16 +172,18 @@ function NootricionistaContent({ token }: { token: string }) {
               <p className="text-sm text-nootr-muted">
                 Você tá no Plano Basic. Pra acessar desconto com o nutricionista, migre pro Plano Pro.
               </p>
-              <Link href="/plano" className="btn-primary mt-5 inline-flex">
-                Migrar para Plano Pro →
-              </Link>
-              <p className="mt-4 text-sm text-nootr-muted">
+              <p className="mt-2 text-sm text-nootr-muted">
                 Assine o Plano Pro Anual e garanta 20% de desconto na mensalidade do Nootr e no
                 acompanhamento nutricional.
               </p>
-              <Link href="/plano" className="btn-secondary mt-3 inline-flex">
-                Assinar Plano Pro Anual →
-              </Link>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link href="/plano" className="btn-primary inline-flex">
+                  Migrar para Plano Pro
+                </Link>
+                <Link href="/plano" className="btn-secondary inline-flex">
+                  Assinar Plano Pro Anual (20% off)
+                </Link>
+              </div>
             </>
           )}
 
@@ -190,19 +192,18 @@ function NootricionistaContent({ token }: { token: string }) {
               <p className="text-sm text-nootr-cream">
                 Você tá no Plano Pro Mensal.
               </p>
-              <a
-                href={pauliNootrMonthlyUrl}
-                className="btn-primary mt-5 inline-flex"
-              >
-                Conhecer Nutricionista (10% off) →
-              </a>
-              <p className="mt-4 text-sm text-nootr-muted">
+              <p className="mt-2 text-sm text-nootr-muted">
                 Assine o Plano Pro Anual e garanta 20% de desconto na mensalidade do Nootr e no
                 acompanhamento nutricional.
               </p>
-              <Link href="/plano" className="btn-secondary mt-3 inline-flex">
-                Assinar Plano Pro Anual →
-              </Link>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a href={pauliNootrMonthlyUrl} className="btn-primary inline-flex">
+                  Conhecer Nutricionista (10% off)
+                </a>
+                <Link href="/plano" className="btn-secondary inline-flex">
+                  Assinar Plano Pro Anual (20% off)
+                </Link>
+              </div>
             </>
           )}
 
