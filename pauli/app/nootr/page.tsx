@@ -83,7 +83,7 @@ function NootrPageContent() {
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
           {/* Botão 1: Saber mais sobre Paula */}
           <a
-            href="/?promo=nootr"
+            href={`/?promo=nootr&plan=${plan}`}
             className="btn-secondary flex items-center justify-center gap-2"
           >
             <span>Conhecer Paula</span>
