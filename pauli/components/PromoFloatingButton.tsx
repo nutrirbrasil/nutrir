@@ -13,8 +13,8 @@ export function PromoFloatingButton() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get("promo") === "nootr") {
-      const plan = searchParams.get("plan") || "annual";
+    const plan = searchParams.get("plan") || "annual";
+    if (searchParams.get("promo") === "nootr" || searchParams.get("plan")) {
       sessionStorage.setItem(STORAGE_KEY, "1");
       sessionStorage.setItem(STORAGE_PLAN_KEY, plan);
     }

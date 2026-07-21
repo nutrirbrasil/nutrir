@@ -48,20 +48,58 @@ function NootricionistaContent({ token }: { token: string }) {
       <p className="label-caps text-nootr-bordoSoft">Nutricionista + Nootr</p>
       <h1 className="mt-2 font-display text-4xl text-nootr-cream">A Dupla Que Funciona</h1>
       <p className="mt-4 text-sm leading-relaxed text-nootr-muted">
-        Uma dieta feita por um profissional é transformadora. Mas entre uma consulta e outra você precisa
-        de um companheiro de verdade — alguém que entende seu plano e te ajuda nos momentos críticos.
+        O Nootr é seu companheiro nos momentos críticos. Mas ele é mais poderoso ainda quando trabalhando
+        junto a uma nutricionista de verdade que entende seu corpo, seus objetivos e desenha sua estratégia.
       </p>
 
-      {/* Seção 1: Por que Nutricionista é Essencial */}
+      {/* Seção 1: O que é Nootr */}
       <div className="card mt-8">
+        <p className="label-caps text-nootr-bordoSoft">Seu Companheiro</p>
+        <h2 className="mt-2 font-display text-2xl text-nootr-cream">O Nootr te Ajuda nos Momentos Críticos</h2>
+        <p className="mt-3 text-sm text-nootr-muted">
+          Você montou uma dieta. Mas entre um dia e outro, a vida acontece. Você come fora do plano, surge
+          um imprevisto, tudo muda. O Nootr tá ali pra isso, não pra substituir profissional, mas pra te
+          dar inteligência quando você mais precisa.
+        </p>
+        <ul className="mt-4 space-y-3 text-sm text-nootr-muted">
+          <li className="flex gap-3">
+            <span className="shrink-0 text-nootr-bordoSoft">→</span>
+            <span>
+              <strong>Você comeu diferente.</strong> O Nootr ajusta o resto do seu dia pra você não perder
+              o progresso, sem sobrecarregar seu nutricionista com corrigendas.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="shrink-0 text-nootr-bordoSoft">→</span>
+            <span>
+              <strong>Precisa de alternativas rápido.</strong> Nootr busca substituições que fazem sentido
+              pro seu plano, respeitando o trabalho do profissional.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="shrink-0 text-nootr-bordoSoft">→</span>
+            <span>
+              <strong>Você fica autossuficiente.</strong> Com a dieta do profissional + inteligência do
+              Nootr, você consegue navegar sozinho entre consultas, sem perder a direção.
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      {/* Seção 2: Por que Nutricionista é Essencial */}
+      <div className="card mt-6">
         <p className="label-caps text-nootr-bordoSoft">O Alicerce</p>
         <h2 className="mt-2 font-display text-2xl text-nootr-cream">Por que Você Precisa de um Nutricionista</h2>
+        <p className="mt-3 text-sm text-nootr-muted">
+          Nootr é ótimo pra os desvios do dia a dia. Mas a fundação de tudo é uma dieta feita por um
+          profissional que ENTENDE você. Aqui é onde tudo muda de verdade.
+        </p>
         <ul className="mt-4 space-y-3 text-sm text-nootr-muted">
           <li className="flex gap-3">
             <span className="shrink-0 text-nootr-bordoSoft">✓</span>
             <span>
               <strong>Dieta PERSONALIZADA é fundação.</strong> Não é receita do YouTube ou do seu colega
-              de academia. É VOCÊ — seu metabolismo, sua história, seus objetivos. Só um profissional
+              de academia. É VOCÊ, seu metabolismo, sua história, seus objetivos. Só um profissional
               consegue desenhar isso certo.
             </span>
           </li>
@@ -82,47 +120,13 @@ function NootricionistaContent({ token }: { token: string }) {
         </ul>
       </div>
 
-      {/* Seção 2: Como Nootr Ajuda */}
-      <div className="card mt-6">
-        <p className="label-caps text-nootr-bordoSoft">O Companheiro</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Nootr: Sua Rede de Segurança</h2>
-        <p className="mt-3 text-sm text-nootr-muted">
-          Entre as consultas com o nutricionista, a vida acontece. Você come fora do plano, surge um
-          imprevisto, tudo muda. O Nootr tá ali pra isso — não pra substituir o profissional, mas pra
-          te dar inteligência nos momentos críticos.
-        </p>
-        <ul className="mt-4 space-y-3 text-sm text-nootr-muted">
-          <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">→</span>
-            <span>
-              <strong>Você comeu diferente?</strong> O Nootr ajusta o resto do seu dia pra você não
-              perder o progresso — sem sobrecarregar seu nutricionista com corrigendas.
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">→</span>
-            <span>
-              <strong>Precisa de alternativas rápido?</strong> Nootr busca substituições que fazem sentido
-              pro seu plano — respeitando o trabalho do profissional.
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <span className="shrink-0 text-nootr-bordoSoft">→</span>
-            <span>
-              <strong>Você fica autossuficiente.</strong> Com a dieta do profissional + inteligência do
-              Nootr, você consegue navegar sozinho entre consultas, sem perder a direção.
-            </span>
-          </li>
-        </ul>
-      </div>
-
       {/* Seção 3: Oferta de Desconto */}
       <div className="card mt-6 border-nootr-bordoSoft/40 shadow-[0_0_0_1px_rgba(138,30,50,0.25)]">
         <p className="label-caps text-nootr-bordoSoft">Seu desconto</p>
         <h2 className="mt-2 font-display text-2xl text-nootr-cream">Isso Você Ganhou</h2>
         <p className="mt-3 text-sm text-nootr-muted">
           Como agradecimento por já estar investindo em si mesmo com o Nootr Pro, a gente conseguiu um
-          desconto especial com um nutricionista de verdade pra você dar o próximo passo.
+          desconto especial com a nutricionista cofundadora do Nootr pra você dar o próximo passo.
         </p>
 
         <div className="mt-6 space-y-4">
@@ -135,7 +139,7 @@ function NootricionistaContent({ token }: { token: string }) {
             <p className="mt-2 text-xs font-semibold text-nootr-bordoSoft">Plano Pro Anual</p>
             <p className="mt-2 text-xs text-nootr-muted">
               Você se comprometeu com um ano de transformação. Por isso essa primeira consulta ou plano
-              sai <strong>20% mais barato</strong> — um investimento na dupla Nootr + Nutricionista.
+              sai <strong>20% mais barato</strong>, um investimento na dupla Nootr + Nutricionista.
             </p>
           </div>
 
@@ -155,7 +159,7 @@ function NootricionistaContent({ token }: { token: string }) {
 
           <p className="text-xs text-nootr-faint">
             Válido pra primeira consulta ou primeira contratação de plano com nutricionista. Presencial
-            (Balneário Piçarras - SC) ou online (Brasil e exterior).
+            (Balneário Piçarras, SC) ou online (Brasil e exterior).
           </p>
         </div>
 
@@ -175,7 +179,7 @@ function NootricionistaContent({ token }: { token: string }) {
           {showMonthlyCTA && (
             <>
               <p className="text-sm text-nootr-cream">
-                Você tá no Plano Pro Mensal — seu desconto tá pronto.
+                Você tá no Plano Pro Mensal.
               </p>
               <a
                 href={pauliNootrMonthlyUrl}
@@ -189,7 +193,7 @@ function NootricionistaContent({ token }: { token: string }) {
           {showAnnualCTA && (
             <>
               <p className="text-sm text-nootr-cream">
-                Você tá no Plano Pro Anual — seu desconto tá pronto.
+                Você tá no Plano Pro Anual.
               </p>
               <a
                 href={pauliNootrAnnualUrl}
