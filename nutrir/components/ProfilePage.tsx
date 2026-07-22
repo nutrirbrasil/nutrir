@@ -12,6 +12,7 @@ import {
   phoneValidationMessage,
 } from "@/lib/br-fields";
 import { formatPrice } from "@/lib/api";
+import { formatPoints } from "@/lib/points";
 import { useCart } from "@/lib/cart-context";
 import {
   fetchRecentOrdersForEmail,
@@ -578,7 +579,7 @@ export function ProfilePage() {
               equivalentes a 5% do valor pago.
             </p>
             <p className="text-2xl font-bold text-nutrir-burgundy">
-              {formatPrice(partner.pointsBalanceCents ?? 0)}
+              {formatPoints(partner.pointsBalanceCents ?? 0)} pontos
             </p>
             <p className="text-xs text-nutrir-emerald/55">
               Use como desconto em um pedido seu, ou troque por dinheiro (fale com a gente).

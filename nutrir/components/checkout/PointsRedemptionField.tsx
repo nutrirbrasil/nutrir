@@ -1,6 +1,7 @@
 "use client";
 
 import { formatPrice } from "@/lib/api";
+import { formatPoints } from "@/lib/points";
 
 interface Props {
   balanceCents: number;
@@ -28,7 +29,7 @@ export function PointsRedemptionField({ balanceCents, maxCents, valueCents, onCh
   return (
     <div>
       <p className="text-xs font-bold uppercase text-nutrir-emerald/60">
-        Seus pontos ({formatPrice(balanceCents)} disponíveis)
+        Seus pontos ({formatPoints(balanceCents)} disponíveis)
       </p>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
