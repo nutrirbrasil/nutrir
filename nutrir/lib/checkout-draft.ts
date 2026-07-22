@@ -20,7 +20,12 @@ export interface CheckoutDraft {
   pickup_regular?: PickupSelection | null;
   payment_method?: PaymentMethod;
   coupon_code?: string;
+  /** Resolvidos ao aplicar o cupom (estático ou de parceiro) — só pra exibir o preview de preço. */
+  coupon_percent?: number;
+  coupon_label?: string;
   order_id?: string;
+  /** Pontos de parceiro a usar como desconto (centavos) — só pra exibição; servidor recalcula/valida. */
+  points_redeemed_cents?: number;
   /** Padrão "pickup" quando ausente (rascunhos antigos). */
   fulfillment_type?: FulfillmentType;
   delivery_selection?: DeliverySelection | null;

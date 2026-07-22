@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { isValidCouponCode } from "@/lib/coupons";
+import { getCoupon } from "@/lib/coupons";
+import { findPartnerByCouponCode, findPartnerByEmail, redeemPartnerPoints, PARTNER_COUPON_PERCENT } from "@/lib/partners";
+import { verifyUserEmail } from "@/lib/session-auth";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
 import { isValidPhoneBR } from "@/lib/br-fields";
 import {
@@ -68,9 +70,6 @@ function validate(body: CreateOrderPayload, fulfillmentType: FulfillmentType): s
     const catalogError = validateCatalogItemPrice(item);
     if (catalogError) return catalogError;
   }
-  if (body.coupon_code?.trim() && !isValidCouponCode(body.coupon_code)) {
-    return "Cupom inválido.";
-  }
   return null;
 }
 
@@ -97,6 +96,39 @@ export async function POST(request: Request) {
   }
 
   const payment_method = normalizePaymentMethod(body.payment_method);
+
+  // Cupom de parceiro (banco) tem prioridade sobre a lista fixa (lib/coupons.ts).
+  let partner_id: string | undefined;
+  let couponOverride: { percent: number; label?: string } | null = null;
+
+  if (body.coupon_code?.trim()) {
+    const partner = await findPartnerByCouponCode(body.coupon_code);
+    if (partner) {
+      partner_id = partner.id;
+      couponOverride = { percent: PARTNER_COUPON_PERCENT };
+    } else if (!getCoupon(body.coupon_code)) {
+      return NextResponse.json({ error: "Cupom inválido." }, { status: 400 });
+    }
+  }
+
+  // Resgate de pontos: só aceito com sessão verificada do próprio parceiro —
+  // nunca a partir de customer_cpf/e-mail do formulário, que não são
+  // vinculados à sessão logada. Sem token válido ou sem saldo, ignora
+  // silenciosamente em vez de travar o checkout.
+  let redeemingPartnerId: string | undefined;
+  let pointsToRedeemCents = 0;
+
+  if (body.points_redeemed_cents && body.points_redeemed_cents > 0) {
+    const email = await verifyUserEmail(request);
+    const redeemingPartner = email ? await findPartnerByEmail(email) : null;
+    if (redeemingPartner) {
+      redeemingPartnerId = redeemingPartner.id;
+      pointsToRedeemCents = Math.max(
+        0,
+        Math.min(body.points_redeemed_cents, redeemingPartner.points_balance_cents)
+      );
+    }
+  }
 
   let delivery_fee_cents = 0;
   let delivery_bairro: string | undefined;
@@ -132,7 +164,17 @@ export async function POST(request: Request) {
   }
 
   const chargedItems = getChargedItems(body.items, payment_method);
-  const pricing = computeOrderPricing(body.items, payment_method, body.coupon_code, delivery_fee_cents);
+  const pricing = computeOrderPricing(
+    body.items,
+    payment_method,
+    body.coupon_code,
+    delivery_fee_cents,
+    couponOverride,
+    pointsToRedeemCents
+  );
+  // computeOrderPricing pode ter reduzido o desconto de pontos se ele excedesse
+  // o total do pedido — usar o valor real aplicado, não o que foi pedido.
+  pointsToRedeemCents = pricing.points_discount_cents;
   const created_at = new Date().toISOString();
   const orderId = await generateUniqueOrderId();
 
@@ -145,6 +187,8 @@ export async function POST(request: Request) {
     payment_status: "pending",
     total_cents: pricing.total_cents,
     coupon_discount_cents: pricing.coupon_discount_cents || undefined,
+    partner_id,
+    points_redeemed_cents: pointsToRedeemCents,
     created_at,
     fulfillment_type,
     delivery_address,
@@ -198,6 +242,10 @@ export async function POST(request: Request) {
   }
 
   await saveOrder(order);
+
+  if (redeemingPartnerId && pointsToRedeemCents > 0) {
+    await redeemPartnerPoints(redeemingPartnerId, order.id, pointsToRedeemCents);
+  }
 
   const notified = isLocalPayment(payment_method) ? await notifyTelegram(order) : false;
 

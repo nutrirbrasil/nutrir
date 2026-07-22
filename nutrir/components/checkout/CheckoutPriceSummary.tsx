@@ -45,6 +45,13 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         </div>
       )}
 
+      {pricing.show_points_discount && (
+        <div className="flex justify-between text-sm text-nutrir-emerald/75">
+          <span>Pontos</span>
+          <span>− {formatPrice(pricing.points_discount_cents)}</span>
+        </div>
+      )}
+
       {pricing.delivery_fee_cents > 0 && (
         <div className="flex justify-between text-sm">
           <span>Taxa de entrega</span>

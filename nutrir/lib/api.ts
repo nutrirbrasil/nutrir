@@ -42,10 +42,12 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const nutrirApi = {
-  createOrder: (body: CreateOrderPayload) =>
+  /** `token` = session.access_token; só necessário quando o pedido usa points_redeemed_cents. */
+  createOrder: (body: CreateOrderPayload, token?: string) =>
     api<CreateOrderResponse>("/nutrir/orders", {
       method: "POST",
       body: JSON.stringify(body),
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     }),
   getOrder: (id: string) => api<{ order: Order }>(`/nutrir/orders/${id}`),
   verifyOrderPayment: (body: { order_id: string; transaction_nsu?: string; slug?: string }) =>

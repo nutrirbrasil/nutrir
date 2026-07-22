@@ -1,5 +1,10 @@
-import { getOrderByNsuFromSupabase, saveOrderToSupabase, updateOrderPaymentInSupabase } from "./supabase-db";
-import type { Order, PaymentStatus } from "./types";
+import {
+  getOrderByNsuFromSupabase,
+  saveOrderToSupabase,
+  updateOrderPaymentInSupabase,
+  updateOrderStatusInSupabase,
+} from "./supabase-db";
+import type { Order, OrderStatus, PaymentStatus } from "./types";
 
 /** Cache de runtime — complementa Supabase (checkout_url, campos InfinitePay). */
 const cache = new Map<string, Order>();
@@ -55,6 +60,17 @@ export async function updateOrderPayment(
     payment_status,
     extra?.payment_method ?? updated.payment_method
   );
+
+  return updated;
+}
+
+export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order | undefined> {
+  const existing = await findOrder(id);
+  if (!existing) return undefined;
+
+  const updated: Order = { ...existing, status };
+  cache.set(id, updated);
+  await updateOrderStatusInSupabase(id, status);
 
   return updated;
 }

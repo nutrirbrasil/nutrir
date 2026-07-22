@@ -1,4 +1,4 @@
-import { computeCouponDiscountCents, getCoupon, normalizeCouponCode } from "./coupons";
+import { computeCouponDiscountCents, getCoupon, normalizeCouponCode, type CouponDefinition } from "./coupons";
 import { getComboCardTotalCents } from "./combo-builder-data";
 import { KIT_PRODUCTS, MENU_SECTIONS, type MarmitaSize } from "./menu-data";
 import { isCardPayment, isCashDiscountPayment, normalizePaymentMethod } from "./payment-utils";
@@ -73,16 +73,22 @@ export interface OrderPricing {
   coupon_code?: string;
   coupon_discount_cents: number;
   delivery_fee_cents: number;
+  points_discount_cents: number;
   total_cents: number;
   show_pix_discount: boolean;
   show_coupon_discount: boolean;
+  show_points_discount: boolean;
 }
 
 export function computeOrderPricing(
   items: OrderItem[],
   method?: PaymentMethod,
   couponCode?: string | null,
-  deliveryFeeCents = 0
+  deliveryFeeCents = 0,
+  /** Cupom de parceiro (não está na lista fixa de lib/coupons.ts) — quando informado, ignora getCoupon(). */
+  couponOverride?: CouponDefinition | null,
+  /** Pontos de parceiro usados como desconto — sempre limitado ao total do pedido aqui dentro. */
+  pointsDiscountCents = 0
 ): OrderPricing {
   const listTotal = items.reduce(
     (sum, item) => sum + getItemListPriceCents(item) * item.quantity,
@@ -93,27 +99,33 @@ export function computeOrderPricing(
     0
   );
 
-  const coupon = getCoupon(couponCode);
-  const appliedCouponCode = coupon ? normalizeCouponCode(couponCode!) : undefined;
+  const coupon = couponOverride ?? getCoupon(couponCode);
+  const appliedCouponCode = coupon && couponCode ? normalizeCouponCode(couponCode) : undefined;
 
   if (isCardPayment(method)) {
     const couponDiscount = coupon ? computeCouponDiscountCents(listTotal, coupon) : 0;
-    const total = Math.max(0, listTotal - couponDiscount) + deliveryFeeCents;
+    const beforePoints = Math.max(0, listTotal - couponDiscount);
+    const pointsDiscount = Math.max(0, Math.min(pointsDiscountCents, beforePoints));
+    const total = Math.max(0, beforePoints - pointsDiscount) + deliveryFeeCents;
     return {
       subtotal_cents: listTotal,
       pix_discount_cents: 0,
       coupon_code: appliedCouponCode,
       coupon_discount_cents: couponDiscount,
       delivery_fee_cents: deliveryFeeCents,
+      points_discount_cents: pointsDiscount,
       total_cents: total,
       show_pix_discount: false,
       show_coupon_discount: couponDiscount > 0,
+      show_points_discount: pointsDiscount > 0,
     };
   }
 
   const pixDiscount = Math.max(0, listTotal - cashTotal);
   const couponDiscount = coupon ? computeCouponDiscountCents(cashTotal, coupon) : 0;
-  const total = Math.max(0, cashTotal - couponDiscount) + deliveryFeeCents;
+  const beforePoints = Math.max(0, cashTotal - couponDiscount);
+  const pointsDiscount = Math.max(0, Math.min(pointsDiscountCents, beforePoints));
+  const total = Math.max(0, beforePoints - pointsDiscount) + deliveryFeeCents;
 
   return {
     subtotal_cents: listTotal,
@@ -121,9 +133,11 @@ export function computeOrderPricing(
     coupon_code: appliedCouponCode,
     coupon_discount_cents: couponDiscount,
     delivery_fee_cents: deliveryFeeCents,
+    points_discount_cents: pointsDiscount,
     total_cents: total,
     show_pix_discount: isCashDiscountPayment(method) && pixDiscount > 0,
     show_coupon_discount: couponDiscount > 0,
+    show_points_discount: pointsDiscount > 0,
   };
 }
 

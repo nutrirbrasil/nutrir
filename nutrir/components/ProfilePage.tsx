@@ -46,6 +46,7 @@ export function ProfilePage() {
     session,
     profile,
     isPatient,
+    partner,
     login,
     register,
     verifyEmail,
@@ -562,7 +563,28 @@ export function ProfilePage() {
               Paciente VIP
             </span>
           )}
+          {partner.isPartner && (
+            <span className="inline-flex items-center rounded-full bg-nutrir-emerald px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+              Parceiro
+            </span>
+          )}
         </div>
+
+        {partner.isPartner && (
+          <div className="card mt-6 space-y-2">
+            <h2 className="font-bold text-nutrir-emerald">Seus pontos de parceiro</h2>
+            <p className="text-sm text-nutrir-emerald/70">
+              Cupom <strong>{partner.couponCode}</strong> — cada pedido feito com ele te dá pontos
+              equivalentes a 5% do valor pago.
+            </p>
+            <p className="text-2xl font-bold text-nutrir-burgundy">
+              {formatPrice(partner.pointsBalanceCents ?? 0)}
+            </p>
+            <p className="text-xs text-nutrir-emerald/55">
+              Use como desconto em um pedido seu, ou troque por dinheiro (fale com a gente).
+            </p>
+          </div>
+        )}
         <p className="mt-2 text-center text-sm text-nutrir-emerald/70">
           Complete seus dados para agilizar a retirada.
         </p>

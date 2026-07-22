@@ -11,5 +11,8 @@ export async function notifyOrderPaid(
   const updated = await updateOrderPayment(orderId, "confirmed", extra);
   if (!updated) return false;
 
+  const { creditPartnerPoints } = await import("./partners");
+  await creditPartnerPoints(orderId);
+
   return sendOrderTelegramNotification(updated);
 }

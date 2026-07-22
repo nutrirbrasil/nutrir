@@ -3,6 +3,7 @@ import {
   getChargedItems,
   restoreBaseOrderItems,
 } from "./order-pricing";
+import { PARTNER_COUPON_PERCENT } from "./partners";
 import { saveOrder } from "./order-store";
 import {
   isLocalPayment,
@@ -26,11 +27,16 @@ export async function switchOrderPaymentMethod(
 
   const baseItems = restoreBaseOrderItems(order.items, fromMethod);
   const chargedItems = getChargedItems(baseItems, payment_method);
+  // order.coupon_code de parceiro não está na lista fixa (lib/coupons.ts) — sem
+  // esse override o desconto do parceiro sumiria ao trocar forma de pagamento.
+  const couponOverride = order.partner_id ? { percent: PARTNER_COUPON_PERCENT } : null;
   const pricing = computeOrderPricing(
     baseItems,
     payment_method,
     order.coupon_code,
-    order.delivery_fee_cents ?? 0
+    order.delivery_fee_cents ?? 0,
+    couponOverride,
+    order.points_redeemed_cents ?? 0
   );
 
   const updated: Order = {

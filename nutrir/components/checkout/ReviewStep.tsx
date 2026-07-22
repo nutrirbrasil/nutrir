@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CheckoutPriceSummary } from "@/components/checkout/CheckoutPriceSummary";
 import { CouponField } from "@/components/checkout/CouponField";
+import { PointsRedemptionField } from "@/components/checkout/PointsRedemptionField";
 import { CheckoutShell, useCheckoutGuard } from "@/components/checkout/CheckoutShell";
 import { OrderSummarySidebar } from "@/components/checkout/OrderSummarySidebar";
+import { usePartnerStatus } from "@/lib/use-partner-status";
 import { nutrirApi, PAYMENT_METHOD_SHORT_LABELS } from "@/lib/api";
 import type { CheckoutDraft } from "@/lib/checkout-draft";
 import { useCheckout } from "@/lib/checkout-context";
@@ -40,10 +42,13 @@ function canReusePendingOrder(
     draft.items,
     method,
     draft.coupon_code,
-    draft.delivery_fee_cents ?? 0
+    draft.delivery_fee_cents ?? 0,
+    draft.coupon_percent ? { percent: draft.coupon_percent, label: draft.coupon_label } : null,
+    draft.points_redeemed_cents ?? 0
   );
   if (existing.total_cents !== pricing.total_cents) return false;
   if ((existing.coupon_code ?? "") !== (draft.coupon_code ?? "")) return false;
+  if ((existing.points_redeemed_cents ?? 0) !== (draft.points_redeemed_cents ?? 0)) return false;
 
   const charged = getChargedItems(draft.items, method);
   if (existing.items.length !== charged.length) return false;
@@ -64,13 +69,30 @@ export function ReviewStep() {
   const { draft, ready } = useCheckoutGuard();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { isPartner, pointsBalanceCents = 0 } = usePartnerStatus(session);
 
   if (!ready || !draft) return null;
 
   const d = draft;
   const method = normalizePaymentMethod(d.payment_method);
   const isDelivery = d.fulfillment_type === "delivery";
-  const pricing = computeOrderPricing(d.items, method, d.coupon_code, d.delivery_fee_cents ?? 0);
+  const couponOverride = d.coupon_percent ? { percent: d.coupon_percent, label: d.coupon_label } : null;
+  const pointsRedeemed = d.points_redeemed_cents ?? 0;
+  const totalBeforePoints = computeOrderPricing(
+    d.items,
+    method,
+    d.coupon_code,
+    d.delivery_fee_cents ?? 0,
+    couponOverride
+  ).total_cents;
+  const pricing = computeOrderPricing(
+    d.items,
+    method,
+    d.coupon_code,
+    d.delivery_fee_cents ?? 0,
+    couponOverride,
+    pointsRedeemed
+  );
   const pickupLines = formatPickupDisplayLines(d.pickup_display);
 
   function buildPayload(): CreateOrderPayload {
@@ -102,6 +124,7 @@ export function ReviewStep() {
       delivery_complement: isDelivery ? d.delivery_complement : undefined,
       delivery_reference: isDelivery ? d.delivery_reference : undefined,
       delivery_bairro_id: isDelivery ? d.delivery_bairro_id : undefined,
+      points_redeemed_cents: pointsRedeemed > 0 ? pointsRedeemed : undefined,
     };
   }
 
@@ -151,7 +174,10 @@ export function ReviewStep() {
       }
 
       const payload = buildPayload();
-      const { order, checkout_url } = await nutrirApi.createOrder(payload);
+      const { order, checkout_url } = await nutrirApi.createOrder(
+        payload,
+        pointsRedeemed > 0 ? session?.access_token : undefined
+      );
 
       if (isLocalPayment(method)) {
         cart.clearCart();
@@ -241,11 +267,40 @@ export function ReviewStep() {
 
             <section className="p-5">
               <CouponField
-                code={d.coupon_code}
-                onApply={(code) => patchDraft({ coupon_code: code, order_id: undefined })}
-                onRemove={() => patchDraft({ coupon_code: undefined, order_id: undefined })}
+                applied={
+                  d.coupon_code
+                    ? { code: d.coupon_code, percent: d.coupon_percent ?? 0, label: d.coupon_label }
+                    : null
+                }
+                onApply={(coupon) =>
+                  patchDraft({
+                    coupon_code: coupon.code,
+                    coupon_percent: coupon.percent,
+                    coupon_label: coupon.label,
+                    order_id: undefined,
+                  })
+                }
+                onRemove={() =>
+                  patchDraft({
+                    coupon_code: undefined,
+                    coupon_percent: undefined,
+                    coupon_label: undefined,
+                    order_id: undefined,
+                  })
+                }
               />
             </section>
+
+            {isPartner && pointsBalanceCents > 0 && (
+              <section className="p-5">
+                <PointsRedemptionField
+                  balanceCents={pointsBalanceCents}
+                  maxCents={totalBeforePoints}
+                  valueCents={pointsRedeemed}
+                  onChange={(cents) => patchDraft({ points_redeemed_cents: cents, order_id: undefined })}
+                />
+              </section>
+            )}
 
             <section className="p-5">
               <CheckoutPriceSummary pricing={pricing} method={method} />

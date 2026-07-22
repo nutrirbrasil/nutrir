@@ -13,7 +13,9 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
     draft.items,
     method,
     draft.coupon_code,
-    draft.delivery_fee_cents ?? 0
+    draft.delivery_fee_cents ?? 0,
+    draft.coupon_percent ? { percent: draft.coupon_percent, label: draft.coupon_label } : null,
+    draft.points_redeemed_cents ?? 0
   );
 
   return (

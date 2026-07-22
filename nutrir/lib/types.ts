@@ -21,6 +21,9 @@ export type PaymentStatus = "pending" | "confirmed";
 /** Ausente = "pickup" (compatível com pedidos antigos, que só tinham retirada). */
 export type FulfillmentType = "pickup" | "delivery";
 
+/** Acompanhamento manual do pedido, editável só pelo admin (ver app/admin/pedidos). Nunca retrocede. */
+export type OrderStatus = "pending" | "paid" | "delivered";
+
 export interface CreateOrderPayload {
   customer_name: string;
   customer_phone: string;
@@ -42,11 +45,13 @@ export interface CreateOrderPayload {
   delivery_complement?: string;
   delivery_reference?: string;
   delivery_bairro_id?: string;
+  /** Pontos de parceiro a usar como desconto (centavos). Só aceito se o pedido vier com sessão de parceiro válida. */
+  points_redeemed_cents?: number;
 }
 
 export interface Order extends CreateOrderPayload {
   id: string;
-  status: string;
+  status: OrderStatus;
   payment_status: PaymentStatus;
   total_cents: number;
   coupon_discount_cents?: number;
@@ -62,4 +67,6 @@ export interface Order extends CreateOrderPayload {
   delivery_bairro?: string;
   delivery_municipio?: string;
   delivery_fee_cents?: number;
+  /** Preenchido pelo servidor quando coupon_code pertence a um parceiro. */
+  partner_id?: string;
 }

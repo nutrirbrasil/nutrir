@@ -1,32 +1,51 @@
 "use client";
 
 import { useState } from "react";
-import { getCoupon, isValidCouponCode, normalizeCouponCode } from "@/lib/coupons";
+import { normalizeCouponCode } from "@/lib/coupons";
+
+export interface AppliedCoupon {
+  code: string;
+  percent: number;
+  label?: string;
+}
 
 interface Props {
-  code?: string;
-  onApply: (code: string) => void;
+  applied?: AppliedCoupon | null;
+  onApply: (coupon: AppliedCoupon) => void;
   onRemove: () => void;
 }
 
-export function CouponField({ code, onApply, onRemove }: Props) {
-  const [input, setInput] = useState(code ?? "");
+export function CouponField({ applied, onApply, onRemove }: Props) {
+  const [input, setInput] = useState(applied?.code ?? "");
   const [error, setError] = useState("");
+  const [checking, setChecking] = useState(false);
 
-  const applied = code ? getCoupon(code) : null;
-
-  function handleApply() {
+  async function handleApply() {
     const trimmed = input.trim();
     if (!trimmed) {
       setError("Digite um cupom.");
       return;
     }
-    if (!isValidCouponCode(trimmed)) {
-      setError("Cupom inválido.");
-      return;
-    }
+
+    setChecking(true);
     setError("");
-    onApply(normalizeCouponCode(trimmed));
+
+    try {
+      const code = normalizeCouponCode(trimmed);
+      const res = await fetch(`/api/nutrir/coupons/check?code=${encodeURIComponent(code)}`);
+      const data = (await res.json()) as { valid: boolean; percent?: number; label?: string };
+
+      if (!data.valid || !data.percent) {
+        setError("Cupom inválido.");
+        return;
+      }
+
+      onApply({ code, percent: data.percent, label: data.label });
+    } catch {
+      setError("Não foi possível conferir o cupom agora. Tente de novo.");
+    } finally {
+      setChecking(false);
+    }
   }
 
   function handleRemove() {
@@ -35,13 +54,13 @@ export function CouponField({ code, onApply, onRemove }: Props) {
     onRemove();
   }
 
-  if (applied && code) {
+  if (applied) {
     return (
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Cupom aplicado</p>
           <p className="font-semibold text-nutrir-emerald">
-            {code}
+            {applied.code}
             {applied.label && (
               <span className="ml-1.5 text-sm font-normal text-nutrir-emerald/70">
                 ({applied.label})
@@ -85,9 +104,10 @@ export function CouponField({ code, onApply, onRemove }: Props) {
         <button
           type="button"
           onClick={handleApply}
-          className="btn-primary w-full shrink-0 px-6 py-2.5 text-xs font-bold uppercase sm:w-auto"
+          disabled={checking}
+          className="btn-primary w-full shrink-0 px-6 py-2.5 text-xs font-bold uppercase disabled:opacity-60 sm:w-auto"
         >
-          Aplicar
+          {checking ? "Conferindo…" : "Aplicar"}
         </button>
       </div>
       {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}

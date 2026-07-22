@@ -5,7 +5,7 @@ import {
   normalizePhoneStorage,
   stripCpfDigits,
 } from "./br-fields";
-import type { FulfillmentType, Order, OrderItem, PaymentMethod, PaymentStatus } from "./types";
+import type { FulfillmentType, Order, OrderItem, OrderStatus, PaymentMethod, PaymentStatus } from "./types";
 
 /** Máximo de pedidos guardados por cliente no Supabase. */
 export const MAX_ORDERS_PER_CUSTOMER = 5;
@@ -264,6 +264,10 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
       delivery_number: order.delivery_number ?? null,
       delivery_complement: order.delivery_complement ?? null,
       delivery_reference: order.delivery_reference ?? null,
+      coupon_code: order.coupon_code ?? null,
+      coupon_discount_cents: order.coupon_discount_cents ?? 0,
+      partner_id: order.partner_id ?? null,
+      points_redeemed_cents: order.points_redeemed_cents ?? 0,
     },
     { onConflict: "order_nsu" }
   );
@@ -293,6 +297,24 @@ export async function updateOrderPaymentInSupabase(
 
   if (error) {
     console.error("[Supabase] updateOrderPayment:", error.message);
+    return false;
+  }
+
+  return true;
+}
+
+/** Muda o status de acompanhamento (pending/paid/delivered). Não valida transição — quem chama garante que não retrocede. */
+export async function updateOrderStatusInSupabase(
+  orderNsu: string,
+  status: OrderStatus
+): Promise<boolean> {
+  const db = getSupabaseAdmin();
+  if (!db) return false;
+
+  const { error } = await db.from("nutrir_orders").update({ status }).eq("order_nsu", orderNsu);
+
+  if (error) {
+    console.error("[Supabase] updateOrderStatus:", error.message);
     return false;
   }
 
@@ -345,7 +367,7 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
   const { data, error } = await db
     .from("nutrir_orders")
     .select(
-      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference"
+      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents"
     )
     .eq("order_nsu", orderNsu)
     .maybeSingle();
@@ -369,7 +391,7 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
     user_notes: (data.user_notes as string) ?? undefined,
     items: data.items as OrderItem[],
     total_cents: data.total_cents as number,
-    status: (data.status as string) ?? "pending",
+    status: (data.status as OrderStatus) ?? "pending",
     created_at: data.created_at as string,
     fulfillment_type: (data.fulfillment_type as FulfillmentType) ?? "pickup",
     delivery_bairro: (data.delivery_bairro as string) ?? undefined,
@@ -379,5 +401,93 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
     delivery_number: (data.delivery_number as string) ?? undefined,
     delivery_complement: (data.delivery_complement as string) ?? undefined,
     delivery_reference: (data.delivery_reference as string) ?? undefined,
+    coupon_code: (data.coupon_code as string) ?? undefined,
+    coupon_discount_cents: (data.coupon_discount_cents as number) ?? 0,
+    partner_id: (data.partner_id as string) ?? undefined,
+    points_redeemed_cents: (data.points_redeemed_cents as number) ?? 0,
   };
+}
+
+export interface AdminOrderRow extends Order {
+  partner_name?: string;
+  partner_coupon_code?: string;
+}
+
+const ADMIN_ORDER_COLUMNS =
+  "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents, local_pay_deadline";
+
+/** Lista de pedidos pra tela de admin. Sem escopo por cliente — só a chamar com service-role, atrás de verifyAdminRequest. */
+export async function listOrdersForAdmin(opts: {
+  status?: OrderStatus;
+  limit?: number;
+} = {}): Promise<AdminOrderRow[]> {
+  const db = getSupabaseAdmin();
+  if (!db) return [];
+
+  let query = db
+    .from("nutrir_orders")
+    .select(ADMIN_ORDER_COLUMNS)
+    .order("created_at", { ascending: false })
+    .limit(opts.limit ?? 50);
+
+  if (opts.status) query = query.eq("status", opts.status);
+
+  const { data, error } = await query;
+  if (error) {
+    console.error("[Supabase] listOrdersForAdmin:", error.message);
+    return [];
+  }
+  if (!data?.length) return [];
+
+  const partnerIds = Array.from(
+    new Set(data.map((row) => row.partner_id as string | null).filter((id): id is string => !!id))
+  );
+
+  let partnersMap = new Map<string, { name: string; coupon_code: string }>();
+  if (partnerIds.length) {
+    const { data: partners } = await db
+      .from("nutrir_partners")
+      .select("id, name, coupon_code")
+      .in("id", partnerIds);
+    partnersMap = new Map(
+      (partners ?? []).map((p) => [
+        p.id as string,
+        { name: p.name as string, coupon_code: p.coupon_code as string },
+      ])
+    );
+  }
+
+  return data.map((row) => {
+    const partner = row.partner_id ? partnersMap.get(row.partner_id as string) : undefined;
+    return {
+      id: row.order_nsu as string,
+      customer_name: row.customer_name as string,
+      customer_phone: row.customer_phone as string,
+      delivery_address: row.delivery_address as string,
+      delivery_date: row.delivery_date as string,
+      pickup_display: (row.pickup_display as string) ?? undefined,
+      payment_method: (row.payment_method as PaymentMethod) ?? "pix",
+      payment_status: (row.payment_status as PaymentStatus) ?? "pending",
+      user_notes: (row.user_notes as string) ?? undefined,
+      items: row.items as OrderItem[],
+      total_cents: row.total_cents as number,
+      status: (row.status as OrderStatus) ?? "pending",
+      created_at: row.created_at as string,
+      fulfillment_type: (row.fulfillment_type as FulfillmentType) ?? "pickup",
+      delivery_bairro: (row.delivery_bairro as string) ?? undefined,
+      delivery_municipio: (row.delivery_municipio as string) ?? undefined,
+      delivery_fee_cents: (row.delivery_fee_cents as number) ?? 0,
+      delivery_street: (row.delivery_street as string) ?? undefined,
+      delivery_number: (row.delivery_number as string) ?? undefined,
+      delivery_complement: (row.delivery_complement as string) ?? undefined,
+      delivery_reference: (row.delivery_reference as string) ?? undefined,
+      coupon_code: (row.coupon_code as string) ?? undefined,
+      coupon_discount_cents: (row.coupon_discount_cents as number) ?? 0,
+      partner_id: (row.partner_id as string) ?? undefined,
+      points_redeemed_cents: (row.points_redeemed_cents as number) ?? 0,
+      local_pay_deadline: (row.local_pay_deadline as string) ?? undefined,
+      partner_name: partner?.name,
+      partner_coupon_code: partner?.coupon_code,
+    };
+  });
 }
