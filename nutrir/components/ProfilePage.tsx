@@ -573,16 +573,17 @@ export function ProfilePage() {
 
         {partner.isPartner && (
           <div className="card mt-6 space-y-2">
-            <h2 className="font-bold text-nutrir-emerald">Seus pontos de parceiro</h2>
+            <h2 className="font-bold text-nutrir-emerald">Seus pontos de Parceiro Nutrir</h2>
             <p className="text-sm text-nutrir-emerald/70">
-              Cupom <strong>{partner.couponCode}</strong> — cada pedido feito com ele te dá pontos
-              equivalentes a 5% do valor pago.
+              Seu Cupom: <strong>{partner.couponCode}</strong>
             </p>
-            <p className="text-2xl font-bold text-nutrir-burgundy">
-              {formatPoints(partner.pointsBalanceCents ?? 0)} pontos
+            <p className="text-sm text-nutrir-emerald/70">
+              Cada pedido feito com seu cupom te dá pontos equivalentes a 5% do valor total do
+              pedido.
             </p>
-            <p className="text-xs text-nutrir-emerald/55">
-              Use como desconto em um pedido seu, ou troque por dinheiro (fale com a gente).
+            <p className="text-sm text-nutrir-emerald/70">Compartilhe seu cupom!</p>
+            <p className="mt-2 text-2xl font-bold text-nutrir-burgundy">
+              Saldo: {formatPoints(partner.pointsBalanceCents ?? 0)} pontos
             </p>
           </div>
         )}
