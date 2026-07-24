@@ -50,11 +50,14 @@ export function CheckoutShell({
   return (
     <div className={`mx-auto ${widthClass} px-4 py-10`}>
       {backHref && (
-        <Link href={backHref} className="text-sm font-medium text-nutrir-burgundy hover:underline">
+        <Link href={backHref} className="text-sm font-medium text-nutrir-burgundy transition hover:underline">
           ← {backLabel ?? "Voltar"}
         </Link>
       )}
-      <h1 className="section-title mt-4 text-left">{title}</h1>
+      <p className={`eyebrow text-nutrir-burgundy/70 ${backHref ? "mt-3" : "mt-0"}`}>
+        Finalizar pedido
+      </p>
+      <h1 className="section-title mt-1.5 text-left">{title}</h1>
       <div className="mt-8">{children}</div>
     </div>
   );

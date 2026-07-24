@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { FiTruck } from "react-icons/fi";
 import {
   COMBO_NAV_EVENT,
   COMBO_SECTION_IDS,
@@ -8,6 +9,7 @@ import {
 } from "@/lib/combo-nav-links";
 import { ComboBuilder } from "./ComboBuilder";
 import { KitCard } from "./KitCard";
+import { Reveal } from "./Reveal";
 import { KIT_PRODUCTS } from "@/lib/menu-data";
 
 type CardapioTab = "combos" | "montar";
@@ -78,28 +80,78 @@ export function CardapioPage() {
 
   return (
     <div>
-      <section className="card-dark relative overflow-hidden px-6 py-14 text-center md:py-20">
-        <p className="font-display text-sm italic text-nutrir-nude/70">@nutrirpicarras</p>
-        <h1 className="mt-2 font-display text-5xl font-bold tracking-tight text-nutrir-nude md:text-6xl">
-          COMBOS
-        </h1>
-        <p className="hero-tagline mt-4">A partir de R$14,99</p>
-        <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-nutrir-nude/85">
-          Marmitas pensadas, desenvolvidas e montadas por nutricionistas.
-          <br />
-          Tudo para facilitar sua dieta e sua rotina.
+      <section className="card-dark relative isolate overflow-hidden rounded-none px-6 py-7 text-center md:py-9">
+        {/* Bloom de luz suave que respira atrás do título. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[300px] w-[640px] max-w-[150%] -translate-x-1/2 animate-glow-drift"
+          style={{
+            background:
+              "radial-gradient(50% 50% at 50% 42%, rgb(243 232 220 / 0.16), transparent 70%)",
+          }}
+        />
+
+        <p
+          className="eyebrow animate-fade-up inline-flex items-center gap-1.5 text-[10px] text-nutrir-nude/60"
+          style={{ animationDelay: "40ms" }}
+        >
+          <FiTruck aria-hidden />
+          Entregas em Piçarras e Penha
         </p>
 
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <h1
+          className="hero-heading animate-fade-up mx-auto mt-2.5 max-w-2xl text-[2.1rem] leading-[1.05] md:text-6xl"
+          style={{ animationDelay: "120ms" }}
+        >
+          Combos
+        </h1>
+
+        <div
+          className="animate-fade-up mx-auto mt-3 flex items-center justify-center gap-3"
+          style={{ animationDelay: "200ms" }}
+          aria-hidden
+        >
+          <span className="h-px w-10 bg-nutrir-nude/25" />
+          <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-nude/45" />
+          <span className="h-px w-10 bg-nutrir-nude/25" />
+        </div>
+
+        <p
+          className="animate-fade-up mx-auto mt-3 max-w-xl font-display text-lg font-bold uppercase tracking-wide text-nutrir-nude/90 sm:text-xl md:text-2xl"
+          style={{ animationDelay: "260ms" }}
+        >
+          A partir de <strong className="hero-underline">R$14,99</strong>
+        </p>
+
+        <p
+          className="animate-fade-up mx-auto mt-2 max-w-xl font-display text-xs font-bold uppercase tracking-wide text-nutrir-nude/70 sm:text-sm"
+          style={{ animationDelay: "300ms" }}
+        >
+          Comida de verdade, feita por quem entende
+        </p>
+
+        <p
+          className="animate-fade-up mx-auto mt-3 max-w-xl text-[0.85rem] leading-relaxed text-nutrir-nude/85"
+          style={{ animationDelay: "320ms" }}
+        >
+          Combos pensados e montados por nutricionistas,
+          <br />
+          para facilitar sua rotina semanal e mensal.
+        </p>
+
+        <div
+          className="animate-fade-up mt-5 flex flex-wrap justify-center gap-3"
+          style={{ animationDelay: "400ms" }}
+        >
           {TABS.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => selectTab(t.id)}
-              className={`rounded-full px-8 py-2.5 text-sm font-bold transition ${
+              className={`rounded-full px-8 py-3 text-sm font-bold tracking-wide transition-all duration-200 ${
                 tab === t.id
-                  ? "bg-nutrir-burgundy text-nutrir-nude shadow-md"
-                  : "border border-nutrir-nude/30 text-nutrir-nude hover:bg-nutrir-nude/10"
+                  ? "bg-nutrir-burgundy text-nutrir-nude shadow-[0_2px_6px_rgb(92_34_44/0.3),0_10px_24px_rgb(92_34_44/0.28)]"
+                  : "border border-nutrir-nude/25 text-nutrir-nude/90 hover:border-nutrir-nude/45 hover:bg-nutrir-nude/10"
               }`}
             >
               {t.label}
@@ -111,22 +163,24 @@ export function CardapioPage() {
       <div className="mx-auto max-w-6xl space-y-16 px-4 py-12">
         {tab === "combos" && (
           <section id="combos" className="scroll-mt-28 space-y-8">
-            {KIT_PRODUCTS.map((kit) => (
+            {KIT_PRODUCTS.map((kit, index) => (
               <div key={kit.id} id={KIT_SECTION_ID[kit.id]} className="scroll-mt-28">
-                <KitCard kit={kit} />
+                <Reveal delay={index * 90}>
+                  <KitCard kit={kit} />
+                </Reveal>
               </div>
             ))}
 
-            <div className="pt-4 text-center">
+            <Reveal className="pt-4 text-center">
               <p className="text-nutrir-emerald/70">Não encontrou o que procurava?</p>
               <button
                 type="button"
                 onClick={() => selectTab("montar")}
-                className="mt-2 font-display text-xl font-bold text-nutrir-burgundy underline-offset-4 transition hover:underline"
+                className="mt-2 font-display text-xl font-bold italic text-nutrir-burgundy underline-offset-4 transition hover:underline"
               >
                 Monte seu próprio combo!
               </button>
-            </div>
+            </Reveal>
           </section>
         )}
 

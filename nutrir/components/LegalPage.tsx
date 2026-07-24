@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LEGAL_LAST_UPDATED } from "@/lib/legal";
+import { PageHero } from "./PageHero";
+import { Reveal } from "./Reveal";
 
 interface Props {
   title: string;
@@ -9,29 +11,41 @@ interface Props {
 
 export function LegalPage({ title, children }: Props) {
   return (
-    <article className="mx-auto max-w-3xl px-4 py-12 md:py-16">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-nutrir-emerald/55">
-        Documento legal
-      </p>
-      <h1 className="section-title mt-2">{title}</h1>
-      <p className="mt-2 text-sm text-nutrir-emerald/60">Última atualização: {LEGAL_LAST_UPDATED}</p>
+    <div>
+      <PageHero
+        eyebrow="Documento legal"
+        title={title}
+        subtitle={`Última atualização: ${LEGAL_LAST_UPDATED}`}
+      />
 
-      <div className="card mt-8 space-y-6 text-sm leading-relaxed text-nutrir-emerald/85">{children}</div>
+      <Reveal>
+        <article className="mx-auto max-w-3xl px-4 py-12 md:py-16">
+          <div className="card space-y-6 text-sm leading-relaxed text-nutrir-emerald/85">
+            {children}
+          </div>
 
-      <p className="mt-8 text-center text-sm text-nutrir-emerald/60">
-        <Link href="/politica-de-privacidade" className="font-medium hover:text-nutrir-burgundy hover:underline">
-          Política de Privacidade
-        </Link>
-        {" · "}
-        <Link href="/termos-de-uso" className="font-medium hover:text-nutrir-burgundy hover:underline">
-          Termos de Uso
-        </Link>
-        {" · "}
-        <Link href="/" className="font-medium hover:text-nutrir-burgundy hover:underline">
-          Voltar ao site
-        </Link>
-      </p>
-    </article>
+          <p className="mt-8 text-center text-sm text-nutrir-emerald/60">
+            <Link
+              href="/politica-de-privacidade"
+              className="font-medium hover:text-nutrir-burgundy hover:underline"
+            >
+              Política de Privacidade
+            </Link>
+            {" · "}
+            <Link
+              href="/termos-de-uso"
+              className="font-medium hover:text-nutrir-burgundy hover:underline"
+            >
+              Termos de Uso
+            </Link>
+            {" · "}
+            <Link href="/" className="font-medium hover:text-nutrir-burgundy hover:underline">
+              Voltar ao site
+            </Link>
+          </p>
+        </article>
+      </Reveal>
+    </div>
   );
 }
 

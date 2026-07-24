@@ -186,7 +186,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border-2 border-nutrir-burgundy bg-nutrir-nude px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-nutrir-burgundy/15 bg-nutrir-nude px-5 py-4 shadow-[0_1px_2px_rgb(10_58_44/0.04),0_6px_18px_rgb(10_58_44/0.08)]">
             <div>
               <p className="text-sm text-nutrir-emerald/70">Combo de {targetTotal} marmitas</p>
               <p className="font-display text-2xl font-bold text-nutrir-emerald">
@@ -229,7 +229,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                     return (
                       <div
                         key={item.item_id}
-                        className="flex flex-col gap-3 rounded-xl border-2 border-nutrir-nude-dark bg-nutrir-cream/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-3 rounded-xl border border-nutrir-nude-dark bg-nutrir-cream/50 px-4 py-3 shadow-[0_1px_2px_rgb(10_58_44/0.04)] sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex min-w-0 items-center gap-3">
                           {getMarmitaImageSrc(item.item_id) && (

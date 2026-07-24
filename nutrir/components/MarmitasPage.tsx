@@ -1,25 +1,35 @@
+import { FiTruck } from "react-icons/fi";
 import { MenuSection } from "./MenuSection";
+import { PageHero } from "./PageHero";
+import { Reveal } from "./Reveal";
 import { MENU_SECTIONS } from "@/lib/menu-data";
 
 export function MarmitasPage() {
   return (
     <div>
-      <section className="card-dark relative overflow-hidden px-6 py-14 text-center md:py-20">
-        <p className="font-display text-sm italic text-nutrir-nude/70">@nutrirpicarras</p>
-        <h1 className="mt-2 font-display text-5xl font-bold tracking-tight text-nutrir-nude md:text-6xl">
-          MARMITAS
-        </h1>
-        <p className="hero-tagline mt-4">Individuais</p>
-        <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-nutrir-nude/85">
-          Marmitas pensadas, desenvolvidas e montadas por nutricionistas.
-          <br />
-          Tudo para facilitar sua dieta e sua rotina.
-        </p>
-      </section>
+      <PageHero
+        eyebrow={
+          <>
+            <FiTruck aria-hidden />
+            Entregas em Piçarras e Penha
+          </>
+        }
+        title="Marmitas individuais"
+        tagline="Sabor para nutrir de verdade"
+        subtitle={
+          <>
+            Marmitas completas desenvolvidas por nutricionistas,
+            <br />
+            pra diminuir todo o estresse de um dia corrido.
+          </>
+        }
+      />
 
       <div className="mx-auto max-w-6xl space-y-16 px-4 py-12">
-        {MENU_SECTIONS.map((section) => (
-          <MenuSection key={section.id} section={section} />
+        {MENU_SECTIONS.map((section, index) => (
+          <Reveal key={section.id} delay={index * 60}>
+            <MenuSection section={section} />
+          </Reveal>
         ))}
         <p className="text-center text-xs leading-relaxed text-nutrir-emerald/55">
           *Valor promocional válido apenas para pagamentos em dinheiro ou pix

@@ -48,7 +48,7 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
   return (
     <>
     <article className="card flex flex-col overflow-hidden !p-0 transition hover:shadow-md">
-      <div className="relative aspect-[5/4] w-full bg-nutrir-burgundy">
+      <div className="photo-panel relative aspect-[5/4] w-full bg-nutrir-burgundy">
         {premiumBadge && (
           <span
             className="absolute left-2 top-2 z-10 text-xl leading-none text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] sm:left-2.5 sm:top-2.5 sm:text-2xl"
@@ -99,8 +99,8 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
               <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>
             </p>
             <p className="leading-snug">
-              por <strong className="text-nutrir-emerald">{formatPrice(price)}</strong> no dinheiro
-              ou pix
+              Por <strong className="text-nutrir-emerald">{formatPrice(price)}</strong> (dinheiro ou
+              pix)
             </p>
           </div>
           <button

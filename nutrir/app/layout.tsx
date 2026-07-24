@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/AppProviders";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -11,14 +11,16 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
 });
 
-const playfair = Playfair_Display({
+// Serifada editorial/artesanal: dá o ar premium de marca de comida autoral.
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-fraunces",
   style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700", "900"],
 });
 
 export const metadata: Metadata = {
-  title: "Nutrir Piçarras — Marmitas Fit",
+  title: "Nutrir | Marmitas & Combos",
   description:
     "Marmitas saudáveis em Piçarras. Combos, marmitas avulsas, monte seu combo e peça online.",
   icons: {
@@ -29,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${dmSans.variable} ${playfair.variable}`}>
+    <html lang="pt-BR" className={`${dmSans.variable} ${fraunces.variable}`}>
       <body>
         <AppProviders>
           <Navbar />

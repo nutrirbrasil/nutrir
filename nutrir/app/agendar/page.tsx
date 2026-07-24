@@ -30,7 +30,8 @@ export default function AgendarPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="mb-8 text-center">
-        <h1 className="section-title">Agendar retirada</h1>
+        <p className="eyebrow text-nutrir-burgundy/70">Nutrir · Seu pedido</p>
+        <h1 className="section-title mt-2">Agendar retirada</h1>
         <p className="mt-2 text-sm text-nutrir-emerald/70">
           Escolha a data e confirme seus dados para retirar na Nutrir.
         </p>

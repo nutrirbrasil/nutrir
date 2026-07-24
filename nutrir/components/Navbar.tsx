@@ -34,7 +34,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-nutrir-burgundy-dark/40 bg-nutrir-burgundy bg-grain shadow-lg">
+      <header className="sticky top-0 z-50 border-b border-nutrir-emerald-dark/50 bg-nutrir-emerald-dark bg-grain shadow-[0_1px_3px_rgb(10_58_44/0.25),0_10px_28px_rgb(10_58_44/0.22)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:py-4">
           <Link href="/" className="group flex min-w-0 shrink items-center gap-2 sm:gap-3">
             <Image

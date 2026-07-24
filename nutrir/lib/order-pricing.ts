@@ -231,3 +231,42 @@ function restoreBaseOrderItem(item: OrderItem, from: PaymentMethod): OrderItem {
 
   return { ...item, price_cents: Math.max(0, charged - addons - MARMITA_CARD_SURCHARGE_CENTS) };
 }
+
+export interface OrderItemPricingBreakdown {
+  paidCents: number;
+  listCents: number;
+  discountCents: number;
+}
+
+/**
+ * Preço pago x preço de lista por item de um pedido JÁ SALVO. Os itens
+ * armazenados vêm com price_cents já cobrado (base + adicionais somados,
+ * conforme o método de pagamento do pedido) — addons_cents ali é só
+ * metadado pro texto de adicionais, somá-lo de novo contaria em dobro.
+ * Reconstrói o preço base via restoreBaseOrderItems pra achar o preço de
+ * lista real, e distribui o cupom proporcionalmente ao peso de cada item
+ * no total cobrado (mesmo método usado no resumo do checkout).
+ */
+export function getOrderItemPricingBreakdown(
+  items: OrderItem[],
+  paymentMethod: PaymentMethod | undefined,
+  couponDiscountCents = 0
+): OrderItemPricingBreakdown[] {
+  const baseItems = restoreBaseOrderItems(items, paymentMethod);
+  const paidBeforeCoupon = items.map((item) => item.price_cents * item.quantity);
+  const chargeTotal = paidBeforeCoupon.reduce((sum, cents) => sum + cents, 0);
+
+  return items.map((item, i) => {
+    const listCents = getItemListPriceCents(baseItems[i]) * item.quantity;
+    const couponCut =
+      couponDiscountCents > 0 && chargeTotal > 0
+        ? Math.round((paidBeforeCoupon[i] * couponDiscountCents) / chargeTotal)
+        : 0;
+    const paidCents = Math.max(0, paidBeforeCoupon[i] - couponCut);
+    return {
+      paidCents,
+      listCents,
+      discountCents: Math.max(0, listCents - paidCents),
+    };
+  });
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 import { NutritionTable } from "@/components/NutritionTable";
 import type { MarmitaNutritionFacts } from "@/lib/marmita-nutrition";
@@ -11,7 +12,9 @@ interface Props {
 }
 
 export function NutritionModal({ marmitaName, facts, onClose }: Props) {
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <>
       <button
         type="button"
@@ -34,7 +37,7 @@ export function NutritionModal({ marmitaName, facts, onClose }: Props) {
               Tabela nutricional
             </h2>
             <p className="mt-1 text-sm text-nutrir-emerald/65">
-              {marmitaName} — tamanho {facts.size}
+              {marmitaName} · tamanho {facts.size}
             </p>
           </div>
           <button
@@ -50,6 +53,7 @@ export function NutritionModal({ marmitaName, facts, onClose }: Props) {
           <NutritionTable facts={facts} />
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

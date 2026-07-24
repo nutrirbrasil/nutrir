@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CheckoutPriceSummary } from "@/components/checkout/CheckoutPriceSummary";
 import { CouponField } from "@/components/checkout/CouponField";
 import { PointsRedemptionField } from "@/components/checkout/PointsRedemptionField";
 import { CheckoutShell, useCheckoutGuard } from "@/components/checkout/CheckoutShell";
@@ -85,14 +84,6 @@ export function ReviewStep() {
     d.delivery_fee_cents ?? 0,
     couponOverride
   ).total_cents;
-  const pricing = computeOrderPricing(
-    d.items,
-    method,
-    d.coupon_code,
-    d.delivery_fee_cents ?? 0,
-    couponOverride,
-    pointsRedeemed
-  );
   const pickupLines = formatPickupDisplayLines(d.pickup_display);
 
   function buildPayload(): CreateOrderPayload {
@@ -301,10 +292,6 @@ export function ReviewStep() {
                 />
               </section>
             )}
-
-            <section className="p-5">
-              <CheckoutPriceSummary pricing={pricing} method={method} />
-            </section>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

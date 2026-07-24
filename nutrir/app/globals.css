@@ -11,94 +11,169 @@
     --nutrir-nude: #f3e8dc;
     --nutrir-nude-dark: #e8d5c4;
     --nutrir-cream: #faf6f1;
+
+    /* Linha fina de contorno: bordô bem discreto, marca sem peso visual. */
+    --nutrir-hairline: rgb(122 46 58 / 0.14);
+    --nutrir-hairline-strong: rgb(122 46 58 / 0.22);
+
+    /* Sombras suaves em camadas, tingidas de verde escuro (tom da marca). */
+    --shadow-xs: 0 1px 2px rgb(10 58 44 / 0.05);
+    --shadow-sm: 0 1px 2px rgb(10 58 44 / 0.04), 0 2px 6px rgb(10 58 44 / 0.05);
+    --shadow-md: 0 1px 2px rgb(10 58 44 / 0.04), 0 6px 18px rgb(10 58 44 / 0.08);
+    --shadow-lg: 0 2px 6px rgb(10 58 44 / 0.05), 0 14px 36px rgb(10 58 44 / 0.13);
+    --shadow-burgundy: 0 2px 6px rgb(92 34 44 / 0.18), 0 10px 24px rgb(92 34 44 / 0.22);
+
+    /* Curva e duração padrão das micro-interações. */
+    --ease-lux: cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   html {
     font-size: 80%;
   }
-}
 
-body {
-  @apply font-sans antialiased;
-  background-color: var(--nutrir-nude);
-  color: var(--nutrir-emerald-dark);
-}
+  html {
+    background-color: var(--nutrir-nude);
+  }
 
-html {
-  background-color: var(--nutrir-nude);
+  body {
+    @apply font-sans antialiased;
+    background-color: var(--nutrir-nude);
+    /* Textura de papel/linho sobre o nude, dá profundidade ao fundo sólido. */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.065'/%3E%3C/svg%3E");
+    color: var(--nutrir-emerald-dark);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Foco visível consistente e discreto em toda a navegação por teclado. */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--nutrir-cream), 0 0 0 4px var(--nutrir-emerald);
+    border-radius: 0.5rem;
+  }
 }
 
 @layer components {
   .btn-primary {
-    @apply rounded-full px-6 py-2.5 text-sm font-semibold shadow-md transition disabled:opacity-50;
+    @apply relative overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all disabled:opacity-50;
     background-color: var(--nutrir-burgundy);
     color: var(--nutrir-nude);
+    box-shadow: var(--shadow-burgundy);
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-lux);
+    letter-spacing: 0.01em;
+  }
+  /* Brilho que varre o botão no hover, toque premium. */
+  .btn-primary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      rgb(255 255 255 / 0.18) 48%,
+      transparent 100%
+    );
+    transform: translateX(-130%);
+    transition: transform 0.7s var(--ease-lux);
+    pointer-events: none;
+  }
+  .btn-primary:hover::after {
+    transform: translateX(130%);
   }
   .btn-primary:hover {
     background-color: var(--nutrir-burgundy-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgb(92 34 44 / 0.22), 0 14px 30px rgb(92 34 44 / 0.26);
   }
-  .btn-primary:focus {
-    outline: none;
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:focus-visible {
     box-shadow: 0 0 0 2px var(--nutrir-cream), 0 0 0 4px var(--nutrir-burgundy);
   }
 
   .btn-secondary {
-    @apply rounded-full border-2 px-6 py-2.5 text-sm font-semibold transition;
-    border-color: rgb(15 77 58 / 0.3);
+    @apply rounded-full border px-6 py-2.5 text-sm font-semibold transition-all;
+    border-color: var(--nutrir-hairline-strong);
     background-color: var(--nutrir-nude);
     color: var(--nutrir-emerald);
+    box-shadow: var(--shadow-xs);
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-lux);
   }
   .btn-secondary:hover {
     @apply bg-nutrir-cream;
     border-color: var(--nutrir-emerald);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-secondary:active {
+    transform: translateY(0);
   }
 
   .btn-outline-light {
-    @apply rounded-full border-2 px-6 py-2.5 text-sm font-semibold transition;
-    border-color: rgb(243 232 220 / 0.5);
+    @apply rounded-full border px-6 py-2.5 text-sm font-semibold transition-all;
+    border-color: rgb(243 232 220 / 0.45);
     color: var(--nutrir-nude);
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-lux);
   }
   .btn-outline-light:hover {
-    background-color: rgb(243 232 220 / 0.1);
+    background-color: rgb(243 232 220 / 0.12);
+    border-color: rgb(243 232 220 / 0.7);
   }
 
   .card {
-    @apply rounded-2xl p-6 shadow-sm;
-    border: 2px solid var(--nutrir-burgundy);
+    @apply rounded-2xl p-6;
+    border: 1px solid var(--nutrir-hairline);
     background-color: var(--nutrir-nude);
+    box-shadow: var(--shadow-md);
   }
 
   .card-dark {
-    @apply rounded-2xl bg-grain p-6 shadow-lg;
+    @apply rounded-2xl p-6;
     background-color: var(--nutrir-emerald);
+    /* Grão mais presente que o bg-grain compartilhado (navbar/rodapé):
+       aqui a área é grande o bastante para a textura ficar perceptível
+       sem virar ruído. */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='cd'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23cd)' opacity='0.12'/%3E%3C/svg%3E");
     color: var(--nutrir-nude);
+    box-shadow: var(--shadow-lg);
   }
 
   .section-title {
-    @apply font-display text-3xl font-bold tracking-tight md:text-4xl;
+    @apply font-display text-3xl font-bold md:text-4xl;
     color: var(--nutrir-emerald);
+    letter-spacing: -0.015em;
   }
 
   .section-subtitle {
     @apply mt-1 font-display text-lg italic;
     color: var(--nutrir-burgundy);
+    letter-spacing: 0.005em;
   }
 
   .price-bar {
     @apply rounded-xl px-4 py-3 text-center font-bold;
     background-color: var(--nutrir-burgundy);
     color: var(--nutrir-nude);
+    box-shadow: var(--shadow-sm);
   }
 
   .input-field {
-    @apply block w-full rounded-xl border bg-nutrir-nude px-4 py-2.5 focus:outline-none focus:ring-1;
+    @apply block w-full rounded-xl border bg-nutrir-nude px-4 py-2.5 transition-all focus:outline-none;
     border-color: var(--nutrir-nude-dark);
     color: var(--nutrir-emerald-dark);
     font-size: 16px;
+    box-shadow: inset 0 1px 2px rgb(10 58 44 / 0.04);
+    transition-duration: 180ms;
+    transition-timing-function: var(--ease-lux);
   }
   .input-field:focus {
     border-color: var(--nutrir-emerald);
-    --tw-ring-color: var(--nutrir-emerald);
+    box-shadow: inset 0 1px 2px rgb(10 58 44 / 0.04), 0 0 0 3px rgb(15 77 58 / 0.12);
   }
 
   .size-badge {
@@ -115,10 +190,104 @@ html {
     color: var(--nutrir-burgundy);
   }
 
+  /* Título de marca dos heroes: caixa alta, peso black, sem itálico. */
+  .hero-heading {
+    @apply font-display font-black uppercase text-nutrir-nude;
+    letter-spacing: 0.005em;
+    line-height: 1.05;
+  }
+
+  /* Frase de destaque (preço, categoria) sob o título: grande, sem contorno,
+     em itálico serifado para contrastar com o peso do título uppercase. */
   .hero-tagline {
-    @apply inline-block rounded-full border px-5 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.2em] md:text-sm;
-    border-color: rgb(243 232 220 / 0.4);
-    background-color: rgb(243 232 220 / 0.08);
-    color: var(--nutrir-nude);
+    @apply font-display text-2xl italic text-nutrir-nude sm:text-3xl md:text-[2.35rem];
+    font-weight: 500;
+    letter-spacing: 0.005em;
+  }
+  .hero-tagline strong {
+    @apply font-black not-italic;
+  }
+
+  /* Sublinhado de linha dupla fina, usado para destacar o preço e a
+     categoria dentro do hero-tagline. Cor fixa em nude: só usado sobre
+     fundo verde dos heroes. */
+  .hero-underline {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.26em;
+  }
+  .hero-underline::after {
+    content: "";
+    position: absolute;
+    left: 1%;
+    right: 1%;
+    bottom: -0.02em;
+    height: 0.3em;
+    background-image: linear-gradient(rgb(243 232 220 / 0.9), rgb(243 232 220 / 0.9)),
+      linear-gradient(rgb(243 232 220 / 0.5), rgb(243 232 220 / 0.5));
+    background-repeat: no-repeat, no-repeat;
+    background-size: 100% 1.5px, 100% 1.5px;
+    background-position: left top, left bottom;
+  }
+
+  /* Kicker/eyebrow: rótulo pequeno e espaçado acima dos títulos. */
+  .eyebrow {
+    @apply font-sans text-[11px] font-bold uppercase tracking-[0.28em];
+  }
+
+  /* Painel sólido atrás de fotos de comida: vinheta + grão bem perceptível
+     (textura mais forte do site, é o pano de fundo mais próximo do produto),
+     independe da cor de fundo (emerald ou burgundy) via mix-blend-mode. */
+  .photo-panel {
+    position: relative;
+    isolation: isolate;
+  }
+  .photo-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(120% 90% at 50% 0%, rgb(255 255 255 / 0.16), transparent 62%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.22'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  /* Card de produto: sobe suave e aprofunda a sombra no hover. */
+  .card-lift {
+    transition: transform 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux);
+  }
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+@layer utilities {
+  /* Entrada progressiva ao entrar na viewport (controlado por JS via .is-visible). */
+  /* Sem will-change/transform persistente: um transform ativo criaria um
+     containing block e quebraria o position:fixed de modais renderizados
+     dentro de um card revelado. Quando visível, transform volta a none. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.7s var(--ease-lux), transform 0.7s var(--ease-lux);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

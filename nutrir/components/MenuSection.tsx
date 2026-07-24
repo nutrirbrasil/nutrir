@@ -15,17 +15,18 @@ function PremiumInstagramCard() {
       <p className="mt-4 font-display text-lg font-bold text-nutrir-emerald sm:text-xl">
         Em breve
       </p>
-      <p className="mt-2 max-w-sm px-4 text-xs leading-relaxed text-nutrir-emerald/60 sm:text-sm">
-        Novas opções premium chegando em breve.{" "}
+      <p className="mt-2 max-w-sm px-4 text-xs leading-snug text-nutrir-emerald/60 sm:text-sm">
+        Novas opções premium chegando em breve.
+      </p>
+      <p className="mt-1 max-w-sm px-4 text-xs leading-snug sm:text-sm">
         <Link
           href={INSTAGRAM_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-semibold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-emerald"
+          className="font-bold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-emerald"
         >
-          Nos siga no Instagram
+          Nos siga no Instagram.
         </Link>
-        .
       </p>
     </article>
   );

@@ -198,34 +198,6 @@ export async function getCustomerByPhone(phone: string): Promise<CustomerRecord 
   return (data as CustomerRecord) ?? null;
 }
 
-/** Remove pedidos além do limite por cliente (fallback se a migration ainda não rodou). */
-async function trimCustomerOrdersInSupabase(
-  customerId: string,
-  keep = MAX_ORDERS_PER_CUSTOMER
-): Promise<void> {
-  const db = getSupabaseAdmin();
-  if (!db) return;
-
-  const { data, error } = await db
-    .from("nutrir_orders")
-    .select("order_nsu")
-    .eq("customer_id", customerId)
-    .order("created_at", { ascending: false })
-    .order("order_nsu", { ascending: false });
-
-  if (error || !data || data.length <= keep) return;
-
-  const toDelete = data.slice(keep).map((row) => row.order_nsu);
-  const { error: deleteError } = await db
-    .from("nutrir_orders")
-    .delete()
-    .in("order_nsu", toDelete);
-
-  if (deleteError) {
-    console.error("[Supabase] trimOrders:", deleteError.message);
-  }
-}
-
 export async function saveOrderToSupabase(order: Order): Promise<boolean> {
   const db = getSupabaseAdmin();
   if (!db) return false;
@@ -268,6 +240,8 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
       coupon_discount_cents: order.coupon_discount_cents ?? 0,
       partner_id: order.partner_id ?? null,
       points_redeemed_cents: order.points_redeemed_cents ?? 0,
+      telegram_notified: order.telegram_notified ?? false,
+      pix_telegram_notified: order.pix_telegram_notified ?? false,
     },
     { onConflict: "order_nsu" }
   );
@@ -276,8 +250,6 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
     console.error("[Supabase] saveOrder:", error.message);
     return false;
   }
-
-  await trimCustomerOrdersInSupabase(customer.id);
 
   return true;
 }
@@ -367,7 +339,7 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
   const { data, error } = await db
     .from("nutrir_orders")
     .select(
-      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents"
+      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents, telegram_notified, pix_telegram_notified"
     )
     .eq("order_nsu", orderNsu)
     .maybeSingle();
@@ -405,16 +377,19 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
     coupon_discount_cents: (data.coupon_discount_cents as number) ?? 0,
     partner_id: (data.partner_id as string) ?? undefined,
     points_redeemed_cents: (data.points_redeemed_cents as number) ?? 0,
+    telegram_notified: (data.telegram_notified as boolean) ?? false,
+    pix_telegram_notified: (data.pix_telegram_notified as boolean) ?? false,
   };
 }
 
 export interface AdminOrderRow extends Order {
   partner_name?: string;
   partner_coupon_code?: string;
+  is_patient?: boolean;
 }
 
 const ADMIN_ORDER_COLUMNS =
-  "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents, local_pay_deadline";
+  "order_nsu, customer_id, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents";
 
 /** Lista de pedidos pra tela de admin. Sem escopo por cliente — só a chamar com service-role, atrás de verifyAdminRequest. */
 export async function listOrdersForAdmin(opts: {
@@ -428,7 +403,7 @@ export async function listOrdersForAdmin(opts: {
     .from("nutrir_orders")
     .select(ADMIN_ORDER_COLUMNS)
     .order("created_at", { ascending: false })
-    .limit(opts.limit ?? 50);
+    .limit(opts.limit ?? 300);
 
   if (opts.status) query = query.eq("status", opts.status);
 
@@ -457,8 +432,43 @@ export async function listOrdersForAdmin(opts: {
     );
   }
 
+  // Paciente = CPF do cliente (via customer_id) cadastrado na tabela `pacientes`.
+  const customerIds = Array.from(
+    new Set(data.map((row) => row.customer_id as string | null).filter((id): id is string => !!id))
+  );
+
+  const patientCustomerIds = new Set<string>();
+  if (customerIds.length) {
+    const { data: customers } = await db
+      .from("nutrir_customers")
+      .select("id, cpf")
+      .in("id", customerIds);
+
+    const cpfByCustomerId = new Map<string, string>();
+    const cpfs = new Set<string>();
+    for (const c of customers ?? []) {
+      const cpf = c.cpf as string | null;
+      if (cpf) {
+        cpfByCustomerId.set(c.id as string, cpf);
+        cpfs.add(cpf);
+      }
+    }
+
+    if (cpfs.size) {
+      const { data: pacientes } = await db
+        .from("pacientes")
+        .select("cpf")
+        .in("cpf", Array.from(cpfs));
+      const patientCpfs = new Set((pacientes ?? []).map((p) => p.cpf as string));
+      cpfByCustomerId.forEach((cpf, customerId) => {
+        if (patientCpfs.has(cpf)) patientCustomerIds.add(customerId);
+      });
+    }
+  }
+
   return data.map((row) => {
     const partner = row.partner_id ? partnersMap.get(row.partner_id as string) : undefined;
+    const isPatient = row.customer_id ? patientCustomerIds.has(row.customer_id as string) : false;
     return {
       id: row.order_nsu as string,
       customer_name: row.customer_name as string,
@@ -485,9 +495,9 @@ export async function listOrdersForAdmin(opts: {
       coupon_discount_cents: (row.coupon_discount_cents as number) ?? 0,
       partner_id: (row.partner_id as string) ?? undefined,
       points_redeemed_cents: (row.points_redeemed_cents as number) ?? 0,
-      local_pay_deadline: (row.local_pay_deadline as string) ?? undefined,
       partner_name: partner?.name,
       partner_coupon_code: partner?.coupon_code,
+      is_patient: isPatient,
     };
   });
 }

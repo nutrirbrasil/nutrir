@@ -400,7 +400,7 @@ export const MENU_SECTIONS: MenuSection[] = [
   {
     id: "premium",
     title: "Opções Premium",
-    subtitle: "Escondidinhos e novidades",
+    subtitle: "Para fugir do básico...",
     items: [
       {
         id: "frg-batata",

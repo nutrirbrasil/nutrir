@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { PageHero } from "./PageHero";
+import { Reveal } from "./Reveal";
 
 interface Props {
   title: string;
@@ -9,27 +11,23 @@ interface Props {
 
 export function InfoPage({ title, subtitle, children }: Props) {
   return (
-    <article className="mx-auto max-w-3xl px-4 py-12 md:py-16">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-nutrir-burgundy/80">
-        Nutrir Piçarras
-      </p>
-      <h1 className="section-title mt-2">{title}</h1>
-      {subtitle ? (
-        <p className="mt-3 font-display text-lg font-semibold leading-snug text-nutrir-emerald md:text-xl">
-          {subtitle}
-        </p>
-      ) : null}
+    <div>
+      <PageHero eyebrow="Nutrir Piçarras" title={title} subtitle={subtitle} />
 
-      <div className="mt-8 space-y-5 text-sm leading-relaxed text-nutrir-emerald/90 md:text-base">
-        {children}
-      </div>
+      <Reveal>
+        <article className="mx-auto max-w-3xl px-4 py-12 md:py-16">
+          <div className="space-y-5 text-sm leading-relaxed text-nutrir-emerald/90 md:text-base">
+            {children}
+          </div>
 
-      <p className="mt-8 text-center text-sm text-nutrir-emerald/60">
-        <Link href="/" className="font-medium text-nutrir-burgundy hover:underline">
-          Voltar ao cardápio
-        </Link>
-      </p>
-    </article>
+          <p className="mt-10 text-center text-sm text-nutrir-emerald/60">
+            <Link href="/" className="font-medium text-nutrir-burgundy hover:underline">
+              Voltar ao cardápio
+            </Link>
+          </p>
+        </article>
+      </Reveal>
+    </div>
   );
 }
 
