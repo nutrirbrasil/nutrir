@@ -192,7 +192,7 @@ export function AddonsModal({
 
   const title =
     step === "ask"
-      ? "Deseja adicionais?"
+      ? "Deseja adicionais ou substituições?"
       : step === "mode"
         ? "Como aplicar os adicionais?"
         : step === "pick_same"
@@ -231,7 +231,11 @@ export function AddonsModal({
         </header>
 
         <div
-          className={`flex min-h-0 flex-1 ${isCustomStep ? "flex-row overflow-hidden" : "overflow-y-auto px-5 py-4"}`}
+          className={
+            step === "ask"
+              ? "hidden"
+              : `flex min-h-0 flex-1 ${isCustomStep ? "flex-row overflow-hidden" : "overflow-y-auto px-5 py-4"}`
+          }
         >
           {isCustomStep && (
             <MealSidebar
@@ -334,7 +338,7 @@ export function AddonsModal({
                 Não, obrigado
               </button>
               <button type="button" onClick={onAcceptAddons} className="btn-primary flex-1 py-2.5">
-                Sim, quero adicionais
+                Sim, ver opções
               </button>
             </>
           ) : step === "mode" ? (

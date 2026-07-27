@@ -63,7 +63,7 @@ export function CartSidebar() {
       item_id: currentSuggestion.item.id,
       section_id: sectionId as OrderItem["section_id"],
       size: defaultSize,
-      name: `${currentSuggestion.item.name} — ${defaultSize}`,
+      name: `${currentSuggestion.item.name} (${defaultSize})`,
       quantity: 1,
       price_cents: currentSuggestion.price_cents,
     });
