@@ -20,7 +20,7 @@ export default function HomePage() {
             <span className="text-nootr-bordoSoft">O Nootr ajusta o resto do dia.</span>
           </h1>
           <p className="mt-6 max-w-lg text-[15px] leading-relaxed text-nootr-muted">
-            Monte sua dieta com a base TACO, registre o que saiu do plano e receba o dia
+            Monte sua dieta com alimentos reais, registre o que saiu do plano e receba o dia
             rebalanceado, mantendo calorias e proteína, sem culpa.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">

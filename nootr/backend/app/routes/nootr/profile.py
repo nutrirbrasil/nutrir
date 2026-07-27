@@ -8,6 +8,7 @@ from backend.app.services import energy, repository
 router = APIRouter(prefix="/nootr/profile", tags=["Nootr - Perfil"])
 
 _DEFAULT_PROFILE = {
+    "full_name": None,
     "plan": "basic",
     # Sem cobrança real ainda (ver ProfileUpdate.billing_cycle), só guarda a
     # escolha mensal/anual pra decidir elegibilidade a benefícios (ex: desconto
@@ -22,6 +23,7 @@ _DEFAULT_PROFILE = {
     "activity_level": None,
     "formula": "manual",
     "target_calories": None,
+    "macro_mode": "percent",
     "protein_pct": 30,
     "carbs_pct": 40,
     "fat_pct": 30,
@@ -30,6 +32,7 @@ _DEFAULT_PROFILE = {
 
 
 class ProfileUpdate(BaseModel):
+    full_name: str | None = Field(default=None, min_length=1, max_length=120)
     plan: str | None = Field(default=None, pattern="^(basic|pro)$")
     # Sem cobrança real ainda, só a escolha declarada (ver _DEFAULT_PROFILE).
     billing_cycle: str | None = Field(default=None, pattern="^(mensal|anual)$")
@@ -48,6 +51,10 @@ class ProfileUpdate(BaseModel):
     protein_pct: float | None = Field(default=None, ge=0, le=100)
     carbs_pct: float | None = Field(default=None, ge=0, le=100)
     fat_pct: float | None = Field(default=None, ge=0, le=100)
+    # "percent" (padrão, único do Basic) ou "per_kg" (Pro). Governa só como as
+    # metas são exibidas/editadas; a dieta que o Nootr monta usa g/kg sempre
+    # (ver energy.macro_targets_for_generation).
+    macro_mode: str | None = Field(default=None, pattern="^(percent|per_kg)$")
 
 
 def _with_computed_calories(profile: dict) -> dict:
@@ -67,17 +74,12 @@ def _with_computed_calories(profile: dict) -> dict:
 
 
 def _with_macro_targets(profile: dict) -> dict:
-    """Anexa as metas de gramas de macro derivadas de calorias + %."""
+    """Anexa as metas de gramas de macro (por g/kg de peso quando há peso
+    cadastrado, ver energy.macro_targets_for_profile)."""
     cals = profile.get("target_calories")
-    if cals:
-        profile["macro_targets_g"] = energy.macro_targets_g(
-            float(cals),
-            float(profile.get("protein_pct") or 30),
-            float(profile.get("carbs_pct") or 40),
-            float(profile.get("fat_pct") or 30),
-        )
-    else:
-        profile["macro_targets_g"] = None
+    profile["macro_targets_g"] = (
+        energy.macro_targets_for_profile(profile, float(cals)) if cals else None
+    )
     return profile
 
 
@@ -99,6 +101,9 @@ def update_profile(body: ProfileUpdate, user: CurrentUser = CurrentUserDep):
     current = repository.get_profile(user) or dict(_DEFAULT_PROFILE)
     patch = {k: v for k, v in body.model_dump().items() if v is not None}
     merged = {**{k: current.get(k, _DEFAULT_PROFILE.get(k)) for k in _DEFAULT_PROFILE}, **patch}
+    # g/kg é recurso do Pro: no Basic a visão é sempre por percentual.
+    if merged.get("plan") != "pro":
+        merged["macro_mode"] = "percent"
     merged = _with_computed_calories(merged)
     saved = repository.upsert_profile(user, merged)
     return {**_with_macro_targets(dict(saved)), "has_profile": True}

@@ -16,11 +16,11 @@ from datetime import date, datetime, timezone
 from backend.app.auth import CurrentUser
 from backend.app import supabase_client
 
-_PROFILE_FIELDS = "user_id,plan,billing_cycle,country,sex,age,weight_kg,height_cm,activity_level,formula,target_calories,protein_pct,carbs_pct,fat_pct,ai_diet_generated_at"
-_PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes"
-_DIET_FIELDS = "id,name,weekday,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,status"
+_PROFILE_FIELDS = "user_id,full_name,plan,billing_cycle,country,sex,age,weight_kg,height_cm,activity_level,formula,target_calories,protein_pct,carbs_pct,fat_pct,macro_mode,ai_diet_generated_at"
+_PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes,meal_count,meal_times,meal_reminders"
+_DIET_FIELDS = "id,name,weekday,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,status,source_meals"
 _ADMIN_DIET_FIELDS = _DIET_FIELDS + ",user_id,created_at"
-_DAY_PLAN_FIELDS = "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals"
+_DAY_PLAN_FIELDS = "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,previous_meals"
 _CUSTOM_FOOD_FIELDS = "id,user_id,name,kcal_100g,protein_100g,carbs_100g,fat_100g,fiber_100g,sodium_100mg,status,created_at"
 _RECIPE_FIELDS = "id,user_id,name,ingredients,status,created_at"
 
@@ -157,13 +157,31 @@ def delete_all_diets(user: CurrentUser) -> None:
     )
 
 
-def clear_diet(user: CurrentUser, diet_id: str) -> dict:
-    """Esvazia os alimentos de uma dieta (mantém nome/dia da semana)."""
+def get_diet(user: CurrentUser, diet_id: str) -> dict | None:
+    rows = supabase_client.select(
+        "diets", user.token,
+        {"select": _DIET_FIELDS, "id": f"eq.{diet_id}", "user_id": f"eq.{user.id}", "limit": "1"},
+    )
+    return rows[0] if rows else None
+
+
+def restore_diet(user: CurrentUser, diet_id: str, meals: list[dict], totals: dict) -> dict:
+    """
+    Devolve a dieta à versão que o Nootr entregou (`source_meals`, gravado na
+    aprovação, ver admin_approve_diet). `source_meals` NÃO é apagado: o
+    usuário pode editar de novo e restaurar de novo quantas vezes quiser.
+    """
     return supabase_client.update(
         "diets",
         user.token,
         {"id": f"eq.{diet_id}", "user_id": f"eq.{user.id}"},
-        {"meals": [], "daily_calories": 0, "daily_protein_g": 0, "daily_carbs_g": 0, "daily_fat_g": 0},
+        {
+            "meals": meals,
+            "daily_calories": round(totals["calories"]),
+            "daily_protein_g": round(totals["protein_g"]),
+            "daily_carbs_g": round(totals["carbs_g"]),
+            "daily_fat_g": round(totals["fat_g"]),
+        },
     )
 
 
@@ -228,12 +246,52 @@ def delete_day_plan(user: CurrentUser, plan_date: str) -> None:
     )
 
 
-def update_day_plan_meals(user: CurrentUser, day_plan_id: str, meals: list[dict]) -> dict:
+def day_plan_dates(user: CurrentUser, since: str) -> list[str]:
+    """
+    Datas (ISO) em que o usuário teve plano do dia materializado a partir de
+    `since`. O plano nasce na primeira vez que a pessoa abre a dieta do dia
+    (ver get_or_create_day_plan), então cada data aqui é um dia em que ela
+    de fato usou o app, que é o sinal da sequência de check-in.
+    """
+    rows = supabase_client.select(
+        "day_plans",
+        user.token,
+        {"select": "plan_date", "user_id": f"eq.{user.id}",
+         "plan_date": f"gte.{since}", "order": "plan_date.desc"},
+    )
+    return [r["plan_date"] for r in rows if r.get("plan_date")]
+
+
+def update_day_plan_meals(
+    user: CurrentUser, day_plan_id: str, meals: list[dict], previous_meals: list[dict] | None = None,
+) -> dict:
+    """
+    Grava o plano do dia ajustado. `previous_meals` guarda como o dia estava
+    ANTES deste ajuste, o que habilita o "desfazer" (ver undo_day_plan): é um
+    passo só, pra corrigir um registro que saiu errado, não um histórico.
+    """
+    payload: dict = {"meals": meals}
+    if previous_meals is not None:
+        payload["previous_meals"] = previous_meals
     return supabase_client.update(
         "day_plans",
         user.token,
         {"id": f"eq.{day_plan_id}", "user_id": f"eq.{user.id}"},
-        {"meals": meals},
+        payload,
+    )
+
+
+def undo_day_plan(user: CurrentUser, day_plan_id: str, previous_meals: list[dict]) -> dict:
+    """
+    Volta o plano do dia pro estado anterior ao último ajuste e limpa o
+    snapshot, então o desfazer não se acumula: depois de desfazer uma vez não
+    há mais o que desfazer até o próximo ajuste.
+    """
+    return supabase_client.update(
+        "day_plans",
+        user.token,
+        {"id": f"eq.{day_plan_id}", "user_id": f"eq.{user.id}"},
+        {"meals": previous_meals, "previous_meals": None},
     )
 
 
@@ -357,6 +415,46 @@ def list_global_recipes(user: CurrentUser) -> list[dict]:
 # cross-user, não o código Python, o backend continua nunca usando a
 # service key (repassa o token do próprio admin, como em qualquer outra rota).
 
+def admin_emails_for(admin: CurrentUser, user_ids: list[str]) -> dict[str, str]:
+    """
+    Mapa user_id -> email pra exibir na fila de aprovação (ver
+    app/aprovar/page.tsx), em vez do uuid puro. Usa a view
+    `admin_user_emails` (migration add_admin_user_emails_view), que só
+    devolve linhas quando quem consulta é o próprio admin (mesmo gate
+    auth.email() das policies *_admin_all), nunca a service key.
+    """
+    ids = sorted({uid for uid in user_ids if uid})
+    if not ids:
+        return {}
+    rows = supabase_client.select(
+        "admin_user_emails",
+        admin.token,
+        {"select": "user_id,email", "user_id": f"in.({','.join(ids)})"},
+    )
+    return {r["user_id"]: r["email"] for r in rows}
+
+
+def admin_get_profile(admin: CurrentUser, user_id: str) -> dict | None:
+    """
+    Perfil de qualquer usuário, usado só pelo "Refazer" da dieta pendente (ver
+    admin.py regenerate_pending_diet), depende da policy SELECT-only
+    `profiles_admin_select` (migration add_admin_select_profiles_preferences),
+    o admin nunca precisa escrever no perfil de outra pessoa.
+    """
+    rows = supabase_client.select(
+        "profiles", admin.token, {"select": _PROFILE_FIELDS, "user_id": f"eq.{user_id}", "limit": "1"},
+    )
+    return rows[0] if rows else None
+
+
+def admin_get_preferences(admin: CurrentUser, user_id: str) -> dict | None:
+    """Preferências de qualquer usuário, mesmo uso/policy que admin_get_profile acima."""
+    rows = supabase_client.select(
+        "preferences", admin.token, {"select": _PREFERENCES_FIELDS, "user_id": f"eq.{user_id}", "limit": "1"},
+    )
+    return rows[0] if rows else None
+
+
 def admin_list_pending_recipes(admin: CurrentUser) -> list[dict]:
     return supabase_client.select(
         "recipes",
@@ -413,23 +511,29 @@ def admin_update_diet_meals(admin: CurrentUser, diet_id: str, meals: list[dict],
     )
 
 
-def admin_approve_diet(admin: CurrentUser, diet_id: str) -> dict:
+def admin_approve_diet(admin: CurrentUser, diet_id: str) -> dict | None:
     """
     Aprova a dieta pendente e promove ela a "a" dieta ativa do slot, remove
     qualquer outra dieta aprovada que já ocupasse o mesmo slot (user_id +
     weekday) pra não haver ambiguidade sobre qual vale (ver insert_pending_diet:
     a pendente nasce numa linha própria, sem sobrescrever a aprovada antiga).
+
+    Devolve None se a dieta não existe, pra rota responder 404 em vez de
+    fingir sucesso (o frontend tira o item da fila ao receber 200).
     """
     diet = admin_get_diet(admin, diet_id)
     if diet is None:
-        return {}
+        return None
     weekday_filter = "is.null" if diet.get("weekday") is None else f"eq.{diet['weekday']}"
     supabase_client.delete(
         "diets", admin.token,
         {"user_id": f"eq.{diet['user_id']}", "weekday": weekday_filter, "status": "eq.approved"},
     )
+    # Guarda a versão entregue como `source_meals`: o usuário edita `meals`
+    # à vontade depois e continua podendo voltar pra essa (ver restore_diet).
     return supabase_client.update(
-        "diets", admin.token, {"id": f"eq.{diet_id}"}, {"status": "approved"},
+        "diets", admin.token, {"id": f"eq.{diet_id}"},
+        {"status": "approved", "source_meals": diet["meals"]},
     )
 
 
@@ -470,4 +574,47 @@ def insert_substitution_log(user: CurrentUser, day_plan_id: str, plan_date: str,
             "remaining_calories": payload.get("remaining_calories"),
             "remaining_protein_g": payload.get("remaining_protein_g"),
         },
+    )
+
+
+# ---------- Noo (chat) ----------
+
+_NOO_FIELDS = "id,role,text,changes,created_at"
+
+
+def count_noo_messages_today(user: CurrentUser) -> int:
+    """Quantas mensagens o usuário JÁ ENVIOU hoje (só as dele contam pro limite)."""
+    rows = supabase_client.select(
+        "noo_messages",
+        user.token,
+        {"select": "id", "msg_date": f"eq.{today_iso()}", "role": "eq.user"},
+    )
+    return len(rows)
+
+
+def list_noo_messages_today(user: CurrentUser) -> list[dict]:
+    """Conversa do dia, em ordem cronológica (o chat reabre onde parou)."""
+    return supabase_client.select(
+        "noo_messages",
+        user.token,
+        {"select": _NOO_FIELDS, "user_id": f"eq.{user.id}",
+         "msg_date": f"eq.{today_iso()}", "order": "created_at.asc"},
+    )
+
+
+def insert_noo_message(user: CurrentUser, role: str, text: str, changes: list | None = None) -> dict:
+    return supabase_client.insert(
+        "noo_messages",
+        user.token,
+        {"user_id": user.id, "msg_date": today_iso(), "role": role, "text": text, "changes": changes},
+    )
+
+
+def delete_noo_messages_today(user: CurrentUser) -> None:
+    """Limpa a conversa do dia. O limite diário NÃO é devolvido: ele conta
+    chamadas de IA já feitas, não mensagens visíveis na tela."""
+    supabase_client.delete(
+        "noo_messages",
+        user.token,
+        {"user_id": f"eq.{user.id}", "msg_date": f"eq.{today_iso()}"},
     )

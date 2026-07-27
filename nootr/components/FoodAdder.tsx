@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { nootrApi } from "@/lib/api";
 import type { FoodInput, TacoFoodResult } from "@/lib/types";
-import { UNITS, toGrams, quantityLabel } from "@/lib/units";
+import { UNITS, toGrams, quantityLabel, parseQuantityLabel } from "@/lib/units";
 import { useIsMobile, hasBarcodeDetector } from "@/lib/device";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 
@@ -421,8 +421,18 @@ export function AddedFoodList({
 
   function startEdit(i: number, f: AddedFood) {
     setEditing(i);
-    setQty(String(Math.round(f.grams)));
-    setUnitId("g");
+    // Reabre na MESMA medida em que o alimento está ("3 fatias" volta como
+    // 3 + fatia), pra editar quantidade sem ter que reescolher a medida
+    // caseira. Gramas é só o fallback pra rótulo não reconhecido (ver
+    // parseQuantityLabel) e o padrão de alimento novo.
+    const parsed = parseQuantityLabel(f.quantity_label);
+    if (parsed) {
+      setQty(String(parsed.quantity).replace(".", ","));
+      setUnitId(parsed.unitId);
+    } else {
+      setQty(String(Math.round(f.grams)));
+      setUnitId("g");
+    }
   }
   function saveEdit(i: number, f: AddedFood) {
     const q = parseFloat(qty.replace(",", ".")) || 0;

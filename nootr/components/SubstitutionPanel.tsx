@@ -3,14 +3,17 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { SkeletonPage } from "@/components/Skeleton";
 import { nootrApi } from "@/lib/api";
 import { FoodAdder, AddedFoodList, addedFoodToInput, type AddedFood } from "@/components/FoodAdder";
+import { formatQuantityWithGrams, gramsSuffix } from "@/lib/units";
 import type {
   ConverseTurn,
   Meal,
   PantryMatch,
   Preferences,
   ProposedIngredient,
+  MealChangeKind,
   SubstitutionAction,
   SubstitutionResult,
 } from "@/lib/types";
@@ -67,6 +70,32 @@ const ACTION_CARDS: { id: SubstitutionAction; numeral: string; desc: string }[] 
   { id: "missing_food", numeral: "03", desc: "Troque um alimento que não tem por outro equivalente." },
 ];
 
+/** "A, B e C" (e não "A, B, C"), pro resumo soar como frase escrita. */
+function joinNames(names: string[]): string {
+  if (names.length === 0) return "";
+  if (names.length === 1) return names[0];
+  return `${names.slice(0, -1).join(", ")} e ${names[names.length - 1]}`;
+}
+
+// O símbolo carrega o mesmo significado da cor: quem não distingue bordô de
+// cinza (ou lê em preto e branco) continua sabendo o que subiu e o que desceu.
+const CHANGE_TAGS: Record<MealChangeKind, { label: string; symbol: string; className: string }> = {
+  increased: { label: "aumentou", symbol: "↑", className: "border-nootr-bordo/40 text-nootr-bordoSoft" },
+  decreased: { label: "diminuiu", symbol: "↓", className: "border-nootr-line text-nootr-muted" },
+  added: { label: "novo", symbol: "+", className: "border-nootr-bordo/40 text-nootr-bordoSoft" },
+  removed: { label: "removido", symbol: "−", className: "border-nootr-line text-nootr-faint" },
+};
+
+/** Selo do que aconteceu com o alimento no reajuste (ver diet_engine.diff_meals). */
+function ChangeTag({ kind }: { kind: MealChangeKind }) {
+  const tag = CHANGE_TAGS[kind];
+  return (
+    <span className={`ml-1.5 rounded-full border px-1.5 py-px text-[9px] uppercase tracking-caps ${tag.className}`}>
+      <span aria-hidden>{tag.symbol}</span> {tag.label}
+    </span>
+  );
+}
+
 function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
   const searchParams = useSearchParams();
   const acaoParam = searchParams.get("acao") as SubstitutionAction | null;
@@ -89,6 +118,15 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SubstitutionResult | null>(null);
   const [error, setError] = useState("");
+  // O caminho principal é descrever com IA; marcar item por item fica atrás
+  // de "Prefiro marcar manualmente". Liga sozinho depois que a IA interpreta,
+  // pra pessoa conferir e corrigir o que ela entendeu.
+  const [manualMode, setManualMode] = useState(false);
+  // Desfazer o último ajuste (ver POST /nootr/substitutions/undo). `undone`
+  // troca o botão pela confirmação, sem apagar o resultado da tela: a pessoa
+  // ainda quer ver o que tinha sido feito antes de desfazer.
+  const [undoing, setUndoing] = useState(false);
+  const [undone, setUndone] = useState(false);
 
   // IA conversacional: pode perguntar de volta (ex: quantidade, caseiro/marca/local)
   const [conversation, setConversation] = useState<ConverseTurn[]>([]);
@@ -118,8 +156,8 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
 
   const swapSummary = useMemo(() => {
     if (action === "missing_food") return "";
-    const skippedLabel = skippedNames.join(", ");
-    const eatenLabel = foods.map((f) => f.name).join(", ");
+    const skippedLabel = joinNames(skippedNames);
+    const eatenLabel = joinNames(foods.map((f) => f.name));
     const verb = action === "will_eat_different" ? "não vai comer" : "não comeu";
     const verbEat = action === "will_eat_different" ? "vai comer" : "comeu";
     if (skippedLabel && eatenLabel) return `Você ${verb} ${skippedLabel} e ${verbEat} ${eatenLabel} no lugar.`;
@@ -129,6 +167,9 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
   }, [action, skippedNames, foods]);
 
   useEffect(() => {
+    // Preferências aqui são só contexto opcional (despensa/alergias pra
+    // enriquecer as sugestões): se falhar, o fluxo continua inteiro sem elas,
+    // então não vale interromper a pessoa com um erro.
     nootrApi.getPreferences(token).then(setPreferences).catch(() => {});
   }, [token]);
 
@@ -159,7 +200,11 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
     nootrApi
       .missingFoodOptions(token, missingFoodName)
       .then((data) => active && setPantryMatches(data.pantry_matches))
-      .catch(() => {})
+      .catch((err) => {
+        // Sem isso a lista só ficava vazia e a pessoa não sabia se era falha
+        // ou se realmente não havia nada na despensa que servisse.
+        if (active) setError(err instanceof Error ? err.message : "Não consegui buscar opções da sua despensa.");
+      })
       .finally(() => active && setLoadingMatches(false));
     return () => {
       active = false;
@@ -233,7 +278,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
           taco_id: f.taco_id,
           name: f.name,
           grams: f.grams,
-          quantity_label: f.quantity,
+          quantity_label: formatQuantityWithGrams(f.quantity, f.grams),
           calories: f.calories,
           protein_g: f.protein_g,
           carbs_g: f.carbs_g,
@@ -253,11 +298,19 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
       if (data.proposed_dish_name) {
         setPendingRecipeSave({ name: data.proposed_dish_name, foods: parsed });
       }
-      const parts: string[] = [];
-      if (data.skipped_names.length) parts.push(`não comeu: ${data.skipped_names.join(", ")}`);
-      if (parsed.length) parts.push(`${parsed.length} alimento(s) adicionado(s) no lugar`);
-      if (data.unmatched.length) parts.push(`não reconhecidos: ${data.unmatched.join(", ")}`);
-      setAiNote(parts.join(" · ") || "Nada reconhecido no texto.");
+      // O que a IA entendeu já aparece em linguagem natural no resumo (ver
+      // swapSummary), então aqui fica só o que ela NÃO conseguiu reconhecer,
+      // que é a única informação que o resumo não cobre.
+      if (data.unmatched.length) {
+        setAiNote(`Não reconheci: ${data.unmatched.join(", ")}. Adicione manualmente se precisar.`);
+      } else if (!data.skipped_names.length && !parsed.length) {
+        setAiNote("Não consegui entender o que mudou, tente descrever de outro jeito.");
+      } else {
+        setAiNote("");
+      }
+      // Abre o detalhamento pra pessoa conferir/corrigir o que a IA entendeu
+      // antes de adaptar o dia.
+      if (data.skipped_names.length || parsed.length || data.unmatched.length) setManualMode(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao interpretar com IA");
     } finally {
@@ -291,25 +344,49 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
     }
   }
 
-  function switchAction(next: SubstitutionAction | null) {
-    setAction(next);
+  /**
+   * Zera tudo que descreve UM ajuste específico. Trocar de ação ou de
+   * refeição precisa limpar o rascunho inteiro, inclusive o resultado já
+   * exibido: sem isso o painel continuava mostrando o "dia ajustado" da
+   * substituição anterior ao lado do formulário novo, como se fosse dela.
+   */
+  async function handleUndo() {
+    setUndoing(true);
+    setError("");
+    try {
+      await nootrApi.undoSubstitution(token);
+      setUndone(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não consegui desfazer o ajuste.");
+    } finally {
+      setUndoing(false);
+    }
+  }
+
+  function resetDraft() {
     setMissingFoodName("");
     setSkippedNames([]);
     setFoods([]);
     setConversation([]);
     setAiText("");
     setAiNote("");
+    setResult(null);
+    setManualMode(false);
+    setProposedDishName("");
+    setProposedIngredients([]);
+    setPendingRecipeSave(null);
+    setUndone(false);
+  }
+
+  function switchAction(next: SubstitutionAction | null) {
+    setAction(next);
+    resetDraft();
     setError("");
   }
 
   function selectMeal(id: string) {
     setMealId(id);
-    setMissingFoodName("");
-    setSkippedNames([]);
-    setFoods([]);
-    setConversation([]);
-    setAiText("");
-    setAiNote("");
+    resetDraft();
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -449,7 +526,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
               <option value="">Escolha o alimento…</option>
               {selectedMeal.foods.map((f) => (
                 <option key={f.name} value={f.name}>
-                  {f.name}, {f.quantity}
+                  {f.name}, {f.quantity}{gramsSuffix(f.quantity, f.grams)}
                 </option>
               ))}
             </select>
@@ -541,7 +618,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                 <p className="text-xs text-nootr-faint">Escolha acima a refeição.</p>
               )}
 
-              {selectedMeal && (
+              {selectedMeal && manualMode && (
                 <div>
                   <label className="label-caps">{selectedMeal.name}</label>
                   <p className="mb-1.5 text-xs text-nootr-faint">
@@ -550,9 +627,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                   <div className="space-y-1.5">
                     {selectedMeal.foods.map((f) => {
                       const skipped = skippedNames.includes(f.name);
-                      const grams = f.grams != null && !/^\d+(\.\d+)?\s*g$/i.test(f.quantity.trim())
-                        ? ` (${Math.round(f.grams)}g)`
-                        : "";
+                      const grams = gramsSuffix(f.quantity, f.grams);
                       return (
                         <label
                           key={f.name}
@@ -693,23 +768,40 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                 </div>
               )}
 
-              <div>
-                <label className="label-caps">O que você comeu no lugar (ou a mais)</label>
-                <p className="mb-1.5 text-xs text-nootr-faint">Deixe vazio se não comeu nada no lugar do que faltou.</p>
-                <AddedFoodList
-                  foods={foods}
-                  onRemove={(i) => setFoods((prev) => prev.filter((_, j) => j !== i))}
-                  onEdit={(i, f) => setFoods((prev) => prev.map((x, j) => (j === i ? f : x)))}
-                />
-                <div className="mt-2">
-                  <FoodAdder token={token} onAdd={(f) => setFoods((prev) => [...prev, f])} />
-                </div>
-              </div>
-
+              {/* O que a IA entendeu, em linguagem natural: é a confirmação
+                  principal pra quem usou o caminho conversacional. */}
               {swapSummary && (
-                <p className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5 text-sm leading-relaxed text-nootr-cream">
+                <p className="rounded-xl border border-nootr-bordo/30 bg-nootr-wine/20 px-3.5 py-3 text-sm leading-relaxed text-nootr-cream">
                   {swapSummary}
                 </p>
+              )}
+
+              {/* Modo manual: fica atrás de uma linha discreta pra não competir
+                  com o caminho principal (descrever com IA), mas continua a um
+                  clique pra quem prefere marcar na mão. */}
+              {selectedMeal && !manualMode && (
+                <button
+                  type="button"
+                  onClick={() => setManualMode(true)}
+                  className="w-full text-center text-xs text-nootr-faint underline-offset-4 transition-colors hover:text-nootr-bordoSoft hover:underline"
+                >
+                  Prefiro marcar manualmente
+                </button>
+              )}
+
+              {selectedMeal && manualMode && (
+                <div>
+                  <label className="label-caps">O que você comeu no lugar (ou a mais)</label>
+                  <p className="mb-1.5 text-xs text-nootr-faint">Deixe vazio se não comeu nada no lugar do que faltou.</p>
+                  <AddedFoodList
+                    foods={foods}
+                    onRemove={(i) => setFoods((prev) => prev.filter((_, j) => j !== i))}
+                    onEdit={(i, f) => setFoods((prev) => prev.map((x, j) => (j === i ? f : x)))}
+                  />
+                  <div className="mt-2">
+                    <FoodAdder token={token} onAdd={(f) => setFoods((prev) => [...prev, f])} />
+                  </div>
+                </div>
               )}
             </>
           )}
@@ -771,6 +863,25 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
               <p className="text-sm leading-relaxed text-nootr-cream">{result.suggestion}</p>
             )}
 
+            {/* Desfazer: o ajuste já foi gravado no plano do dia, então sem
+                isso um registro errado (descreveu de um jeito, a IA entendeu
+                de outro) só se corrige remontando o dia na mão. */}
+            {!undone && (
+              <button
+                type="button"
+                onClick={handleUndo}
+                disabled={undoing}
+                className="w-full text-center text-xs text-nootr-faint underline-offset-4 transition-colors hover:text-nootr-bordoSoft hover:underline disabled:opacity-60"
+              >
+                {undoing ? "Desfazendo…" : "↺ Desfazer este ajuste"}
+              </button>
+            )}
+            {undone && (
+              <p className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5 text-center text-xs text-nootr-muted">
+                Ajuste desfeito. Seu dia voltou como estava antes.
+              </p>
+            )}
+
             {/* Macros antes -> depois + meta */}
             <div>
               <p className="label-caps">Macros do dia</p>
@@ -799,24 +910,46 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
             <div>
               <p className="label-caps">Dia ajustado, quantidades</p>
               <div className="mt-2 space-y-2">
-                {result.adjusted_meals.map((meal) => (
-                  <div key={meal.id} className="rounded-lg border border-nootr-line px-3.5 py-2.5">
-                    <div className="flex justify-between text-sm">
-                      <p className="font-medium text-nootr-cream">{meal.name}</p>
-                      <p className="text-nootr-faint">{meal.time}</p>
+                {result.adjusted_meals.map((meal) => {
+                  const mealChanges = result.changes?.find((c) => c.meal === meal.name)?.changes ?? [];
+                  const changeOf = (name: string) => mealChanges.find((c) => c.name === name);
+                  const removed = mealChanges.filter((c) => c.kind === "removed");
+                  return (
+                    <div key={meal.id} className="rounded-lg border border-nootr-line px-3.5 py-2.5">
+                      <div className="flex justify-between text-sm">
+                        <p className="font-medium text-nootr-cream">{meal.name}</p>
+                        <p className="text-nootr-faint">{meal.time}</p>
+                      </div>
+                      <ul className="mt-1.5 space-y-1">
+                        {meal.foods.map((f, j) => {
+                          const ch = changeOf(f.name);
+                          return (
+                            <li key={`${f.name}-${j}`} className="flex items-baseline justify-between gap-3 text-xs">
+                              <span className="min-w-0 text-nootr-cream">
+                                {f.name}
+                                {ch && <ChangeTag kind={ch.kind} />}
+                              </span>
+                              <span className="shrink-0 tabular-nums text-nootr-muted">
+                                {/* Quantidade anterior riscada ao lado da nova, pra
+                                    ficar claro o que o ajuste mexeu. */}
+                                {ch && (ch.kind === "increased" || ch.kind === "decreased") && (
+                                  <span className="mr-1.5 text-nootr-faint line-through">{ch.from}</span>
+                                )}
+                                {f.quantity}{gramsSuffix(f.quantity, f.grams)} · {Math.round(f.calories)} kcal
+                              </span>
+                            </li>
+                          );
+                        })}
+                        {removed.map((c) => (
+                          <li key={`rm-${c.name}`} className="flex items-baseline justify-between gap-3 text-xs opacity-60">
+                            <span className="min-w-0 text-nootr-faint line-through">{c.name}</span>
+                            <span className="shrink-0 tabular-nums text-nootr-faint">removido</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="mt-1.5 space-y-1">
-                      {meal.foods.map((f, j) => (
-                        <li key={`${f.name}-${j}`} className="flex items-baseline justify-between gap-3 text-xs">
-                          <span className="text-nootr-cream">{f.name}</span>
-                          <span className="shrink-0 tabular-nums text-nootr-muted">
-                            {f.quantity} · {Math.round(f.calories)} kcal
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -867,7 +1000,7 @@ function MacroRow({
 
 export function SubstitutionPanel({ token, meals }: { token: string; meals: Meal[] }) {
   return (
-    <Suspense fallback={<p className="text-sm text-nootr-muted">Carregando…</p>}>
+    <Suspense fallback={<SkeletonPage cards={2} />}>
       <SubstituirForm token={token} meals={meals} />
     </Suspense>
   );

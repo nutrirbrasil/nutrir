@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SkeletonPage } from "@/components/Skeleton";
 import { RequireAuth } from "@/components/RequireAuth";
 import { PlanCard } from "@/components/PlanCard";
+import { PageHeader } from "@/components/PageHeader";
 import { nootrApi } from "@/lib/api";
 import {
   BASIC_FEATURES, PRO_FEATURES, PRO_SOON, PRO_BONUS, PRO_ANNUAL_BILLING_NOTE, formatPlanPrice,
@@ -47,20 +49,22 @@ function PlanoContent({ token }: { token: string }) {
     }
   }
 
-  if (loading) return <p className="text-sm text-nootr-muted">Carregando…</p>;
+  if (loading) return <SkeletonPage cards={2} />;
 
   const currentPlan = profile?.plan ?? "basic";
   const isCurrentPro = currentPlan === "pro" && profile?.billing_cycle === proCycle;
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="divider-bordo mb-4" />
-      <h1 className="font-display text-4xl text-nootr-cream">Alterar plano</h1>
-      <p className="mt-2 text-sm text-nootr-muted">Troque de plano quando quiser, sem multa, sem burocracia.</p>
+      <PageHeader
+        icon="crown"
+        title="Alterar plano"
+        subtitle="Troque de plano quando quiser, sem multa, sem burocracia."
+      />
 
       {error && <p className="mt-4 text-sm text-nootr-bordoSoft">{error}</p>}
 
-      <div className="mt-8 grid items-stretch gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid grid-cols-2 items-stretch gap-2.5 sm:gap-4">
         <PlanCard
           name="Basic"
           price={formatPlanPrice("basic")}

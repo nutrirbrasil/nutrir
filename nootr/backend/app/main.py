@@ -1,17 +1,16 @@
 """
-API compartilhada Nutrir + Nootr.
-Rodar na raiz: uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+API do Nootr.
+Rodar a partir de `nootr/`: uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.config import get_settings
-from backend.app.routes.nutrir import menus, orders, custom_meals
-from backend.app.routes.nootr import diets, substitutions, foods, profile, ai, preferences, recipes, admin
+from backend.app.routes.nootr import diets, substitutions, foods, profile, ai, preferences, recipes, admin, stats, noo
 
 app = FastAPI(
-    title="Nutrir Ecosystem API",
-    description="API para Nutrir (marmitaria) e Nootr (app de substituições)",
+    title="Nootr API",
+    description="API do Nootr (app de substituições)",
     version="0.1.0",
 )
 
@@ -30,9 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(menus.router)
-app.include_router(orders.router)
-app.include_router(custom_meals.router)
 app.include_router(diets.router)
 app.include_router(substitutions.router)
 app.include_router(foods.router)
@@ -41,15 +37,13 @@ app.include_router(ai.router)
 app.include_router(preferences.router)
 app.include_router(recipes.router)
 app.include_router(admin.router)
+app.include_router(stats.router)
+app.include_router(noo.router)
 
 
 @app.get("/")
 def root():
-    return {
-        "service": "Nutrir Ecosystem API",
-        "products": ["nutrir", "nootr"],
-        "docs": "/docs",
-    }
+    return {"service": "Nootr API", "docs": "/docs"}
 
 
 @app.get("/health")

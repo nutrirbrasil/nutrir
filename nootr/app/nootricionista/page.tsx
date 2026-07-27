@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { RequireAuth } from "@/components/RequireAuth";
+import { Icon } from "@/components/Icon";
 import { nootrApi } from "@/lib/api";
 import type { Profile } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -44,16 +45,25 @@ function NootricionistaContent({ token }: { token: string }) {
 
   return (
     <article className="mx-auto max-w-2xl">
-      <div className="divider-bordo mb-4" />
-      <p className="label-caps text-nootr-bordoSoft">Nutricionista + Nootr</p>
-      <h1 className="mt-2 font-display text-4xl text-nootr-cream">A Dupla Que Funciona</h1>
-      <p className="mt-4 text-sm leading-relaxed text-nootr-muted">
-        O Nootr é seu companheiro nos momentos críticos. Mas ele é mais poderoso ainda quando trabalhando
-        junto a uma nutricionista de verdade que entende seu corpo, seus objetivos e desenha sua estratégia.
-      </p>
+      <div className="rise-in">
+        <div className="divider-bordo mb-4" />
+        <div className="flex items-start gap-4">
+          <span className="icon-badge-lg mt-1">
+            <Icon name="handshake" size={22} />
+          </span>
+          <div>
+            <p className="label-caps text-nootr-bordoSoft">Nutricionista + Nootr</p>
+            <h1 className="mt-1 font-display text-2xl text-nootr-cream sm:text-4xl">A Dupla Que Funciona</h1>
+          </div>
+        </div>
+        <p className="mt-4 text-sm leading-relaxed text-nootr-muted">
+          O Nootr é seu companheiro nos momentos críticos. Mas ele é mais poderoso ainda quando trabalhando
+          junto a uma nutricionista de verdade que entende seu corpo, seus objetivos e desenha sua estratégia.
+        </p>
+      </div>
 
       {/* Seção 1: O que é Nootr */}
-      <div className="card mt-8">
+      <div className="card card-sheen mt-8 transition-all duration-300 hover:border-nootr-bordo/40">
         <p className="label-caps text-nootr-bordoSoft">Seu Companheiro</p>
         <h2 className="mt-2 font-display text-2xl text-nootr-cream">O Nootr te Ajuda nos Momentos Críticos</h2>
         <p className="mt-3 text-sm text-nootr-muted">
@@ -87,7 +97,7 @@ function NootricionistaContent({ token }: { token: string }) {
       </div>
 
       {/* Seção 2: Por que Nutricionista é Essencial */}
-      <div className="card mt-6">
+      <div className="card card-sheen mt-6 transition-all duration-300 hover:border-nootr-bordo/40">
         <p className="label-caps text-nootr-bordoSoft">O Alicerce</p>
         <h2 className="mt-2 font-display text-2xl text-nootr-cream">Por que Você Precisa de um Nutricionista</h2>
         <p className="mt-3 text-sm text-nootr-muted">

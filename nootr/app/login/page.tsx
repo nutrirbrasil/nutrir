@@ -54,7 +54,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center">
       <div className="divider-bordo mb-5" />
-      <h1 className="font-display text-4xl text-nootr-cream">
+      <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">
         {mode === "signin" ? "Entrar" : "Criar conta"}
       </h1>
       <p className="mt-2 text-sm text-nootr-muted">

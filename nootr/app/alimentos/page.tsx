@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EmptyState } from "@/components/EmptyState";
+import { SkeletonCard } from "@/components/Skeleton";
 import { RequireAuth } from "@/components/RequireAuth";
+import { PageHeader } from "@/components/PageHeader";
 import { nootrApi } from "@/lib/api";
 import type { CustomFood } from "@/lib/types";
 
@@ -50,21 +53,25 @@ function AlimentosContent({ token }: { token: string }) {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="divider-bordo mb-4" />
-      <h1 className="font-display text-4xl text-nootr-cream">Meus alimentos</h1>
-      <p className="mt-2 text-sm text-nootr-muted">
-        Alimentos que você cadastrou à mão (via &ldquo;+ Adicionar novo alimento&rdquo; na busca), ficam
-        permanentes na sua conta e disponíveis pra qualquer refeição ou dieta.
-      </p>
+      <PageHeader
+        icon="barcode"
+        title="Meus alimentos"
+        subtitle={<>Alimentos que você cadastrou à mão (via &ldquo;+ Adicionar novo alimento&rdquo; na busca), ficam permanentes na sua conta e disponíveis pra qualquer refeição ou dieta.</>}
+      />
 
       {loading ? (
-        <p className="mt-6 text-sm text-nootr-muted">Carregando…</p>
+        <div className="mt-6"><SkeletonCard lines={2} /></div>
       ) : (
         <div className="mt-6 space-y-6">
           {error && <p className="text-sm text-nootr-bordoSoft">{error}</p>}
 
           {foods.length === 0 ? (
-            <p className="text-sm text-nootr-faint">Nenhum alimento cadastrado ainda.</p>
+            <EmptyState
+              icon="barcode"
+              title="Nenhum alimento seu ainda"
+              description={<>Quando a busca não tiver um alimento que você usa, cadastre pelo &ldquo;+ Adicionar novo alimento&rdquo; ou escaneie o código de barras. Ele fica salvo na sua conta pra qualquer refeição.</>}
+              action={{ label: "Montar minha dieta", href: "/dieta" }}
+            />
           ) : (
             <ul className="space-y-1.5">
               {foods.map((f) => (

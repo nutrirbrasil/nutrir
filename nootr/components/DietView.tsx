@@ -1,4 +1,5 @@
 import type { Diet } from "@/lib/types";
+import { gramsSuffix } from "@/lib/units";
 
 interface Props {
   diet: Diet;
@@ -62,7 +63,9 @@ export function DietView({ diet, date }: Props) {
                 <li key={food.name} className="flex items-baseline justify-between gap-4 text-sm">
                   <span className="text-nootr-cream">
                     {food.name}{" "}
-                    <span className="text-xs text-nootr-faint">({food.quantity})</span>
+                    <span className="text-xs text-nootr-faint">
+                      ({food.quantity}{gramsSuffix(food.quantity, food.grams)})
+                    </span>
                   </span>
                   <span className="shrink-0 tabular-nums text-nootr-muted">
                     {Math.round(food.calories)} kcal

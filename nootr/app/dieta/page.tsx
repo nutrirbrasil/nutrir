@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DietBuilder } from "@/components/DietBuilder";
 import { DietView } from "@/components/DietView";
+import { StreakCard } from "@/components/StreakCard";
 import { RequireAuth } from "@/components/RequireAuth";
+import { PageHeader } from "@/components/PageHeader";
 import { nootrApi } from "@/lib/api";
 import type { Diet } from "@/lib/types";
 
@@ -69,30 +71,30 @@ function DietaContent({ token }: { token: string }) {
 
   return (
     <div>
-      <div className="divider-bordo mb-4" />
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-4xl text-nootr-cream">Dieta</h1>
-          <p className="mt-2 text-sm text-nootr-muted">
-            {mode === "view" ? "Plano do dia, macros e refeições." : "Monte as refeições com alimentos da TACO (ou código de barras)."}
-          </p>
-        </div>
-        {mode === "view" && diet && (
-          <div className="flex shrink-0 items-center gap-4 pb-1">
-            <button onClick={() => window.print()} className="btn-ghost">
-              Baixar PDF / Imprimir
-            </button>
-            <button onClick={() => setMode("edit")} className="btn-ghost">
-              Editar dieta →
-            </button>
-          </div>
-        )}
-        {mode === "edit" && !needsSetup && (
-          <button onClick={() => setMode("view")} className="btn-ghost shrink-0 pb-1">
-            ← Voltar
-          </button>
-        )}
-      </div>
+      <PageHeader
+        icon="calendar"
+        title="Dieta"
+        subtitle={mode === "view" ? "Plano do dia, macros e refeições." : "Monte as refeições com alimentos pré existentes, criados por você ou escaneando o código de barras."}
+        right={
+          <>
+            {mode === "view" && diet && (
+              <div className="flex shrink-0 items-center gap-4">
+                <button onClick={() => window.print()} className="btn-ghost">
+                  Baixar PDF / Imprimir
+                </button>
+                <button onClick={() => setMode("edit")} className="btn-ghost">
+                  Editar dieta →
+                </button>
+              </div>
+            )}
+            {mode === "edit" && !needsSetup && (
+              <button onClick={() => setMode("view")} className="btn-ghost shrink-0">
+                ← Voltar
+              </button>
+            )}
+          </>
+        }
+      />
 
       <div className="mt-10">
         {loading && <p className="text-sm text-nootr-muted">Carregando dieta…</p>}
@@ -102,29 +104,27 @@ function DietaContent({ token }: { token: string }) {
           </p>
         )}
 
-        {!loading && hasPendingReview && (
-          <p className="mb-4 rounded-xl border border-nootr-line bg-nootr-wine/30 px-4 py-3 text-sm text-nootr-muted">
-            Você tem uma dieta gerada pelo Nootr aguardando revisão de um nutricionista parceiro, chega em
-            até 24h.
-          </p>
-        )}
-
         {!loading && !diet && needsSetup && hasPendingReview && mode === "view" && (
           <div className="card">
             <p className="font-display text-2xl text-nootr-cream">Sua dieta está a caminho</p>
             <p className="mt-2 text-sm text-nootr-muted">
-              Assim que a revisão terminar, ela aparece aqui automaticamente.
+              Sua dieta já foi gerada pelo Nootr e está aguardando revisão de um nutricionista parceiro.
+              Você receberá em até 24h.
             </p>
-            <button onClick={() => setMode("edit")} className="btn-ghost mt-4 text-sm">
-              Prefere montar a sua enquanto isso? →
-            </button>
           </div>
         )}
 
         {!loading && mode === "view" && diet && (
-          <div id="diet-print-area">
-            <DietView diet={diet} date={date} />
-          </div>
+          <>
+            {/* Fora da área de impressão: é reconhecimento de uso, não faz
+                parte do plano que a pessoa leva impresso. */}
+            <div className="no-print">
+              <StreakCard token={token} />
+            </div>
+            <div id="diet-print-area">
+              <DietView diet={diet} date={date} />
+            </div>
+          </>
         )}
         {!loading && mode === "edit" && <DietBuilder token={token} onSaved={handleSaved} />}
       </div>

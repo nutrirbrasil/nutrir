@@ -28,6 +28,9 @@ export type ApprovalStatus = "pending" | "approved" | "rejected";
 export interface Recipe {
   id: string;
   user_id: string;
+  // Só vem preenchido nas rotas admin (ver repository.admin_emails_for),
+  // undefined no resto do app.
+  user_email?: string | null;
   name: string;
   ingredients: Food[];
   status: ApprovalStatus;
@@ -54,6 +57,39 @@ export interface DietSummary {
   daily_carbs_g: number;
   daily_fat_g: number;
   meals: Meal[];
+  // Snapshot da versão que o Nootr entregou (ver repository.admin_approve_diet).
+  // Preenchido só em dieta gerada pelo Nootr; habilita "Restaurar dieta do
+  // Nootr" depois que o usuário editou (POST /nootr/diets/{id}/restore).
+  source_meals?: Meal[] | null;
+}
+
+// Metas de macro em gramas. Quando calculadas a partir do peso (ver
+// energy.macro_targets_from_weight) vêm também com os limites da faixa de
+// referência, pro nutricionista saber quanto pode ajustar.
+export interface MacroTargetsDetailed extends MacroTargets {
+  protein_min_g?: number;
+  protein_max_g?: number;
+  fat_min_g?: number;
+  fat_max_g?: number;
+  protein_g_per_kg?: number;
+  fat_g_per_kg?: number;
+  // Faixa de referência em g/kg, [min, max] (ver energy.PROTEIN_G_PER_KG).
+  protein_per_kg_range?: [number, number];
+  fat_per_kg_range?: [number, number];
+}
+
+// Contexto do paciente mostrado junto da dieta pendente em /aprovar, pro
+// nutricionista julgar sem sair da tela (ver admin._with_user_context).
+export interface AdminUserContext {
+  sex: "m" | "f" | null;
+  age: number | null;
+  weight_kg: number | null;
+  height_cm: number | null;
+  activity_level: ActivityLevel | null;
+  country: string | null;
+  formula: Formula | null;
+  target_calories: number | null;
+  macro_targets: MacroTargetsDetailed | null;
 }
 
 // Dieta gerada por IA aguardando revisão de nutricionista (fila em /aprovar,
@@ -61,6 +97,11 @@ export interface DietSummary {
 // o dono e quando foi criada, pro admin decidir.
 export interface AdminPendingDiet extends DietSummary {
   user_id: string;
+  // E-mail do dono (ver repository.admin_emails_for), null se a view de
+  // e-mails não encontrar o usuário por algum motivo, sempre cai de volta pro
+  // user_id na UI (ver app/aprovar/page.tsx).
+  user_email: string | null;
+  user_context?: AdminUserContext;
   status: "pending_review" | "approved";
   created_at: string;
 }
@@ -91,6 +132,9 @@ export interface CustomFoodInput {
 export interface CustomFood extends CustomFoodInput {
   id: string;
   user_id: string;
+  // Só vem preenchido nas rotas admin (ver repository.admin_emails_for),
+  // undefined no resto do app.
+  user_email?: string | null;
   status: ApprovalStatus;
   created_at: string;
 }
@@ -107,6 +151,7 @@ export interface MacroTargets {
 
 export interface Profile {
   user_id: string;
+  full_name: string | null;
   // false = conta nova, nunca salvou nada, o app deve levar pro onboarding
   // (país + plano) antes de mostrar o resto (ver app/onboarding).
   has_profile: boolean;
@@ -120,10 +165,13 @@ export interface Profile {
   activity_level: ActivityLevel | null;
   formula: Formula;
   target_calories: number | null;
+  // "percent" (padrão, único do Basic) ou "per_kg" (Pro): só muda como as
+  // metas aparecem/são editadas. A dieta gerada pelo Nootr usa g/kg sempre.
+  macro_mode: "percent" | "per_kg";
   protein_pct: number;
   carbs_pct: number;
   fat_pct: number;
-  macro_targets_g: MacroTargets | null;
+  macro_targets_g: MacroTargetsDetailed | null;
   ai_diet_generated_at: string | null;
 }
 
@@ -152,6 +200,13 @@ export interface Preferences {
   likes: string[];
   pantry: string[];
   notes: string;
+  // Quantas refeições a pessoa costuma fazer e em que horários (ver
+  // onboarding), usado pra montar o template de refeições na geração de
+  // dieta por IA (services/meal_planning.py no backend).
+  meal_count: number;
+  meal_times: string[];
+  // Lembrete na hora de cada refeição (ver components/MealReminders.tsx).
+  meal_reminders: boolean;
 }
 
 export interface ConverseTurn {
@@ -223,6 +278,22 @@ export interface MealInput {
 
 export type SubstitutionAction = "ate_different" | "will_eat_different" | "missing_food";
 
+// O que o motor mudou de fato numa refeição (ver diet_engine.diff_meals):
+// alimenta a explicação da IA e a exibição do dia ajustado.
+export type MealChangeKind = "increased" | "decreased" | "added" | "removed";
+
+export interface MealChange {
+  kind: MealChangeKind;
+  name: string;
+  from: string; // quantidade antes ("" quando o alimento foi adicionado)
+  to: string;   // quantidade depois ("" quando o alimento foi removido)
+}
+
+export interface MealChanges {
+  meal: string;
+  changes: MealChange[];
+}
+
 export interface SubstitutionResult {
   action: SubstitutionAction;
   action_label: string;
@@ -245,6 +316,10 @@ export interface SubstitutionResult {
   // Quando só escalar as quantidades não bastou pra bater a meta do dia: a
   // IA sugeriu adicionar/remover algo de uma refeição ajustável e foi aplicado.
   topup_applied?: { meal_name: string; additions: string[]; removals: string[] };
+  // Tudo que mudou em relação ao plano original do dia, por refeição (ver
+  // diet_engine.diff_meals). É o que o app entrega, então a tela mostra item
+  // a item em vez de só os totais.
+  changes?: MealChanges[];
 }
 
 // "Estou em falta": alimento sugerido (da despensa ou da IA), já casado com a TACO.
@@ -258,8 +333,6 @@ export interface PantryMatch {
   fat_g: number;
   match_confidence: "alta" | "media" | "baixa";
 }
-
-export type MacroProfile = "protein" | "carb" | "fat" | "balanced";
 
 // Import de dieta (PDF/Word/Excel) em duas etapas: /import/preview casa os
 // alimentos mas não salva nada; o usuário revisa pratos compostos detectados
@@ -290,4 +363,47 @@ export interface DietImportConfirmInput {
   preferences: DietImportPreview["preferences"];
   targets: Record<string, number>;
   recipes_to_save: RecipeToSaveInput[];
+}
+
+// Sequência de dias de uso (ver backend services/streak.py). O check-in é
+// passivo: abrir a dieta do dia já conta.
+export interface StreakDay {
+  date: string; // ISO (YYYY-MM-DD)
+  used: boolean;
+}
+
+export interface StreakStats {
+  current_streak: number;
+  longest_streak: number;
+  used_today: boolean;
+  days: StreakDay[]; // últimos 7 dias, mais antigo primeiro
+}
+
+// Noo, o chat do Nootr (ver backend routes/nootr/noo.py). É a quarta porta
+// das substituições: faz o que as três funções manuais fazem, só que numa
+// conversa e em várias refeições de uma vez.
+export interface NooMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  changes: MealChanges[] | null;
+  created_at: string;
+}
+
+export interface NooConversation {
+  messages: NooMessage[];
+  used: number;
+  limit: number;
+  remaining: number;
+  plan: Plan;
+}
+
+export interface NooReply {
+  reply: string;
+  changes: MealChanges[];
+  adjusted_meals: Meal[] | null;
+  macros_after: DayMacros | null;
+  targets: { calories: number; protein_g: number; carbs_g: number; fat_g: number } | null;
+  remaining: number;
+  limit: number;
 }

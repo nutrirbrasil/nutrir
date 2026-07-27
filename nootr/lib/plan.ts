@@ -103,15 +103,9 @@ export const GENERATE_DIET_STEPS = [
 // combinado diretamente com ela.
 export const NUTRITIONIST_DISCOUNT_PCT_MONTHLY = 10;
 export const NUTRITIONIST_DISCOUNT_PCT_ANNUAL = 20;
-export const NUTRITIONIST_DISCOUNT_URL = "http://pauli.nutrirpicarras.com.br/nootr";
 
 // Página interna que explica a parceria e direciona pro agendamento, é ela
 // que aparece nos CTAs do app, nunca o link externo direto (ver
 // app/nootricionista/page.tsx).
 export const NOOTRICIONISTA_PATH = "/nootricionista";
 
-// Percentual de desconto do usuário, ou null se não tiver direito (Basic).
-export function nutritionistDiscountPct(profile: { plan: string; billing_cycle: string } | null | undefined): number | null {
-  if (profile?.plan !== "pro") return null;
-  return profile?.billing_cycle === "anual" ? NUTRITIONIST_DISCOUNT_PCT_ANNUAL : NUTRITIONIST_DISCOUNT_PCT_MONTHLY;
-}

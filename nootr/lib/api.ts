@@ -9,6 +9,7 @@ import type {
   DietImportPreview,
   DietSummary,
   FoodInput,
+  Meal,
   MealInput,
   PantryMatch,
   ParseMealResponse,
@@ -17,6 +18,9 @@ import type {
   Profile,
   Recipe,
   SubstitutionAction,
+  NooConversation,
+  NooReply,
+  StreakStats,
   SubstitutionResult,
   TacoFoodResult,
 } from "./types";
@@ -70,8 +74,10 @@ export const nootrApi = {
   ) => api<DietSummary>("/nootr/diets", token, { method: "POST", body: JSON.stringify(body) }),
   deleteDiet: (token: string, dietId: string) =>
     api<{ ok: boolean }>(`/nootr/diets/${dietId}`, token, { method: "DELETE" }),
-  clearDiet: (token: string, dietId: string) =>
-    api<DietSummary>(`/nootr/diets/${dietId}/clear`, token, { method: "POST" }),
+  // Volta a dieta pra versão que o Nootr entregou (só existe quando
+  // DietSummary.source_meals está preenchido, ver POST /nootr/diets/{id}/restore).
+  restoreDiet: (token: string, dietId: string) =>
+    api<DietSummary>(`/nootr/diets/${dietId}/restore`, token, { method: "POST" }),
   // Pro, etapa 1/2: sobe o documento da dieta (PDF/Word/Excel), a IA lê
   // o(s) cardápio(s) e casa na TACO, mas NÃO salva nada ainda. Pratos
   // compostos decompostos vêm marcados com `dish_name` em cada Food (ver
@@ -107,6 +113,18 @@ export const nootrApi = {
       profile: Partial<Profile>;
     }>("/nootr/diets/import/confirm", token, { method: "POST", body: JSON.stringify(body) }),
 
+  // Noo, o chat do Nootr: conversa que aplica as mudanças do dia (ver
+  // backend routes/nootr/noo.py). Limite diário por plano.
+  noo: {
+    getConversation: (token: string) => api<NooConversation>("/nootr/noo", token),
+    send: (token: string, text: string) =>
+      api<NooReply>("/nootr/noo", token, { method: "POST", body: JSON.stringify({ text }) }),
+    clear: (token: string) => api<{ ok: boolean }>("/nootr/noo", token, { method: "DELETE" }),
+  },
+
+  // sequência de dias de uso (check-in passivo, ver services/streak.py)
+  getStreak: (token: string) => api<StreakStats>("/nootr/stats/streak", token),
+
   // perfil (plano, dados corporais, fórmula de cálculo calórico)
   getProfile: (token: string) => api<Profile>("/nootr/profile", token),
   updateProfile: (token: string, body: Partial<Omit<Profile, "user_id">>) =>
@@ -137,6 +155,11 @@ export const nootrApi = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+
+  // Desfaz o último ajuste do dia (volta day_plans.previous_meals). Um passo
+  // só: serve pra corrigir um registro que saiu errado, não é histórico.
+  undoSubstitution: (token: string) =>
+    api<{ ok: boolean; meals: Meal[] }>("/nootr/substitutions/undo", token, { method: "POST" }),
 
   // "Estou em falta": opções da despensa com o mesmo perfil de macro do alimento que falta
   missingFoodOptions: (token: string, foodName: string) =>
@@ -216,5 +239,7 @@ export const nootrApi = {
       api<AdminPendingDiet>(`/nootr/admin/diets/${id}/approve`, token, { method: "POST" }),
     rejectDiet: (token: string, id: string) =>
       api<{ ok: boolean }>(`/nootr/admin/diets/${id}/reject`, token, { method: "POST" }),
+    regenerateDiet: (token: string, id: string) =>
+      api<AdminPendingDiet>(`/nootr/admin/diets/${id}/regenerate`, token, { method: "POST" }),
   },
 };

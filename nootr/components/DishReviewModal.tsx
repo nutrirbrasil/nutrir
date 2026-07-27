@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AddedFoodList, FoodAdder, addedFoodToInput, type AddedFood } from "@/components/FoodAdder";
 import { mealFoodToAdded } from "@/components/DietBuilder";
 import type { DietImportMenu, Food, RecipeToSaveInput } from "@/lib/types";
+import { gramsSuffix } from "@/lib/units";
 
 /**
  * Antes de gravar um import de dieta, cada prato composto que a IA decompôs
@@ -222,7 +223,7 @@ export function DishReviewModal({
               {dish.foods.map((f, i) => (
                 <li key={i} className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-2.5">
                   <p className="text-sm text-nootr-cream">{f.name}</p>
-                  <p className="text-xs text-nootr-faint">{f.quantity} · {Math.round(f.calories)} kcal</p>
+                  <p className="text-xs text-nootr-faint">{f.quantity}{gramsSuffix(f.quantity, f.grams)} · {Math.round(f.calories)} kcal</p>
                 </li>
               ))}
             </ul>

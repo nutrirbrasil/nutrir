@@ -15,7 +15,7 @@ from markitdown import MarkItDown
 from pydantic import BaseModel, Field
 
 from backend.app.auth import CurrentUser, CurrentUserDep
-from backend.app.services import ai, energy, food_matcher, repository
+from backend.app.services import ai, energy, food_matcher, meal_planning, repository
 from backend.app.services.nutrition import resolve_food
 from backend.app.services.portion import parse_portion
 
@@ -147,6 +147,201 @@ def save_diet(body: DietIn, user: CurrentUser = CurrentUserDep):
     return diet
 
 
+def _is_unusable(match, allergies: list[str]) -> bool:
+    """
+    True se o alimento casado não pode entrar numa dieta gerada: bate alguma
+    alergia (pelo nome da TACO ou pelo nome de exibição curado, ver
+    food_matcher.matches_allergen) ou é ingrediente de preparo que ninguém
+    come sozinho (ver food_matcher.is_ingredient_only). Nos dois casos quem
+    chama pede um substituto em vez de simplesmente descartar o item.
+    """
+    taco_id = getattr(match, "id", None) or getattr(match, "taco_id", None)
+    if food_matcher.is_ingredient_only(taco_id):
+        return True
+    names = [getattr(match, "name", ""), getattr(match, "display_name", "")]
+    return any(food_matcher.matches_allergen(n, allergies) for n in names if n)
+
+
+def _prefs_without_allergens(prefs: dict) -> dict:
+    """
+    Tira de "gosta"/"tem em casa" os alimentos que batem a própria alergia da
+    pessoa. As duas listas são preenchidas em telas diferentes e em momentos
+    diferentes (gostos no Perfil, alergias no onboarding), então é comum
+    sobrar contradição: alguém com intolerância a lactose com "Queijo,
+    mozarela" nos gostos. Mandar isso pro prompt como "gosta e tem em casa"
+    empurra a IA a usar justamente o alimento proibido, que a barreira de
+    alergia depois bloqueia, e a refeição acaba montada em cima de um
+    substituto improvável. Filtrar na origem evita o problema inteiro.
+    """
+    allergies = prefs.get("allergies") or []
+    if not allergies:
+        return prefs
+    cleaned = dict(prefs)
+    for key in ("likes", "pantry"):
+        cleaned[key] = [
+            item for item in (prefs.get(key) or [])
+            if not food_matcher.matches_allergen(item, allergies)
+        ]
+    return cleaned
+
+
+def _resolve_ai_food(
+    raw_name: str, quantity: str, prefs: dict, preferred_ids: set, tie_resolver,
+) -> FoodIn | None:
+    """
+    Resolve UM alimento sugerido pela IA (nome + quantidade em texto) num
+    FoodIn, sem nunca descartar em silêncio:
+
+    1. busca na TACO pelo nome (`search_taco`);
+    2. se a busca não achar nada, cai pro `find_food`, que sempre devolve algo
+       (alimento semelhante, item de _COMMON_FOODS ou estimativa genérica);
+    3. se o que veio for alergênico, pede substitutos pra IA
+       (`ai.suggest_substitutes`, mesma função do "Estou em falta") e usa o
+       primeiro que for seguro, em vez de simplesmente remover o item e deixar
+       a refeição capenga.
+
+    A quantidade é interpretada aqui dentro (`parse_portion`) porque o
+    `food_hint` precisa ser o nome do alimento que REALMENTE entrou, que pode
+    ser um substituto, não o que a IA pediu.
+
+    Só devolve None se nem a IA conseguir um substituto seguro (último
+    recurso), quem chama registra isso em `unmatched`.
+    """
+    allergies = prefs.get("allergies") or []
+    label = quantity[:60] or None
+    candidates = [raw_name]
+    seen = {food_matcher.normalize(raw_name)}
+
+    while candidates:
+        name = candidates.pop(0)
+        matches = food_matcher.search_taco(name, limit=1, preferred=preferred_ids, tie_resolver=tie_resolver)
+        match = matches[0] if matches else None
+
+        if match is not None:
+            if not _is_unusable(match, allergies):
+                grams = parse_portion(quantity, food_hint=name) or 100.0
+                return FoodIn(taco_id=match.id, grams=grams, quantity_label=label)
+        else:
+            # Nunca descarta por falta de correspondência exata: find_food
+            # sempre devolve o mais parecido que existir na base.
+            fallback = food_matcher.find_food(name, preferred=preferred_ids, tie_resolver=tie_resolver)
+            if not _is_unusable(fallback, allergies):
+                grams = parse_portion(quantity, food_hint=name) or fallback.grams or 100.0
+                if fallback.taco_id is not None:
+                    return FoodIn(taco_id=fallback.taco_id, grams=grams, quantity_label=label)
+                # Estimativa genérica (fora da TACO): entra como alimento
+                # próprio, com as macros por 100g que o matcher estimou.
+                base = fallback.grams or 100.0
+                ratio = 100.0 / base
+                return FoodIn(
+                    name=fallback.name[:120], grams=grams, quantity_label=label,
+                    kcal_100g=round(fallback.calories * ratio, 1),
+                    protein_100g=round(fallback.protein_g * ratio, 1),
+                    carbs_100g=round(fallback.carbs_g * ratio, 1),
+                    fat_100g=round(fallback.fat_g * ratio, 1),
+                )
+
+        # Chegou aqui: o que casou é alergênico ou é ingrediente de preparo.
+        # Pede substitutos pra IA em vez de remover o alimento e deixar a
+        # refeição incompleta.
+        if len(seen) == 1:
+            for alt in ai.suggest_substitutes(name, prefs):
+                if food_matcher.normalize(alt) not in seen:
+                    seen.add(food_matcher.normalize(alt))
+                    candidates.append(alt)
+    return None
+
+
+def _match_ai_diet_foods(
+    meals_raw: list[dict], prefs: dict, country: str,
+) -> tuple[list[MealIn], list[str]]:
+    """
+    Casa cada alimento sugerido pela IA com a TACO, aplicando a barreira
+    determinística de alergia (nunca confia só na instrução do prompt) e sem
+    descartar item em silêncio (ver _resolve_ai_food). Devolve
+    (refeições, nomes que nem com substituto da IA deram em nada).
+    """
+    preferred_ids = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
+    tie_resolver = ai.build_country_tie_resolver(country)
+
+    meals_in: list[MealIn] = []
+    unmatched: list[str] = []
+    for m in meals_raw:
+        foods_in: list[FoodIn] = []
+        for f in m["foods"]:
+            resolved = _resolve_ai_food(f["name"], f["quantity"], prefs, preferred_ids, tie_resolver)
+            if resolved is None:
+                unmatched.append(f["name"])
+                continue
+            foods_in.append(resolved)
+        if foods_in:
+            meals_in.append(MealIn(name=m["meal"][:60], time=_norm_time(m.get("time", ""), m["meal"]), foods=foods_in))
+    return meals_in, unmatched
+
+
+def _generate_diet_meals(profile: dict, prefs: dict, country: str) -> tuple[list[dict], dict]:
+    """
+    Geração da dieta por IA. Compartilhado entre o `POST /generate` do usuário
+    (abaixo) e o `POST /admin/diets/{id}/regenerate` (ver admin.py, "Refazer"
+    na fila de revisão).
+
+    A responsabilidade de montar uma dieta BOA (composição coerente com o
+    horário, porções que uma pessoa serve de verdade, proteína e carboidrato
+    em toda refeição, bater os alvos por refeição) é INTEIRA do prompt, ver
+    services/ai/gemini._GENERATE_DIET_PROMPT. O código aqui só faz o que a IA
+    não pode fazer sozinha:
+
+    - calcula os alvos numéricos por refeição (meal_planning.meal_plan_targets),
+      pra IA não precisar fazer conta de porcentagem;
+    - casa cada alimento sugerido com a TACO e aplica a barreira de alergia
+      (_match_ai_diet_foods), que é SEGURANÇA e por isso nunca pode ficar só
+      no prompt.
+
+    Já tentamos o caminho oposto (validar a resposta da IA no código e
+    corrigir por cima: reescalar quantidades por refeição, checar composição,
+    pedir reparo pontual). Não funcionou: o código sabe recalcular quantidade
+    mas não sabe TROCAR alimento, então quando a IA errava a composição a
+    correção só inflava o alimento errado (ex: um lanche virou 3 bananas +
+    7 colheres de doce de leite pra fechar a meta calórica). Piorava o
+    sintoma e escondia a causa. Regra de composição/quantidade que a IA sabe
+    julgar sozinha vai no prompt, não aqui.
+    """
+    target_calories = profile.get("target_calories")
+    if not target_calories:
+        raise HTTPException(
+            status_code=400,
+            detail="Defina a meta calórica no perfil antes de gerar a dieta automaticamente.",
+        )
+    prefs = _prefs_without_allergens(prefs)
+    # A dieta que o Nootr monta é sempre por g/kg de peso, independente do
+    # modo que o usuário escolheu pra visualizar (ver macro_targets_for_generation).
+    macros = energy.macro_targets_for_generation(profile, float(target_calories))
+    # Sempre no mínimo 4 refeições na geração, mesmo se a pessoa cadastrou
+    # menos em Perfil (ver services/preferences.meal_count).
+    meal_count = max(int(prefs.get("meal_count") or 4), 4)
+    meal_targets = meal_planning.meal_plan_targets(
+        meal_count, float(target_calories),
+        macros["protein_g"], macros["carbs_g"], macros["fat_g"],
+    )
+
+    try:
+        generated = ai.generate_diet(meal_targets, macros["carbs_g"], macros["fat_g"], prefs, country)
+    except ai.AIError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    meals_raw = generated.get("meals") or []
+    if not meals_raw:
+        raise HTTPException(status_code=502, detail="Não consegui gerar uma dieta agora, tente de novo em instantes.")
+
+    meals_in, _unmatched = _match_ai_diet_foods(meals_raw, prefs, country)
+    if not meals_in:
+        raise HTTPException(
+            status_code=502, detail="Não consegui montar uma dieta válida agora, tente de novo em instantes.",
+        )
+
+    return _build_meals(meals_in)
+
+
 @router.post("/generate")
 def generate_diet_route(user: CurrentUser = CurrentUserDep):
     """
@@ -156,69 +351,22 @@ def generate_diet_route(user: CurrentUser = CurrentUserDep):
     até um nutricionista parceiro aprovar em /aprovar (até 24h, ver
     repository.insert_pending_diet). Cada usuário só tem direito a UMA
     geração (profiles.ai_diet_generated_at), mesmo que a dieta seja rejeitada
-    depois, não é um recurso recorrente.
+    depois, não é um recurso recorrente (o admin pode "Refazer" a dieta
+    pendente quantas vezes precisar em /aprovar, ver admin.py, isso não conta
+    contra esse limite).
     """
     profile = repository.get_profile(user)
     if (profile or {}).get("plan") != "pro":
         raise HTTPException(status_code=403, detail="Gerar dieta automaticamente é um recurso do plano Pro.")
     if (profile or {}).get("ai_diet_generated_at"):
         raise HTTPException(status_code=409, detail="Você já utilizou sua geração gratuita de dieta.")
-    target_calories = (profile or {}).get("target_calories")
-    if not target_calories:
-        raise HTTPException(
-            status_code=400,
-            detail="Defina sua meta calórica no perfil antes de gerar a dieta automaticamente.",
-        )
     if repository.get_pending_diet(user) is not None:
         raise HTTPException(status_code=409, detail="Você já tem uma dieta em revisão.")
 
     prefs = repository.get_preferences(user) or {}
     country = (profile or {}).get("country") or "BR"
-    macros = energy.macro_targets_g(
-        float(target_calories),
-        float((profile or {}).get("protein_pct") or 30),
-        float((profile or {}).get("carbs_pct") or 40),
-        float((profile or {}).get("fat_pct") or 30),
-    )
-    try:
-        generated = ai.generate_diet(
-            target_calories, macros["protein_g"], macros["carbs_g"], macros["fat_g"], prefs, country,
-        )
-    except ai.AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    meals, totals = _generate_diet_meals(profile or {}, prefs, country)
 
-    meals_raw = generated.get("meals") or []
-    if not meals_raw:
-        raise HTTPException(status_code=502, detail="Não consegui gerar uma dieta agora, tente de novo em instantes.")
-
-    preferred_ids = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
-    tie_resolver = ai.build_country_tie_resolver(country)
-    allergies = prefs.get("allergies") or []
-
-    meals_in: list[MealIn] = []
-    for m in meals_raw:
-        foods_in: list[FoodIn] = []
-        for f in m["foods"]:
-            matches = food_matcher.search_taco(f["name"], limit=1, preferred=preferred_ids, tie_resolver=tie_resolver)
-            if not matches:
-                continue
-            match = matches[0]
-            # Última barreira determinística: mesmo com a instrução no
-            # prompt, nunca confia só na IA pra alergia (ver
-            # food_matcher.matches_allergen).
-            if food_matcher.matches_allergen(match.name, allergies) or food_matcher.matches_allergen(match.display_name, allergies):
-                continue
-            grams = parse_portion(f["quantity"], food_hint=f["name"]) or 100.0
-            foods_in.append(FoodIn(taco_id=match.id, grams=grams, quantity_label=f["quantity"]))
-        if foods_in:
-            meals_in.append(MealIn(name=m["meal"][:60], time=_norm_time(m.get("time", ""), m["meal"]), foods=foods_in))
-
-    if not meals_in:
-        raise HTTPException(
-            status_code=502, detail="Não consegui montar uma dieta válida agora, tente de novo em instantes.",
-        )
-
-    meals, totals = _build_meals(meals_in)
     repository.insert_pending_diet(user, {
         "name": "Dieta gerada pelo Nootr",
         "daily_calories": round(totals["calories"]),
@@ -731,11 +879,36 @@ def delete_diet(diet_id: str, user: CurrentUser = CurrentUserDep):
     return {"ok": True}
 
 
-@router.post("/{diet_id}/clear")
-def clear_diet(diet_id: str, user: CurrentUser = CurrentUserDep):
-    """Esvazia todos os alimentos da dieta (mantém nome/dia da semana)."""
-    diet = repository.clear_diet(user, diet_id)
+@router.post("/{diet_id}/restore")
+def restore_diet_route(diet_id: str, user: CurrentUser = CurrentUserDep):
+    """
+    Volta a dieta pra versão que o Nootr entregou (snapshot `source_meals`,
+    gravado quando o nutricionista aprovou, ver repository.admin_approve_diet).
+    Só existe pra dieta que veio do Nootr; montada à mão não tem o que
+    restaurar (404). Pode ser usado quantas vezes o usuário quiser, o
+    snapshot não é consumido.
+    """
+    diet = repository.get_diet(user, diet_id)
+    if diet is None:
+        raise HTTPException(status_code=404, detail="Dieta não encontrada.")
+    source_meals = diet.get("source_meals")
+    if not source_meals:
+        raise HTTPException(
+            status_code=404,
+            detail="Essa dieta não foi gerada pelo Nootr, não há versão original para restaurar.",
+        )
+
+    totals = {
+        "calories": sum(f["calories"] for m in source_meals for f in m["foods"]),
+        "protein_g": sum(f["protein_g"] for m in source_meals for f in m["foods"]),
+        "carbs_g": sum(f["carbs_g"] for m in source_meals for f in m["foods"]),
+        "fat_g": sum(f["fat_g"] for m in source_meals for f in m["foods"]),
+    }
+    restored = repository.restore_diet(user, diet_id, source_meals, totals)
+
+    # O plano do dia é uma cópia materializada da dieta (onde as substituições
+    # de hoje vivem): descarta pra /today refletir a restauração.
     applies_today = diet.get("weekday") is None or diet.get("weekday") == repository.today_weekday()
     if applies_today:
         repository.delete_day_plan(user, repository.today_iso())
-    return diet
+    return restored

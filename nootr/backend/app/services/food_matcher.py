@@ -320,6 +320,32 @@ def _is_excluded(food: TacoFood, query_tokens: set[str]) -> bool:
     return False
 
 
+# Itens da base que são INGREDIENTE DE PREPARO, não alimento de refeição:
+# ninguém come um tablete de fermento ou uma colher de amido puro. Eles só
+# aparecem numa sugestão automática por acidente de matching, quando a IA
+# propõe algo que a base não tem e a busca cai no parente mais próximo (ex:
+# "levedura nutricional", substituto vegano comum de queijo, casa com
+# "Fermento, biológico, LEVEDURA, tablete"; "caldo de legumes" casa com
+# "Caldo de carne em tablete"). Bloqueado só em sugestão AUTOMÁTICA da IA; a
+# busca manual do usuário continua achando normalmente, ele sabe o que quer.
+_INGREDIENT_ONLY_TACO_IDS = frozenset({
+    42,   # Amido de milho (cru)
+    324,  # Caldo de carne em tablete
+    325,  # Caldo de galinha em tablete
+    513,  # Fermento em pó
+    514,  # Fermento biológico tablete
+    515,  # Gelatina em pó
+    517,  # Sal grosso
+})
+
+
+def is_ingredient_only(taco_id: int | None) -> bool:
+    """True se o alimento é ingrediente de preparo (ver
+    _INGREDIENT_ONLY_TACO_IDS), que nunca deve entrar numa dieta montada
+    automaticamente pela IA."""
+    return taco_id is not None and taco_id in _INGREDIENT_ONLY_TACO_IDS
+
+
 def preferred_taco_ids(names: list[str] | None) -> set[int]:
     """
     Resolve uma lista de nomes de preferência (gosto/despensa do perfil,
@@ -365,6 +391,12 @@ def search_taco(
     # primeiro; sem favorito, o corte mais comum vence por padrão).
     if "bife" in query_tokens:
         query_tokens = query_tokens | {"carne"}
+    # "Massa" é como a maioria diz "macarrão" no dia a dia, mas nenhum item da
+    # TACO chamado "Macarrão, ..." tem a palavra "massa" no nome (só "Lasanha,
+    # massa..." e "Pastel, massa..." têm), sem o sinônimo, buscar "massa"
+    # nunca encontraria macarrão de jeito nenhum.
+    if "massa" in query_tokens:
+        query_tokens = query_tokens | {"macarrao"}
     scored = [
         (_rank_key(query_tokens, food, preferred), food)
         for food in load_taco_foods()
@@ -494,20 +526,91 @@ def macro_profile(calories: float, protein_g: float, carbs_g: float, fat_g: floa
     return macro if share >= _PROFILE_DOMINANCE else "balanced"
 
 
+# Alergia/intolerância -> alimentos que a contêm mesmo sem citá-la no nome.
+# Sem isso a checagem é só substring e não bloqueia nada de útil: "lactose"
+# não aparece no nome "Queijo mozarela", "glúten" não aparece em "Macarrão".
+# Cada chave é comparada normalizada (sem acento), então "gluten" cobre
+# "glúten". Não pretende ser uma base completa de alérgenos e reações
+# cruzadas, cobre os alérgenos comuns que o usuário cadastra no onboarding.
+_ALLERGEN_FOODS = {
+    "lactose": [
+        "leite", "queijo", "iogurte", "manteiga", "requeijao", "creme de leite",
+        "nata", "coalhada", "doce de leite", "leite condensado", "chantilly",
+        "sorvete", "mussarela", "mozarela", "ricota", "catupiry", "whey",
+    ],
+    "gluten": [
+        "trigo", "pao", "macarrao", "farinha de trigo", "cevada", "centeio",
+        "malte", "biscoito", "bolacha", "bolo", "torrada", "cuscuz", "cerveja",
+        "semola", "lasanha", "pizza", "salgadinho", "empanado",
+    ],
+    "amendoim": ["amendoim", "pacoca", "pasta de amendoim"],
+    "ovo": ["ovo", "clara", "gema", "maionese", "omelete"],
+    "soja": ["soja", "shoyu", "tofu", "missô"],
+    "frutos do mar": [
+        "camarao", "lagosta", "siri", "caranguejo", "marisco", "ostra",
+        "mexilhao", "polvo", "lula", "vieira",
+    ],
+    "peixe": ["peixe", "atum", "sardinha", "salmao", "bacalhau", "tilapia", "merluza", "pescada"],
+    "castanha": ["castanha", "noz", "amendoa", "avela", "pistache", "macadamia"],
+    "frutose": ["mel", "xarope de milho"],
+}
+
+# Alimentos cujo nome CONTÉM um termo da lista acima mas que não têm o
+# alérgeno de verdade, as bebidas vegetais são "leite" só no nome (ver
+# data/taco_extra.csv, adicionadas justamente porque a TACO não as cobre).
+_ALLERGEN_EXCEPTIONS = {
+    "lactose": ["leite de coco", "leite de amendoa", "leite de aveia", "leite de castanha",
+                "leite de arroz", "leite de soja", "bebida de soja", "leite vegetal"],
+    "gluten": ["pao de queijo", "pao de tapioca"],
+}
+
+# "Sem glúten", "zero lactose", "0% lactose": o nome do alimento afirma a
+# AUSÊNCIA do alérgeno, o oposto do que a busca por substring concluiria.
+# Sem isso o filtro bloqueia justamente os produtos feitos pra quem tem a
+# restrição (era o caso de "Pão de forma sem glúten" e "Leite zero lactose").
+_FREE_OF_PATTERNS = (
+    r"sem\s+{term}", r"zero\s+{term}", r"0\s*%?\s*(?:de\s+)?{term}",
+    r"isento\s+(?:de\s+)?{term}", r"livre\s+(?:de\s+)?{term}", r"nao\s+contem\s+{term}",
+)
+
+
+def _declares_free_of(name_norm: str, allergy_norm: str) -> bool:
+    """O nome do alimento afirma não conter o alérgeno ("sem glúten")?"""
+    term = re.escape(allergy_norm)
+    return any(re.search(p.format(term=term), name_norm) for p in _FREE_OF_PATTERNS)
+
+
 def matches_allergen(food_name: str, allergies: list[str]) -> bool:
     """
     Checagem determinística (não depende da IA seguir a instrução do prompt)
     aplicada como última barreira antes de qualquer sugestão AUTOMÁTICA da IA
-    (coringa, ajuste de fim de dia, "buscar outros alimentos") chegar no
-    usuário, substituição manual não passa por aqui, é escolha da própria
-    pessoa. É um match por substring no nome (normalizado, sem acento) contra
-    cada alergia cadastrada: cobre o caso comum da TACO nomear o alimento a
-    partir do ingrediente-base (ex: alergia "amendoim" bate em "Amendoim,
-    torrado" e "Paçoca, amendoim, doce"), mas NÃO é uma base de dados de
-    alérgenos/derivados, produtos industrializados que não citam o
-    ingrediente no nome, ou reações cruzadas, não são cobertos.
+    (geração de dieta, coringa, ajuste de fim de dia, "buscar outros
+    alimentos") chegar no usuário; substituição manual não passa por aqui, é
+    escolha da própria pessoa.
+
+    Casa o nome (normalizado, sem acento) contra a alergia cadastrada, contra
+    os alimentos que a contêm (`_ALLERGEN_FOODS`, ex: "lactose" bloqueia
+    "Queijo mozarela") e respeitando tanto as exceções (`_ALLERGEN_EXCEPTIONS`,
+    ex: "Leite de coco" não tem lactose) quanto os produtos que declaram a
+    ausência no próprio nome (`_declares_free_of`, ex: "Pão de forma sem
+    glúten"). Não é uma base completa de alérgenos: industrializados que não
+    citam o ingrediente no nome e reações cruzadas não são cobertos.
     """
     if not allergies:
         return False
     name_norm = normalize(food_name)
-    return any(normalize(a) in name_norm for a in allergies if a.strip())
+
+    for allergy in allergies:
+        allergy_norm = normalize(allergy).strip()
+        if not allergy_norm:
+            continue
+        # "Pão de forma SEM glúten" é seguro justamente pra quem tem a alergia.
+        if _declares_free_of(name_norm, allergy_norm):
+            continue
+        exceptions = _ALLERGEN_EXCEPTIONS.get(allergy_norm, ())
+        if any(exc in name_norm for exc in exceptions):
+            continue
+        terms = (allergy_norm, *_ALLERGEN_FOODS.get(allergy_norm, ()))
+        if any(term in name_norm for term in terms):
+            return True
+    return False

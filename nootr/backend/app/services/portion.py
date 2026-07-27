@@ -222,13 +222,12 @@ def _match_keyword_table(combined: str, table: dict[str, float]) -> float | None
     return None
 
 
-def parse_portion(text: str, food_hint: str = "") -> float | None:
-    """
-    Devolve gramas estimadas a partir do texto, ou None se não reconhecer.
-    `food_hint` (opcional) é o nome do alimento já casado, usado só para
-    corrigir o peso de "unidade" quando o padrão genérico (60g) é claramente
-    errado pro alimento em questão (ex: castanhas, azeitonas).
-    """
+def _parse_quantity_and_unit(text: str, food_hint: str = "") -> tuple[float, str, float] | None:
+    """(quantidade, CHAVE CANÔNICA da unidade, gramas por unidade), ou None se
+    não reconhecer. A chave canônica (ver `_resolve_unit`) já resolve
+    singular/plural e qualificadores (ex: "colheres de chá" -> "colher_cha",
+    não só "colher"), pra `rescale_quantity` conseguir reconstruir o rótulo
+    certo depois de recalcular a contagem, sem perder o qualificador."""
     norm = _normalize(text)
     hint_norm = _normalize(food_hint)
 
@@ -236,45 +235,234 @@ def parse_portion(text: str, food_hint: str = "") -> float | None:
     for match in re.finditer(r"(\d+(?:[.,]\d+)?)\s*([a-z]+)", norm):
         qty = float(match.group(1).replace(",", "."))
         unit = match.group(2)
-        grams = _unit_to_grams(unit, norm, match.end(), hint_norm)
-        if grams is not None:
-            return round(qty * grams, 1)
+        resolved = _resolve_unit(unit, norm, match.end(), hint_norm)
+        if resolved is not None:
+            grams, key = resolved
+            return qty, key, grams
 
     # 2) Quantidade por extenso seguida de unidade: "duas fatias", "meia xicara".
     tokens = norm.split()
     for i, tok in enumerate(tokens[:-1]):
         if tok in _WORD_QTY:
             unit = tokens[i + 1]
-            grams = _unit_to_grams(unit, norm, None, hint_norm)
-            if grams is not None:
-                return round(_WORD_QTY[tok] * grams, 1)
+            resolved = _resolve_unit(unit, norm, None, hint_norm)
+            if resolved is not None:
+                grams, key = resolved
+                return _WORD_QTY[tok], key, grams
 
     return None
 
 
-def _unit_to_grams(unit: str, full_norm: str, after_index: int | None, hint_norm: str = "") -> float | None:
+def parse_portion(text: str, food_hint: str = "") -> float | None:
+    """
+    Devolve gramas estimadas a partir do texto, ou None se não reconhecer.
+    `food_hint` (opcional) é o nome do alimento já casado, usado só para
+    corrigir o peso de "unidade" quando o padrão genérico (60g) é claramente
+    errado pro alimento em questão (ex: castanhas, azeitonas).
+    """
+    parsed = _parse_quantity_and_unit(text, food_hint)
+    if parsed is None:
+        return None
+    qty, _unit, grams_per_unit = parsed
+    return round(qty * grams_per_unit, 1)
+
+
+# Rótulo (singular, plural) por CHAVE CANÔNICA (ver `_resolve_unit`), usado
+# por `rescale_quantity` pra reconstruir o texto depois de recalcular a
+# contagem. As três variantes de colher têm chave própria (colher_sopa/
+# _cha/_sobremesa) pra não perder o qualificador no rótulo final.
+_UNIT_LABELS: dict[str, tuple[str, str]] = {
+    "unidade": ("unidade", "unidades"),
+    "fatia": ("fatia", "fatias"),
+    "pedaco": ("pedaço", "pedaços"),
+    "porcao": ("porção", "porções"),
+    "prato": ("prato", "pratos"),
+    "bola": ("bola", "bolas"),
+    "colher_sopa": ("colher de sopa", "colheres de sopa"),
+    "colher_cha": ("colher de chá", "colheres de chá"),
+    "colher_sobremesa": ("colher de sobremesa", "colheres de sobremesa"),
+    "xicara": ("xícara", "xícaras"),
+    "copo": ("copo", "copos"),
+    "concha": ("concha", "conchas"),
+    "pote": ("pote", "potes"),
+    "punhado": ("punhado", "punhados"),
+    "lata": ("lata", "latas"),
+}
+
+# Unidades "de gente": não faz sentido meia unidade (meio ovo, meia fatia),
+# arredonda pra inteiro. As demais (colher, xícara, copo...) toleram meio
+# (1.5 colher, meia xícara), arredonda de 0.5 em 0.5.
+_WHOLE_STEP_UNITS = {"unidade", "fatia", "pedaco", "bola"}
+
+# Unidades de peso/volume puro (não são "medida caseira" de verdade, só
+# gramas/ml disfarçados), nesse caso não há o que preservar além do número.
+_WEIGHT_UNITS = {"g", "kg", "ml", "l"}
+
+
+def _round_plain_grams(grams: float) -> float:
+    return max(5.0, round(grams / 5) * 5)
+
+
+# Crescimento máximo (fator sobre o que já tinha) permitido numa única
+# correção de quantidade. "Discreto" (ovo, fatia, pedaço, bola) é mais
+# conservador que "contínuo" (colher, xícara, copo...) porque colher/xícara a
+# mais é discreto de servir, unidade inteira a mais de um alimento grande
+# (ovo, banana) muda a refeição de forma mais perceptível.
+_DISCRETE_GROWTH_CAP = 2.0
+_CONTINUOUS_GROWTH_CAP = 2.5
+
+# Teto ABSOLUTO de bom senso (em GRAMAS, não em unidades) pra um alimento
+# discreto contável. É em gramas, não numa contagem fixa de unidades, de
+# propósito: 200g são só ~4 ovos (muito) mas são só ~40 uvas (nada de mais),
+# o mesmo teto em unidades seria um exagero pra um alimento pequeno e
+# arbitrário pra um grande. Só entra em jogo quando o dobro (growth cap)
+# ainda ultrapassaria esse bom senso (ex: ovo, banana); pra alimentos
+# pequenos por unidade (uva, castanha, azeitona) o growth cap sozinho já é
+# mais restritivo que este teto, então ele nunca chega a limitar.
+_DISCRETE_GRAMS_CEILING = 200.0
+
+# Colher de sopa/chá/sobremesa, da maior pra menor: usado só pra ESCOLHER o
+# tamanho de colher certo (ver _best_spoon), nunca pra virar unidade de
+# menu geral.
+_SPOON_SIZES = [("colher_sopa", 15.0), ("colher_sobremesa", 10.0), ("colher_cha", 5.0)]
+_COLHER_KEYS = {"colher_sopa", "colher_sobremesa", "colher_cha"}
+
+
+def _cap_growth(original_grams: float, target_grams: float, factor: float) -> float:
+    """Só capa CRESCIMENTO (nunca mais que `factor`x o que já tinha); encolher
+    (`target_grams` menor que o original) é sempre permitido livremente."""
+    if target_grams <= original_grams:
+        return target_grams
+    return min(target_grams, original_grams * factor)
+
+
+def _best_spoon(target_grams: float) -> tuple[float, float, str]:
+    """
+    Escolhe o tamanho de colher (sopa/sobremesa/chá) cujo múltiplo INTEIRO
+    mais perto bate `target_grams`, pra nunca precisar de fração ("0,5 colher
+    de sopa" não é algo que alguém mede na prática), preferindo a colher
+    maior em caso de empate (menos colheres pra descrever a mesma
+    quantidade). Devolve (gramas_finais, contagem, chave_canônica).
+    """
+    best: tuple[float, float, float, str] | None = None  # (erro, gramas, contagem, chave)
+    for key, size in _SPOON_SIZES:
+        count = max(1.0, round(target_grams / size))
+        actual = count * size
+        err = abs(actual - target_grams)
+        if best is None or err < best[0] - 1e-9:
+            best = (err, actual, count, key)
+    _, actual, count, key = best
+    return actual, count, key
+
+
+def rescale_quantity(text: str, target_grams: float, food_hint: str = "") -> tuple[float, str]:
+    """
+    Recalcula a quantidade depois de escalar um alimento (ver
+    diet_engine._scale_food, chamado toda vez que uma refeição é reescalada,
+    na geração e na substituição), preservando a MEDIDA CASEIRA original em
+    vez de descartá-la e só devolver gramas cruas ("339g"). Devolve
+    (gramas_finais, rótulo_pronto).
+
+    - Colher (sopa/chá/sobremesa): nunca fração ("0,5 colher de sopa" não dá
+      pra medir), troca pro tamanho de colher que bate um número inteiro (ver
+      _best_spoon), crescimento capado em `_CONTINUOUS_GROWTH_CAP`.
+    - Unidade/fatia/pedaço/bola (discretos, "de gente"): crescimento capado
+      em `_DISCRETE_GROWTH_CAP`, E nunca além do teto absoluto de bom senso
+      em GRAMAS (`_DISCRETE_GRAMS_CEILING`), não em contagem fixa, pra não
+      tratar "10 uvas" como exagero do mesmo jeito que "10 ovos" (ver
+      docstring da constante).
+    - Demais medidas (xícara, copo, concha, pote...): toleram meio-a-meio
+      (0.5 em 0.5, "meia xícara" é normal), crescimento capado em
+      `_CONTINUOUS_GROWTH_CAP`.
+    - Sem medida caseira reconhecida (só gramas): arredonda pro múltiplo de 5
+      mais próximo.
+    """
+    parsed = _parse_quantity_and_unit(text, food_hint)
+    if parsed is None:
+        grams = _round_plain_grams(target_grams)
+        return grams, f"{round(grams)}g"
+
+    qty, unit, grams_per_unit = parsed
+    if unit in _WEIGHT_UNITS or grams_per_unit <= 0:
+        grams = _round_plain_grams(target_grams)
+        return grams, f"{round(grams)}g"
+
+    original_grams = qty * grams_per_unit
+
+    if unit in _COLHER_KEYS:
+        capped_grams = _cap_growth(original_grams, target_grams, _CONTINUOUS_GROWTH_CAP)
+        final_grams, count, label_unit = _best_spoon(capped_grams)
+    elif unit in _WHOLE_STEP_UNITS:
+        ceiling = max(original_grams, _DISCRETE_GRAMS_CEILING)  # nunca reduz por causa do teto
+        capped_grams = min(_cap_growth(original_grams, target_grams, _DISCRETE_GROWTH_CAP), ceiling)
+        count = max(1.0, round(capped_grams / grams_per_unit))
+        final_grams = round(count * grams_per_unit, 1)
+        label_unit = unit
+    else:
+        capped_grams = _cap_growth(original_grams, target_grams, _CONTINUOUS_GROWTH_CAP)
+        count = max(0.5, round((capped_grams / grams_per_unit) / 0.5) * 0.5)
+        final_grams = round(count * grams_per_unit, 1)
+        label_unit = unit
+
+    singular, plural = _UNIT_LABELS.get(label_unit, (label_unit, label_unit))
+    label_word = singular if count == 1 else plural
+    count_str = str(int(count)) if float(count).is_integer() else str(count).replace(".", ",")
+    return final_grams, f"{count_str} {label_word} ({round(final_grams)}g)"
+
+
+_WEIGHT_UNIT_KEYS = {
+    "g": "g", "grama": "g", "gramas": "g",
+    "kg": "kg", "quilo": "kg", "quilos": "kg",
+    "ml": "ml", "mililitro": "ml", "mililitros": "ml",
+    "l": "l", "litro": "l", "litros": "l",
+}
+
+# Chave canônica (singular) das demais medidas de _UNIT_GRAMS, pra
+# `_UNIT_LABELS` não precisar listar as variantes plurais também.
+_GENERIC_UNIT_KEYS = {
+    "concha": "concha", "conchas": "concha",
+    "xicara": "xicara", "xicaras": "xicara",
+    "copo": "copo", "copos": "copo",
+    "pote": "pote", "potes": "pote",
+    "punhado": "punhado", "punhados": "punhado",
+    "lata": "lata", "latas": "lata",
+}
+
+
+def _resolve_unit(unit: str, full_norm: str, after_index: int | None, hint_norm: str = "") -> tuple[float, str] | None:
+    """(gramas por unidade, CHAVE CANÔNICA), ou None se a unidade não for
+    reconhecida (ou, no caso de unidade/fatia/pedaço/porção/prato/bola, se o
+    alimento em questão não estiver na tabela própria, ver docstrings das
+    tabelas acima). A chave canônica resolve singular/plural E, no caso de
+    colher, o qualificador (chá/sobremesa/sopa), pra `rescale_quantity`
+    conseguir reconstruir o rótulo certo depois de recalcular a contagem."""
     combined = f"{full_norm} {hint_norm}"
 
-    # "Unidade", "fatia", "pedaço" e "porção" não têm peso genérico, cada
-    # alimento tem o seu (uma castanha e uma manga não pesam nada parecido).
-    # Só resolvem se o alimento em questão estiver mapeado na tabela própria;
-    # senão devolvem None e o chamador decide outro jeito de estimar.
     if unit in ("unidade", "unidades", "un", "und"):
-        return _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
+        g = _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
+        return (g, "unidade") if g is not None else None
     if unit in ("fatia", "fatias"):
-        return _match_keyword_table(combined, _FATIA_OVERRIDE)
+        g = _match_keyword_table(combined, _FATIA_OVERRIDE)
+        return (g, "fatia") if g is not None else None
     if unit in ("pedaco", "pedacos"):
-        return _match_keyword_table(combined, _PEDACO_OVERRIDE)
+        g = _match_keyword_table(combined, _PEDACO_OVERRIDE)
+        return (g, "pedaco") if g is not None else None
     if unit in ("porcao", "porcoes"):
-        return _match_keyword_table(combined, _PORCAO_OVERRIDE)
+        g = _match_keyword_table(combined, _PORCAO_OVERRIDE)
+        return (g, "porcao") if g is not None else None
     if unit in ("prato", "pratos"):
-        return _match_keyword_table(combined, _PRATO_OVERRIDE)
+        g = _match_keyword_table(combined, _PRATO_OVERRIDE)
+        return (g, "prato") if g is not None else None
     if unit in ("bola", "bolas"):
         # "Bola" sozinha (sorvete) tem peso próprio; "bola de carne"
         # (almôndega) é resolvida como 1 unidade de almôndega, não sorvete.
         if re.search(r"\bsorvete\b", combined):
-            return 60.0
-        return _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
+            return 60.0, "bola"
+        g = _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
+        return (g, "bola") if g is not None else None
+
+    if unit in _WEIGHT_UNIT_KEYS:
+        return _UNIT_GRAMS[unit], _WEIGHT_UNIT_KEYS[unit]
 
     if unit not in _UNIT_GRAMS:
         return None
@@ -283,6 +471,6 @@ def _unit_to_grams(unit: str, full_norm: str, after_index: int | None, hint_norm
         tail = full_norm[after_index:] if after_index is not None else full_norm
         for qualifier, grams in _SPOON_OVERRIDE.items():
             if qualifier in tail:
-                return grams
-        return _UNIT_GRAMS[unit]  # colher de sopa por padrão
-    return _UNIT_GRAMS[unit]
+                return grams, f"colher_{qualifier}"
+        return _UNIT_GRAMS[unit], "colher_sopa"  # colher de sopa por padrão
+    return _UNIT_GRAMS[unit], _GENERIC_UNIT_KEYS.get(unit, unit)

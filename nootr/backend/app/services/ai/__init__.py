@@ -77,18 +77,22 @@ def parse_diet_document(text: str) -> dict:
 
 
 def generate_diet(
-    target_calories: float, protein_g: float, carbs_g: float, fat_g: float,
+    meal_targets: list[dict], carbs_g: float, fat_g: float,
     preferences: dict, country: str,
 ) -> dict:
     """
-    Gera uma dieta básica de um dia batendo as metas informadas (Pro, ver
-    POST /nootr/diets/generate), sempre passa por revisão de um
-    nutricionista parceiro antes de chegar ao usuário (fila em /aprovar), por
-    isso não precisa ser sofisticada, só coerente e segura (nunca inclui
-    alergia, reforçado no prompt e checado de novo, de forma determinística,
-    em food_matcher.matches_allergen). Devolve {"meals": [{"meal","time","foods":[{"name","quantity"}]}]}.
+    Gera uma dieta básica de um dia batendo, refeição por refeição, os alvos
+    de calorias/proteína em `meal_targets` (ver services/meal_planning.
+    meal_plan_targets, calculado no nosso código, não pela IA, pra garantir
+    almoço/jantar com 25-35% do dia cada e as demais refeições com no mínimo
+    10%, todas com proteína). Sempre passa por revisão de um nutricionista
+    parceiro antes de chegar ao usuário (fila em /aprovar, ver POST
+    /nootr/diets/generate), por isso não precisa ser sofisticada, só
+    coerente, balanceada e segura (nunca inclui alergia, reforçado no prompt
+    e checado de novo, de forma determinística, em
+    food_matcher.matches_allergen). Devolve {"meals": [{"meal","time","foods":[{"name","quantity"}]}]}.
     """
-    return _provider().generate_diet(target_calories, protein_g, carbs_g, fat_g, preferences, country)
+    return _provider().generate_diet(meal_targets, carbs_g, fat_g, preferences, country)
 
 
 def explain_change(context: dict) -> str:
@@ -150,6 +154,20 @@ def suggest_day_topup(
         return _provider().suggest_day_topup(pending_meals, gap_calories, gap_protein, preferences or {})
     except AIError:
         return None
+
+
+def noo_chat(
+    history: list[dict], meals: list[dict], targets: dict, current: dict,
+    preferences: dict | None = None,
+) -> dict:
+    """
+    Um turno do Noo, o chat do Nootr: a pessoa conta o que mudou (em qualquer
+    combinação de refeições) e ele devolve a resposta + as mudanças a aplicar.
+    Diferente das três funções manuais, um único turno pode mexer em várias
+    refeições de uma vez (ver diet_engine.apply_changes).
+    Devolve {"reply", "changes", "already_eaten"}.
+    """
+    return _provider().noo_chat(history, meals, targets, current, preferences or {})
 
 
 # Cache em memória (processo), a mesma pergunta ("esses N alimentos empatados,

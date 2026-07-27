@@ -1,11 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { SkeletonPage } from "@/components/Skeleton";
 import { FoodAdder, AddedFoodList, addedFoodToInput, type AddedFood } from "@/components/FoodAdder";
 import { DishReviewModal, detectDishes, applyDishDecisions, type DetectedDish, type DishDecision } from "@/components/DishReviewModal";
+import { ProLockButton } from "@/components/ProLockButton";
 import { nootrApi } from "@/lib/api";
+import { formatQuantityWithGrams } from "@/lib/units";
 import {
   PRO_DIET_DISCLAIMER,
   GENERATE_DIET_WARNING,
@@ -37,7 +40,7 @@ export function mealFoodToAdded(f: Meal["foods"][number]): AddedFood {
     taco_id: f.taco_id ?? null,
     name: f.name,
     grams,
-    quantity_label: f.quantity,
+    quantity_label: formatQuantityWithGrams(f.quantity, f.grams),
     calories: f.calories,
     protein_g: f.protein_g,
     carbs_g: f.carbs_g,
@@ -57,6 +60,80 @@ function dietToDrafts(diet: DietSummary): MealDraft[] {
   }));
 }
 
+// Ícones das opções da tela "Vamos começar" (traço fino, coerente com o resto do app).
+const ICON_GENERATE = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M12 3.5l1.8 5.2 5.2 1.8-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8z" />
+    <path d="M18.5 16.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" />
+  </svg>
+);
+const ICON_IMPORT = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M13.5 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z" />
+    <path d="M13.5 3v5.5H19" />
+    <path d="M12 17v-5M9.5 14.5L12 17l2.5-2.5" />
+  </svg>
+);
+const ICON_MANUAL = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17z" />
+    <path d="M13.5 6.5l3 3" />
+  </svg>
+);
+
+const WELCOME_OPTION_CLASS =
+  "group block w-full rounded-xl border border-nootr-line bg-nootr-black/30 p-4 text-left transition-all duration-200 hover:border-nootr-bordo/60 hover:bg-nootr-wine/15";
+
+/** Linha de opção da tela inicial de montagem (ícone + título + descrição +
+ * seta, ou selo "Pro" com cadeado quando bloqueada no plano Basic). */
+function WelcomeOption({
+  icon,
+  title,
+  subtitle,
+  locked,
+}: {
+  icon: ReactNode;
+  title: string;
+  subtitle: string;
+  locked: boolean;
+}) {
+  return (
+    <span className="flex w-full items-center gap-4">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-nootr-line bg-nootr-wine/20 text-nootr-bordoSoft transition-colors group-hover:border-nootr-bordo/60 group-hover:text-nootr-cream">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold text-nootr-cream">{title}</span>
+        <span className="mt-0.5 block text-xs leading-relaxed text-nootr-muted">{subtitle}</span>
+      </span>
+      {locked ? (
+        <span className="flex shrink-0 items-center gap-1 rounded-full border border-nootr-bordo/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-caps text-nootr-bordoSoft">
+          <svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden>
+            <rect x="2" y="5.5" width="8" height="5" rx="1" stroke="currentColor" strokeWidth="1.1" />
+            <path d="M3.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+          </svg>
+          Pro
+        </span>
+      ) : (
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="shrink-0 text-nootr-faint transition-all group-hover:translate-x-0.5 group-hover:text-nootr-bordoSoft"
+          aria-hidden
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      )}
+    </span>
+  );
+}
+
 export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () => void }) {
   const router = useRouter();
   const [plan, setPlan] = useState<Plan>("basic");
@@ -69,23 +146,31 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
   const [meals, setMeals] = useState<MealDraft[]>([{ ...EMPTY_MEAL, name: "Café da manhã", time: "07:30" }]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
 
+  // Qual caminho de montagem está ativo, só um por vez (ver tela "Vamos
+  // começar" abaixo): gerar com IA, importar arquivo, ou montar manualmente.
+  const [builderView, setBuilderView] = useState<"generate" | "import" | "manual">("manual");
   // Import (Pro), PDF/Word/Excel da dieta, lido pela IA
-  const [showImport, setShowImport] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [importNote, setImportNote] = useState("");
   // Gerar dieta pronta (Pro), IA monta batendo a meta do perfil, revisada
   // por nutricionista parceiro antes de aparecer (ver app/dieta/page.tsx).
-  const [showGenerate, setShowGenerate] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generateMsg, setGenerateMsg] = useState("");
   // Revisão de pratos compostos (ver DishReviewModal), preenchido entre o
   // preview e a confirmação, só quando o documento tem algum prato detectado.
   const [importPreview, setImportPreview] = useState<DietImportPreview | null>(null);
   const [reviewDishes, setReviewDishes] = useState<DetectedDish[]>([]);
+  const [hasPendingReview, setHasPendingReview] = useState(false);
+  // Tela "Vamos começar" (ver app/dieta/page.tsx): só aparece pra quem ainda
+  // não tem NENHUMA dieta e não está com uma em revisão, evita cair direto
+  // no formulário completo de montagem manual. Uma vez escolhida uma opção,
+  // vira "chosen" pro resto da sessão.
+  const [welcomeChoice, setWelcomeChoice] = useState<"pending" | "chosen">("chosen");
 
   const loadSlot = useCallback((weekday: number | null, existing: DietSummary[]) => {
     const diet = existing.find((d) => d.weekday === weekday);
@@ -100,11 +185,34 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
     }
   }, []);
 
+  // A dieta salva do slot aberto, pra saber se existe versão do Nootr pra
+  // restaurar (source_meals, ver POST /nootr/diets/{id}/restore).
+  const currentDiet = diets.find((d) => d.weekday === slot);
+
+  async function handleRestoreDiet() {
+    if (!currentDiet) return;
+    if (!confirm("Voltar para a dieta como o Nootr entregou? Suas alterações nesta dieta serão perdidas.")) return;
+    setRestoring(true);
+    setError("");
+    try {
+      const restored = await nootrApi.restoreDiet(token, currentDiet.id);
+      setMeals(dietToDrafts(restored));
+      setName(restored.name);
+      setTargetCalories(String(Math.round(restored.daily_calories)));
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível restaurar a dieta.");
+    } finally {
+      setRestoring(false);
+    }
+  }
+
   const reload = useCallback(async () => {
     const [dietsData, profileData] = await Promise.all([nootrApi.listDiets(token), nootrApi.getProfile(token)]);
     setPlan(dietsData.plan);
     setDiets(dietsData.diets);
     setProfile(profileData);
+    setHasPendingReview(dietsData.has_pending_review);
     return dietsData;
   }, [token]);
 
@@ -122,6 +230,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
         const initialSlot = d.plan === "pro" && initialMode === "dias" ? todayWeekday() : null;
         setSlot(initialSlot);
         loadSlot(initialSlot, d.diets);
+        setWelcomeChoice(d.diets.length === 0 && !d.has_pending_review ? "pending" : "chosen");
       })
       .catch(() => active && setError("Não foi possível carregar seus dados."))
       .finally(() => active && setLoading(false));
@@ -260,7 +369,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
       setSlot(todaySlot);
       loadSlot(todaySlot, refreshed.diets);
       setImportFile(null);
-      setShowImport(false);
+      setBuilderView("manual");
       setImportPreview(null);
       setReviewDishes([]);
       setSavedMsg(
@@ -269,7 +378,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
           : "Dieta importada e salva para os 7 dias da semana."
       );
       const notes: string[] = [];
-      if (preview.unmatched.length) notes.push(`não casei com a TACO: ${preview.unmatched.join(", ")}`);
+      if (preview.unmatched.length) notes.push(`não encontrei na base: ${preview.unmatched.join(", ")}`);
       const p = res.preferences;
       const learned: string[] = [];
       if (p?.allergies?.length) learned.push(`alergias: ${p.allergies.join(", ")}`);
@@ -307,7 +416,6 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
     setGenerating(true);
     try {
       await nootrApi.generateDiet(token);
-      setShowGenerate(false);
       setGenerateMsg("Pedido enviado, sua dieta chega em até 24h, após revisão de um nutricionista parceiro.");
       onSaved?.();
     } catch (err) {
@@ -355,24 +463,107 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
     }
   }
 
-  if (loading) return <p className="text-sm text-nootr-muted">Carregando…</p>;
+  if (loading) return <SkeletonPage cards={2} />;
+
+  if (welcomeChoice === "pending") {
+    const locked = plan !== "pro";
+    return (
+      <div className="mx-auto max-w-xl">
+        <div className="card">
+          <p className="label-caps text-nootr-bordoSoft">Vamos começar</p>
+          <h2 className="mt-2 font-display text-2xl text-nootr-cream sm:text-3xl">Você já tem uma dieta?</h2>
+          <p className="mt-1.5 text-xs text-nootr-muted sm:text-sm">
+            Escolha como quer começar seu plano alimentar. Você pode mudar depois.
+          </p>
+          <div className="mt-6 space-y-3">
+            <ProLockButton
+              locked={locked}
+              wrapperClassName="relative block"
+              lockIcon="none"
+              onClick={() => {
+                setBuilderView("generate");
+                setWelcomeChoice("chosen");
+              }}
+              className={WELCOME_OPTION_CLASS}
+            >
+              <WelcomeOption
+                icon={ICON_GENERATE}
+                title="Não, não tenho nenhum tipo de plano alimentar"
+                subtitle="O Nootr gera uma dieta pronta pra você, revisada por um nutricionista."
+                locked={locked}
+              />
+            </ProLockButton>
+
+            <ProLockButton
+              locked={locked}
+              wrapperClassName="relative block"
+              lockIcon="none"
+              onClick={() => {
+                setBuilderView("import");
+                setWelcomeChoice("chosen");
+              }}
+              className={WELCOME_OPTION_CLASS}
+            >
+              <WelcomeOption
+                icon={ICON_IMPORT}
+                title="Sim, desejo importar o arquivo da minha dieta"
+                subtitle="Envie o PDF, Word ou Excel e a IA monta tudo automaticamente."
+                locked={locked}
+              />
+            </ProLockButton>
+
+            <button
+              type="button"
+              onClick={() => {
+                setBuilderView("manual");
+                setWelcomeChoice("chosen");
+              }}
+              className={WELCOME_OPTION_CLASS}
+            >
+              <WelcomeOption
+                icon={ICON_MANUAL}
+                title="Sim, prefiro montar toda dieta manualmente"
+                subtitle="Monte refeição por refeição com alimentos, código de barras e receitas."
+                locked={false}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        {plan === "pro" && (
-          <button onClick={() => setShowGenerate((v) => !v)} className="btn-secondary text-xs">
-            {showGenerate ? "Fechar" : "Gerar dieta pronta (IA)"}
-          </button>
-        )}
-        {plan === "pro" && (
-          <button onClick={() => setShowImport((v) => !v)} className="btn-secondary text-xs">
-            {showImport ? "Fechar importação" : "Importar dieta (IA)"}
-          </button>
-        )}
+      <div className="flex flex-wrap items-center gap-2">
+        {profile?.ai_diet_generated_at && hasPendingReview ? (
+          <span className="chip cursor-default opacity-70">Aguardando revisão do Nutricionista</span>
+        ) : !profile?.ai_diet_generated_at ? (
+          <ProLockButton
+            locked={plan !== "pro"}
+            onClick={() => setBuilderView("generate")}
+            className={`chip ${builderView === "generate" ? "chip-active" : ""}`}
+          >
+            Gerar dieta com Nootr IA
+          </ProLockButton>
+        ) : null}
+        <ProLockButton
+          locked={plan !== "pro"}
+          onClick={() => setBuilderView("import")}
+          className={`chip ${builderView === "import" ? "chip-active" : ""}`}
+        >
+          Importar dieta com Nootr IA
+        </ProLockButton>
+        <button
+          type="button"
+          onClick={() => setBuilderView("manual")}
+          className={`chip ${builderView === "manual" ? "chip-active" : ""}`}
+        >
+          Montar manualmente
+        </button>
       </div>
 
-      {plan === "pro" && showGenerate && (
+      {builderView === "generate" && plan === "pro" && (
         <div className="card mt-5">
           <p className="label-caps">Gerar Dieta (Receba em até 24h)</p>
           {profile?.ai_diet_generated_at ? (
@@ -424,7 +615,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
         </div>
       )}
 
-      {plan === "pro" && showImport && (
+      {builderView === "import" && plan === "pro" && (
         <div className="card mt-5">
           <p className="label-caps">Importar dieta (Pro)</p>
           <p className="mb-3 mt-1 text-xs text-nootr-muted">
@@ -454,7 +645,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
         </div>
       )}
 
-      {plan === "pro" ? (
+      {builderView === "manual" && (plan === "pro" ? (
         <>
           <div className="mt-8 flex flex-wrap gap-2">
             <button onClick={() => switchDietMode("dias")} className={`chip ${dietMode === "dias" ? "chip-active" : ""}`}>
@@ -517,8 +708,9 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
           <strong className="text-nootr-bordoSoft">Pro</strong>: uma dieta por dia da semana (ou um plano único,
           se preferir) e importação por IA.
         </p>
-      )}
+      ))}
 
+      {builderView === "manual" && (
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           <div className="card space-y-4">
@@ -598,6 +790,17 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
           <button type="button" onClick={() => setMeals((prev) => [...prev, { ...EMPTY_MEAL }])} className="btn-secondary w-full">
             + Adicionar refeição
           </button>
+          {currentDiet?.source_meals && currentDiet.source_meals.length > 0 && (
+            <button
+              type="button"
+              onClick={handleRestoreDiet}
+              disabled={restoring}
+              className="mt-2 w-full text-center text-xs text-nootr-muted transition-colors hover:text-nootr-bordoSoft disabled:opacity-60"
+              title="Volta esta dieta exatamente como o Nootr entregou, desfazendo suas alterações"
+            >
+              {restoring ? "Restaurando…" : "↺ Restaurar dieta do Nootr"}
+            </button>
+          )}
           {meals.some((m) => m.foods.length > 0) && (
             <button
               type="button"
@@ -616,9 +819,9 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
         <aside className="h-fit lg:sticky lg:top-24">
           <div className="card">
             <p className="label-caps">Resumo do dia</p>
-            <p className="mt-1 font-display text-5xl text-nootr-cream">
+            <p className="mt-1 font-display text-4xl text-nootr-cream sm:text-5xl">
               {totals.calories}
-              <span className="ml-1 text-lg text-nootr-muted">kcal</span>
+              <span className="ml-1 text-base text-nootr-muted sm:text-lg">kcal</span>
               {profile?.target_calories && (
                 <span className="ml-2 text-sm text-nootr-faint">/ {Math.round(profile.target_calories)} meta</span>
               )}
@@ -652,6 +855,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
           </div>
         </aside>
       </div>
+      )}
 
       {importPreview && reviewDishes.length > 0 && (
         <DishReviewModal

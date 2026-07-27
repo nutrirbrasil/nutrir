@@ -39,7 +39,7 @@ const PASSOS = [
   {
     numeral: "1",
     title: "Monte (ou importe) sua dieta",
-    desc: "Monte refeição por refeição com alimentos reais da tabela TACO, em medidas caseiras ou gramas. Ou importe o PDF da sua nutricionista e deixe o Nootr ler e organizar a semana.",
+    desc: "Monte refeição por refeição com alimentos reais, em medidas caseiras ou gramas. Ou importe o PDF da sua nutricionista e deixe o Nootr ler e organizar a semana.",
   },
   {
     numeral: "2",
@@ -73,7 +73,7 @@ const BENEFICIOS = [
   },
   {
     title: "Números em que dá para confiar",
-    desc: "A base nutricional é a tabela TACO (UNICAMP), com 597 alimentos, complementada por itens revisados um a um. Sem estimativas obscuras: você vê gramas, calorias e macros de cada troca.",
+    desc: "Nossa base nutricional reúne 597 alimentos, complementada por itens revisados um a um. Sem estimativas obscuras: você vê gramas, calorias e macros de cada troca.",
   },
   {
     title: "Menos conta, mesma dieta",
@@ -92,7 +92,7 @@ const FAQ = [
   },
   {
     q: "De onde vêm os dados nutricionais?",
-    a: "Da tabela TACO (Tabela Brasileira de Composição de Alimentos, da UNICAMP), com 597 alimentos, complementada por itens curados manualmente e pela base Open Food Facts para produtos industrializados com código de barras. Cada alimento mostra calorias, proteínas, carboidratos e gorduras por porção.",
+    a: "Nossa base reúne 597 alimentos, complementada por itens curados manualmente e por leitura automática de código de barras para produtos industrializados. Cada alimento mostra calorias, proteínas, carboidratos e gorduras por porção.",
   },
   {
     q: "Como o ajuste do dia funciona na prática?",
@@ -140,7 +140,7 @@ export default function LandingPage() {
             </a>
           </div>
           <p className="lp-hero-in-3 mt-4 text-xs text-nootr-faint">
-            Base TACO com 597 alimentos · substituições ilimitadas · monte sua dieta em minutos
+            Mais de 597 alimentos · substituições ilimitadas · monte sua dieta em minutos
           </p>
         </div>
       </section>
@@ -298,7 +298,7 @@ export default function LandingPage() {
             Sem taxa de adesão, sem fidelidade. Cancele quando quiser.
           </p>
         </Reveal>
-        <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2">
+        <div className="mt-10 grid grid-cols-2 items-stretch gap-2.5 sm:gap-4">
           <Reveal>
             <PlanCard
               name="Basic"

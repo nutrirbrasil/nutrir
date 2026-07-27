@@ -331,48 +331,124 @@ _GENERATE_DIET_SCHEMA = {
     "required": ["meals"],
 }
 
-_GENERATE_DIET_PROMPT = """Monte uma dieta básica de UM dia, em português, pra uma pessoa de \
-{country}, respeitando ESTRITAMENTE as metas abaixo:
+_GENERATE_DIET_PROMPT = """Você é um nutricionista montando uma dieta BÁSICA de UM dia pra uma \
+pessoa de {country}. Escreva como um nutricionista escreveria de verdade: refeições que uma pessoa \
+comum come, em porções que uma pessoa comum serve.
 
-- Calorias diárias: {calories} kcal
-- Proteína: {protein_g}g
-- Carboidrato: {carbs_g}g
-- Gordura: {fat_g}g
+Use SÓ alimentos comuns do dia a dia de quem mora em {country}: coisas que se compram no mercado e \
+se comem numa refeição, do jeito que essa cultura come. Nada de ingrediente de preparo que ninguém \
+come sozinho (fermento, amido, essência, corante, caldo em cubo, gelatina em pó), nada de item \
+exótico, importado ou caro, e nada de suplemento a não ser que a pessoa já use.
 
-Distribua em 4 a 5 refeições comuns no Brasil (café da manhã, almoço, lanche da tarde, jantar, \
-ceia se fizer sentido), cada uma com horário típico (formato HH:MM). Cada alimento precisa ser \
-um item ATÔMICO da tabela TACO (nunca um prato composto pronto, ver regras abaixo) com \
-quantidade em medida caseira (xícara, colher, fatia, unidade, gramas).
+A CONTA JÁ ESTÁ FEITA, NÃO RECALCULE
+Total do dia: {total_calories} kcal, {total_protein_g}g de proteína, {carbs_g}g de carboidrato, \
+{fat_g}g de gordura.
+
+Isso já está dividido refeição por refeição na tabela abaixo. Você NÃO precisa calcular \
+porcentagem nem somar o dia: escolha, pra cada refeição, alimentos que batam os números DAQUELA \
+linha (tolerância de ~10%). Se cada refeição bate a sua linha, o dia fecha sozinho.
+
+{meal_targets_table}
+
+O peso em gramas de cada linha é só uma referência de ordem de grandeza (o quanto de comida a \
+refeição deve ter no prato), não uma meta a bater: o que importa são as calorias e os macros.
+
+Use exatamente esses nomes e horários, nessa ordem, {n_meals} refeições.
+
+COMO MONTAR CADA REFEIÇÃO
+Cada refeição precisa fazer sentido PRA AQUELE MOMENTO DO DIA. Café da manhã, lanche e ceia não \
+são versões menores do almoço: ninguém come peito de frango com arroz às 16h nem bife com feijão \
+às 7h. Pense no que realmente se come em cada momento no Brasil, por exemplo:
+- Café da manhã: pão/tapioca/cuscuz/aveia + ovo/queijo/leite/iogurte + fruta ou café.
+- Lanche da manhã / lanche da tarde / ceia: iogurte, leite, queijo, fruta, pão, tapioca, ovo, \
+castanhas, vitamina. Coisas leves, rápidas, que se come fora da mesa.
+- Almoço e jantar: arroz/macarrão/batata + feijão/leguminosa + carne/frango/peixe/ovo + salada ou \
+legume. É aqui que entram as proteínas "de prato".
+
+Dentro desse contexto, toda refeição precisa ter pelo menos 2 alimentos diferentes, incluindo uma \
+fonte real de PROTEÍNA (carne, frango, peixe, ovo, leite, iogurte, queijo, feijão, whey) e uma \
+fonte real de CARBOIDRATO (pão, tapioca, cuscuz, aveia, arroz, macarrão, batata, mandioca, fruta). \
+Uma refeição só de fruta, só de doce ou só de pão não é uma refeição.
+
+QUANTIDADES
+Use medida caseira (fatia, unidade, colher de sopa, xícara, copo, pote) ou gramas, e escolha \
+quantidades que uma pessoa realmente serve numa sentada. Você sabe julgar isso: 7 colheres de sopa \
+de doce de leite é absurdo, 1 colher é normal; 3 bananas de uma vez é demais, 1 é o normal; 5 ovos \
+é exagero, 2 é o normal. Aplique esse mesmo bom senso a cada alimento, cada um tem sua própria \
+noção de "muito" e "pouco".
+
+O tamanho da porção é PROPORCIONAL À NECESSIDADE CALÓRICA da pessoa. Os exemplos acima são de uma \
+pessoa média (~2000 a 2500 kcal por dia). Quem precisa de mais que isso come porções maiores, e \
+isso não é exagero, é o que essa pessoa precisa: num plano de 3000 kcal as porções são um pouco \
+maiores que o normal, num de 4000 ou 5000 kcal são bem maiores, e as refeições podem ter mais \
+itens. Calibre pelo total do dia informado lá em cima e não entregue o dia abaixo da meta por medo \
+de servir demais.
+
+Se uma refeição está longe do alvo de calorias, NÃO infle a porção de um alimento só até ficar \
+estranha, acrescente ou troque alimentos até fechar a conta com porções coerentes.
+
+UM ITEM = UM ALIMENTO
+A tabela nutricional (TACO) só tem ingredientes básicos, não preparações prontas, então cada item \
+precisa ser UM alimento só. Nunca junte dois alimentos numa frase: "café com leite" são dois itens \
+("café" e "leite", o leite é metade das calorias da bebida), "salada de alface e tomate" são dois \
+itens ("alface" e "tomate"), "pão com manteiga" são dois itens. Prato composto (vitamina, sopa, \
+sanduíche, crepioca, omelete recheado) também é decomposto nos ingredientes. Detalhes abaixo:
 {{RULES}}
 
-RESTRIÇÕES DE SEGURANÇA, NUNCA, em hipótese nenhuma, inclua um alimento da lista de alergias, \
-mesmo que pareça combinar bem nutricionalmente, é restrição de segurança, não preferência. \
-Também não inclua o que a pessoa não gosta, e considere qualquer condição médica nas observações \
-(ex: diabetes -> evite doces/açúcar simples; hipertensão -> evite algo claramente rico em sódio).
+SEGURANÇA
+NUNCA, em hipótese nenhuma, inclua um alimento da lista de alergias, mesmo que combine \
+perfeitamente, é restrição de segurança, não preferência. Também não inclua o que a pessoa não \
+gosta, e considere qualquer condição médica nas observações (ex: diabetes -> evite doces/açúcar \
+simples; hipertensão -> evite algo claramente rico em sódio).
 
 Alergias (NUNCA incluir): {allergies}
 Não gosta: {dislikes}
 Gosta / costuma ter em casa: {likes_pantry}
 Observações/condições médicas: {notes}
 
-Essa é uma dieta BÁSICA/genérica, será revisada por um nutricionista antes de chegar à pessoa,
-não precisa ser sofisticada, só nutricionalmente coerente e realista pro dia a dia brasileiro.
+ANTES DE RESPONDER
+Releia sua dieta e se pergunte, refeição por refeição: "eu serviria isso, nessa quantidade, nesse \
+horário, pra um paciente?". Se alguma resposta for não, corrija antes de responder.
 
 Responda estritamente no formato do schema."""
 
 _GENERATE_DIET_PROMPT = _GENERATE_DIET_PROMPT.replace("{{RULES}}", _FOOD_DECOMPOSITION_RULES)
 
 
+def _format_meal_targets_table(meal_targets: list[dict]) -> str:
+    """A conta pronta por refeição (ver services/meal_planning.meal_plan_targets),
+    os quatro macros + peso de referência, pra IA não precisar calcular nada."""
+    header = (
+        "| Refeição | Horário | Calorias | Proteína | Carboidrato | Gordura | Peso aprox. |\n"
+        "|---|---|---|---|---|---|---|"
+    )
+    rows = [
+        f"| {m['name']} | {m['time']} | {m['calories']} kcal | {m['protein_g']}g | "
+        f"{m.get('carbs_g', 0)}g | {m.get('fat_g', 0)}g | ~{m.get('grams', 0)}g |"
+        for m in meal_targets
+    ]
+    return "\n".join([header, *rows])
+
+
 def generate_diet(
-    target_calories: float, protein_g: float, carbs_g: float, fat_g: float,
+    meal_targets: list[dict], carbs_g: float, fat_g: float,
     preferences: dict, country: str,
 ) -> dict:
+    """
+    `meal_targets`: a conta já feita por refeição (nome, horário, calorias,
+    proteína, carbo, gordura, peso aproximado), calculada em
+    services/meal_planning.meal_plan_targets. A IA não calcula porcentagem nem
+    soma o dia, só escolhe alimentos que batam cada linha da tabela, ver
+    POST /nootr/diets/generate.
+    """
     prompt = _GENERATE_DIET_PROMPT.format(
         country=country,
-        calories=round(target_calories),
-        protein_g=round(protein_g),
+        total_calories=round(sum(m["calories"] for m in meal_targets)),
+        total_protein_g=round(sum(m["protein_g"] for m in meal_targets)),
         carbs_g=round(carbs_g),
         fat_g=round(fat_g),
+        meal_targets_table=_format_meal_targets_table(meal_targets),
+        n_meals=len(meal_targets),
         allergies=", ".join(preferences.get("allergies") or []) or "nenhuma informada",
         dislikes=", ".join(preferences.get("dislikes") or []) or "nenhuma informada",
         likes_pantry=", ".join([*(preferences.get("likes") or []), *(preferences.get("pantry") or [])]) or "nenhuma informada",
@@ -473,6 +549,18 @@ claro que é uma troca pontual (ex: "não comi X e comi Y no lugar", "troquei X 
 comi Y"), nesses casos presuma direto que o resto continua igual.
 6. No máximo uma pergunta por vez; não repita uma pergunta já respondida no histórico.
 7. Assim que "skipped_names" e "new_items" estiverem decididos (mesmo que algum fique vazio), finalize.
+7.1. NUNCA finalize deixando de fora um alimento que a pessoa disse que comeu. Se ela citou algo \
+("só comi um pão de queijo"), esse alimento TEM que sair em new_items, com a porção mais comum se \
+ela não disse a quantidade. Perder o alimento é o pior erro possível aqui: a pessoa fica com a \
+refeição zerada, como se não tivesse comido nada.
+7.2. Só pergunte quando a resposta MUDA o resultado nutricional de forma relevante (alergia, ver \
+regra 3; forma de preparo restrita, ver regra 4; qual prato exatamente, quando você não conseguiria \
+nem estimar). NÃO pergunte pra refinar marca, origem ou se é caseiro/industrializado/de padaria, e \
+NUNCA pergunte a quantidade: se a pessoa disse quanto comeu, use ("um pão de queijo" -> quantity \
+"1 unidade"); se não disse, use a porção comum daquele alimento ("comi pão de queijo" -> "1 \
+unidade"). Estimar a porção comum é sempre melhor do que perguntar. Se ainda assim precisar \
+perguntar, a pergunta vem SOZINHA (skipped_names=[] e new_items=[]), nunca junto de uma \
+finalização parcial.
 8. CONFIRMAÇÃO DE PRATO NÃO CONHECIDO: se você precisar DECOMPOR um prato composto que a pessoa citou \
 comendo e esse prato NÃO está nas RECEITAS SALVAS acima nem é um dos pratos já cobertos pelas regras de \
 decomposição (canja, sopa, estrogonofe, feijoada, torta salgada, vitamina, hambúrguer/x-burguer/x-salada/ \
@@ -567,10 +655,20 @@ def converse_meal(
     ]
 
     question_kind = str(data.get("question_kind", "")).strip() or "text"
-    needs_question = bool(data.get("needs_question")) and not new_items and not skipped_names and not force_finalize
+    question = str(data.get("question", "")).strip()
+    # A pergunta só é engolida quando a resposta JÁ está completa (há itens
+    # novos) ou quando o limite de perguntas foi atingido (force_finalize, ver
+    # _MAX_QUESTIONS na rota). Ter `skipped_names` NÃO significa completo: a
+    # pessoa pode ter dito o que não comeu e a IA ainda precisar saber o que
+    # comeu no lugar, e engolir a pergunta aí fazia o alimento citado sumir,
+    # fechando a refeição como "não comeu nada". Uma pergunta preenchida
+    # também vale como pedido de pergunta, mesmo que o booleano venha false
+    # (a IA às vezes devolve os dois inconsistentes).
+    wants_question = bool(data.get("needs_question")) or bool(question)
+    needs_question = wants_question and not new_items and not force_finalize
     return {
         "needs_question": needs_question,
-        "question": str(data.get("question", "")).strip(),
+        "question": question,
         "question_kind": question_kind if needs_question else "",
         "skipped_names": skipped_names,
         "new_items": new_items,
@@ -579,14 +677,36 @@ def converse_meal(
     }
 
 
+_EXPLAIN_PROMPT = """Você é o nutricionista que acabou de reajustar a dieta do dia dessa pessoa \
+porque ela comeu (ou vai comer) algo diferente do planejado. Explique pra ela, em 1 a 3 frases \
+curtas, O QUE VOCÊ MUDOU e POR QUÊ.
+
+Fale na primeira pessoa e cite os alimentos e as refeições pelo nome, na ordem em que você mexeu \
+neles, sempre ligando cada mudança ao macro que ela resolve. Exemplo do tom esperado:
+"Aumentei o leite no lanche da tarde e acrescentei um ovo pra repor a proteína que faltou, e \
+reduzi o arroz do jantar pra não estourar o carboidrato do dia."
+
+Regras:
+- Descreva as mudanças da lista "alteracoes" abaixo, que é o que de fato foi feito. NUNCA invente \
+uma mudança que não está lá.
+- Se a lista de alterações estiver vazia, diga em uma frase que não foi preciso mexer em nada \
+porque o dia continuou dentro da meta.
+- Não repita a tabela de números (a pessoa já vê os macros na tela), o texto é sobre as DECISÕES.
+- Se algum macro ficou fora da meta mesmo depois do ajuste, termine dizendo isso em meia frase, \
+com honestidade.
+- Português, sem saudação, sem markdown, sem lista com marcadores.
+
+Dados: {context}"""
+
+
 def explain_change(context: dict) -> str:
-    prompt = (
-        "Você é um nutricionista explicando, em 1 a 2 frases curtas e diretas (português), "
-        "o ajuste feito na dieta do dia. Fale das mudanças de quantidade e de como os macros "
-        "ficaram em relação à meta. Sem saudação, sem markdown.\n\n"
-        f"Dados: {json.dumps(context, ensure_ascii=False)}"
-    )
-    return _generate(prompt, None).strip()
+    """
+    `context` traz "alteracoes" (ver diet_engine.diff_meals): sem essa lista a
+    explicação só conseguia falar de totais ("os carboidratos subiram") e saía
+    genérica demais pra ser útil, que é justamente o oposto do que o app
+    entrega.
+    """
+    return _generate(_EXPLAIN_PROMPT.format(context=json.dumps(context, ensure_ascii=False)), None).strip()
 
 
 _SUBSTITUTES_SCHEMA = {"type": "ARRAY", "items": {"type": "STRING"}}
@@ -777,3 +897,140 @@ def resolve_common_variant(query: str, candidates: list[str], country: str) -> s
         raise AIError(f"JSON inválido do Gemini: {exc}") from exc
     choice = str(data.get("choice", "")).strip()
     return choice if choice in candidates else None
+
+
+# ---------- Noo (o chat do Nootr) ----------
+
+_NOO_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "reply": {"type": "STRING"},
+        "changes": {
+            "type": "ARRAY",
+            "items": {
+                "type": "OBJECT",
+                "properties": {
+                    "meal": {"type": "STRING"},
+                    "skipped": {"type": "ARRAY", "items": {"type": "STRING"}},
+                    "added": {
+                        "type": "ARRAY",
+                        "items": {
+                            "type": "OBJECT",
+                            "properties": {"name": {"type": "STRING"}, "quantity": {"type": "STRING"}},
+                            "required": ["name", "quantity"],
+                        },
+                    },
+                },
+                "required": ["meal", "skipped", "added"],
+            },
+        },
+        "already_eaten": {"type": "ARRAY", "items": {"type": "STRING"}},
+    },
+    "required": ["reply", "changes", "already_eaten"],
+}
+
+_NOO_SYSTEM = """Você é o Noo, a IA do Nootr. Você conversa com a pessoa sobre a dieta dela e, quando \
+ela conta que comeu (ou vai comer) algo diferente do planejado, você AJUSTA o resto do dia pra que as \
+calorias e os macros continuem batendo a meta. Esse é o propósito do app.
+
+Fale como um nutricionista próximo: direto, sem formalidade, sem markdown, 1 a 3 frases. Português.
+
+DIETA DE HOJE
+{meals_table}
+
+METAS DO DIA: {targets}
+COMO O DIA ESTÁ AGORA: {current}
+
+SOBRE A PESSOA
+Alergias (NUNCA sugerir nem manter): {allergies}
+Não gosta: {dislikes}
+Gosta / costuma ter em casa: {pantry}
+Observações/condições médicas: {notes}
+
+O QUE VOCÊ DEVOLVE
+- `reply`: sua resposta pra pessoa. Quando você mexer no dia, diga O QUE mudou e POR QUÊ, citando \
+alimento e refeição ("aumentei o arroz do jantar pra repor o carboidrato do pão"). Nunca liste \
+números de macro, a pessoa já vê na tela.
+- `changes`: as mudanças a aplicar. Uma entrada por refeição afetada:
+  * "meal": SÓ o nome da refeição, como aparece na tabela acima e SEM o horário
+("Café da manhã", nunca "Café da manhã (07:00)").
+  * "skipped": nomes EXATOS de alimentos daquela refeição que ela não vai comer (lista vazia se \
+nenhum).
+  * "added": o que entra no lugar (ou a mais), com quantidade em medida caseira. Lista vazia se nada \
+entra.
+- `already_eaten`: nomes das refeições que ela já comeu e por isso NÃO podem ser reajustadas. Só \
+preencha quando ela disser ou der pra deduzir com segurança.
+
+REGRAS
+1. Você só registra o que ela comeu/vai comer. Você NÃO escolhe as quantidades do reajuste: o motor \
+do Nootr recalcula as porções das outras refeições sozinho. Não invente "aumentei pra 180g".
+2. Uma frase pode conter VÁRIAS mudanças em refeições diferentes ("não comi o pão, vou trocar o \
+lanche e estou sem azeite"). Devolva todas de uma vez em `changes`.
+3. "Estou sem X" = o alimento sai da refeição (skipped), com substituto só se ela pedir ou se você \
+sugerir algo que ela tenha em casa.
+4. Se ela pedir pra mudar algo que você acabou de fazer ("prefiro uma opção doce"), devolva uma \
+NOVA `changes` que corrige aquilo, considerando o estado atual do dia mostrado acima.
+5. Conversa que não mexe no dia (dúvida, "obrigado", pergunta sobre um alimento) devolve \
+`changes` vazio. Responda normalmente, você é a IA do app e pode falar de nutrição.
+6. NUNCA inclua um alimento da lista de alergias, é segurança. Considere as condições médicas.
+7. Alimento sempre atômico da tabela TACO, nunca prato pronto.
+{decomposition_rules}
+"""
+
+
+def noo_chat(
+    history: list[dict], meals: list[dict], targets: dict, current: dict,
+    preferences: dict,
+) -> dict:
+    """
+    Um turno de conversa com o Noo.
+
+    `meals`: refeições do dia com alimentos e quantidades (o Noo precisa saber
+    os nomes EXATOS pra poder referenciá-los em `skipped`). `current`: como o
+    dia está agora, pra ele conseguir corrigir um ajuste anterior sem
+    recomeçar. Devolve {"reply", "changes", "already_eaten"}; quem chama casa
+    os alimentos com a TACO e aplica via diet_engine.apply_changes.
+    """
+    meals_table = "\n".join(
+        f"- {m['name']} ({m['time']}): " + (", ".join(f"{f['name']} ({f['quantity']})" for f in m["foods"]) or "vazia")
+        for m in meals
+    ) or "sem refeições cadastradas"
+
+    system = _NOO_SYSTEM.format(
+        meals_table=meals_table,
+        targets=json.dumps(targets, ensure_ascii=False),
+        current=json.dumps(current, ensure_ascii=False),
+        allergies=", ".join(preferences.get("allergies") or []) or "nenhuma",
+        dislikes=", ".join(preferences.get("dislikes") or []) or "nenhuma",
+        pantry=", ".join([*(preferences.get("likes") or []), *(preferences.get("pantry") or [])]) or "nada informado",
+        notes=preferences.get("notes") or "nenhuma",
+        decomposition_rules=_FOOD_DECOMPOSITION_RULES,
+    )
+    contents = [
+        {"role": "model" if t["role"] == "assistant" else "user", "parts": [{"text": t["text"]}]}
+        for t in history
+    ]
+    raw = _generate_from_contents(contents, _NOO_SCHEMA, system_instruction=system)
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise AIError(f"JSON inválido do Gemini: {exc}") from exc
+
+    changes = []
+    for c in data.get("changes") or []:
+        meal = str(c.get("meal", "")).strip()
+        if not meal:
+            continue
+        changes.append({
+            "meal": meal,
+            "skipped": [str(s).strip() for s in (c.get("skipped") or []) if str(s).strip()],
+            "added": [
+                {"name": str(a.get("name", "")).strip(), "quantity": str(a.get("quantity", "")).strip() or "1 porção"}
+                for a in (c.get("added") or []) if str(a.get("name", "")).strip()
+            ],
+        })
+    return {
+        "reply": str(data.get("reply", "")).strip(),
+        "changes": changes,
+        "already_eaten": [str(m).strip() for m in (data.get("already_eaten") or []) if str(m).strip()],
+    }

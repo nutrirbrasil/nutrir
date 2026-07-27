@@ -80,16 +80,13 @@ def _scale_foods(foods_in: list[FoodIn]) -> list[dict]:
 
 
 def _targets_from_profile(user: CurrentUser, day_plan: dict) -> dict:
-    """Metas do dia: calorias e macros do perfil (% -> gramas); fallback na dieta."""
+    """Metas do dia: calorias e macros do perfil (por g/kg de peso, ver
+    energy.macro_targets_for_profile, as mesmas usadas pra gerar a dieta);
+    fallback nos totais da própria dieta."""
     profile = repository.get_profile(user) or {}
     calories = profile.get("target_calories") or day_plan["daily_calories"]
     if profile.get("target_calories"):
-        macros = energy.macro_targets_g(
-            float(calories),
-            float(profile.get("protein_pct") or 30),
-            float(profile.get("carbs_pct") or 40),
-            float(profile.get("fat_pct") or 30),
-        )
+        macros = energy.macro_targets_for_profile(profile, float(calories))
     else:
         macros = {
             "protein_g": day_plan["daily_protein_g"],
@@ -340,16 +337,29 @@ def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentU
         description = eaten_description
 
     # Explicação humana da IA (não bloqueia se a IA estiver fora do ar).
+    # Recalcula o diff contra o plano ORIGINAL do dia depois de tudo aplicado
+    # (o top-up acima mexe nas refeições depois que o motor já montou o
+    # resultado, ver _try_day_topup), pra explicação e tela mostrarem o
+    # conjunto real de alterações.
+    result["changes"] = diet_engine.diff_meals(day_plan["meals"], result["adjusted_meals"])
+
     result["ai_explanation"] = ai.explain_change({
         "acao": ACTION_LABELS.get(body.action, body.action),
         "comeu": description,
+        # O que o motor de fato mexeu (ver diet_engine.diff_meals), é sobre
+        # isso que a explicação fala; sem isso ela só descreveria os totais.
+        "alteracoes": result.get("changes") or [],
         "antes": result["macros_before"],
         "depois": result["macros_after"],
         "metas": result["targets"],
     })
 
     # Persiste o plano ajustado do dia e registra a substituição.
-    repository.update_day_plan_meals(user, day_plan["id"], result["adjusted_meals"])
+    # Guarda como o dia estava antes deste ajuste, pro botão "desfazer"
+    # (ver POST /nootr/substitutions/undo).
+    repository.update_day_plan_meals(
+        user, day_plan["id"], result["adjusted_meals"], previous_meals=day_plan["meals"],
+    )
     repository.insert_substitution_log(
         user,
         day_plan["id"],
@@ -372,3 +382,24 @@ def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentU
         "input": description,
         **result,
     }
+
+
+@router.post("/undo")
+def undo_last_substitution(user: CurrentUser = CurrentUserDep):
+    """
+    Desfaz o último ajuste do dia, voltando o plano pro estado anterior
+    (`day_plans.previous_meals`, gravado a cada substituição).
+
+    É um passo só, pra corrigir um registro que saiu errado (descreveu de um
+    jeito, a IA entendeu de outro) sem ter que reconstruir o dia na mão.
+    Depois de desfazer, não há mais o que desfazer até o próximo ajuste.
+    """
+    day_plan = repository.get_day_plan(user)
+    if day_plan is None:
+        raise HTTPException(status_code=404, detail="Nenhum plano de hoje pra desfazer.")
+    previous = day_plan.get("previous_meals")
+    if not previous:
+        raise HTTPException(status_code=404, detail="Nenhum ajuste recente pra desfazer.")
+
+    restored = repository.undo_day_plan(user, day_plan["id"], previous)
+    return {"ok": True, "meals": restored.get("meals", previous)}

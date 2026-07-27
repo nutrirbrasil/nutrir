@@ -14,7 +14,16 @@ from backend.app.services import repository
 
 router = APIRouter(prefix="/nootr/preferences", tags=["Nootr - Preferências"])
 
-_DEFAULT = {"allergies": [], "dislikes": [], "likes": [], "pantry": [], "notes": ""}
+_DEFAULT = {
+    "allergies": [], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+    # Quantas refeições a pessoa costuma fazer e em que horários, usado pra
+    # montar o template de refeições na geração de dieta por IA (ver
+    # services/meal_planning.py e POST /nootr/diets/generate). Sempre usa no
+    # mínimo 4 refeições na geração, mesmo se a pessoa disser menos aqui.
+    "meal_count": 4,
+    "meal_times": [],
+    "meal_reminders": False,
+}
 _MAX_ITEMS = 60
 
 
@@ -24,6 +33,9 @@ class PreferencesUpdate(BaseModel):
     likes: list[str] | None = Field(default=None, max_length=_MAX_ITEMS)
     pantry: list[str] | None = Field(default=None, max_length=_MAX_ITEMS)
     notes: str | None = Field(default=None, max_length=2000)
+    meal_count: int | None = Field(default=None, ge=1, le=8)
+    meal_times: list[str] | None = Field(default=None, max_length=8)
+    meal_reminders: bool | None = None
 
 
 @router.get("")

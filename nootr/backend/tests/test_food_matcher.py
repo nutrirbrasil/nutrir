@@ -16,6 +16,37 @@ def test_matches_allergen_false_when_unrelated():
     assert not fm.matches_allergen("Arroz, tipo 1, cozido", ["amendoim", "camarão"])
 
 
+def test_matches_allergen_respects_free_of_claim_in_name():
+    # Regressão: o filtro bloqueava justamente os produtos feitos PRA quem tem
+    # a restrição, porque o nome cita o alérgeno ("Pão de forma SEM glúten"
+    # contém a substring "glúten"). Na prática isso esvaziava a refeição, que
+    # ficava só com o item alergênico que sobrou (ver /aprovar).
+    assert not fm.matches_allergen("Pão de forma sem glúten", ["glúten"])
+    assert not fm.matches_allergen("Leite zero lactose", ["lactose"])
+    assert not fm.matches_allergen("Macarrão sem glúten", ["glúten"])
+    assert not fm.matches_allergen("Iogurte 0% lactose", ["lactose"])
+
+
+def test_matches_allergen_knows_foods_that_contain_the_allergen():
+    # A alergia raramente aparece no nome do alimento: "lactose" não está em
+    # "Queijo mozarela" nem "glúten" em "Macarrão". Sem o mapa de alérgenos a
+    # checagem determinística não bloqueava nada de útil.
+    assert fm.matches_allergen("Queijo, mozarela", ["lactose"])
+    assert fm.matches_allergen("Leite integral", ["lactose"])
+    assert fm.matches_allergen("Doce de leite", ["lactose"])
+    assert fm.matches_allergen("Macarrão cozido", ["glúten"])
+    assert fm.matches_allergen("Pão francês", ["glúten"])
+    assert fm.matches_allergen("Camarão cozido", ["frutos do mar"])
+
+
+def test_matches_allergen_ignores_lookalikes():
+    # Bebida vegetal é "leite" só no nome, não tem lactose (ver taco_extra.csv).
+    assert not fm.matches_allergen("Leite de coco", ["lactose"])
+    assert not fm.matches_allergen("Leite de amêndoas", ["lactose"])
+    assert not fm.matches_allergen("Arroz branco", ["glúten"])
+    assert not fm.matches_allergen("Peito de Frango", ["glúten", "lactose"])
+
+
 def test_matches_allergen_false_without_allergies():
     assert not fm.matches_allergen("Amendoim, torrado, salgado", [])
 
@@ -76,6 +107,15 @@ def test_generic_bife_prefers_user_favorite():
     patinho = next(f for f in foods if "patinho" in f.name.lower() and "grelhad" in f.name.lower())
     m = fm.find_food("bife", preferred={patinho.id})
     assert m.taco_id == patinho.id
+
+
+def test_massa_encontra_macarrao():
+    # "Massa" é como a maioria fala "macarrão" no dia a dia, mas nenhum item
+    # "Macarrão, ..." da TACO tem a palavra "massa" no nome, sem o sinônimo,
+    # buscar "massa" só acharia "Lasanha, massa..."/"Pastel, massa...".
+    results = fm.search_taco("massa")
+    names = [r.name.lower() for r in results]
+    assert any("macarrao" in n or "macarrão" in n for n in names)
 
 
 def test_cha_sem_sabor_e_item_generico_zero_kcal():

@@ -40,7 +40,10 @@ def fake_day_plan():
 @pytest.fixture
 def client(monkeypatch, fake_day_plan):
     monkeypatch.setattr(repository, "get_or_create_day_plan", lambda user, plan_date=None: fake_day_plan)
-    monkeypatch.setattr(repository, "update_day_plan_meals", lambda user, dp_id, meals: {"id": dp_id, "meals": meals})
+    monkeypatch.setattr(
+        repository, "update_day_plan_meals",
+        lambda user, dp_id, meals, previous_meals=None: {"id": dp_id, "meals": meals},
+    )
     monkeypatch.setattr(repository, "insert_substitution_log", lambda *a, **k: {"id": "log-1"})
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "basic"})
     monkeypatch.setattr(repository, "list_diets", lambda user: [])
@@ -971,6 +974,7 @@ def test_admin_can_list_and_approve_pending_recipes(client, monkeypatch):
         repository, "admin_list_pending_recipes",
         lambda admin: [{"id": "r1", "user_id": "other-user", "name": "Crepioca", "status": "pending"}],
     )
+    monkeypatch.setattr(repository, "admin_emails_for", lambda admin, ids: {"other-user": "other@example.com"})
     resp = client.get("/nootr/admin/recipes/pending")
     assert resp.status_code == 200
     assert resp.json()["results"][0]["user_id"] == "other-user"
@@ -1033,7 +1037,7 @@ def test_generate_diet_saves_as_pending_review(client, monkeypatch):
     })
     monkeypatch.setattr(
         ai, "generate_diet",
-        lambda calories, protein_g, carbs_g, fat_g, preferences, country: {
+        lambda meal_targets, carbs_g, fat_g, preferences, country: {
             "meals": [{"meal": "Almoço", "time": "12:00", "foods": [{"name": "arroz", "quantity": "150g"}]}],
         },
     )
@@ -1064,7 +1068,7 @@ def test_generate_diet_filters_allergy(client, monkeypatch):
     })
     monkeypatch.setattr(
         ai, "generate_diet",
-        lambda calories, protein_g, carbs_g, fat_g, preferences, country: {
+        lambda meal_targets, carbs_g, fat_g, preferences, country: {
             "meals": [{
                 "meal": "Lanche", "time": "16:00",
                 "foods": [{"name": "amendoim torrado", "quantity": "30g"}, {"name": "banana", "quantity": "1 unidade"}],
@@ -1097,9 +1101,20 @@ def test_admin_can_list_edit_approve_reject_pending_diets(client, monkeypatch):
         repository, "admin_list_pending_diets",
         lambda admin: [{"id": "d1", "user_id": "other-user", "status": "pending_review", "meals": []}],
     )
+    monkeypatch.setattr(repository, "admin_emails_for", lambda admin, ids: {"other-user": "other@example.com"})
+    # A fila de dietas anexa o contexto do paciente (ver admin._with_user_context).
+    monkeypatch.setattr(
+        repository, "admin_get_profile",
+        lambda admin, user_id: {"weight_kg": 80, "height_cm": 180, "age": 30, "sex": "m",
+                                "target_calories": 2400, "country": "BR"},
+    )
     resp = client.get("/nootr/admin/diets/pending")
     assert resp.status_code == 200
-    assert resp.json()["results"][0]["user_id"] == "other-user"
+    row = resp.json()["results"][0]
+    assert row["user_id"] == "other-user"
+    # Metas de macro por g/kg, prontas pro nutricionista conferir na tela.
+    assert row["user_context"]["target_calories"] == 2400
+    assert row["user_context"]["macro_targets"]["protein_g"] == 144  # 80kg * 1,8 g/kg
 
     edited = {}
 
@@ -1127,3 +1142,188 @@ def test_admin_can_list_edit_approve_reject_pending_diets(client, monkeypatch):
     resp = client.post("/nootr/admin/diets/d1/reject")
     assert resp.status_code == 200
     assert rejected["id"] == "d1"
+
+
+def test_admin_regenerate_pending_diet(client, monkeypatch):
+    from backend.app.auth import CurrentUser, get_current_user
+    from backend.app.main import app
+    from backend.app.services import ai
+
+    app.dependency_overrides[get_current_user] = lambda: CurrentUser(
+        id="admin-1", email="contatonutrirbrasil@gmail.com", token="admintok",
+    )
+    monkeypatch.setattr(
+        repository, "admin_get_diet",
+        lambda admin, diet_id: {"id": diet_id, "user_id": "other-user", "status": "pending_review"},
+    )
+    monkeypatch.setattr(
+        repository, "admin_get_profile",
+        lambda admin, user_id: _pro_profile_with_calories(),
+    )
+    monkeypatch.setattr(
+        repository, "admin_get_preferences",
+        lambda admin, user_id: {"allergies": [], "dislikes": [], "likes": [], "pantry": [], "notes": ""},
+    )
+    monkeypatch.setattr(
+        ai, "generate_diet",
+        lambda meal_targets, carbs_g, fat_g, preferences, country: {
+            "meals": [{"meal": "Almoço", "time": "12:00", "foods": [{"name": "arroz", "quantity": "150g"}]}],
+        },
+    )
+    updated = {}
+
+    def fake_update(admin, diet_id, meals, totals):
+        updated["diet_id"] = diet_id
+        updated["meals"] = meals
+        return {"id": diet_id, "meals": meals}
+
+    monkeypatch.setattr(repository, "admin_update_diet_meals", fake_update)
+    resp = client.post("/nootr/admin/diets/d1/regenerate")
+    assert resp.status_code == 200
+    assert updated["diet_id"] == "d1"
+    assert updated["meals"][0]["name"] == "Almoço"
+
+
+def test_admin_regenerate_requires_pending_diet(client, monkeypatch):
+    from backend.app.auth import CurrentUser, get_current_user
+    from backend.app.main import app
+
+    app.dependency_overrides[get_current_user] = lambda: CurrentUser(
+        id="admin-1", email="contatonutrirbrasil@gmail.com", token="admintok",
+    )
+    monkeypatch.setattr(repository, "admin_get_diet", lambda admin, diet_id: None)
+    resp = client.post("/nootr/admin/diets/d1/regenerate")
+    assert resp.status_code == 404
+
+
+def test_admin_regenerate_requires_admin_email(client):
+    resp = client.post("/nootr/admin/diets/d1/regenerate")
+    assert resp.status_code == 403
+
+
+def test_restore_diet_brings_back_nootr_version(client, monkeypatch):
+    # O usuário editou a dieta gerada pelo Nootr e se arrependeu: restaurar
+    # devolve exatamente o snapshot gravado na aprovação (source_meals), sem
+    # consumi-lo (dá pra editar e restaurar de novo).
+    original = [{"id": "meal-1", "name": "Café da manhã", "time": "07:00",
+                 "foods": [_scaled(488, 100), _scaled(52, 50)]}]
+    monkeypatch.setattr(repository, "get_diet", lambda user, diet_id: {
+        "id": diet_id, "weekday": None, "meals": [], "source_meals": original,
+    })
+    saved = {}
+
+    def fake_restore(user, diet_id, meals, totals):
+        saved["meals"] = meals
+        saved["totals"] = totals
+        return {"id": diet_id, "meals": meals}
+
+    monkeypatch.setattr(repository, "restore_diet", fake_restore)
+    monkeypatch.setattr(repository, "delete_day_plan", lambda user, date: None)
+    resp = client.post("/nootr/diets/d1/restore")
+    assert resp.status_code == 200
+    assert saved["meals"] == original
+    # Os totais são recalculados a partir do snapshot, não copiados.
+    assert saved["totals"]["calories"] > 0
+
+
+def test_restore_diet_404_when_not_from_nootr(client, monkeypatch):
+    # Dieta montada à mão não tem versão do Nootr pra voltar.
+    monkeypatch.setattr(repository, "get_diet", lambda user, diet_id: {
+        "id": diet_id, "weekday": None, "meals": [], "source_meals": None,
+    })
+    resp = client.post("/nootr/diets/d1/restore")
+    assert resp.status_code == 404
+
+
+def test_restore_diet_404_when_diet_missing(client, monkeypatch):
+    monkeypatch.setattr(repository, "get_diet", lambda user, diet_id: None)
+    resp = client.post("/nootr/diets/d1/restore")
+    assert resp.status_code == 404
+
+
+def test_substitution_never_touches_the_diet_template(client, fake_day_plan, monkeypatch):
+    # Substituição é do DIA: ela grava no day_plan (cópia materializada de
+    # hoje) e nunca na dieta da aba Dieta, que é o template permanente. Se
+    # algum dia alguém ligar uma escrita de `diets` aqui, este teste quebra.
+    touched: list[str] = []
+    for fn in ("save_diet", "restore_diet", "delete_diet", "delete_all_diets"):
+        monkeypatch.setattr(
+            repository, fn,
+            lambda *a, _fn=fn, **k: touched.append(_fn) or {},
+        )
+    day_plan_writes: list[str] = []
+    monkeypatch.setattr(
+        repository, "update_day_plan_meals",
+        lambda user, dp_id, meals, previous_meals=None: day_plan_writes.append(dp_id) or {"id": dp_id, "meals": meals},
+    )
+
+    skipped = fake_day_plan["meals"][1]["foods"][0]["name"]
+    resp = client.post(
+        "/nootr/substitutions",
+        json={"action": "ate_different", "meal_id": "meal-2",
+              "skipped_food_names": [skipped],
+              "foods": [{"taco_id": 315, "grams": 200}]},
+    )
+    assert resp.status_code == 200
+    assert day_plan_writes == ["dp-1"]  # o ajuste foi gravado no plano do dia
+    assert touched == []                # e nada foi escrito na dieta template
+
+
+def test_admin_approve_missing_diet_returns_404(client, monkeypatch):
+    # Aprovar uma dieta que não existe precisa falhar de verdade: antes o
+    # repository devolvia {} e a rota respondia 200, então o frontend tirava
+    # o item da fila achando que tinha dado certo.
+    from backend.app.auth import CurrentUser, get_current_user
+    from backend.app.main import app
+
+    app.dependency_overrides[get_current_user] = lambda: CurrentUser(
+        id="admin-1", email="contatonutrirbrasil@gmail.com", token="admintok",
+    )
+    monkeypatch.setattr(repository, "admin_get_diet", lambda admin, diet_id: None)
+    resp = client.post("/nootr/admin/diets/inexistente/approve")
+    assert resp.status_code == 404
+
+
+def test_undo_restores_previous_day_plan(client, monkeypatch, fake_day_plan):
+    # O ajuste já foi gravado no plano do dia; desfazer volta pro estado
+    # anterior guardado em previous_meals.
+    anterior = [{"id": "meal-1", "name": "Café da manhã", "time": "07:30", "foods": [_scaled(488, 100)]}]
+    monkeypatch.setattr(
+        repository, "get_day_plan",
+        lambda user, plan_date=None: {**fake_day_plan, "previous_meals": anterior},
+    )
+    undone = {}
+    monkeypatch.setattr(
+        repository, "undo_day_plan",
+        lambda user, dp_id, previous: undone.update(id=dp_id, meals=previous) or {"meals": previous},
+    )
+    resp = client.post("/nootr/substitutions/undo")
+    assert resp.status_code == 200
+    assert undone["meals"] == anterior
+
+
+def test_undo_404_when_nothing_to_undo(client, monkeypatch, fake_day_plan):
+    # Sem ajuste hoje, previous_meals é null e não há o que desfazer.
+    monkeypatch.setattr(
+        repository, "get_day_plan",
+        lambda user, plan_date=None: {**fake_day_plan, "previous_meals": None},
+    )
+    resp = client.post("/nootr/substitutions/undo")
+    assert resp.status_code == 404
+
+
+def test_substitution_saves_snapshot_for_undo(client, fake_day_plan, monkeypatch):
+    # Toda substituição precisa gravar o estado anterior, senão o desfazer
+    # não teria pra onde voltar.
+    saved = {}
+    monkeypatch.setattr(
+        repository, "update_day_plan_meals",
+        lambda user, dp_id, meals, previous_meals=None: saved.update(previous=previous_meals) or {"meals": meals},
+    )
+    skipped = fake_day_plan["meals"][1]["foods"][0]["name"]
+    resp = client.post(
+        "/nootr/substitutions",
+        json={"action": "ate_different", "meal_id": "meal-2", "skipped_food_names": [skipped], "foods": []},
+    )
+    assert resp.status_code == 200
+    assert saved["previous"] == fake_day_plan["meals"]

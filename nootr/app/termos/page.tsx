@@ -18,14 +18,14 @@ export default function TermosPage() {
         <h2>1. O que é o Nootr</h2>
         <p>
           O Nootr é um aplicativo de organização alimentar: você monta sua dieta, registra o que
-          comeu fora do plano e recebe sugestões de ajuste para o restante do dia, com base na
-          Tabela Brasileira de Composição de Alimentos (TACO, NEPA/UNICAMP).
+          comeu fora do plano e recebe sugestões de ajuste para o restante do dia, com base em uma
+          ampla base de dados nutricionais.
         </p>
 
         <h2>2. O Nootr não substitui um profissional de saúde</h2>
         <p>
           As informações e cálculos exibidos pelo Nootr (incluindo estimativas de calorias por
-          Harris-Benedict e Mifflin-St Jeor e valores nutricionais da TACO) têm caráter
+          Harris-Benedict e Mifflin-St Jeor e valores nutricionais da nossa base de dados) têm caráter
           exclusivamente informativo e educacional. Eles <strong>não constituem orientação
           nutricional, prescrição dietética nem aconselhamento médico</strong>. Consulte sempre
           um(a) nutricionista ou médico(a) antes de iniciar, alterar ou interromper qualquer plano
@@ -51,16 +51,16 @@ export default function TermosPage() {
 
         <h2>5. Precisão dos dados nutricionais</h2>
         <p>
-          Os valores nutricionais vêm da tabela TACO e de estimativas de porções caseiras
-          (aproximações). Valores reais variam conforme marca, preparo e porção. O Nootr não
-          garante exatidão absoluta dos números exibidos.
+          Os valores nutricionais vêm de uma base de dados nutricionais e de estimativas de porções
+          caseiras (aproximações). Valores reais variam conforme marca, preparo e porção. O Nootr
+          não garante exatidão absoluta dos números exibidos.
         </p>
 
         <h2>6. Propriedade intelectual</h2>
         <p>
           O software, a marca e o design do Nootr são de propriedade dos seus desenvolvedores. Os
-          dados da tabela TACO pertencem ao NEPA/UNICAMP e são utilizados conforme sua
-          disponibilização pública.
+          dados nutricionais utilizados vêm de fontes públicas, utilizadas conforme sua
+          disponibilização.
         </p>
 
         <h2>7. Limitação de responsabilidade</h2>

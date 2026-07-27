@@ -24,3 +24,34 @@ id,category,display,kcal,protein_g,carbs_g,fat_g,fiber_g,sodium_mg
 9023,Carnes e derivados,Atum grelhado,132,28,0,1.3,0,50
 9024,Carnes e derivados,Carne magra,219,32,0,9,0,52
 9025,Bebidas (alcoólicas e não alcoólicas),Chá,0,0,0,0,0,0
+9026,Leite e derivados,Leite zero lactose,61,2.9,4.7,3.2,0,64
+9027,Leite e derivados,Leite de amêndoas,15,0.5,0.6,1.1,0.3,60
+9028,Leite e derivados,Leite de aveia,45,0.8,7,1.5,0.8,40
+9029,Leite e derivados,Leite de castanha de caju,25,0.6,1.5,1.9,0.3,55
+9030,Leite e derivados,Leite de arroz,47,0.3,9.2,1,0.2,40
+9031,Leite e derivados,Bebida de soja sem açúcar,33,2.9,0.5,1.8,0.5,45
+9032,Leite e derivados,Queijo mussarela sem lactose,300,22,3,22,0,580
+9033,Leite e derivados,Queijo minas frescal sem lactose,264,17.4,3.2,20,0,30
+9034,Leite e derivados,Requeijão sem lactose,257,9,4,23,0,600
+9035,Leite e derivados,Iogurte natural zero lactose,57,4.2,5,2.2,0,50
+9036,Leite e derivados,Iogurte grego zero lactose,97,8.5,4.5,5,0,45
+9037,Leite e derivados,Manteiga sem lactose,717,0.9,0.1,81,0,11
+9038,Leite e derivados,Creme de leite sem lactose,205,2.3,3.6,20,0,40
+9039,Leite e derivados,Leite em pó zero lactose,496,25,38,26,0,370
+9040,Leite e derivados,Queijo cottage,98,11,3.4,4.3,0,360
+9041,Cereais e derivados,Pão francês sem glúten,270,4,54,4,2.5,480
+9042,Cereais e derivados,Macarrão sem glúten cozido,145,3,31,0.5,1.5,3
+9043,Cereais e derivados,Aveia em flocos sem glúten,394,13.9,66.6,8.5,9.1,5
+9044,Cereais e derivados,Farinha de arroz,366,7,80,1.4,2.4,2
+9045,Cereais e derivados,Farinha de amêndoas,579,21,20,50,12,1
+9046,Cereais e derivados,Biscoito de polvilho,435,2.5,70,16,1,600
+9047,Cereais e derivados,Bolo sem glúten,320,5,48,12,2,300
+9048,Açúcares e produtos de confeitaria,Chocolate 70% cacau sem açúcar,520,9,32,42,12,20
+9049,Açúcares e produtos de confeitaria,Geleia de frutas sem açúcar,110,0.4,26,0.1,1.2,15
+9050,Açúcares e produtos de confeitaria,Doce de leite sem açúcar,180,7,20,8,0,180
+9051,Açúcares e produtos de confeitaria,Adoçante em pó,0,0,0,0,0,0
+9052,Bebidas (alcoólicas e não alcoólicas),Refrigerante zero açúcar,0,0,0,0,0,10
+9053,Bebidas (alcoólicas e não alcoólicas),Suco de laranja sem açúcar,45,0.7,10.4,0.2,0.2,1
+9054,Cereais e derivados,Pasta de amendoim sem açúcar,588,25,20,50,8,10
+9055,Leite e derivados,Queijo vegano de castanha de caju,290,6,10,25,2,600
+9056,Leite e derivados,Levedura nutricional em flocos,340,45,20,5,25,50

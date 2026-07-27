@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EmptyState } from "@/components/EmptyState";
+import { SkeletonCard } from "@/components/Skeleton";
 import { RequireAuth } from "@/components/RequireAuth";
+import { PageHeader } from "@/components/PageHeader";
 import { FoodAdder, AddedFoodList, addedFoodToInput, type AddedFood } from "@/components/FoodAdder";
 import { nootrApi } from "@/lib/api";
 import type { Recipe } from "@/lib/types";
@@ -87,23 +90,19 @@ function ReceitasContent({ token }: { token: string }) {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="divider-bordo mb-4" />
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-4xl text-nootr-cream">Minhas receitas</h1>
-          <p className="mt-2 text-sm text-nootr-muted">
-            Pratos que você monta com frequência (ex: crepioca, vitamina caseira). Confirmados no
-            &ldquo;Descrever com IA&rdquo; ou criados aqui, a próxima vez que citar o prato, o Nootr já
-            sabe os ingredientes.
-          </p>
-        </div>
-        <button type="button" onClick={() => setCreating((v) => !v)} className={`chip shrink-0 ${creating ? "chip-active" : ""}`}>
-          {creating ? "cancelar" : "+ nova receita"}
-        </button>
-      </div>
+      <PageHeader
+        icon="chef"
+        title="Minhas receitas"
+        subtitle={<>Pratos que você monta com frequência (ex: crepioca, vitamina caseira). Confirmados no &ldquo;Descrever com IA&rdquo; ou criados aqui, a próxima vez que citar o prato, o Nootr já sabe os ingredientes.</>}
+        right={
+          <button type="button" onClick={() => setCreating((v) => !v)} className={`chip shrink-0 ${creating ? "chip-active" : ""}`}>
+            {creating ? "cancelar" : "+ nova receita"}
+          </button>
+        }
+      />
 
       {loading ? (
-        <p className="mt-6 text-sm text-nootr-muted">Carregando…</p>
+        <div className="mt-6"><SkeletonCard lines={2} /></div>
       ) : (
         <div className="mt-6 space-y-6">
           {creating && (
@@ -137,7 +136,12 @@ function ReceitasContent({ token }: { token: string }) {
           {error && <p className="text-sm text-nootr-bordoSoft">{error}</p>}
 
           {recipes.length === 0 && !creating ? (
-            <p className="text-sm text-nootr-faint">Nenhuma receita salva ainda.</p>
+            <EmptyState
+              icon="chef"
+              title="Nenhuma receita salva ainda"
+              description="Quando você descrever um prato composto no Substituir (ex: crepioca, vitamina), o Nootr separa os ingredientes e oferece salvar como receita. Da próxima vez ele já reconhece na hora."
+              action={{ label: "Ir para Substituir", href: "/substituir" }}
+            />
           ) : (
             <ul className="space-y-1.5">
               {recipes.map((r) => (

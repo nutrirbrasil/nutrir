@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { SkeletonPage } from "@/components/Skeleton";
 import { RequireAuth } from "@/components/RequireAuth";
 import { TagListInput } from "@/components/TagListInput";
+import { TacoTagListInput } from "@/components/TacoTagListInput";
+import { PageHeader } from "@/components/PageHeader";
+import { SectionHeader } from "@/components/SectionHeader";
+import { MealRemindersToggle } from "@/components/MealReminders";
+import { Icon } from "@/components/Icon";
+import {
+  CalorieCalculator, CALORIE_CALCULATOR_DEFAULT, calorieCalculatorPayload, type CalorieCalculatorState,
+} from "@/components/CalorieCalculator";
 import { nootrApi } from "@/lib/api";
 import { COUNTRY_OPTIONS } from "@/lib/countries";
-import type { ActivityLevel, Formula, Profile, TacoFoodResult } from "@/lib/types";
+import type { Profile } from "@/lib/types";
 
 function mergeUnique(a: string[], b: string[]): string[] {
   const merged = [...a];
@@ -16,19 +25,6 @@ function mergeUnique(a: string[], b: string[]): string[] {
   return merged;
 }
 
-const ACTIVITY_OPTIONS: { id: ActivityLevel; label: string; hint: string }[] = [
-  { id: "sedentario", label: "Sedentário", hint: "pouco ou nenhum exercício" },
-  { id: "leve", label: "Leve", hint: "1–3x por semana" },
-  { id: "moderado", label: "Moderado", hint: "3–5x por semana" },
-  { id: "intenso", label: "Intenso", hint: "6–7x por semana" },
-  { id: "atleta", label: "Atleta", hint: "2x por dia" },
-];
-
-const OBJECTIVE_OPTIONS = [
-  { id: "weight_loss", label: "Perda de Peso", formula: "mifflin_st_jeor" as Formula },
-  { id: "muscle_gain", label: "Ganho de Massa", formula: "harris_benedict" as Formula },
-];
-
 function PerfilContent({ token }: { token: string }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,17 +32,15 @@ function PerfilContent({ token }: { token: string }) {
   const [error, setError] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
 
-  const [sex, setSex] = useState<"m" | "f" | "">("");
-  const [age, setAge] = useState("");
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [activity, setActivity] = useState<ActivityLevel | "">("");
-  const [formula, setFormula] = useState<Formula>("manual");
-  const [objective, setObjective] = useState<"weight_loss" | "muscle_gain">("weight_loss");
-  const [manualCalories, setManualCalories] = useState("");
+  const [calState, setCalState] = useState<CalorieCalculatorState>(CALORIE_CALCULATOR_DEFAULT);
+  const [macroMode, setMacroMode] = useState<"percent" | "per_kg">("percent");
   const [proteinPct, setProteinPct] = useState(30);
   const [carbsPct, setCarbsPct] = useState(40);
   const [fatPct, setFatPct] = useState(30);
+
+  function patchCal(patch: Partial<CalorieCalculatorState>) {
+    setCalState((s) => ({ ...s, ...patch }));
+  }
 
   useEffect(() => {
     let active = true;
@@ -55,19 +49,17 @@ function PerfilContent({ token }: { token: string }) {
       .then((p) => {
         if (!active) return;
         setProfile(p);
-        setSex(p.sex ?? "");
-        setAge(p.age ? String(p.age) : "");
-        setWeight(p.weight_kg ? String(p.weight_kg) : "");
-        setHeight(p.height_cm ? String(p.height_cm) : "");
-        setActivity(p.activity_level ?? "");
-        setFormula(p.formula);
-        if (p.formula === "manual") {
-          setManualCalories(p.target_calories ? String(Math.round(p.target_calories)) : "");
-        } else if (p.formula === "harris_benedict") {
-          setObjective("muscle_gain");
-        } else {
-          setObjective("weight_loss");
-        }
+        setCalState({
+          formula: p.formula,
+          objective: p.formula === "harris_benedict" ? "muscle_gain" : "weight_loss",
+          sex: p.sex ?? "",
+          age: p.age ? String(p.age) : "",
+          weight: p.weight_kg ? String(p.weight_kg) : "",
+          height: p.height_cm ? String(p.height_cm) : "",
+          activity: p.activity_level ?? "",
+          manualCalories: p.formula === "manual" && p.target_calories ? String(Math.round(p.target_calories)) : "",
+        });
+        setMacroMode(p.macro_mode ?? "percent");
         setProteinPct(p.protein_pct ?? 30);
         setCarbsPct(p.carbs_pct ?? 40);
         setFatPct(p.fat_pct ?? 30);
@@ -98,16 +90,8 @@ function PerfilContent({ token }: { token: string }) {
     }
     setSaving(true);
     try {
-      const body: Record<string, unknown> = { formula };
-      if (sex) body.sex = sex;
-      if (age) body.age = parseInt(age, 10);
-      if (weight) body.weight_kg = parseFloat(weight.replace(",", "."));
-      if (height) body.height_cm = parseFloat(height.replace(",", "."));
-      if (activity) body.activity_level = activity;
-      if (formula === "manual" && manualCalories)
-        body.target_calories = parseFloat(manualCalories.replace(",", "."));
-      else if (formula !== "manual")
-        body.formula = objective === "weight_loss" ? "mifflin_st_jeor" : "harris_benedict";
+      const body = calorieCalculatorPayload(calState);
+      body.macro_mode = macroMode;
       body.protein_pct = proteinPct;
       body.carbs_pct = carbsPct;
       body.fat_pct = fatPct;
@@ -125,178 +109,158 @@ function PerfilContent({ token }: { token: string }) {
     }
   }
 
-  if (loading) return <p className="text-sm text-nootr-muted">Carregando…</p>;
+  if (loading) return <SkeletonPage cards={3} />;
 
   const currentPlan = profile?.plan ?? "basic";
   const currentCountry = profile?.country ?? "BR";
 
+  // No modo g/kg os percentuais não governam nada, então não faz sentido
+  // exigir que somem 100 pra salvar.
+  const macrosOk = macroMode === "per_kg" || proteinPct + carbsPct + fatPct === 100;
+
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="divider-bordo mb-4" />
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-4xl text-nootr-cream">Perfil</h1>
-          <p className="mt-2 text-sm text-nootr-muted">
-            Seu plano e os dados usados para calcular suas calorias diárias.
-          </p>
-        </div>
-        <div className="w-40">
-          <label className="label-caps">País</label>
-          <select
-            className="input-field"
-            value={currentCountry}
-            onChange={(e) => switchCountry(e.target.value)}
-          >
-            {COUNTRY_OPTIONS.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+    <div className="mx-auto max-w-3xl pb-4">
+      <PageHeader
+        icon="user"
+        title="Perfil"
+        subtitle="Seu plano e os dados usados para calcular suas calorias diárias."
+        right={
+          <div className="w-40">
+            <label className="label-caps flex items-center gap-1.5">
+              <Icon name="globe" size={12} /> País
+            </label>
+            <select
+              className="input-field"
+              value={currentCountry}
+              onChange={(e) => switchCountry(e.target.value)}
+            >
+              {COUNTRY_OPTIONS.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        }
+      />
 
       {/* Plano */}
-      <section className="mt-10 flex items-center justify-between rounded-xl border border-nootr-line bg-nootr-black px-4 py-3.5">
-        <p className="text-sm text-nootr-cream">
-          Plano:{" "}
-          <span className="font-semibold text-nootr-bordoSoft">
-            {currentPlan === "pro" ? "Pro" : "Basic"}
+      <section
+        className="card card-sheen rise-in mt-8 flex flex-wrap items-center justify-between gap-4 transition-all duration-300 hover:border-nootr-bordo/40"
+        style={{ animationDelay: "0.05s" }}
+      >
+        <div className="flex items-center gap-3">
+          <span className="icon-badge">
+            <Icon name="crown" size={18} />
           </span>
-        </p>
+          <div>
+            <p className="text-sm text-nootr-cream">
+              Plano <span className="font-semibold text-nootr-bordoSoft">{currentPlan === "pro" ? "Pro" : "Basic"}</span>
+            </p>
+            <p className="text-xs text-nootr-muted">
+              {currentPlan === "pro"
+                ? "Todos os recursos liberados."
+                : "Desbloqueie dietas por dia, geração por IA e importação."}
+            </p>
+          </div>
+        </div>
         {currentPlan === "basic" ? (
           <Link href="/plano" className="btn-primary px-4 py-1.5 text-xs">
-            Fazer upgrade
+            <Icon name="sparkle" size={14} /> Fazer upgrade
           </Link>
         ) : (
-          <Link href="/plano" className="text-xs text-nootr-muted transition-colors hover:text-nootr-bordoSoft">
-            Alterar
+          <Link href="/plano" className="btn-ghost text-xs">
+            Alterar plano →
           </Link>
         )}
       </section>
 
       {/* Dados corporais + fórmula */}
-      <section className="card mt-10 space-y-6">
-        <div>
-          <p className="label-caps">Cálculo de calorias</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <button
-              onClick={() => setFormula("manual")}
-              className={`chip ${formula === "manual" ? "chip-active" : ""}`}
-            >
-              Definir manualmente
-            </button>
-            <button
-              onClick={() =>
-                setFormula(objective === "weight_loss" ? "mifflin_st_jeor" : "harris_benedict")
-              }
-              className={`chip ${formula !== "manual" ? "chip-active" : ""}`}
-            >
-              Calcular
-            </button>
-          </div>
-        </div>
-
-        {formula === "manual" ? (
-          <div className="max-w-xs">
-            <label className="label-caps">Calorias diárias (kcal)</label>
-            <input
-              className="input-field"
-              inputMode="numeric"
-              placeholder="Ex: 2000"
-              value={manualCalories}
-              onChange={(e) => setManualCalories(e.target.value)}
-            />
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label className="label-caps">Objetivo</label>
-              <div className="flex flex-wrap gap-2">
-                {OBJECTIVE_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => {
-                      setObjective(opt.id as "weight_loss" | "muscle_gain");
-                      setFormula(opt.formula);
-                    }}
-                    className={`chip ${objective === opt.id ? "chip-active" : ""}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="label-caps">Sexo</label>
-              <div className="flex gap-2">
-                {[
-                  { id: "m", label: "Masculino" },
-                  { id: "f", label: "Feminino" },
-                ].map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => setSex(s.id as "m" | "f")}
-                    className={`chip flex-1 ${sex === s.id ? "chip-active" : ""}`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="label-caps">Idade</label>
-              <input className="input-field" inputMode="numeric" placeholder="anos" value={age} onChange={(e) => setAge(e.target.value)} />
-            </div>
-            <div>
-              <label className="label-caps">Peso (kg)</label>
-              <input className="input-field" inputMode="decimal" placeholder="Ex: 72,5" value={weight} onChange={(e) => setWeight(e.target.value)} />
-            </div>
-            <div>
-              <label className="label-caps">Altura (cm)</label>
-              <input className="input-field" inputMode="numeric" placeholder="Ex: 175" value={height} onChange={(e) => setHeight(e.target.value)} />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="label-caps">Nível de atividade</label>
-              <div className="flex flex-wrap gap-2">
-                {ACTIVITY_OPTIONS.map((a) => (
-                  <button
-                    key={a.id}
-                    onClick={() => setActivity(a.id)}
-                    className={`chip ${activity === a.id ? "chip-active" : ""}`}
-                    title={a.hint}
-                  >
-                    {a.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+      <section className="card card-sheen rise-in mt-6 space-y-6" style={{ animationDelay: "0.1s" }}>
+        <SectionHeader
+          icon="flame"
+          title="Calorias e metabolismo"
+          subtitle="Defina sua meta manualmente ou deixe o Nootr calcular a partir dos seus dados."
+        />
+        <CalorieCalculator state={calState} onChange={patchCal} />
 
         {/* Distribuição de macros (%) */}
         <div className="border-t border-nootr-line pt-6">
-          <p className="label-caps">Distribuição de macros (% das calorias)</p>
-          <p className="mb-4 mt-1 text-xs text-nootr-muted">
-            Usada para redefinir os alimentos na substituição (busca bater a proteína, mantendo carbo/gordura perto do original) e como alvo no montar dieta.
-          </p>
-          <div className="flex flex-wrap items-center gap-8">
+          <SectionHeader
+            icon="pie"
+            title="Distribuição de macros"
+            subtitle="Usada como alvo ao montar a dieta e para equilibrar as substituições (busca bater a proteína, mantendo carbo e gordura perto do original)."
+          />
+
+          {/* g/kg é do Pro: no Basic a visão é sempre por percentual (o backend
+              também força isso, ver routes/nootr/profile.py). */}
+          {profile?.plan === "pro" && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                { id: "percent" as const, label: "Por percentual" },
+                { id: "per_kg" as const, label: "Por g/kg de peso" },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setMacroMode(opt.id)}
+                  className={`chip ${macroMode === opt.id ? "chip-active" : ""}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {macroMode === "per_kg" ? (
+            <div className="mt-5 rounded-xl border border-nootr-line bg-nootr-black/40 p-4">
+              {profile?.weight_kg ? (
+                <>
+                  <p className="text-sm text-nootr-cream">
+                    Proteína e gordura calculadas pelo seu peso ({profile.weight_kg} kg), carboidrato fecha as calorias.
+                  </p>
+                  <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                    <MacroPerKgCard label="Proteína" grams={profile.macro_targets_g?.protein_g} range="1,6–2 g/kg" />
+                    <MacroPerKgCard label="Carboidrato" grams={profile.macro_targets_g?.carbs_g} range="o que sobra" />
+                    <MacroPerKgCard label="Gordura" grams={profile.macro_targets_g?.fat_g} range="0,7–1 g/kg" />
+                  </div>
+                  <p className="mt-3 text-xs text-nootr-faint">
+                    É assim que o Nootr monta a dieta. Pra ajustar à mão, troque para &ldquo;Por percentual&rdquo;.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-nootr-muted">
+                  Cadastre seu peso acima pra usar as metas por grama por quilo.
+                </p>
+              )}
+            </div>
+          ) : (
+          <>
+          <div className="mt-6 flex flex-wrap items-center gap-8">
             <MacroDonut protein={proteinPct} carbs={carbsPct} fat={fatPct} />
-            <div className="min-w-[220px] flex-1 space-y-3">
+            <div className="min-w-[220px] flex-1 space-y-1.5">
               <MacroPctInput label="Proteína" color="#8A1E32" value={proteinPct} onChange={setProteinPct} calories={profile?.target_calories} kcalPerG={4} />
               <MacroPctInput label="Carboidrato" color="#B04A5C" value={carbsPct} onChange={setCarbsPct} calories={profile?.target_calories} kcalPerG={4} />
               <MacroPctInput label="Gordura" color="#EDE8E2" value={fatPct} onChange={setFatPct} calories={profile?.target_calories} kcalPerG={9} />
             </div>
           </div>
-          <p className={`mt-3 text-xs ${proteinPct + carbsPct + fatPct === 100 ? "text-nootr-faint" : "text-nootr-bordoSoft"}`}>
-            Soma: {proteinPct + carbsPct + fatPct}%{proteinPct + carbsPct + fatPct !== 100 && ", o ideal é somar 100%"}
+          <p className={`mt-4 flex items-center gap-1.5 text-xs ${macrosOk ? "text-nootr-faint" : "text-nootr-bordoSoft"}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${macrosOk ? "bg-emerald-400/70" : "bg-nootr-bordoSoft"}`} />
+            Soma: {proteinPct + carbsPct + fatPct}%{!macrosOk && ", o ideal é somar 100%"}
           </p>
+          </>
+          )}
         </div>
 
         {error && <p className="text-sm text-nootr-bordoSoft">{error}</p>}
-        {savedMsg && <p className="text-sm text-emerald-400/90">{savedMsg}</p>}
+        {savedMsg && (
+          <p className="flex items-center gap-1.5 text-sm text-emerald-400/90">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
+            {savedMsg}
+          </p>
+        )}
 
-        <div className="flex items-center justify-between border-t border-nootr-line pt-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-nootr-line pt-5">
           {profile?.target_calories ? (
             <p className="text-sm text-nootr-muted">
               Alvo atual:{" "}
@@ -319,175 +283,6 @@ function PerfilContent({ token }: { token: string }) {
   );
 }
 
-interface SelectedFood {
-  full_name: string;
-  display_name: string;
-}
-
-/** Igual ao TagListInput, mas os itens vêm de uma busca na base TACO (autocomplete)
- * em vez de texto livre, garante que a preferência é um alimento real, com id, que o
- * matching consegue usar como desempate (ex: "banana" na dieta + "Banana, nanica" aqui). */
-function TacoTagListInput({
-  token,
-  label,
-  hint,
-  value,
-  onChange,
-}: {
-  token: string;
-  label: string;
-  hint: string;
-  value: string[];
-  onChange: (v: string[]) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<TacoFoodResult[]>([]);
-  const [open, setOpen] = useState(false);
-  const [searching, setSearching] = useState(false);
-  const [selected, setSelected] = useState<SelectedFood[]>([]);
-  const [resolving, setResolving] = useState(false);
-  const boxRef = useRef<HTMLDivElement>(null);
-
-  // Sincronizar quando value muda (reload da página), resolve todos os
-  // nomes em paralelo (não um de cada vez) pra não parecer que os itens
-  // salvos sumiram enquanto carrega.
-  useEffect(() => {
-    let active = true;
-    const syncFromProp = async () => {
-      if (value.length === 0) {
-        setSelected([]);
-        return;
-      }
-      setResolving(true);
-      const newSelected = await Promise.all(
-        value.map(async (fullName) => {
-          const existing = selected.find((s) => s.full_name === fullName);
-          if (existing) return existing;
-          try {
-            const data = await nootrApi.searchFoods(token, fullName);
-            const match = data.results.find((r) => r.full_name === fullName);
-            return { full_name: fullName, display_name: match?.name || fullName };
-          } catch {
-            return { full_name: fullName, display_name: fullName };
-          }
-        })
-      );
-      if (active) {
-        setSelected(newSelected);
-        setResolving(false);
-      }
-    };
-    syncFromProp();
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, token]);
-
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      setOpen(false);
-      return;
-    }
-    const t = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const data = await nootrApi.searchFoods(token, query.trim());
-        // Preferência precisa referenciar um item estável da TACO (é o que o
-        // desempate de matching usa), alimentos próprios do usuário ficam de
-        // fora daqui, mesmo que a busca geral os traga.
-        setResults(data.results.filter((r) => r.taco_id != null));
-        setOpen(true);
-      } catch {
-        setResults([]);
-      } finally {
-        setSearching(false);
-      }
-    }, 250);
-    return () => clearTimeout(t);
-  }, [query, token]);
-
-  useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
-
-  function addItem(result: TacoFoodResult) {
-    if (!selected.some((s) => s.full_name.toLowerCase() === result.full_name.toLowerCase())) {
-      const newSelected = [...selected, { full_name: result.full_name, display_name: result.name }];
-      setSelected(newSelected);
-      onChange(newSelected.map((s) => s.full_name));
-    }
-    setQuery("");
-    setResults([]);
-    setOpen(false);
-  }
-
-  function removeItem(index: number) {
-    const newSelected = selected.filter((_, j) => j !== index);
-    setSelected(newSelected);
-    onChange(newSelected.map((s) => s.full_name));
-  }
-
-  return (
-    <div ref={boxRef} className="relative">
-      <label className="label-caps">{label}</label>
-      <p className="mb-1.5 text-xs text-nootr-faint">{hint}</p>
-      <input
-        className="input-field"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Buscar alimento na TACO (ex: banana nanica)"
-      />
-      {open && (
-        <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-nootr-line bg-nootr-black shadow-lg">
-          {searching && <p className="px-3 py-2 text-xs text-nootr-faint">Buscando…</p>}
-          {!searching && results.length === 0 && (
-            <p className="px-3 py-2 text-xs text-nootr-faint">Nenhum alimento encontrado.</p>
-          )}
-          {results.map((r) => (
-            <button
-              key={r.taco_id ?? r.full_name}
-              type="button"
-              onClick={() => addItem(r)}
-              className="block w-full px-3 py-2 text-left text-sm text-nootr-cream transition-colors hover:bg-nootr-line/40"
-            >
-              {r.name}
-            </button>
-          ))}
-        </div>
-      )}
-      {resolving && selected.length === 0 && (
-        <p className="mt-2 text-xs text-nootr-faint">Carregando itens salvos…</p>
-      )}
-      {selected.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {selected.map((item, i) => (
-            <span
-              key={`${item.full_name}-${i}`}
-              className="flex items-center gap-1.5 rounded-full border border-nootr-line bg-nootr-black px-3 py-1 text-xs text-nootr-cream"
-            >
-              {item.display_name}
-              <button
-                type="button"
-                onClick={() => removeItem(i)}
-                className="text-nootr-faint hover:text-nootr-bordoSoft"
-                aria-label={`Remover ${item.display_name}`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function PreferencesSection({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -497,6 +292,8 @@ function PreferencesSection({ token }: { token: string }) {
   const [avoid, setAvoid] = useState<string[]>([]);
   const [likesPantry, setLikesPantry] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
+  const [mealTimes, setMealTimes] = useState<string[]>([]);
+  const [reminders, setReminders] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -506,6 +303,8 @@ function PreferencesSection({ token }: { token: string }) {
         if (!active) return;
         setAvoid(mergeUnique(p.allergies, p.dislikes));
         setLikesPantry(mergeUnique(p.likes, p.pantry));
+        setMealTimes(p.meal_times ?? []);
+        setReminders(Boolean(p.meal_reminders));
         setNotes(p.notes);
       })
       .catch(() => active && setError("Não foi possível carregar suas preferências."))
@@ -536,13 +335,12 @@ function PreferencesSection({ token }: { token: string }) {
   }
 
   return (
-    <section className="card mt-10 space-y-6">
-      <div>
-        <p className="label-caps">Preferências alimentares</p>
-        <p className="mt-1 text-xs text-nootr-muted">
-          Usamos isso para ajudar a buscar substituições próximas da sua realidade, personalize da sua forma, quanto mais informações, melhor o resultado.
-        </p>
-      </div>
+    <section className="card card-sheen rise-in mt-6 space-y-6" style={{ animationDelay: "0.15s" }}>
+      <SectionHeader
+        icon="heart"
+        title="Preferências alimentares"
+        subtitle="Ajudam o Nootr a buscar substituições próximas da sua realidade. Quanto mais informações, melhor o resultado."
+      />
 
       {loading ? (
         <p className="text-sm text-nootr-muted">Carregando…</p>
@@ -575,8 +373,22 @@ function PreferencesSection({ token }: { token: string }) {
             />
           </div>
 
+          <div className="border-t border-nootr-line pt-5">
+            <MealRemindersToggle
+              token={token}
+              enabled={reminders}
+              times={mealTimes}
+              onChange={setReminders}
+            />
+          </div>
+
           {error && <p className="text-sm text-nootr-bordoSoft">{error}</p>}
-          {savedMsg && <p className="text-sm text-emerald-400/90">{savedMsg}</p>}
+          {savedMsg && (
+            <p className="flex items-center gap-1.5 text-sm text-emerald-400/90">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
+              {savedMsg}
+            </p>
+          )}
 
           <button onClick={handleSave} disabled={saving} className="btn-primary">
             {saving ? "Salvando…" : "Salvar preferências"}
@@ -589,16 +401,24 @@ function PreferencesSection({ token }: { token: string }) {
 
 function MacroDonut({ protein, carbs, fat }: { protein: number; carbs: number; fat: number }) {
   const total = protein + carbs + fat;
+  const complete = total === 100;
   const pEnd = protein * 3.6;
   const cEnd = pEnd + carbs * 3.6;
   const fEnd = cEnd + fat * 3.6;
   const gradient = `conic-gradient(#8A1E32 0deg ${pEnd}deg, #B04A5C ${pEnd}deg ${cEnd}deg, #EDE8E2 ${cEnd}deg ${fEnd}deg, #2A0E15 ${fEnd}deg 360deg)`;
   return (
-    <div className="relative h-32 w-32 shrink-0 rounded-full" style={{ background: gradient }}>
-      <div className="absolute inset-[12px] flex items-center justify-center rounded-full bg-nootr-black">
-        <span className={`font-display text-xl ${total === 100 ? "text-nootr-cream" : "text-nootr-bordoSoft"}`}>
+    <div
+      className="relative h-32 w-32 shrink-0 rounded-full transition-shadow duration-500"
+      style={{
+        background: gradient,
+        boxShadow: complete ? "0 0 34px rgba(138,30,50,0.32)" : "0 0 0 rgba(0,0,0,0)",
+      }}
+    >
+      <div className="absolute inset-[11px] flex flex-col items-center justify-center rounded-full border border-nootr-line/60 bg-nootr-black">
+        <span className={`font-display text-2xl leading-none transition-colors ${complete ? "text-nootr-cream" : "text-nootr-bordoSoft"}`}>
           {total}%
         </span>
+        <span className="mt-0.5 text-[10px] uppercase tracking-caps text-nootr-faint">macros</span>
       </div>
     </div>
   );
@@ -627,9 +447,9 @@ function MacroPctInput({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-nootr-wine/15">
       <div className="flex items-center gap-2">
-        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}66` }} />
         <span className="text-sm text-nootr-cream">{label}</span>
         {grams != null && <span className="text-xs text-nootr-faint">~{grams}g/dia</span>}
       </div>
@@ -642,7 +462,7 @@ function MacroPctInput({
           step={1}
           value={value}
           onChange={(e) => commit(e.target.value)}
-          className="input-field w-16 py-1 text-right tabular-nums"
+          className="input-field w-20 px-2.5 py-1 text-right tabular-nums"
         />
         <span className="text-sm text-nootr-muted">%</span>
       </div>
@@ -652,4 +472,15 @@ function MacroPctInput({
 
 export default function PerfilPage() {
   return <RequireAuth>{(token) => <PerfilContent token={token} />}</RequireAuth>;
+}
+
+/** Cartão de um macro no modo g/kg: o valor calculado + a faixa de referência. */
+function MacroPerKgCard({ label, grams, range }: { label: string; grams?: number; range: string }) {
+  return (
+    <div className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5">
+      <p className="text-[10px] uppercase tracking-caps text-nootr-faint">{label}</p>
+      <p className="mt-0.5 tabular-nums text-nootr-cream">{grams != null ? `${grams}g` : "—"}</p>
+      <p className="text-[10px] text-nootr-faint">{range}</p>
+    </div>
+  );
 }
