@@ -30,13 +30,13 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
     requestAdd({
       kind: "marmita",
       mealCount: 1,
-      mealLabels: [`${item.name} — ${size}`],
+      mealLabels: [`${item.name} (${size})`],
       baseItem: {
         menu_id: `${item.id}-${size}`,
         item_id: item.id,
         section_id: cartSectionId,
         size,
-        name: `${item.name} — ${size}`,
+        name: `${item.name} (${size})`,
         quantity: 1,
         price_cents: price,
       },
