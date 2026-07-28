@@ -11,20 +11,24 @@ import { nootrApi } from "@/lib/api";
 import type { Diet } from "@/lib/types";
 
 type Mode = "view" | "edit";
+type ViewTab = "today" | "original";
 
 function DietaContent({ token }: { token: string }) {
   const router = useRouter();
   const [diet, setDiet] = useState<Diet | null>(null);
+  const [originalDiet, setOriginalDiet] = useState<Diet | null>(null);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [hasPendingReview, setHasPendingReview] = useState(false);
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<Mode>("view");
+  const [tab, setTab] = useState<ViewTab>("today");
 
   const reload = useCallback(async () => {
     const data = await nootrApi.getTodayDiet(token);
     setDiet(data.diet);
+    setOriginalDiet(data.original_diet);
     setNeedsSetup(data.needs_setup);
     setHasPendingReview(data.has_pending_review);
     setDate(data.date);
@@ -121,8 +125,46 @@ function DietaContent({ token }: { token: string }) {
             <div className="no-print">
               <StreakCard token={token} />
             </div>
+
+            {/* "Original" só existe de fato quando difere do dia ajustado,
+                mas as abas ficam sempre visíveis: sumir e reaparecer
+                conforme o Noo mexe no dia seria mais confuso que mostrar
+                uma aba idêntica quando ainda não houve ajuste hoje. */}
+            <div className="no-print mb-5 flex gap-1 border-b border-nootr-line">
+              <button
+                onClick={() => setTab("today")}
+                className={`px-3.5 py-2.5 text-sm font-medium transition ${
+                  tab === "today"
+                    ? "border-b-2 border-nootr-bordo text-nootr-cream"
+                    : "text-nootr-faint hover:text-nootr-muted"
+                }`}
+              >
+                Dieta alterada de hoje
+              </button>
+              <button
+                onClick={() => setTab("original")}
+                className={`px-3.5 py-2.5 text-sm font-medium transition ${
+                  tab === "original"
+                    ? "border-b-2 border-nootr-bordo text-nootr-cream"
+                    : "text-nootr-faint hover:text-nootr-muted"
+                }`}
+              >
+                Dieta original
+              </button>
+            </div>
+
             <div id="diet-print-area">
-              <DietView diet={diet} date={date} />
+              {tab === "today" || !originalDiet ? (
+                <DietView diet={diet} date={date} />
+              ) : (
+                <>
+                  <p className="no-print mb-4 text-sm text-nootr-muted">
+                    O plano que você montou, sem as alterações que o Noo ou as funções manuais
+                    fizeram hoje.
+                  </p>
+                  <DietView diet={originalDiet} date={date} />
+                </>
+              )}
             </div>
           </>
         )}
