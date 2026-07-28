@@ -27,6 +27,10 @@ _DEFAULT_PROFILE = {
     "protein_pct": 30,
     "carbs_pct": 40,
     "fat_pct": 30,
+    # Ajuste manual do g/kg (Pro, modo per_kg): None = usa o meio da faixa de
+    # referência (ver energy.PROTEIN_G_PER_KG/FAT_G_PER_KG).
+    "protein_g_per_kg": None,
+    "fat_g_per_kg": None,
     "ai_diet_generated_at": None,
 }
 
@@ -55,6 +59,11 @@ class ProfileUpdate(BaseModel):
     # metas são exibidas/editadas; a dieta que o Nootr monta usa g/kg sempre
     # (ver energy.macro_targets_for_generation).
     macro_mode: str | None = Field(default=None, pattern="^(percent|per_kg)$")
+    # Ajuste manual do modo per_kg (Pro): None mantém o meio da faixa de
+    # referência. Carboidrato nunca é editável direto, fecha o que sobra das
+    # calorias (ver energy.macro_targets_from_weight).
+    protein_g_per_kg: float | None = Field(default=None, gt=0, le=10)
+    fat_g_per_kg: float | None = Field(default=None, gt=0, le=10)
 
 
 def _with_computed_calories(profile: dict) -> dict:

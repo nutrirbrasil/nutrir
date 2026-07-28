@@ -50,11 +50,19 @@ def _midpoint(faixa: tuple[float, float]) -> float:
     return (faixa[0] + faixa[1]) / 2
 
 
-def macro_targets_from_weight(calories: float, weight_kg: float) -> dict:
+def macro_targets_from_weight(
+    calories: float, weight_kg: float,
+    protein_g_per_kg: float | None = None, fat_g_per_kg: float | None = None,
+) -> dict:
     """
     Metas de macro em gramas a partir do PESO, não de percentual: proteína e
     gordura no meio das faixas de referência (ver PROTEIN_G_PER_KG e
-    FAT_G_PER_KG) e carboidrato fechando as calorias que sobram.
+    FAT_G_PER_KG) por padrão, e carboidrato fechando as calorias que sobram.
+
+    `protein_g_per_kg`/`fat_g_per_kg`: quando o usuário já ajustou essas metas
+    à mão (ver profiles.protein_g_per_kg/fat_g_per_kg), usa o valor dele em
+    vez do meio da faixa, sem clampar à faixa de referência, é uma faixa
+    típica, não um limite físico.
 
     Devolve também os limites da faixa (`*_min_g`/`*_max_g`) e o g/kg
     resultante, usados pra mostrar ao nutricionista na fila de revisão (ver
@@ -65,8 +73,8 @@ def macro_targets_from_weight(calories: float, weight_kg: float) -> dict:
     sobrar pelo menos 10% das calorias pra carboidrato, em vez de devolver
     um valor negativo.
     """
-    protein_g = round(weight_kg * _midpoint(PROTEIN_G_PER_KG))
-    fat_g = round(weight_kg * _midpoint(FAT_G_PER_KG))
+    protein_g = round(weight_kg * (protein_g_per_kg if protein_g_per_kg is not None else _midpoint(PROTEIN_G_PER_KG)))
+    fat_g = round(weight_kg * (fat_g_per_kg if fat_g_per_kg is not None else _midpoint(FAT_G_PER_KG)))
 
     # Piso de carboidrato: nunca deixa proteína+gordura comerem o dia todo.
     min_carbs_kcal = calories * 0.10
@@ -101,11 +109,21 @@ def macro_targets_for_generation(profile: dict, calories: float) -> dict:
     distorce nos extremos, ver macro_targets_from_weight). Independe do
     `macro_mode`, que só governa como o usuário vê e edita as metas depois.
 
-    Sem peso válido não há como calcular por kg, aí cai no percentual.
+    Sem peso válido não há como calcular por kg, aí cai no percentual. Se o
+    usuário já ajustou protein_g_per_kg/fat_g_per_kg à mão (ver
+    routes/nootr/profile.py), essa passa a ser a meta usada aqui também, não
+    só na tela de perfil, o Nootr monta a dieta pro alvo que a pessoa
+    realmente quer.
     """
     weight_kg = profile.get("weight_kg")
     if weight_kg and float(weight_kg) > 0:
-        return macro_targets_from_weight(calories, float(weight_kg))
+        protein_g_per_kg = profile.get("protein_g_per_kg")
+        fat_g_per_kg = profile.get("fat_g_per_kg")
+        return macro_targets_from_weight(
+            calories, float(weight_kg),
+            float(protein_g_per_kg) if protein_g_per_kg is not None else None,
+            float(fat_g_per_kg) if fat_g_per_kg is not None else None,
+        )
     return macro_targets_g(
         calories,
         float(profile.get("protein_pct") or 30),
@@ -129,7 +147,13 @@ def macro_targets_for_profile(profile: dict, calories: float) -> dict:
     """
     weight_kg = profile.get("weight_kg")
     if profile.get("macro_mode") == "per_kg" and weight_kg and float(weight_kg) > 0:
-        return macro_targets_from_weight(calories, float(weight_kg))
+        protein_g_per_kg = profile.get("protein_g_per_kg")
+        fat_g_per_kg = profile.get("fat_g_per_kg")
+        return macro_targets_from_weight(
+            calories, float(weight_kg),
+            float(protein_g_per_kg) if protein_g_per_kg is not None else None,
+            float(fat_g_per_kg) if fat_g_per_kg is not None else None,
+        )
     return macro_targets_g(
         calories,
         float(profile.get("protein_pct") or 30),

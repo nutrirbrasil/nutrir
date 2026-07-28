@@ -11,7 +11,7 @@ usuário, Basic tem 1 base; Pro pode ter até 7, uma por dia da semana),
 vivem) e `substitution_logs` (auditoria). A dieta NÃO é provisionada
 automaticamente: usuário novo começa vazio e monta a própria dieta.
 """
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from backend.app.auth import CurrentUser
@@ -20,10 +20,21 @@ from backend.app import supabase_client
 # "Dia" pro usuário é o dia civil no Brasil, não UTC (o servidor roda em UTC
 # na VPS): sem isso, o dia viraria às 21h de Brasília (meia-noite UTC), não
 # à meia-noite real, confundindo streak, limite diário do Noo e o reset da
-# dieta do dia.
+# dieta do dia. TODO: quando o app tiver uso relevante fora do Brasil, trocar
+# por um fuso por usuário (profile.country); hoje a TACO em si só cobre o
+# Brasil, então um fuso fixo é a base certa.
 _TZ = ZoneInfo("America/Sao_Paulo")
 
-_PROFILE_FIELDS = "user_id,full_name,plan,billing_cycle,country,sex,age,weight_kg,height_cm,activity_level,formula,target_calories,protein_pct,carbs_pct,fat_pct,macro_mode,ai_diet_generated_at"
+# E o dia vira às 3h, não à meia-noite: quem janta tarde (perto da meia-noite)
+# ainda quer registrar um ajuste daquela refeição como parte do MESMO dia, não
+# de um dia novo que mal começou.
+_DAY_ROLLOVER_HOUR = 3
+
+
+def _app_date(now: datetime) -> date:
+    return (now - timedelta(hours=_DAY_ROLLOVER_HOUR)).date()
+
+_PROFILE_FIELDS = "user_id,full_name,plan,billing_cycle,country,sex,age,weight_kg,height_cm,activity_level,formula,target_calories,protein_pct,carbs_pct,fat_pct,macro_mode,protein_g_per_kg,fat_g_per_kg,ai_diet_generated_at"
 _PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes,meal_count,meal_times,meal_reminders"
 _DIET_FIELDS = "id,name,weekday,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,status,source_meals"
 _ADMIN_DIET_FIELDS = _DIET_FIELDS + ",user_id,created_at"
@@ -33,7 +44,7 @@ _RECIPE_FIELDS = "id,user_id,name,ingredients,status,created_at"
 
 
 def today_iso() -> str:
-    return datetime.now(_TZ).date().isoformat()
+    return _app_date(datetime.now(_TZ)).isoformat()
 
 
 def now_iso() -> str:
@@ -42,7 +53,7 @@ def now_iso() -> str:
 
 def today_weekday() -> int:
     """0=segunda ... 6=domingo (convenção usada na coluna diets.weekday)."""
-    return datetime.now(_TZ).weekday()
+    return _app_date(datetime.now(_TZ)).weekday()
 
 
 # ---------- profiles ----------

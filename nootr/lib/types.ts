@@ -171,6 +171,11 @@ export interface Profile {
   protein_pct: number;
   carbs_pct: number;
   fat_pct: number;
+  // Ajuste manual do modo per_kg (Pro), null = usa o meio da faixa de
+  // referência (ver macro_targets_g.protein_g_per_kg/fat_g_per_kg pro valor
+  // efetivamente aplicado, seja o ajustado ou o padrão).
+  protein_g_per_kg: number | null;
+  fat_g_per_kg: number | null;
   macro_targets_g: MacroTargetsDetailed | null;
   ai_diet_generated_at: string | null;
 }

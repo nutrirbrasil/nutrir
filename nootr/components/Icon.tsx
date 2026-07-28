@@ -20,7 +20,8 @@ export type IconName =
   | "sparkle"
   | "globe"
   | "leaf"
-  | "handshake";
+  | "handshake"
+  | "lock";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   user: (
@@ -94,6 +95,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M8 12l2.5 2.5a1.5 1.5 0 0 0 2.1 0L18 9" />
       <path d="M3 8l3-2 6 2 6-2 3 2v6l-3 2-2-2M6 6v8" />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </>
   ),
 };
