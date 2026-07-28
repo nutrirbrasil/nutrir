@@ -307,6 +307,83 @@ def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> 
         adjusted_by_id[meal_id] = {**meal, "foods": capped}
 
 
+_CALORIE_TOLERANCE_PCT = 0.02  # o dia nunca pode fechar mais de 2% longe da meta
+_CALORIE_TOLERANCE_MIN_KCAL = 10.0  # abaixo de ~10 kcal a diferença é ruído, não vale mexer mais
+
+
+def calorie_tolerance(target_calories: float) -> float:
+    """Máximo aceitável de diferença entre o dia e a meta de calorias: 2%,
+    ou 10 kcal, o que for maior. Usado tanto aqui (ver `_enforce_calorie_tolerance`)
+    quanto pelas rotas pra decidir se vale a pena pedir um top-up à IA."""
+    return max(_CALORIE_TOLERANCE_MIN_KCAL, target_calories * _CALORIE_TOLERANCE_PCT)
+
+
+def _enforce_calorie_tolerance(
+    baseline: list[dict], adjusted_by_id: dict[str, dict], fixed_calories: float, target_calories: float,
+) -> bool:
+    """
+    Última rede de segurança: o dia SEMPRE tem que fechar dentro de 2% da
+    meta de calorias (ou 10 kcal, o que for maior). O `_cap_total_growth`
+    protege contra porção irreal, mas podia deixar sobrar uma diferença
+    grande sem ninguém cobrir depois, e "meta imperfeita" não é aceitável
+    aqui, diferente do piso de proteína (`_apply_floor_pass`), que é
+    best-effort.
+
+    Distribui o resíduo PROPORCIONALMENTE entre os alimentos das refeições
+    ajustáveis que ainda têm espaço (entre o piso de _MIN_FACTOR e o teto de
+    _MAX_FACTOR sobre a porção original do dia, ver `baseline`), em vez de
+    concentrar tudo num alimento só. Em poucas passadas (alimentos que batem
+    no próprio limite numa passada sobram pra quem ainda tem espaço na
+    próxima). Se ninguém tiver mais espaço, aceita o resultado (caso raro:
+    todo mundo já está no teto/piso), o mesmo comportamento de antes.
+    """
+    tolerance = calorie_tolerance(target_calories)
+    baseline_by_id = {
+        m["id"]: {f["name"]: f.get("grams") or 0 for f in m["foods"]} for m in baseline
+    }
+    changed = False
+
+    for _ in range(4):
+        current = fixed_calories + sum(
+            f["calories"] for meal in adjusted_by_id.values() for f in meal["foods"]
+        )
+        deviation = target_calories - current
+        if abs(deviation) <= tolerance:
+            return changed
+
+        candidates = []  # (meal_id, food_index, room_kcal)
+        for mid, meal in adjusted_by_id.items():
+            originals = baseline_by_id.get(mid, {})
+            for i, food in enumerate(meal["foods"]):
+                grams = food.get("grams")
+                kcal_per_g = food["calories"] / grams if grams else 0
+                if not grams or kcal_per_g <= 0:
+                    continue
+                original = originals.get(food["name"]) or grams
+                if deviation > 0:
+                    room_grams = original * _MAX_FACTOR - grams
+                else:
+                    room_grams = grams - original * _MIN_FACTOR
+                if room_grams > 0.5:
+                    candidates.append((mid, i, room_grams * kcal_per_g))
+
+        if not candidates:
+            return changed
+
+        total_room = sum(room for _, _, room in candidates)
+        share = min(1.0, abs(deviation) / total_room)
+        sign = 1 if deviation > 0 else -1
+        for mid, i, room in candidates:
+            food = adjusted_by_id[mid]["foods"][i]
+            grams = food["grams"]
+            add_kcal = sign * room * share
+            new_grams = grams + add_kcal / (food["calories"] / grams)
+            adjusted_by_id[mid]["foods"][i] = _scale_food(food, new_grams / grams)
+        changed = True
+
+    return changed
+
+
 def _rebalance(
     meals: list[dict], adjustable_ids: set[str], targets: dict, original_meals: list[dict] | None = None,
 ) -> tuple[list[dict], bool, bool]:
@@ -419,6 +496,13 @@ def _rebalance(
     cap_source = original_meals if original_meals is not None else meals
     cap_baseline = [m for m in cap_source if m["id"] in adjustable_ids]
     _cap_total_growth(cap_baseline, adjusted_by_id)
+
+    # O teto de crescimento acima pode ter deixado o dia longe da meta de
+    # calorias de novo; fecha essa diferença (dentro do que os alimentos
+    # ainda suportam) antes de aceitar o resultado. Sempre depois do teto,
+    # nunca antes, senão essa passada é que estouraria o teto.
+    if _enforce_calorie_tolerance(cap_baseline, adjusted_by_id, consumed["calories"], targets["calories"]):
+        changed = True
 
     if not changed:
         return meals, False, had_adjustable

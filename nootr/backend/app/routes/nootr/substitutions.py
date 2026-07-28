@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from backend.app.auth import CurrentUser, CurrentUserDep
-from backend.app.services import ai, diet_engine, energy, food_matcher, plan_limits, repository
+from backend.app.services import ai, day_topup, diet_engine, energy, food_matcher, plan_limits, repository
 from backend.app.services.nutrition import resolve_food
 
 router = APIRouter(prefix="/nootr/substitutions", tags=["Nootr - Substituições"])
@@ -19,11 +19,6 @@ ACTION_LABELS = {
 _MIN_GAP_G = {"proteína": 5.0, "gordura": 5.0, "carboidrato": 10.0}
 _GAP_LABELS = {"protein": "proteína", "fat": "gordura", "carb": "carboidrato"}
 
-# Lacuna mínima (depois de escalar as quantidades das refeições ajustáveis)
-# pra valer a pena pedir um ajuste extra (adicionar/remover alimento) pra IA,
-# abaixo disso a diferença é pequena demais pra incomodar por isso.
-_TOPUP_CAL_THRESHOLD = 150.0
-_TOPUP_PROTEIN_THRESHOLD = 10.0
 
 
 def _match_to_dict(m: food_matcher.MatchResult) -> dict:
@@ -164,69 +159,6 @@ def _macro_gap(missing_food: dict | None, substitute_foods: list[dict]) -> str |
     return max(gaps, key=lambda g: g[1])[0]
 
 
-def _try_day_topup(result: dict, user: CurrentUser) -> None:
-    """
-    Depois de escalar as quantidades das refeições ajustáveis, se o dia ainda
-    ficar significativamente longe da meta (calorias ou proteína), pede pra
-    IA um ajuste extra, adicionar e/ou remover um alimento de UMA refeição
-    ajustável, e aplica se ela sugerir algo. Muda `result` in-place. Não
-    bloqueia: se não houver refeição ajustável, a diferença for pequena, ou a
-    IA não sugerir nada bom, o resultado do escalonamento normal é mantido.
-    """
-    if not result.get("can_top_up"):
-        return
-    remaining_cal = result["remaining_calories"]
-    remaining_prot = result["remaining_protein_g"]
-    if abs(remaining_cal) < _TOPUP_CAL_THRESHOLD and abs(remaining_prot) < _TOPUP_PROTEIN_THRESHOLD:
-        return
-
-    adjustable_ids = set(result.get("adjustable_meal_ids") or [])
-    pending_meals = [m for m in result["adjusted_meals"] if m["id"] in adjustable_ids]
-    prefs = repository.get_preferences(user) or {}
-    preferred_ids = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
-    tie_resolver = ai.build_country_tie_resolver((repository.get_profile(user) or {}).get("country") or "BR")
-    topup = ai.suggest_day_topup(pending_meals, remaining_cal, remaining_prot, prefs)
-    if not topup:
-        return
-
-    allergies = prefs.get("allergies") or []
-    resolved_additions = []
-    for item in topup["additions"]:
-        match = food_matcher.find_food(
-            f'{item["quantity"]} {item["name"]}'.strip(), preferred=preferred_ids, tie_resolver=tie_resolver,
-        )
-        # Última barreira determinística: mesmo com a instrução no prompt,
-        # nunca confia só na IA pra alergia (ver food_matcher.matches_allergen).
-        if food_matcher.matches_allergen(match.name, allergies):
-            continue
-        grams = match.grams or 100.0
-        resolved_additions.append({
-            "name": match.name, "calories": match.calories, "protein_g": match.protein_g,
-            "carbs_g": match.carbs_g, "fat_g": match.fat_g,
-            "grams": grams, "quantity": f"{round(grams)}g" if match.grams else "1 porção",
-        })
-    if not resolved_additions and not topup["removals"]:
-        return
-
-    updated_meals = diet_engine.apply_meal_changes(
-        result["adjusted_meals"], topup["meal_name"], resolved_additions, topup["removals"],
-    )
-    if updated_meals is None:
-        return
-
-    after = diet_engine.day_macros(updated_meals)
-    tgt = result["targets"]
-    result["adjusted_meals"] = updated_meals
-    result["macros_after"] = after
-    result["remaining_calories"] = round(tgt["calories"] - after["calories"])
-    result["remaining_protein_g"] = round(tgt["protein_g"] - after["protein_g"])
-    result["topup_applied"] = {
-        "meal_name": topup["meal_name"],
-        "additions": [a["name"] for a in resolved_additions],
-        "removals": topup["removals"],
-    }
-
-
 @router.post("")
 def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentUserDep):
     # O plano do dia já reflete substituições anteriores de hoje: novos ajustes
@@ -260,12 +192,12 @@ def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentU
 
     if body.action == "ate_different":
         result = diet_engine.log_ate_different(day_plan, body.skipped_food_names, foods, body.meal_id, targets)
-        _try_day_topup(result, user)
+        day_topup.try_day_topup(result, user)
     elif body.action == "will_eat_different":
         result = diet_engine.log_will_eat_different(
             day_plan, body.skipped_food_names, foods, body.meal_id, body.already_eaten_meal_ids, targets,
         )
-        _try_day_topup(result, user)
+        day_topup.try_day_topup(result, user)
     elif body.action == "missing_food":
         if not body.meal_id or not body.missing_food_name:
             raise HTTPException(status_code=400, detail="Informe a refeição e o alimento em falta")
@@ -332,7 +264,7 @@ def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentU
     # Explicação humana da IA (não bloqueia se a IA estiver fora do ar).
     # Recalcula o diff contra o plano ORIGINAL do dia depois de tudo aplicado
     # (o top-up acima mexe nas refeições depois que o motor já montou o
-    # resultado, ver _try_day_topup), pra explicação e tela mostrarem o
+    # resultado, ver day_topup.try_day_topup), pra explicação e tela mostrarem o
     # conjunto real de alterações.
     result["changes"] = diet_engine.diff_meals(day_plan["meals"], result["adjusted_meals"])
 

@@ -336,6 +336,22 @@ def test_apply_changes_reports_the_diff(diet):
     assert any(c["kind"] == "added" for c in almoco["changes"])
 
 
+def test_day_always_closes_within_two_percent_of_the_calorie_target(diet):
+    # Pular uma refeição inteira é um desvio grande, mas com várias refeições
+    # e vários alimentos ajustáveis sobrando, o dia tem que fechar bem perto
+    # da meta, não ficar ~5% longe só porque o teto de crescimento por
+    # alimento limitou uma parte da conta.
+    cafe = next(m for m in diet["meals"] if m["id"] == "meal-1")
+    skipped_names = [f["name"] for f in cafe["foods"]]
+    r = diet_engine.apply_changes(diet, [
+        {"meal_id": "meal-1", "skipped_names": skipped_names, "new_foods": []},
+    ])
+    target = diet["daily_calories"]
+    actual = r["macros_after"]["calories"]
+    tolerance = max(10, target * 0.02)
+    assert abs(target - actual) <= tolerance
+
+
 def test_rebalance_never_inflates_a_food_beyond_the_growth_cap():
     # Uma refeição com poucos itens tendo que absorver um desvio grande fazia
     # um único alimento explodir (150g de arroz viravam 915g: as 3 passadas

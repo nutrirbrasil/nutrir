@@ -174,6 +174,32 @@ def test_does_not_create_an_empty_meal_with_nothing_to_add(client, monkeypatch, 
     assert not any(m["name"] == "Ceia" for m in day_plan["meals"])
 
 
+def test_topup_kicks_in_when_normal_rebalance_cant_close_the_gap(client, monkeypatch, day_plan):
+    # Mesma rede de segurança das 3 funções manuais, agora também no Noo: se
+    # o rebalanceamento normal não fechar a meta de calorias (aqui forçado
+    # via tolerância zero), pede um ajuste extra à IA antes de responder.
+    from backend.app.services import day_topup, diet_engine
+
+    monkeypatch.setattr(diet_engine, "calorie_tolerance", lambda calories: 0.0)
+    monkeypatch.setattr(day_topup, "_TOPUP_PROTEIN_THRESHOLD", 0.0)
+    monkeypatch.setattr(ai, "suggest_day_topup", lambda pending_meals, gap_calories, gap_protein, preferences=None: {
+        "meal_name": "Jantar", "additions": [{"name": "batata doce", "quantity": "150g"}], "removals": [],
+    })
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Ajustei o dia.",
+        "changes": [{
+            "meal": "Café da manhã",
+            "skipped": [f["name"] for f in day_plan["meals"][0]["foods"]],
+            "added": [],
+        }],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "não comi nada no café"})
+    assert resp.status_code == 200
+    jantar = next(m for m in resp.json()["day"]["meals"] if m["name"] == "Jantar")
+    assert any("batata doce" in f["name"].lower() for f in jantar["foods"])
+
+
 def test_conversation_without_changes_does_not_touch_the_day(client, monkeypatch):
     # Pergunta que não muda nada não pode gravar plano nem log.
     monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
