@@ -519,6 +519,76 @@ def diff_meals(before: list[dict], after: list[dict]) -> list[dict]:
     return out
 
 
+def build_day_view(before: list[dict], after: list[dict]) -> dict:
+    """
+    O dia INTEIRO pronto pra tela, com o que mudou marcado alimento a
+    alimento. Diferente de `diff_meals` (que lista só as alterações), aqui
+    vem toda a dieta: a pessoa precisa ver o plano completo, não um extrato.
+
+    Cada alimento carrega `kind` ("added" | "removed" | "increased" |
+    "decreased" | None) e a quantidade anterior, pra UI colorir sem precisar
+    cruzar duas listas. Alimentos removidos continuam na lista da refeição,
+    marcados, senão sumiriam da tela sem explicação.
+
+    Cada refeição e o dia trazem os totais ANTES e DEPOIS (kcal + macros).
+    """
+    before_by_id = {m["id"]: m for m in before}
+    meals: list[dict] = []
+
+    for meal_after in after:
+        meal_before = before_by_id.get(meal_after["id"], {"foods": []})
+        foods_before = {f["name"]: f for f in meal_before.get("foods", [])}
+        foods: list[dict] = []
+
+        for food in meal_after["foods"]:
+            previous = foods_before.get(food["name"])
+            if previous is None:
+                kind = "added"
+            else:
+                delta = (food.get("grams") or 0) - (previous.get("grams") or 0)
+                kind = (
+                    "increased" if delta > _QTY_CHANGE_TOLERANCE_G
+                    else "decreased" if delta < -_QTY_CHANGE_TOLERANCE_G
+                    else None
+                )
+            foods.append({
+                "name": food["name"],
+                "quantity": food.get("quantity", ""),
+                "calories": round(food["calories"], 1),
+                "protein_g": round(food["protein_g"], 1),
+                "carbs_g": round(food["carbs_g"], 1),
+                "fat_g": round(food["fat_g"], 1),
+                "kind": kind,
+                "previous_quantity": (previous or {}).get("quantity", "") if kind in ("increased", "decreased") else "",
+            })
+
+        # Removidos ficam na lista (marcados) pra pessoa ver o que saiu.
+        names_after = {f["name"] for f in meal_after["foods"]}
+        for name, food in foods_before.items():
+            if name not in names_after:
+                foods.append({
+                    "name": name, "quantity": food.get("quantity", ""),
+                    "calories": 0.0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0,
+                    "kind": "removed", "previous_quantity": "",
+                })
+
+        meals.append({
+            "id": meal_after["id"],
+            "name": meal_after["name"],
+            "time": meal_after.get("time", ""),
+            "before": _meal_macros(meal_before) if meal_before.get("foods") else
+                      {"calories": 0.0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0},
+            "after": _meal_macros(meal_after),
+            "foods": foods,
+        })
+
+    return {
+        "meals": meals,
+        "macros_before": _day_macros(before),
+        "macros_after": _day_macros(after),
+    }
+
+
 def _build_result(
     diet: dict, adjusted_meals: list[dict], targets: dict, headline: str,
     rebalanced: bool, had_adjustable: bool = False, adjustable_meal_ids: set[str] | None = None,

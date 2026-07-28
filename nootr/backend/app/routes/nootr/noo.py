@@ -165,9 +165,13 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         })
 
     result = None
+    day_view = None
     if changes:
         already_eaten = [m["id"] for m in (find_meal(n) for n in answer["already_eaten"]) if m]
         result = diet_engine.apply_changes(day_plan, changes, already_eaten, targets)
+        # Dia inteiro + o que mudou item a item, pronto pra tela (a pessoa
+        # precisa ver o plano completo, não só um extrato das alterações).
+        day_view = diet_engine.build_day_view(day_plan["meals"], result["adjusted_meals"])
         repository.update_day_plan_meals(user, day_plan["id"], result["adjusted_meals"])
         repository.insert_substitution_log(user, day_plan["id"], day_plan["plan_date"], {
             "action": "noo_chat",
@@ -180,12 +184,12 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
             "remaining_protein_g": result.get("remaining_protein_g"),
         })
 
-    repository.insert_noo_message(user, "assistant", answer["reply"], (result or {}).get("changes"))
+    # O snapshot do dia é guardado junto da resposta pra conversa reabrir
+    # mostrando exatamente o que a pessoa viu quando o ajuste foi feito.
+    repository.insert_noo_message(user, "assistant", answer["reply"], day_view)
     return {
         "reply": answer["reply"],
-        "changes": (result or {}).get("changes") or [],
-        "adjusted_meals": (result or {}).get("adjusted_meals"),
-        "macros_after": (result or {}).get("macros_after"),
+        "day": day_view,
         "targets": (result or {}).get("targets"),
         "remaining": max(limit - (used + 1), 0),
         "limit": limit,

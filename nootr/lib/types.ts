@@ -382,11 +382,49 @@ export interface StreakStats {
 // Noo, o chat do Nootr (ver backend routes/nootr/noo.py). É a quarta porta
 // das substituições: faz o que as três funções manuais fazem, só que numa
 // conversa e em várias refeições de uma vez.
+// Um alimento na visão do dia: `kind` diz o que aconteceu com ele nesse
+// ajuste (null = não mudou). Removidos continuam na lista, marcados.
+export interface NooFood {
+  name: string;
+  quantity: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  kind: MealChangeKind | null;
+  previous_quantity: string;
+}
+
+export interface NooMealTotals {
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}
+
+export interface NooMeal {
+  id: string;
+  name: string;
+  time: string;
+  before: NooMealTotals;
+  after: NooMealTotals;
+  foods: NooFood[];
+}
+
+// Dia inteiro depois do ajuste (ver diet_engine.build_day_view).
+export interface NooDayView {
+  meals: NooMeal[];
+  macros_before: DayMacros;
+  macros_after: DayMacros;
+}
+
 export interface NooMessage {
   id: string;
   role: "user" | "assistant";
   text: string;
-  changes: MealChanges[] | null;
+  // Snapshot do dia no momento do ajuste (null quando a mensagem não mudou
+  // nada, ex: uma pergunta).
+  changes: NooDayView | null;
   created_at: string;
 }
 
@@ -400,9 +438,7 @@ export interface NooConversation {
 
 export interface NooReply {
   reply: string;
-  changes: MealChanges[];
-  adjusted_meals: Meal[] | null;
-  macros_after: DayMacros | null;
+  day: NooDayView | null;
   targets: { calories: number; protein_g: number; carbs_g: number; fat_g: number } | null;
   remaining: number;
   limit: number;

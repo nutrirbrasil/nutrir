@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { nootrApi } from "@/lib/api";
 import { Icon } from "@/components/Icon";
-import type { MealChanges, NooMessage, Plan } from "@/lib/types";
+import type { NooDayView, NooMessage, Plan } from "@/lib/types";
 
 const SUGGESTIONS = [
   "Não comi o pão do café",
@@ -12,34 +12,106 @@ const SUGGESTIONS = [
   "Estou sem frango pro almoço",
 ];
 
-const CHANGE_ICONS: Record<string, { symbol: string; label: string; className: string }> = {
-  increased: { symbol: "↑", label: "aumentei", className: "text-nootr-bordoSoft" },
-  decreased: { symbol: "↓", label: "reduzi", className: "text-nootr-muted" },
-  added: { symbol: "+", label: "adicionei", className: "text-nootr-bordoSoft" },
-  removed: { symbol: "−", label: "tirei", className: "text-nootr-faint" },
+// Verde = ganhou (mais quantidade ou alimento novo). Vermelho = perdeu
+// (menos quantidade ou alimento retirado). Nome colorido quando o alimento
+// entrou/saiu; só a seta colorida quando foi a quantidade que mudou.
+const FOOD_STYLE: Record<string, { arrow: string; name: string; label: string }> = {
+  added: { arrow: "+", name: "text-emerald-400", label: "adicionado" },
+  removed: { arrow: "−", name: "text-red-400", label: "removido" },
+  increased: { arrow: "↑", name: "", label: "aumentou" },
+  decreased: { arrow: "↓", name: "", label: "diminuiu" },
+};
+const ARROW_COLOR: Record<string, string> = {
+  added: "text-emerald-400",
+  increased: "text-emerald-400",
+  removed: "text-red-400",
+  decreased: "text-red-400",
 };
 
-/** O que o Noo mexeu, junto da resposta dele. */
-function ChangeList({ changes }: { changes: MealChanges[] }) {
-  if (changes.length === 0) return null;
+/** "512 kcal · P 30g · C 60g · G 12g" */
+function macroLine(t: { calories: number; protein_g: number; carbs_g: number; fat_g: number }) {
+  return `${Math.round(t.calories)} kcal · P ${Math.round(t.protein_g)}g · C ${Math.round(t.carbs_g)}g · G ${Math.round(t.fat_g)}g`;
+}
+
+/**
+ * Guarda contra formato antigo/inesperado em `changes` (ex: mensagens
+ * salvas antes da reescrita pra `build_day_view`), pra não quebrar a tela
+ * inteira ao carregar uma conversa com histórico.
+ */
+function isDayView(value: unknown): value is NooDayView {
+  const v = value as NooDayView | null | undefined;
+  return !!v && Array.isArray(v.meals) && !!v.macros_before && !!v.macros_after;
+}
+
+/**
+ * O dia inteiro depois do ajuste: todas as refeições, todos os alimentos, com
+ * o que mudou destacado por cor. Mostra os totais antes → depois do dia e de
+ * cada refeição, que é como a pessoa confere se as metas continuam batendo.
+ */
+function DayView({ day }: { day: NooDayView }) {
+  const deltaKcal = day.macros_after.calories - day.macros_before.calories;
+
   return (
-    <div className="mt-2.5 space-y-2 border-t border-nootr-bordo/20 pt-2.5">
-      {changes.map((meal) => (
-        <div key={meal.meal}>
-          <p className="text-[10px] uppercase tracking-caps text-nootr-faint">{meal.meal}</p>
-          <ul className="mt-0.5 space-y-0.5">
-            {meal.changes.map((c) => {
-              const icon = CHANGE_ICONS[c.kind];
+    <div className="mt-3 space-y-3 border-t border-nootr-bordo/20 pt-3">
+      {/* Totais do dia */}
+      <div className="rounded-lg border border-nootr-line bg-nootr-card/70 px-3 py-2.5">
+        <p className="text-[10px] uppercase tracking-caps text-nootr-faint">Dia</p>
+        <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-sm">
+          <span className="tabular-nums text-nootr-muted">{Math.round(day.macros_before.calories)}</span>
+          <span className="text-nootr-faint">→</span>
+          <span className="font-semibold tabular-nums text-nootr-cream">
+            {Math.round(day.macros_after.calories)} kcal
+          </span>
+          {Math.abs(deltaKcal) >= 1 && (
+            <span className={`text-xs tabular-nums ${deltaKcal > 0 ? "text-emerald-400" : "text-red-400"}`}>
+              ({deltaKcal > 0 ? "+" : ""}{Math.round(deltaKcal)})
+            </span>
+          )}
+        </p>
+        <p className="mt-1 text-xs tabular-nums text-nootr-muted">
+          P {Math.round(day.macros_after.protein_g)}g · C {Math.round(day.macros_after.carbs_g)}g
+          {" · "}G {Math.round(day.macros_after.fat_g)}g
+        </p>
+      </div>
+
+      {/* Refeições */}
+      {day.meals.map((meal) => (
+        <div key={meal.id}>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+            <p className="text-[10px] uppercase tracking-caps text-nootr-faint">
+              {meal.name}
+              {meal.time && <span className="ml-1.5 normal-case tracking-normal">{meal.time}</span>}
+            </p>
+            <p className="text-[10px] tabular-nums text-nootr-faint">
+              {Math.round(meal.before.calories) !== Math.round(meal.after.calories) && (
+                <>
+                  <span>{Math.round(meal.before.calories)}</span>
+                  <span className="mx-1">→</span>
+                </>
+              )}
+              {macroLine(meal.after)}
+            </p>
+          </div>
+          <ul className="mt-1 space-y-0.5">
+            {meal.foods.map((food) => {
+              const style = food.kind ? FOOD_STYLE[food.kind] : null;
               return (
-                <li key={`${c.kind}-${c.name}`} className="flex items-baseline gap-1.5 text-xs">
-                  <span className={`${icon.className} font-semibold`} aria-label={icon.label}>
-                    {icon.symbol}
+                <li key={`${food.name}-${food.kind ?? ""}`} className="flex items-baseline gap-1.5 text-xs">
+                  <span
+                    className={`w-3 shrink-0 text-center font-semibold ${food.kind ? ARROW_COLOR[food.kind] : "text-transparent"}`}
+                    aria-label={style?.label}
+                  >
+                    {style?.arrow ?? "·"}
                   </span>
-                  <span className="text-nootr-cream">{c.name}</span>
+                  <span className={style?.name || "text-nootr-cream"}>{food.name}</span>
                   <span className="ml-auto shrink-0 tabular-nums text-nootr-faint">
-                    {c.from && <span className="line-through">{c.from}</span>}
-                    {c.from && c.to && " → "}
-                    {c.to || (c.from ? "" : null)}
+                    {food.previous_quantity && (
+                      <>
+                        <span>{food.previous_quantity}</span>
+                        <span className="mx-1">→</span>
+                      </>
+                    )}
+                    {food.quantity}
                   </span>
                 </li>
               );
@@ -108,11 +180,11 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
       const r = await nootrApi.noo.send(token, trimmed);
       setMessages((prev) => [...prev, {
         id: `local-${Date.now()}-a`, role: "assistant", text: r.reply,
-        changes: r.changes.length ? r.changes : null, created_at: new Date().toISOString(),
+        changes: r.day, created_at: new Date().toISOString(),
       }]);
       setRemaining(r.remaining);
       // O dia mudou: quem embute o chat recarrega a dieta.
-      if (r.changes.length && onApplied) onApplied();
+      if (r.day && onApplied) onApplied();
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
       setText(trimmed);
@@ -177,7 +249,7 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
           ) : (
             <div key={m.id} className="max-w-[92%] rounded-2xl rounded-bl-sm border border-nootr-line bg-nootr-black px-3.5 py-2.5">
               <p className="text-sm leading-relaxed text-nootr-cream">{m.text}</p>
-              {m.changes && <ChangeList changes={m.changes} />}
+              {isDayView(m.changes) && <DayView day={m.changes} />}
             </div>
           )
         )}
