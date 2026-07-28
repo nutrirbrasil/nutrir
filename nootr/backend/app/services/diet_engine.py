@@ -275,19 +275,24 @@ def _apply_floor_pass(
     return changed
 
 
-def _cap_total_growth(remaining: list[dict], adjusted_by_id: dict[str, dict]) -> None:
+def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> None:
     """
-    Limita o crescimento ACUMULADO de cada alimento a `_MAX_FACTOR` sobre o
-    que ele tinha antes do reajuste. Muda `adjusted_by_id` in-place.
+    Limita o crescimento ACUMULADO de cada alimento a `_MAX_FACTOR` sobre
+    `baseline` (a porção ORIGINAL do dia, antes de qualquer ajuste, ver
+    `original_meals` em `_rebalance`). Muda `adjusted_by_id` in-place.
 
     Cada passada respeita o próprio teto, mas os tetos se compõem: três
     passadas de 2,5x davam até 15x, e um arroz de 150g virava 915g pra
     absorver sozinho um desvio grande. Porção irreal é pior que meta
-    imperfeita, então o teto vale sobre o total. O que não couber aqui fica
-    como diferença honesta no fim do dia (ver `remaining_calories`), que é o
-    mesmo caminho de quando não há refeição ajustável.
+    imperfeita, então o teto vale sobre o total. Além disso, o baseline
+    precisa ser o do DIA inteiro, não o da última mensagem/ajuste: se cada
+    conversa recalculasse o teto sobre o resultado da conversa anterior, o
+    limite continuaria valendo passada a passada mas o alimento cresceria
+    sem fim ao longo de várias mensagens no mesmo dia. O que não couber aqui
+    fica como diferença honesta no fim do dia (ver `remaining_calories`), que
+    é o mesmo caminho de quando não há refeição ajustável.
     """
-    original_by_id = {m["id"]: {f["name"]: f for f in m["foods"]} for m in remaining}
+    original_by_id = {m["id"]: {f["name"]: f for f in m["foods"]} for m in baseline}
     for meal_id, meal in adjusted_by_id.items():
         originals = original_by_id.get(meal_id, {})
         capped = []
@@ -302,7 +307,9 @@ def _cap_total_growth(remaining: list[dict], adjusted_by_id: dict[str, dict]) ->
         adjusted_by_id[meal_id] = {**meal, "foods": capped}
 
 
-def _rebalance(meals: list[dict], adjustable_ids: set[str], targets: dict) -> tuple[list[dict], bool, bool]:
+def _rebalance(
+    meals: list[dict], adjustable_ids: set[str], targets: dict, original_meals: list[dict] | None = None,
+) -> tuple[list[dict], bool, bool]:
     """
     Ajusta as porções das refeições em `adjustable_ids` para o dia bater as
     CALORIAS e a PROTEÍNA do alvo ao mesmo tempo (grupos proteico/energético).
@@ -310,6 +317,11 @@ def _rebalance(meals: list[dict], adjustable_ids: set[str], targets: dict) -> tu
     valor diferencia "não havia nada pra ajustar" de "havia, mas o fator ficou
     ~1 (já estava dentro da meta)", pra decidir se vale a pena tentar um
     ajuste extra (adicionar/remover alimento) além da escala de quantidade.
+
+    `original_meals`: porção original do dia (antes de qualquer ajuste hoje),
+    usada só como teto do `_cap_total_growth` (ver lá o porquê). Se não vier
+    (chamadas antigas, testes), usa o próprio `meals` recebido aqui, que é o
+    comportamento anterior.
 
     Em vez de aplicar o MESMO fator a todas as refeições ajustáveis (o que
     concentrava calorias/proteína ainda mais na refeição que já tinha mais),
@@ -404,7 +416,9 @@ def _rebalance(meals: list[dict], adjustable_ids: set[str], targets: dict) -> tu
     if _apply_floor_pass(remaining, adjusted_by_id, solvable_ids, targets):
         changed = True
 
-    _cap_total_growth(remaining, adjusted_by_id)
+    cap_source = original_meals if original_meals is not None else meals
+    cap_baseline = [m for m in cap_source if m["id"] in adjustable_ids]
+    _cap_total_growth(cap_baseline, adjusted_by_id)
 
     if not changed:
         return meals, False, had_adjustable
@@ -657,7 +671,7 @@ def _apply_deviation(
 
     replaced_meal = {**meal, "foods": updated_foods}
     meals = [replaced_meal if m["id"] == meal["id"] else m for m in diet["meals"]]
-    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt)
+    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt, diet.get("original_meals"))
 
     skipped_label = ", ".join(f["name"] for f in skipped_foods)
     new_label = ", ".join(f["name"] for f in new_foods)
@@ -727,7 +741,9 @@ def apply_changes(
         m["id"] for m in diet["meals"]
         if m["id"] not in touched_ids and m["id"] not in already_eaten
     }
-    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt)
+    adjusted_meals, rebalanced, had_adjustable = _rebalance(
+        meals, adjustable_ids, tgt, diet.get("original_meals"),
+    )
 
     headline = f"Registramos: {'; '.join(labels)}." if labels else "Nenhuma mudança registrada."
     result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids)
@@ -782,7 +798,7 @@ def log_missing_food(diet: dict, missing_food_name: str, meal_id: str, substitut
     updated_meal = {**meal, "foods": new_foods}
     meals = [updated_meal if m["id"] == meal["id"] else m for m in diet["meals"]]
     adjustable_ids = _meals_after(meals, meal["id"])
-    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt)
+    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt, diet.get("original_meals"))
 
     names = ", ".join(f["name"] for f in substitutes)
     headline = (

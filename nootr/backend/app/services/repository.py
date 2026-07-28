@@ -20,7 +20,7 @@ _PROFILE_FIELDS = "user_id,full_name,plan,billing_cycle,country,sex,age,weight_k
 _PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes,meal_count,meal_times,meal_reminders"
 _DIET_FIELDS = "id,name,weekday,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,status,source_meals"
 _ADMIN_DIET_FIELDS = _DIET_FIELDS + ",user_id,created_at"
-_DAY_PLAN_FIELDS = "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,previous_meals"
+_DAY_PLAN_FIELDS = "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,previous_meals,original_meals"
 _CUSTOM_FOOD_FIELDS = "id,user_id,name,kcal_100g,protein_100g,carbs_100g,fat_100g,fiber_100g,sodium_100mg,status,created_at"
 _RECIPE_FIELDS = "id,user_id,name,ingredients,status,created_at"
 
@@ -233,6 +233,12 @@ def get_or_create_day_plan(user: CurrentUser, plan_date: str | None = None) -> d
             "daily_carbs_g": diet["daily_carbs_g"],
             "daily_fat_g": diet["daily_fat_g"],
             "meals": diet["meals"],
+            # Porção original de cada alimento no dia, nunca reescrita depois
+            # (ver diet_engine._cap_total_growth): sem isso, o teto de
+            # crescimento de porção comparava contra o estado da ÚLTIMA
+            # mensagem/ajuste, e sucessivos ajustes no mesmo dia inflavam um
+            # alimento bem além do razoável mesmo cada um respeitando o teto.
+            "original_meals": diet["meals"],
         },
     )
 

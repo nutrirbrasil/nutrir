@@ -359,3 +359,34 @@ def test_rebalance_never_inflates_a_food_beyond_the_growth_cap():
     assert jantar["foods"][0]["grams"] <= 150 * 2.5 + 1
     # E o app reporta a diferença que sobrou, em vez de fingir que fechou.
     assert r["remaining_calories"] > 0
+
+
+def test_growth_cap_holds_across_several_messages_in_the_same_day():
+    # Cada chamada respeitava o teto sobre o estado da mensagem ANTERIOR, mas
+    # os tetos se compunham conversa a conversa (2,5x em cima de 2,5x já
+    # inflado), deixando uma porção bem além do razoável no fim do dia. O
+    # teto precisa valer sobre a porção original do dia inteiro.
+    arroz = {"name": "Arroz branco", "calories": 128.0, "protein_g": 2.5, "carbs_g": 28.0,
+             "fat_g": 0.2, "grams": 150.0, "quantity": "150g"}
+    original_meals = [
+        {"id": "meal-1", "name": "Almoço", "time": "12:00", "foods": [dict(arroz)]},
+        {"id": "meal-2", "name": "Jantar", "time": "20:00", "foods": [dict(arroz)]},
+    ]
+    diet = {
+        "id": "d", "user_id": "u", "name": "T",
+        "daily_calories": 3000, "daily_protein_g": 150, "daily_carbs_g": 0, "daily_fat_g": 0,
+        "meals": original_meals,
+        "original_meals": original_meals,
+    }
+    # 1ª mensagem: desvio grande no almoço, jantar absorve (capado em 2,5x).
+    r1 = diet_engine.apply_changes(diet, [
+        {"meal_id": "meal-1", "skipped_names": ["Arroz branco"], "new_foods": []},
+    ])
+    # 2ª mensagem no MESMO dia: o day_plan já reflete o ajuste anterior, mas
+    # `original_meals` continua sendo a porção do começo do dia.
+    diet_turn_2 = {**diet, "meals": r1["adjusted_meals"]}
+    r2 = diet_engine.apply_changes(diet_turn_2, [
+        {"meal_id": "meal-1", "skipped_names": [], "new_foods": [dict(arroz)]},
+    ])
+    jantar = next(m for m in r2["adjusted_meals"] if m["id"] == "meal-2")
+    assert jantar["foods"][0]["grams"] <= 150 * 2.5 + 1
