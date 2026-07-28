@@ -24,7 +24,8 @@ def day_plan():
     return {
         "id": "dp-1", "diet_id": "d-1", "plan_date": "2026-07-27", "name": "Minha dieta",
         "daily_calories": 2000, "daily_protein_g": 120, "daily_carbs_g": 250, "daily_fat_g": 60,
-        "meals": meals,
+        "meals": meals, "original_meals": [dict(m) for m in meals],
+        "noo_messages_used": 0, "noo_reset_count": 0,
     }
 
 
@@ -33,30 +34,84 @@ def client(monkeypatch, day_plan):
     monkeypatch.setattr(repository, "get_or_create_day_plan", lambda user, plan_date=None: day_plan)
     monkeypatch.setattr(repository, "get_preferences", lambda user: None)
     monkeypatch.setattr(repository, "list_noo_messages_today", lambda user: [])
-    monkeypatch.setattr(repository, "count_noo_messages_today", lambda user: 0)
     monkeypatch.setattr(repository, "insert_noo_message", lambda *a, **k: {"id": "n1"})
     monkeypatch.setattr(repository, "update_day_plan_meals", lambda user, dp, meals: {"id": dp})
     monkeypatch.setattr(repository, "insert_substitution_log", lambda *a, **k: {"id": "log"})
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "basic"})
+    monkeypatch.setattr(repository, "delete_noo_messages_today", lambda user: None)
+
+    def fake_record_used(user, dp_id, used):
+        day_plan["noo_messages_used"] = used
+        return {"id": dp_id, "noo_messages_used": used}
+
+    def fake_reset(user, dp_id, original_meals, reset_count):
+        day_plan["meals"] = original_meals
+        day_plan["previous_meals"] = None
+        day_plan["noo_reset_count"] = reset_count
+        return dict(day_plan)
+
+    monkeypatch.setattr(repository, "record_noo_message_used", fake_record_used)
+    monkeypatch.setattr(repository, "reset_day_plan", fake_reset)
     app.dependency_overrides[get_current_user] = lambda: CurrentUser(id="u1", email="t@t.com", token="tok")
     yield TestClient(app)
     app.dependency_overrides.clear()
 
 
-def test_basic_gets_three_messages_a_day(client, monkeypatch):
-    monkeypatch.setattr(repository, "count_noo_messages_today", lambda user: 3)
+def test_basic_gets_three_messages_a_day(client, day_plan):
+    day_plan["noo_messages_used"] = 3
     resp = client.post("/nootr/noo", json={"text": "não comi o pão"})
     assert resp.status_code == 403
     assert "Pro" in resp.json()["detail"]  # convida pro upgrade
 
 
-def test_pro_gets_twenty_five(client, monkeypatch):
+def test_pro_gets_twenty(client, monkeypatch, day_plan):
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
-    monkeypatch.setattr(repository, "count_noo_messages_today", lambda user: 24)
+    day_plan["noo_messages_used"] = 19
     monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {"reply": "ok", "changes": [], "already_eaten": []})
     resp = client.post("/nootr/noo", json={"text": "oi"})
     assert resp.status_code == 200
     assert resp.json()["remaining"] == 0
+    assert day_plan["noo_messages_used"] == 20
+
+
+def test_resetting_reverts_the_diet_and_clears_the_chat(client, day_plan):
+    # Simula um dia com o Noo já tendo mexido (meals != original_meals).
+    day_plan["meals"] = [{"id": "m1", "name": "Café da manhã", "time": "07:00", "foods": []}]
+    resp = client.delete("/nootr/noo")
+    assert resp.status_code == 200
+    assert day_plan["meals"] == day_plan["original_meals"]
+    assert day_plan["noo_reset_count"] == 1
+
+
+def test_reset_grants_a_bonus_message_capped_at_five_for_pro(client, monkeypatch, day_plan):
+    monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
+    for i in range(1, 7):
+        resp = client.delete("/nootr/noo")
+        assert resp.status_code == 200
+        body = resp.json()
+        expected_bonus = min(i, 5)
+        assert body["limit"] == 20 + expected_bonus
+    # A 6ª reiniciada não rende mais bônus, o teto já foi batido na 5ª.
+    assert day_plan["noo_reset_count"] == 6
+
+
+def test_reset_grants_a_bonus_message_capped_at_one_for_basic(client, day_plan):
+    resp1 = client.delete("/nootr/noo")
+    assert resp1.json()["limit"] == 4  # 3 base + 1
+    resp2 = client.delete("/nootr/noo")
+    assert resp2.json()["limit"] == 4  # não passa de +1
+
+
+def test_reset_does_not_refund_messages_already_used(client, day_plan):
+    # Reiniciar rende +1 no limite, mas não devolve mensagens já gastas,
+    # senão reiniciar viraria um jeito de furar o limite diário.
+    day_plan["noo_messages_used"] = 3
+    resp = client.delete("/nootr/noo")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["limit"] == 4  # 3 + 1 de bônus
+    assert body["remaining"] == 1  # 4 - 3 já usadas
+    assert day_plan["noo_messages_used"] == 3  # intocado
 
 
 def test_applies_changes_across_several_meals(client, monkeypatch):

@@ -76,8 +76,9 @@ def _resolve_added(items: list[dict], prefs: dict, country: str) -> list[dict]:
 def get_conversation(user: CurrentUser = CurrentUserDep):
     """Conversa de hoje + quanto ainda resta de mensagens no plano."""
     profile = repository.get_profile(user)
-    limit = plan_limits.noo_daily_limit(profile)
-    used = repository.count_noo_messages_today(user)
+    day_plan = repository.get_or_create_day_plan(user)
+    used = (day_plan or {}).get("noo_messages_used") or 0
+    limit = plan_limits.noo_daily_limit(profile, (day_plan or {}).get("noo_reset_count") or 0)
     return {
         "messages": repository.list_noo_messages_today(user),
         "used": used,
@@ -96,21 +97,22 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
     ajustado e o diff do que mudou.
     """
     profile = repository.get_profile(user)
-    limit = plan_limits.noo_daily_limit(profile)
-    used = repository.count_noo_messages_today(user)
+    day_plan = repository.get_or_create_day_plan(user)
+    if day_plan is None:
+        raise HTTPException(status_code=409, detail="Monte sua dieta primeiro em /dieta.")
+
+    used = day_plan.get("noo_messages_used") or 0
+    limit = plan_limits.noo_daily_limit(profile, day_plan.get("noo_reset_count") or 0)
     if used >= limit:
         raise HTTPException(
             status_code=403,
             detail=(
                 f"Você usou suas {limit} mensagens do Noo hoje. "
-                + ("O limite renova amanhã." if plan_limits.is_pro(profile)
-                   else "No Pro são 25 por dia, com um modelo de IA mais avançado.")
+                + ("O limite renova amanhã, ou reinicie o Noo pra ganhar mais uma (até o teto do dia)."
+                   if plan_limits.is_pro(profile)
+                   else "No Pro são 20 por dia (+5 reiniciando), com um modelo de IA mais avançado.")
             ),
         )
-
-    day_plan = repository.get_or_create_day_plan(user)
-    if day_plan is None:
-        raise HTTPException(status_code=409, detail="Monte sua dieta primeiro em /dieta.")
 
     prefs = repository.get_preferences(user) or {}
     country = (profile or {}).get("country") or "BR"
@@ -195,17 +197,36 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
     # O snapshot do dia é guardado junto da resposta pra conversa reabrir
     # mostrando exatamente o que a pessoa viu quando o ajuste foi feito.
     repository.insert_noo_message(user, "assistant", answer["reply"], day_view)
+    new_used = used + 1
+    repository.record_noo_message_used(user, day_plan["id"], new_used)
     return {
         "reply": answer["reply"],
         "day": day_view,
         "targets": (result or {}).get("targets"),
-        "remaining": max(limit - (used + 1), 0),
+        "remaining": max(limit - new_used, 0),
         "limit": limit,
     }
 
 
 @router.delete("")
-def clear_conversation(user: CurrentUser = CurrentUserDep):
-    """Limpa a conversa do dia (não devolve mensagens já gastas do limite)."""
+def reset_noo(user: CurrentUser = CurrentUserDep):
+    """
+    "Reiniciar Noo": limpa a conversa do dia E desfaz todos os ajustes feitos
+    hoje, voltando a dieta pra porção original (ver repository.reset_day_plan).
+    Pode ser feito quantas vezes a pessoa quiser, mas só rende +1 mensagem no
+    limite diário até um teto por plano (NÃO devolve as mensagens já gastas,
+    ver record_noo_message_used, senão reiniciar viraria um jeito de furar o
+    limite).
+    """
     repository.delete_noo_messages_today(user)
-    return {"ok": True}
+    profile = repository.get_profile(user)
+    day_plan = repository.get_or_create_day_plan(user)
+    reset_count = 0
+    used = 0
+    if day_plan is not None:
+        original = day_plan.get("original_meals") or day_plan["meals"]
+        reset_count = (day_plan.get("noo_reset_count") or 0) + 1
+        repository.reset_day_plan(user, day_plan["id"], original, reset_count)
+        used = day_plan.get("noo_messages_used") or 0
+    limit = plan_limits.noo_daily_limit(profile, reset_count)
+    return {"ok": True, "remaining": max(limit - used, 0), "limit": limit}

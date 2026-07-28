@@ -38,7 +38,10 @@ _PROFILE_FIELDS = "user_id,full_name,plan,billing_cycle,country,sex,age,weight_k
 _PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes,meal_count,meal_times"
 _DIET_FIELDS = "id,name,weekday,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,status,source_meals"
 _ADMIN_DIET_FIELDS = _DIET_FIELDS + ",user_id,created_at"
-_DAY_PLAN_FIELDS = "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,previous_meals,original_meals"
+_DAY_PLAN_FIELDS = (
+    "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,"
+    "meals,previous_meals,original_meals,noo_messages_used,noo_reset_count"
+)
 _CUSTOM_FOOD_FIELDS = "id,user_id,name,kcal_100g,protein_100g,carbs_100g,fat_100g,fiber_100g,sodium_100mg,status,created_at"
 _RECIPE_FIELDS = "id,user_id,name,ingredients,status,created_at"
 
@@ -606,14 +609,37 @@ def insert_substitution_log(user: CurrentUser, day_plan_id: str, plan_date: str,
 _NOO_FIELDS = "id,role,text,changes,created_at"
 
 
-def count_noo_messages_today(user: CurrentUser) -> int:
-    """Quantas mensagens o usuário JÁ ENVIOU hoje (só as dele contam pro limite)."""
-    rows = supabase_client.select(
-        "noo_messages",
+def record_noo_message_used(user: CurrentUser, day_plan_id: str, messages_used: int) -> dict:
+    """
+    Grava quantas mensagens do Noo já foram usadas hoje. Guardado em
+    `day_plans.noo_messages_used`, não contado a partir das linhas de
+    `noo_messages`, porque "Reiniciar Noo" (ver reset_day_plan) limpa a
+    conversa visível mas NÃO pode devolver mensagens já gastas, senão
+    reiniciar viraria um jeito de furar o limite diário.
+    """
+    return supabase_client.update(
+        "day_plans",
         user.token,
-        {"select": "id", "msg_date": f"eq.{today_iso()}", "role": "eq.user"},
+        {"id": f"eq.{day_plan_id}", "user_id": f"eq.{user.id}"},
+        {"noo_messages_used": messages_used},
     )
-    return len(rows)
+
+
+def reset_day_plan(user: CurrentUser, day_plan_id: str, original_meals: list[dict], reset_count: int) -> dict:
+    """
+    "Reiniciar Noo": volta o dia pra porção ORIGINAL (antes de qualquer ajuste
+    hoje, ver `original_meals`) e limpa o snapshot de desfazer (não há mais
+    "último ajuste" pra desfazer depois de um reset completo). `reset_count`
+    é o número de vezes que a pessoa já reiniciou hoje, usado só pra calcular
+    o bônus de mensagens (ver plan_limits.NOO_RESET_BONUS_CAP), não afeta
+    `noo_messages_used`.
+    """
+    return supabase_client.update(
+        "day_plans",
+        user.token,
+        {"id": f"eq.{day_plan_id}", "user_id": f"eq.{user.id}"},
+        {"meals": original_meals, "previous_meals": None, "noo_reset_count": reset_count},
+    )
 
 
 def list_noo_messages_today(user: CurrentUser) -> list[dict]:
