@@ -37,6 +37,8 @@ function PerfilContent({ token }: { token: string }) {
   const [proteinPct, setProteinPct] = useState(30);
   const [carbsPct, setCarbsPct] = useState(40);
   const [fatPct, setFatPct] = useState(30);
+  const [proteinGPerKg, setProteinGPerKg] = useState(1.8);
+  const [fatGPerKg, setFatGPerKg] = useState(0.85);
 
   function patchCal(patch: Partial<CalorieCalculatorState>) {
     setCalState((s) => ({ ...s, ...patch }));
@@ -63,6 +65,10 @@ function PerfilContent({ token }: { token: string }) {
         setProteinPct(p.protein_pct ?? 30);
         setCarbsPct(p.carbs_pct ?? 40);
         setFatPct(p.fat_pct ?? 30);
+        // Sem ajuste salvo, começa no meio da faixa de referência (a mesma
+        // que o Nootr usa por padrão pra montar a dieta, ver energy.py).
+        setProteinGPerKg(p.protein_g_per_kg ?? 1.8);
+        setFatGPerKg(p.fat_g_per_kg ?? 0.85);
       })
       .catch(() => active && setError("Não foi possível carregar o perfil."))
       .finally(() => active && setLoading(false));
@@ -84,7 +90,7 @@ function PerfilContent({ token }: { token: string }) {
   async function handleSave() {
     setError("");
     setSavedMsg("");
-    if (proteinPct + carbsPct + fatPct !== 100) {
+    if (macroMode === "percent" && proteinPct + carbsPct + fatPct !== 100) {
       setError("A distribuição de macros precisa somar 100% antes de salvar.");
       return;
     }
@@ -95,6 +101,10 @@ function PerfilContent({ token }: { token: string }) {
       body.protein_pct = proteinPct;
       body.carbs_pct = carbsPct;
       body.fat_pct = fatPct;
+      if (macroMode === "per_kg") {
+        body.protein_g_per_kg = proteinGPerKg;
+        body.fat_g_per_kg = fatGPerKg;
+      }
       const updated = await nootrApi.updateProfile(token, body);
       setProfile(updated);
       setSavedMsg(
@@ -192,40 +202,50 @@ function PerfilContent({ token }: { token: string }) {
             subtitle="Usada como alvo ao montar a dieta e para equilibrar as substituições (busca bater a proteína, mantendo carbo e gordura perto do original)."
           />
 
-          {/* g/kg é do Pro: no Basic a visão é sempre por percentual (o backend
-              também força isso, ver routes/nootr/profile.py). */}
-          {profile?.plan === "pro" && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {[
-                { id: "percent" as const, label: "Por percentual" },
-                { id: "per_kg" as const, label: "Por g/kg de peso" },
-              ].map((opt) => (
+          {/* g/kg é do Pro: no Basic a opção aparece com cadeado (convite pro
+              upgrade) em vez de sumir, e o backend também força percent nesse
+              caso (ver routes/nootr/profile.py). */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {[
+              { id: "percent" as const, label: "Por percentual" },
+              { id: "per_kg" as const, label: "Por g/kg de peso" },
+            ].map((opt) => {
+              const locked = opt.id === "per_kg" && profile?.plan !== "pro";
+              return (
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => setMacroMode(opt.id)}
-                  className={`chip ${macroMode === opt.id ? "chip-active" : ""}`}
+                  onClick={() => !locked && setMacroMode(opt.id)}
+                  disabled={locked}
+                  title={locked ? "Disponível no Pro" : undefined}
+                  className={`chip inline-flex items-center gap-1.5 ${macroMode === opt.id ? "chip-active" : ""} ${locked ? "cursor-not-allowed opacity-60" : ""}`}
                 >
                   {opt.label}
+                  {locked && <Icon name="lock" size={11} />}
                 </button>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
 
-          {macroMode === "per_kg" ? (
+          {macroMode === "per_kg" && profile?.plan === "pro" ? (
             <div className="mt-5 rounded-xl border border-nootr-line bg-nootr-black/40 p-4">
               {profile?.weight_kg ? (
                 <>
                   <p className="text-sm text-nootr-cream">
-                    Proteína e gordura calculadas pelo seu peso ({profile.weight_kg} kg), carboidrato fecha as calorias.
+                    Proteína e gordura por grama por quilo do seu peso ({profile.weight_kg} kg), carboidrato fecha
+                    as calorias que sobram.
                   </p>
-                  <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
-                    <MacroPerKgCard label="Proteína" grams={profile.macro_targets_g?.protein_g} range="1,6–2 g/kg" />
-                    <MacroPerKgCard label="Carboidrato" grams={profile.macro_targets_g?.carbs_g} range="o que sobra" />
-                    <MacroPerKgCard label="Gordura" grams={profile.macro_targets_g?.fat_g} range="0,7–1 g/kg" />
-                  </div>
+                  <MacroPerKgEditor
+                    weightKg={profile.weight_kg}
+                    calories={profile.target_calories}
+                    proteinGPerKg={proteinGPerKg}
+                    fatGPerKg={fatGPerKg}
+                    onProteinChange={setProteinGPerKg}
+                    onFatChange={setFatGPerKg}
+                  />
                   <p className="mt-3 text-xs text-nootr-faint">
-                    É assim que o Nootr monta a dieta. Pra ajustar à mão, troque para &ldquo;Por percentual&rdquo;.
+                    É assim que o Nootr monta a dieta quando você cria pelo app. Pra ajustar à mão, troque para
+                    &ldquo;Por percentual&rdquo;.
                   </p>
                 </>
               ) : (
@@ -474,13 +494,108 @@ export default function PerfilPage() {
   return <RequireAuth>{(token) => <PerfilContent token={token} />}</RequireAuth>;
 }
 
-/** Cartão de um macro no modo g/kg: o valor calculado + a faixa de referência. */
-function MacroPerKgCard({ label, grams, range }: { label: string; grams?: number; range: string }) {
+// Espelha energy.macro_targets_from_weight (backend) pra atualizar os
+// valores na hora enquanto a pessoa digita, sem ida e volta ao servidor. O
+// piso de segurança (10% mínimo de carboidrato) usa a faixa de referência
+// fixa, igual ao backend, mesmo quando o g/kg é um valor ajustado à mão.
+const _PROTEIN_FLOOR_G_PER_KG = 1.6;
+const _FAT_FLOOR_G_PER_KG = 0.7;
+
+function macroTargetsFromWeightPreview(
+  calories: number, weightKg: number, proteinGPerKg: number, fatGPerKg: number
+) {
+  let proteinG = Math.round(weightKg * proteinGPerKg);
+  let fatG = Math.round(weightKg * fatGPerKg);
+  const minCarbsKcal = calories * 0.1;
+  const usedKcal = proteinG * 4 + fatG * 9;
+  if (calories > 0 && usedKcal > calories - minCarbsKcal) {
+    const shrink = (calories - minCarbsKcal) / usedKcal;
+    proteinG = Math.max(Math.round(weightKg * _PROTEIN_FLOOR_G_PER_KG * shrink), 1);
+    fatG = Math.max(Math.round(weightKg * _FAT_FLOOR_G_PER_KG * shrink), 1);
+  }
+  const carbsG = Math.max(Math.round((calories - proteinG * 4 - fatG * 9) / 4), 0);
+  return { proteinG, carbsG, fatG };
+}
+
+/** Proteína e gordura editáveis em g/kg, carboidrato fecha as calorias, os três com o % correspondente ao lado. */
+function MacroPerKgEditor({
+  weightKg,
+  calories,
+  proteinGPerKg,
+  fatGPerKg,
+  onProteinChange,
+  onFatChange,
+}: {
+  weightKg: number;
+  calories: number | null | undefined;
+  proteinGPerKg: number;
+  fatGPerKg: number;
+  onProteinChange: (v: number) => void;
+  onFatChange: (v: number) => void;
+}) {
+  const cals = calories || 0;
+  const { proteinG, carbsG, fatG } = macroTargetsFromWeightPreview(cals, weightKg, proteinGPerKg, fatGPerKg);
+  const pPct = cals ? Math.round(((proteinG * 4) / cals) * 100) : 0;
+  const cPct = cals ? Math.round(((carbsG * 4) / cals) * 100) : 0;
+  const fPct = cals ? Math.round(((fatG * 9) / cals) * 100) : 0;
+
+  function commit(onChange: (v: number) => void, raw: string) {
+    const n = parseFloat(raw.replace(",", "."));
+    onChange(Number.isNaN(n) ? 0 : Math.max(0, Math.min(10, n)));
+  }
+
   return (
-    <div className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5">
-      <p className="text-[10px] uppercase tracking-caps text-nootr-faint">{label}</p>
-      <p className="mt-0.5 tabular-nums text-nootr-cream">{grams != null ? `${grams}g` : "—"}</p>
-      <p className="text-[10px] text-nootr-faint">{range}</p>
+    <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+      <div className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-caps text-nootr-faint">Proteína</p>
+          <p className="text-[10px] tabular-nums text-nootr-bordoSoft">{pPct}%</p>
+        </div>
+        <p className="mt-0.5 tabular-nums text-nootr-cream">{proteinG}g</p>
+        <div className="mt-1.5 flex items-center gap-1">
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0.1}
+            max={10}
+            step={0.1}
+            value={proteinGPerKg}
+            onChange={(e) => commit(onProteinChange, e.target.value)}
+            className="input-field w-16 px-1.5 py-0.5 text-right text-xs tabular-nums"
+          />
+          <span className="text-[10px] text-nootr-faint">g/kg</span>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-caps text-nootr-faint">Carboidrato</p>
+          <p className="text-[10px] tabular-nums text-nootr-bordoSoft">{cPct}%</p>
+        </div>
+        <p className="mt-0.5 tabular-nums text-nootr-cream">{carbsG}g</p>
+        <p className="mt-1.5 text-[10px] text-nootr-faint">o que sobra das calorias</p>
+      </div>
+
+      <div className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-caps text-nootr-faint">Gordura</p>
+          <p className="text-[10px] tabular-nums text-nootr-bordoSoft">{fPct}%</p>
+        </div>
+        <p className="mt-0.5 tabular-nums text-nootr-cream">{fatG}g</p>
+        <div className="mt-1.5 flex items-center gap-1">
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0.1}
+            max={10}
+            step={0.1}
+            value={fatGPerKg}
+            onChange={(e) => commit(onFatChange, e.target.value)}
+            className="input-field w-16 px-1.5 py-0.5 text-right text-xs tabular-nums"
+          />
+          <span className="text-[10px] text-nootr-faint">g/kg</span>
+        </div>
+      </div>
     </div>
   );
 }

@@ -616,6 +616,26 @@ def test_profile_calculates_mifflin(client, monkeypatch):
     assert stored["target_calories"] == 2759
 
 
+def test_profile_saves_custom_g_per_kg_and_reflects_in_targets(client, monkeypatch):
+    stored = {"plan": "pro", "weight_kg": 80, "target_calories": 2600}
+
+    def fake_upsert(user, patch):
+        stored.update(patch)
+        return {"user_id": user.id, **stored}
+
+    monkeypatch.setattr(repository, "get_profile", lambda user: dict(stored))
+    monkeypatch.setattr(repository, "upsert_profile", fake_upsert)
+    resp = client.put(
+        "/nootr/profile",
+        json={"macro_mode": "per_kg", "protein_g_per_kg": 2.5, "fat_g_per_kg": 1.0},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert stored["protein_g_per_kg"] == 2.5
+    assert stored["fat_g_per_kg"] == 1.0
+    assert body["macro_targets_g"]["protein_g"] == 200  # 80kg * 2,5
+
+
 def test_import_diet_requires_pro(client, monkeypatch):
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "basic"})
     resp = client.post(

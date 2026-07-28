@@ -84,3 +84,27 @@ def test_macro_mode_governs_the_user_view_only():
 
     # A dieta que o NOOTR monta usa g/kg independente do modo escolhido.
     assert energy.macro_targets_for_generation(profile, 2000)["protein_g"] == 144
+
+
+def test_macro_targets_from_weight_respects_user_override():
+    # Usuário ajustou à mão pra 2,5 g/kg de proteína (fora da faixa de
+    # referência 1,6-2, de propósito): o override vale, sem ser clampado.
+    m = energy.macro_targets_from_weight(2600, 80, protein_g_per_kg=2.5, fat_g_per_kg=1.0)
+    assert m["protein_g"] == 200  # 80 * 2,5
+    assert m["fat_g"] == 80  # 80 * 1,0
+    assert m["protein_g_per_kg"] == 2.5
+    assert m["fat_g_per_kg"] == 1.0
+    total = m["protein_g"] * 4 + m["carbs_g"] * 4 + m["fat_g"] * 9
+    assert abs(total - 2600) <= 4
+
+
+def test_macro_targets_for_profile_uses_stored_override():
+    profile = {
+        "weight_kg": 80, "macro_mode": "per_kg",
+        "protein_g_per_kg": 2.5, "fat_g_per_kg": 1.0,
+    }
+    m = energy.macro_targets_for_profile(profile, 2600)
+    assert m["protein_g"] == 200
+    assert m["fat_g"] == 80
+    # A geração de dieta pelo Nootr também respeita o override salvo.
+    assert energy.macro_targets_for_generation(profile, 2600)["protein_g"] == 200
