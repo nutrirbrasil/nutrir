@@ -71,12 +71,17 @@ def test_applies_changes_across_several_meals(client, monkeypatch):
     })
     resp = client.post("/nootr/noo", json={"text": "não comi o pão, vou comer um ovo no jantar"})
     assert resp.status_code == 200
-    body = resp.json()
-    cafe = next(m for m in body["adjusted_meals"] if m["id"] == "m1")
-    jantar = next(m for m in body["adjusted_meals"] if m["id"] == "m3")
-    assert not any("Pão" in f["name"] for f in cafe["foods"])
-    assert any("Ovo" in f["name"] for f in jantar["foods"])
-    assert body["changes"]  # o diff volta pro chat mostrar o que mudou
+    day = resp.json()["day"]
+    cafe = next(m for m in day["meals"] if m["id"] == "m1")
+    jantar = next(m for m in day["meals"] if m["id"] == "m3")
+    # O pão continua na lista, marcado como removido (não some da tela).
+    pao = next(f for f in cafe["foods"] if "Pão" in f["name"])
+    assert pao["kind"] == "removed"
+    assert any(f["name"].startswith("Ovo") and f["kind"] == "added" for f in jantar["foods"])
+    # O dia inteiro volta, com totais antes e depois pra tela comparar.
+    assert day["macros_before"]["calories"] > 0
+    assert day["macros_after"]["calories"] > 0
+    assert all("before" in m and "after" in m for m in day["meals"])
 
 
 def test_conversation_without_changes_does_not_touch_the_day(client, monkeypatch):
@@ -89,7 +94,7 @@ def test_conversation_without_changes_does_not_touch_the_day(client, monkeypatch
     monkeypatch.setattr(repository, "insert_substitution_log", lambda *a, **k: touched.append("log"))
     resp = client.post("/nootr/noo", json={"text": "quanta proteína tem um ovo?"})
     assert resp.status_code == 200
-    assert resp.json()["adjusted_meals"] is None
+    assert resp.json()["day"] is None
     assert touched == []
 
 
@@ -117,5 +122,5 @@ def test_allergy_barrier_blocks_what_noo_suggested(client, monkeypatch):
     })
     resp = client.post("/nootr/noo", json={"text": "quero algo a mais no jantar"})
     assert resp.status_code == 200
-    jantar = next(m for m in resp.json()["adjusted_meals"] if m["id"] == "m3")
+    jantar = next(m for m in resp.json()["day"]["meals"] if m["id"] == "m3")
     assert not any("mendoim" in f["name"] for f in jantar["foods"])
