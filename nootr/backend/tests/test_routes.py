@@ -137,10 +137,11 @@ def test_substitution_with_structured_foods(client, fake_day_plan):
 
 def test_substitution_applies_day_topup_when_gap_is_big(client, fake_day_plan, monkeypatch):
     from backend.app.routes.nootr import substitutions as substitutions_route
+    from backend.app.services import day_topup, diet_engine
 
     # força o gatilho do top-up independente do tamanho real da diferença.
-    monkeypatch.setattr(substitutions_route, "_TOPUP_CAL_THRESHOLD", 0.0)
-    monkeypatch.setattr(substitutions_route, "_TOPUP_PROTEIN_THRESHOLD", 0.0)
+    monkeypatch.setattr(diet_engine, "calorie_tolerance", lambda calories: 0.0)
+    monkeypatch.setattr(day_topup, "_TOPUP_PROTEIN_THRESHOLD", 0.0)
     monkeypatch.setattr(
         substitutions_route.ai, "suggest_day_topup",
         lambda pending_meals, gap_calories, gap_protein, preferences=None: {
@@ -163,9 +164,10 @@ def test_substitution_applies_day_topup_when_gap_is_big(client, fake_day_plan, m
 
 def test_day_topup_blocked_by_allergy(client, fake_day_plan, monkeypatch):
     from backend.app.routes.nootr import substitutions as substitutions_route
+    from backend.app.services import day_topup, diet_engine
 
-    monkeypatch.setattr(substitutions_route, "_TOPUP_CAL_THRESHOLD", 0.0)
-    monkeypatch.setattr(substitutions_route, "_TOPUP_PROTEIN_THRESHOLD", 0.0)
+    monkeypatch.setattr(diet_engine, "calorie_tolerance", lambda calories: 0.0)
+    monkeypatch.setattr(day_topup, "_TOPUP_PROTEIN_THRESHOLD", 0.0)
     monkeypatch.setattr(repository, "get_preferences", lambda user: {
         "pantry": [], "allergies": ["amendoim"], "dislikes": [], "likes": [], "notes": "",
     })
@@ -1092,6 +1094,35 @@ def test_generate_diet_saves_as_pending_review(client, monkeypatch):
     assert resp.json()["status"] == "pending_review"
     assert saved["meals"][0]["name"] == "Almoço"
     assert saved["daily_calories"] > 0
+
+
+def test_generate_diet_retries_once_when_day_total_misses_tolerance(client, monkeypatch):
+    # A dieta gerada tem que fechar dentro da mesma tolerância de calorias do
+    # resto do app desde a primeira resposta da IA; se não fechar, tenta de
+    # novo uma vez antes de aceitar (nunca reescala a composição em código).
+    from backend.app.services import ai
+
+    monkeypatch.setattr(repository, "get_profile", lambda user: _pro_profile_with_calories())
+    monkeypatch.setattr(repository, "get_pending_diet", lambda user: None)
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": [], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+    })
+    calls = []
+
+    def fake_generate(meal_targets, carbs_g, fat_g, preferences, country):
+        # 1ª tentativa: porção minúscula, bem longe da meta de propósito.
+        grams = "20g" if not calls else "600g"
+        calls.append(grams)
+        return {"meals": [{"meal": "Almoço", "time": "12:00", "foods": [{"name": "arroz", "quantity": grams}]}]}
+
+    monkeypatch.setattr(ai, "generate_diet", fake_generate)
+    saved = {}
+    monkeypatch.setattr(repository, "insert_pending_diet", lambda user, payload: saved.update(payload) or {"id": "d-new", **payload})
+    monkeypatch.setattr(repository, "upsert_profile", lambda user, patch: {**_pro_profile_with_calories(), **patch})
+    resp = client.post("/nootr/diets/generate")
+    assert resp.status_code == 200
+    assert len(calls) == 2  # a 1ª tentativa não fechou a meta, tentou de novo
+    assert saved["meals"][0]["foods"][0]["quantity"] == "600g"  # ficou com a 2ª tentativa
 
 
 def test_generate_diet_filters_allergy(client, monkeypatch):

@@ -387,6 +387,11 @@ de servir demais.
 Se uma refeição está longe do alvo de calorias, NÃO infle a porção de um alimento só até ficar \
 estranha, acrescente ou troque alimentos até fechar a conta com porções coerentes.
 
+O TOTAL DO DIA TEM QUE FECHAR: a tolerância de ~10% é POR REFEIÇÃO, mas a SOMA do dia não pode \
+passar de 2% de distância do total informado acima (idealmente cravado ou a menos de 10 kcal). Não \
+deixe pequenos excessos ou faltas em cada refeição se somarem na mesma direção, confira a soma do \
+dia inteiro antes de responder e ajuste a refeição mais fácil de mexer se estiver fora disso.
+
 UM ITEM = UM ALIMENTO
 A tabela nutricional (TACO) só tem ingredientes básicos, não preparações prontas, então cada item \
 precisa ser UM alimento só. Nunca junte dois alimentos numa frase: "café com leite" são dois itens \

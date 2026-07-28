@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from backend.app.auth import CurrentUser, CurrentUserDep
 from backend.app.services import (
-    ai, diet_engine, energy, food_matcher, plan_limits, repository,
+    ai, day_topup, diet_engine, energy, food_matcher, plan_limits, repository,
 )
 from backend.app.routes.nootr.diets import FoodIn
 from backend.app.services.nutrition import resolve_food
@@ -179,6 +179,11 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
     if changes:
         already_eaten = [m["id"] for m in (find_meal(n) for n in answer["already_eaten"]) if m]
         result = diet_engine.apply_changes(day_plan, changes, already_eaten, targets)
+        # Se o rebalanceamento normal não fechou a meta de calorias sozinho
+        # (ex: teto de crescimento por alimento sem mais espaço, ver
+        # diet_engine.calorie_tolerance), tenta um ajuste extra antes de
+        # montar a tela, mesma rede de segurança das 3 funções manuais.
+        day_topup.try_day_topup(result, user)
         # Dia inteiro + o que mudou item a item, pronto pra tela (a pessoa
         # precisa ver o plano completo, não só um extrato das alterações).
         day_view = diet_engine.build_day_view(day_plan["meals"], result["adjusted_meals"])

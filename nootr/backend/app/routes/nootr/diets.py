@@ -15,7 +15,7 @@ from markitdown import MarkItDown
 from pydantic import BaseModel, Field
 
 from backend.app.auth import CurrentUser, CurrentUserDep
-from backend.app.services import ai, energy, food_matcher, meal_planning, repository
+from backend.app.services import ai, diet_engine, energy, food_matcher, meal_planning, repository
 from backend.app.services.nutrition import resolve_food
 from backend.app.services.portion import parse_portion
 
@@ -357,22 +357,34 @@ def _generate_diet_meals(profile: dict, prefs: dict, country: str) -> tuple[list
         macros["protein_g"], macros["carbs_g"], macros["fat_g"],
     )
 
-    try:
-        generated = ai.generate_diet(meal_targets, macros["carbs_g"], macros["fat_g"], prefs, country)
-    except ai.AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    tolerance = diet_engine.calorie_tolerance(float(target_calories))
+    meals, totals = [], {}
+    # A dieta gerada ainda passa pela revisão de um nutricionista antes de
+    # chegar ao usuário, mas o total do dia tem que fechar dentro da mesma
+    # tolerância do resto do app desde a geração, não só depois de um ajuste.
+    # Uma tentativa a mais (nunca reescala em código, ver docstring acima)
+    # cobre o caso raro da IA errar a conta na primeira resposta.
+    for attempt in range(2):
+        try:
+            generated = ai.generate_diet(meal_targets, macros["carbs_g"], macros["fat_g"], prefs, country)
+        except ai.AIError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    meals_raw = generated.get("meals") or []
-    if not meals_raw:
-        raise HTTPException(status_code=502, detail="Não consegui gerar uma dieta agora, tente de novo em instantes.")
+        meals_raw = generated.get("meals") or []
+        if not meals_raw:
+            raise HTTPException(status_code=502, detail="Não consegui gerar uma dieta agora, tente de novo em instantes.")
 
-    meals_in, _unmatched = _match_ai_diet_foods(meals_raw, prefs, country)
-    if not meals_in:
-        raise HTTPException(
-            status_code=502, detail="Não consegui montar uma dieta válida agora, tente de novo em instantes.",
-        )
+        meals_in, _unmatched = _match_ai_diet_foods(meals_raw, prefs, country)
+        if not meals_in:
+            raise HTTPException(
+                status_code=502, detail="Não consegui montar uma dieta válida agora, tente de novo em instantes.",
+            )
 
-    return _build_meals(meals_in)
+        meals, totals = _build_meals(meals_in)
+        if abs(totals["calories"] - float(target_calories)) <= tolerance or attempt == 1:
+            break
+
+    return meals, totals
 
 
 @router.post("/generate")
