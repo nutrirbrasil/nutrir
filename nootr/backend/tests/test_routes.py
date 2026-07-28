@@ -57,6 +57,7 @@ def client(monkeypatch, fake_day_plan):
     monkeypatch.setattr(repository, "count_substitutions_on", lambda user, plan_date: 0)
     monkeypatch.setattr(repository, "count_recipes", lambda user: 0)
     monkeypatch.setattr(repository, "get_pending_diet", lambda user: None)
+    monkeypatch.setattr(repository, "diet_for_today", lambda user: fake_day_plan)
     # Não tocar a rede: a explicação da IA e o "top-up" do dia são mockados.
     from backend.app.services import ai
     monkeypatch.setattr(ai, "explain_change", lambda ctx: "")
@@ -88,6 +89,7 @@ def test_today_returns_diet(client):
     assert body["needs_setup"] is False
     assert body["diet"]["user_id"] == "u1"
     assert len(body["diet"]["meals"]) == 3
+    assert body["original_diet"]["id"] == "dp-1"
 
 
 def test_today_empty_state_when_no_diet(client_no_diet):

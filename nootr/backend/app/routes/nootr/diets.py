@@ -73,16 +73,21 @@ def _build_meals(meals_in: list[MealIn]) -> tuple[list[dict], dict]:
     return meals, totals
 
 
-def _as_diet(day_plan: dict, user: CurrentUser) -> dict:
+def _as_diet(source: dict, user: CurrentUser) -> dict:
+    """
+    Formato comum de `Diet` pro frontend. Serve tanto pro `day_plan`
+    (materializado, com os ajustes do dia) quanto pra uma linha de `diets`
+    (o template original), os nomes dos campos coincidem.
+    """
     return {
-        "id": day_plan["id"],
+        "id": source["id"],
         "user_id": user.id,
-        "name": day_plan["name"],
-        "daily_calories": day_plan["daily_calories"],
-        "daily_protein_g": day_plan["daily_protein_g"],
-        "daily_carbs_g": day_plan["daily_carbs_g"],
-        "daily_fat_g": day_plan["daily_fat_g"],
-        "meals": day_plan["meals"],
+        "name": source["name"],
+        "daily_calories": source["daily_calories"],
+        "daily_protein_g": source["daily_protein_g"],
+        "daily_carbs_g": source["daily_carbs_g"],
+        "daily_fat_g": source["daily_fat_g"],
+        "meals": source["meals"],
     }
 
 
@@ -94,11 +99,18 @@ def get_today_diet(user: CurrentUser = CurrentUserDep):
         # Usuário ainda não montou nenhuma dieta: estado vazio, não é erro,
         # a menos que já tenha uma gerada por IA aguardando revisão.
         return {
-            "date": repository.today_iso(), "diet": None, "needs_setup": True,
+            "date": repository.today_iso(), "diet": None, "original_diet": None, "needs_setup": True,
             "has_pending_review": has_pending_review,
         }
+    # `diet` é o dia materializado (com o que o Nootr já ajustou hoje);
+    # `original_diet` é o template de onde ele nasceu, intacto, pra pessoa
+    # comparar "o que eu montei" com "como o dia está agora".
+    original = repository.diet_for_today(user)
     return {
-        "date": day_plan["plan_date"], "diet": _as_diet(day_plan, user), "needs_setup": False,
+        "date": day_plan["plan_date"],
+        "diet": _as_diet(day_plan, user),
+        "original_diet": _as_diet(original, user) if original else None,
+        "needs_setup": False,
         "has_pending_review": has_pending_review,
     }
 

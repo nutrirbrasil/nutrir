@@ -55,9 +55,15 @@ export const nootrApi = {
   // has_pending_review: já existe uma dieta gerada por IA (ver generateDiet)
   // aguardando revisão de um nutricionista parceiro, nunca é a dieta ativa.
   getTodayDiet: (token: string) =>
-    api<{ date: string; diet: Diet | null; needs_setup: boolean; has_pending_review: boolean }>(
-      "/nootr/diets/today", token
-    ),
+    api<{
+      date: string;
+      diet: Diet | null;
+      // Dieta template (a que o usuário montou), sem os ajustes de hoje. Só
+      // vem null junto com `diet: null` (dia ainda sem plano materializado).
+      original_diet: Diet | null;
+      needs_setup: boolean;
+      has_pending_review: boolean;
+    }>("/nootr/diets/today", token),
 
   // dietas montadas (Basic: 1 base; Pro: base + até 7 por dia da semana)
   listDiets: (token: string) =>

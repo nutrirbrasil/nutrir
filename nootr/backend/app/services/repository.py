@@ -11,10 +11,17 @@ usuário, Basic tem 1 base; Pro pode ter até 7, uma por dia da semana),
 vivem) e `substitution_logs` (auditoria). A dieta NÃO é provisionada
 automaticamente: usuário novo começa vazio e monta a própria dieta.
 """
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from backend.app.auth import CurrentUser
 from backend.app import supabase_client
+
+# "Dia" pro usuário é o dia civil no Brasil, não UTC (o servidor roda em UTC
+# na VPS): sem isso, o dia viraria às 21h de Brasília (meia-noite UTC), não
+# à meia-noite real, confundindo streak, limite diário do Noo e o reset da
+# dieta do dia.
+_TZ = ZoneInfo("America/Sao_Paulo")
 
 _PROFILE_FIELDS = "user_id,full_name,plan,billing_cycle,country,sex,age,weight_kg,height_cm,activity_level,formula,target_calories,protein_pct,carbs_pct,fat_pct,macro_mode,ai_diet_generated_at"
 _PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes,meal_count,meal_times,meal_reminders"
@@ -26,7 +33,7 @@ _RECIPE_FIELDS = "id,user_id,name,ingredients,status,created_at"
 
 
 def today_iso() -> str:
-    return date.today().isoformat()
+    return datetime.now(_TZ).date().isoformat()
 
 
 def now_iso() -> str:
@@ -35,7 +42,7 @@ def now_iso() -> str:
 
 def today_weekday() -> int:
     """0=segunda ... 6=domingo (convenção usada na coluna diets.weekday)."""
-    return date.today().weekday()
+    return datetime.now(_TZ).weekday()
 
 
 # ---------- profiles ----------
