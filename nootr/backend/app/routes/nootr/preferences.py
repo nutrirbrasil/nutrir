@@ -22,7 +22,6 @@ _DEFAULT = {
     # mínimo 4 refeições na geração, mesmo se a pessoa disser menos aqui.
     "meal_count": 4,
     "meal_times": [],
-    "meal_reminders": False,
 }
 _MAX_ITEMS = 60
 
@@ -35,7 +34,6 @@ class PreferencesUpdate(BaseModel):
     notes: str | None = Field(default=None, max_length=2000)
     meal_count: int | None = Field(default=None, ge=1, le=8)
     meal_times: list[str] | None = Field(default=None, max_length=8)
-    meal_reminders: bool | None = None
 
 
 @router.get("")

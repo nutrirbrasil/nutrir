@@ -8,7 +8,6 @@ import { TagListInput } from "@/components/TagListInput";
 import { TacoTagListInput } from "@/components/TacoTagListInput";
 import { PageHeader } from "@/components/PageHeader";
 import { SectionHeader } from "@/components/SectionHeader";
-import { MealRemindersToggle } from "@/components/MealReminders";
 import { Icon } from "@/components/Icon";
 import {
   CalorieCalculator, CALORIE_CALCULATOR_DEFAULT, calorieCalculatorPayload, type CalorieCalculatorState,
@@ -312,8 +311,6 @@ function PreferencesSection({ token }: { token: string }) {
   const [avoid, setAvoid] = useState<string[]>([]);
   const [likesPantry, setLikesPantry] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
-  const [mealTimes, setMealTimes] = useState<string[]>([]);
-  const [reminders, setReminders] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -323,8 +320,6 @@ function PreferencesSection({ token }: { token: string }) {
         if (!active) return;
         setAvoid(mergeUnique(p.allergies, p.dislikes));
         setLikesPantry(mergeUnique(p.likes, p.pantry));
-        setMealTimes(p.meal_times ?? []);
-        setReminders(Boolean(p.meal_reminders));
         setNotes(p.notes);
       })
       .catch(() => active && setError("Não foi possível carregar suas preferências."))
@@ -390,15 +385,6 @@ function PreferencesSection({ token }: { token: string }) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ex: prefiro refeições rápidas de preparar, evito frituras à noite..."
-            />
-          </div>
-
-          <div className="border-t border-nootr-line pt-5">
-            <MealRemindersToggle
-              token={token}
-              enabled={reminders}
-              times={mealTimes}
-              onChange={setReminders}
             />
           </div>
 

@@ -911,6 +911,10 @@ _NOO_SCHEMA = {
                 "type": "OBJECT",
                 "properties": {
                     "meal": {"type": "STRING"},
+                    # Só relevante quando "meal" é uma refeição NOVA (não está
+                    # na tabela do dia), ver regra 8 do prompt. Ignorado pro
+                    # resto dos casos.
+                    "time": {"type": "STRING"},
                     "skipped": {"type": "ARRAY", "items": {"type": "STRING"}},
                     "added": {
                         "type": "ARRAY",
@@ -921,7 +925,7 @@ _NOO_SCHEMA = {
                         },
                     },
                 },
-                "required": ["meal", "skipped", "added"],
+                "required": ["meal", "time", "skipped", "added"],
             },
         },
         "already_eaten": {"type": "ARRAY", "items": {"type": "STRING"}},
@@ -953,7 +957,9 @@ alimento e refeição ("aumentei o arroz do jantar pra repor o carboidrato do p�
 números de macro, a pessoa já vê na tela.
 - `changes`: as mudanças a aplicar. Uma entrada por refeição afetada:
   * "meal": SÓ o nome da refeição, como aparece na tabela acima e SEM o horário
-("Café da manhã", nunca "Café da manhã (07:00)").
+("Café da manhã", nunca "Café da manhã (07:00)"). Ver regra 8 pra quando é uma refeição NOVA.
+  * "time": só preencha quando "meal" for uma refeição NOVA (regra 8), formato "HH:MM". Nos demais \
+casos devolva string vazia.
   * "skipped": nomes EXATOS de alimentos daquela refeição que ela não vai comer (lista vazia se \
 nenhum).
   * "added": o que entra no lugar (ou a mais), com quantidade em medida caseira. Lista vazia se nada \
@@ -974,6 +980,11 @@ NOVA `changes` que corrige aquilo, considerando o estado atual do dia mostrado a
 `changes` vazio. Responda normalmente, você é a IA do app e pode falar de nutrição.
 6. NUNCA inclua um alimento da lista de alergias, é segurança. Considere as condições médicas.
 7. Alimento sempre atômico da tabela TACO, nunca prato pronto.
+8. Se ela quiser comer algo que não cabe em NENHUMA refeição da tabela (ex: uma sobremesa depois \
+da última refeição do dia, um lanche fora de todos os horários), crie uma refeição NOVA: dê um nome \
+natural ("Ceia", "Sobremesa"), preencha "time" (depois do horário da última refeição do dia), \
+"skipped" vazio (não existe nada pra tirar de uma refeição que não existia) e o que ela quer em \
+"added". Nunca finja que isso pertence a uma refeição já existente só porque é mais simples.
 {decomposition_rules}
 """
 
@@ -1023,6 +1034,7 @@ def noo_chat(
             continue
         changes.append({
             "meal": meal,
+            "time": str(c.get("time", "")).strip(),
             "skipped": [str(s).strip() for s in (c.get("skipped") or []) if str(s).strip()],
             "added": [
                 {"name": str(a.get("name", "")).strip(), "quantity": str(a.get("quantity", "")).strip() or "1 porção"}

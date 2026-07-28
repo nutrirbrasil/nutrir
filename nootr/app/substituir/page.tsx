@@ -12,9 +12,6 @@ import type { Meal } from "@/lib/types";
 function SubstituirContent({ token }: { token: string }) {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
-  // O Noo é o caminho principal; as três funções manuais ficam a um clique,
-  // pra quem quer marcar item por item (é o caminho de precisão).
-  const [showManual, setShowManual] = useState(false);
 
   const load = useCallback(
     () =>
@@ -52,29 +49,10 @@ function SubstituirContent({ token }: { token: string }) {
                 não continuar com a versão antiga. */}
             <NooChat token={token} onApplied={load} />
 
-            {showManual ? (
-              <div>
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <p className="label-caps mb-0">Ajuste manual</p>
-                  <button
-                    type="button"
-                    onClick={() => setShowManual(false)}
-                    className="text-xs text-nootr-faint transition-colors hover:text-nootr-bordoSoft"
-                  >
-                    fechar
-                  </button>
-                </div>
-                <SubstitutionPanel token={token} meals={meals} />
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowManual(true)}
-                className="w-full text-center text-xs text-nootr-faint underline-offset-4 transition-colors hover:text-nootr-bordoSoft hover:underline"
-              >
-                Prefiro ajustar manualmente, item por item
-              </button>
-            )}
+            <div>
+              <p className="label-caps mb-4">Ajuste manual</p>
+              <SubstitutionPanel token={token} meals={meals} />
+            </div>
           </>
         )}
       </div>

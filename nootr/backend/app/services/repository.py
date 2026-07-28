@@ -35,7 +35,7 @@ def _app_date(now: datetime) -> date:
     return (now - timedelta(hours=_DAY_ROLLOVER_HOUR)).date()
 
 _PROFILE_FIELDS = "user_id,full_name,plan,billing_cycle,country,sex,age,weight_kg,height_cm,activity_level,formula,target_calories,protein_pct,carbs_pct,fat_pct,macro_mode,protein_g_per_kg,fat_g_per_kg,ai_diet_generated_at"
-_PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes,meal_count,meal_times,meal_reminders"
+_PREFERENCES_FIELDS = "user_id,allergies,dislikes,likes,pantry,notes,meal_count,meal_times"
 _DIET_FIELDS = "id,name,weekday,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,status,source_meals"
 _ADMIN_DIET_FIELDS = _DIET_FIELDS + ",user_id,created_at"
 _DAY_PLAN_FIELDS = "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,meals,previous_meals,original_meals"

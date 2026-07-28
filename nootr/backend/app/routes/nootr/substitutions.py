@@ -80,20 +80,13 @@ def _scale_foods(foods_in: list[FoodIn]) -> list[dict]:
 
 
 def _targets_from_profile(user: CurrentUser, day_plan: dict) -> dict:
-    """Metas do dia: calorias e macros do perfil (por g/kg de peso, ver
-    energy.macro_targets_for_profile, as mesmas usadas pra gerar a dieta);
-    fallback nos totais da própria dieta."""
+    """Metas do dia: calorias e macros do perfil (ver energy.day_targets),
+    fallback nos totais congelados da própria dieta."""
     profile = repository.get_profile(user) or {}
-    calories = profile.get("target_calories") or day_plan["daily_calories"]
-    if profile.get("target_calories"):
-        macros = energy.macro_targets_for_profile(profile, float(calories))
-    else:
-        macros = {
-            "protein_g": day_plan["daily_protein_g"],
-            "carbs_g": day_plan["daily_carbs_g"],
-            "fat_g": day_plan["daily_fat_g"],
-        }
-    return {"calories": float(calories), **macros}
+    return energy.day_targets(
+        profile, day_plan["daily_calories"], day_plan["daily_protein_g"],
+        day_plan["daily_carbs_g"], day_plan["daily_fat_g"],
+    )
 
 
 @router.get("/missing-food-options")

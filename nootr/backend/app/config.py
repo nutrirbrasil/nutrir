@@ -28,9 +28,6 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.1-flash-lite"
 
-    telegram_bot_token: str = ""
-    telegram_admin_chat_id: str = ""
-
     # Único usuário com acesso à página /aprovar (fila de aprovação global de
     # receitas/alimentos customizados), ver routes/nootr/admin.py.
     admin_email: str = "contatonutrirbrasil@gmail.com"
