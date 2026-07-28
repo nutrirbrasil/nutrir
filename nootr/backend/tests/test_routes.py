@@ -92,6 +92,22 @@ def test_today_returns_diet(client):
     assert body["original_diet"]["id"] == "dp-1"
 
 
+def test_today_diet_target_reflects_live_profile_not_the_frozen_snapshot(client, monkeypatch):
+    # Dieta gerada pelo Nootr é só o ponto de partida: se a pessoa depois
+    # ajusta a meta calórica/g_per_kg no perfil, a barra de "alvo" tem que
+    # acompanhar, não ficar presa no valor de quando a dieta foi salva.
+    monkeypatch.setattr(repository, "get_profile", lambda user: {
+        "plan": "pro", "weight_kg": 80, "macro_mode": "per_kg",
+        "target_calories": 2600, "protein_g_per_kg": 2.5, "fat_g_per_kg": 1.0,
+    })
+    resp = client.get("/nootr/diets/today")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["diet"]["daily_calories"] == 2600
+    assert body["diet"]["daily_protein_g"] == 200  # 80kg * 2,5
+    assert body["original_diet"]["daily_protein_g"] == 200
+
+
 def test_today_empty_state_when_no_diet(client_no_diet):
     resp = client_no_diet.get("/nootr/diets/today")
     assert resp.status_code == 200

@@ -73,20 +73,39 @@ def _build_meals(meals_in: list[MealIn]) -> tuple[list[dict], dict]:
     return meals, totals
 
 
-def _as_diet(source: dict, user: CurrentUser) -> dict:
+def _as_diet(source: dict, user: CurrentUser, profile: dict | None = None) -> dict:
     """
     Formato comum de `Diet` pro frontend. Serve tanto pro `day_plan`
     (materializado, com os ajustes do dia) quanto pra uma linha de `diets`
     (o template original), os nomes dos campos coincidem.
+
+    `profile`: quando informado, as barras de "alvo" (`daily_*`) mostram a
+    meta ATUAL do perfil (ver energy.day_targets), não o valor congelado de
+    quando a dieta foi salva/gerada/aprovada. A dieta que o Nootr monta e o
+    nutricionista revisa é só o ponto de partida, se a pessoa depois ajusta
+    a meta calórica ou o g/kg no perfil, é essa meta nova que deve aparecer.
     """
+    daily = source
+    if profile:
+        targets = energy.day_targets(
+            profile, source["daily_calories"], source["daily_protein_g"],
+            source["daily_carbs_g"], source["daily_fat_g"],
+        )
+        daily = {
+            **source,
+            "daily_calories": round(targets["calories"]),
+            "daily_protein_g": round(targets["protein_g"]),
+            "daily_carbs_g": round(targets["carbs_g"]),
+            "daily_fat_g": round(targets["fat_g"]),
+        }
     return {
         "id": source["id"],
         "user_id": user.id,
         "name": source["name"],
-        "daily_calories": source["daily_calories"],
-        "daily_protein_g": source["daily_protein_g"],
-        "daily_carbs_g": source["daily_carbs_g"],
-        "daily_fat_g": source["daily_fat_g"],
+        "daily_calories": daily["daily_calories"],
+        "daily_protein_g": daily["daily_protein_g"],
+        "daily_carbs_g": daily["daily_carbs_g"],
+        "daily_fat_g": daily["daily_fat_g"],
         "meals": source["meals"],
     }
 
@@ -102,14 +121,16 @@ def get_today_diet(user: CurrentUser = CurrentUserDep):
             "date": repository.today_iso(), "diet": None, "original_diet": None, "needs_setup": True,
             "has_pending_review": has_pending_review,
         }
+    profile = repository.get_profile(user) or {}
     # `diet` é o dia materializado (com o que o Nootr já ajustou hoje);
     # `original_diet` é o template de onde ele nasceu, intacto, pra pessoa
-    # comparar "o que eu montei" com "como o dia está agora".
+    # comparar "o que eu montei" com "como o dia está agora". As duas mostram
+    # a meta ATUAL do perfil, não a congelada na criação (ver _as_diet).
     original = repository.diet_for_today(user)
     return {
         "date": day_plan["plan_date"],
-        "diet": _as_diet(day_plan, user),
-        "original_diet": _as_diet(original, user) if original else None,
+        "diet": _as_diet(day_plan, user, profile),
+        "original_diet": _as_diet(original, user, profile) if original else None,
         "needs_setup": False,
         "has_pending_review": has_pending_review,
     }

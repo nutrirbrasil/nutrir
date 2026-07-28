@@ -162,6 +162,38 @@ def macro_targets_for_profile(profile: dict, calories: float) -> dict:
     )
 
 
+def day_targets(
+    profile: dict, fallback_calories: float, fallback_protein_g: float,
+    fallback_carbs_g: float, fallback_fat_g: float,
+) -> dict:
+    """
+    Meta do dia pro rebalanceamento E pra tela: sempre a do perfil (via
+    `macro_targets_for_profile`, a mesma fonte que gera a dieta), nunca o
+    congelado no momento em que a dieta/day_plan foi salvo. A dieta que o
+    Nootr gera e o nutricionista revisa é só o ponto de partida, se a pessoa
+    depois mexe no alvo calórico ou no g/kg do perfil, é essa meta nova que
+    deve valer, tanto pro motor quanto pras barras de "alvo" na tela.
+
+    Cai pro fallback (normalmente os `daily_*` da própria dieta/day_plan) só
+    quando o perfil não tem `target_calories` definido.
+    """
+    calories = profile.get("target_calories") or fallback_calories
+    if profile.get("target_calories"):
+        macros = macro_targets_for_profile(profile, float(calories))
+        return {
+            "calories": float(calories),
+            "protein_g": macros["protein_g"],
+            "carbs_g": macros["carbs_g"],
+            "fat_g": macros["fat_g"],
+        }
+    return {
+        "calories": float(calories),
+        "protein_g": fallback_protein_g,
+        "carbs_g": fallback_carbs_g,
+        "fat_g": fallback_fat_g,
+    }
+
+
 def daily_calories(
     formula: str, sex: str, weight_kg: float, height_cm: float, age: int, activity_level: str
 ) -> float | None:

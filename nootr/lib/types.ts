@@ -210,8 +210,6 @@ export interface Preferences {
   // dieta por IA (services/meal_planning.py no backend).
   meal_count: number;
   meal_times: string[];
-  // Lembrete na hora de cada refeição (ver components/MealReminders.tsx).
-  meal_reminders: boolean;
 }
 
 export interface ConverseTurn {

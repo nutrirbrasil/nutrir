@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { MealReminders } from "@/components/MealReminders";
 import { SkeletonPage } from "@/components/Skeleton";
 
 /**
@@ -27,12 +26,5 @@ export function RequireAuth({ children }: { children: (token: string) => React.R
   if (!session) {
     return <p className="text-sm text-nootr-muted">Redirecionando para o login…</p>;
   }
-  // MealReminders não renderiza nada: fica aqui só pra rodar em qualquer tela
-  // autenticada, já que o lembrete vale o dia todo, não só no Perfil.
-  return (
-    <>
-      <MealReminders token={session.access_token} />
-      {children(session.access_token)}
-    </>
-  );
+  return <>{children(session.access_token)}</>;
 }

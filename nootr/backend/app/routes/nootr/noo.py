@@ -29,18 +29,12 @@ class NooMessageIn(BaseModel):
 
 
 def _targets_for(user: CurrentUser, day_plan: dict) -> dict:
-    """Metas do dia (mesma fonte das substituições manuais)."""
+    """Metas do dia (mesma fonte das substituições manuais, ver energy.day_targets)."""
     profile = repository.get_profile(user) or {}
-    calories = profile.get("target_calories") or day_plan["daily_calories"]
-    if profile.get("target_calories"):
-        macros = energy.macro_targets_for_profile(profile, float(calories))
-    else:
-        macros = {
-            "protein_g": day_plan["daily_protein_g"],
-            "carbs_g": day_plan["daily_carbs_g"],
-            "fat_g": day_plan["daily_fat_g"],
-        }
-    return {"calories": float(calories), **{k: macros[k] for k in ("protein_g", "carbs_g", "fat_g")}}
+    return energy.day_targets(
+        profile, day_plan["daily_calories"], day_plan["daily_protein_g"],
+        day_plan["daily_carbs_g"], day_plan["daily_fat_g"],
+    )
 
 
 def _resolve_added(items: list[dict], prefs: dict, country: str) -> list[dict]:
@@ -150,11 +144,25 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
                 return meal
         return None
 
+    def new_meal(name: str, time: str) -> dict:
+        """Cria uma refeição que ainda não existe no dia (ver regra 8 do
+        prompt do Noo: sobremesa/lanche depois da última refeição planejada,
+        por exemplo). Anexada em `day_plan["meals"]` na hora, pra apply_changes
+        já enxergar como parte do dia, o desfazer sozinho não a remove, mas o
+        próximo dia recomeça da dieta original, sem ela."""
+        meal = {"id": f"meal-noo-{len(day_plan['meals']) + 1}", "name": name, "time": time, "foods": []}
+        day_plan["meals"].append(meal)
+        return meal
+
     changes: list[dict] = []
     for change in answer["changes"]:
         meal = find_meal(change["meal"])
         if meal is None:
-            continue
+            # Refeição nova: só vale a pena criar se há algo de fato pra
+            # adicionar, senão não há o que fazer com uma refeição vazia.
+            if not change["added"]:
+                continue
+            meal = new_meal(change["meal"], change.get("time") or "")
         changes.append({
             "meal_id": meal["id"],
             "skipped_names": [
