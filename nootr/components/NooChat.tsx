@@ -140,6 +140,7 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
   const [limit, setLimit] = useState(0);
   const [plan, setPlan] = useState<Plan>("basic");
   const [error, setError] = useState("");
+  const [clearing, setClearing] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -194,6 +195,20 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
     }
   }
 
+  async function handleClear() {
+    if (clearing || messages.length === 0) return;
+    setClearing(true);
+    setError("");
+    try {
+      await nootrApi.noo.clear(token);
+      setMessages([]);
+    } catch {
+      setError("Não consegui limpar a conversa agora.");
+    } finally {
+      setClearing(false);
+    }
+  }
+
   const isEmpty = messages.length === 0;
   const outOfMessages = remaining <= 0 && !loading;
 
@@ -217,6 +232,17 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
         <span className="shrink-0 text-xs tabular-nums text-nootr-faint" title="Mensagens restantes hoje">
           {loading ? "…" : `${remaining}/${limit}`}
         </span>
+        {!isEmpty && (
+          <button
+            type="button"
+            onClick={handleClear}
+            disabled={clearing}
+            title="Limpar conversa"
+            className="shrink-0 text-xs text-nootr-faint transition-colors hover:text-nootr-bordoSoft disabled:opacity-50"
+          >
+            {clearing ? "…" : "Limpar"}
+          </button>
+        )}
       </header>
 
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
