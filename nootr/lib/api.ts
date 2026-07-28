@@ -125,7 +125,10 @@ export const nootrApi = {
     getConversation: (token: string) => api<NooConversation>("/nootr/noo", token),
     send: (token: string, text: string) =>
       api<NooReply>("/nootr/noo", token, { method: "POST", body: JSON.stringify({ text }) }),
-    clear: (token: string) => api<{ ok: boolean }>("/nootr/noo", token, { method: "DELETE" }),
+    // Limpa a conversa E desfaz os ajustes do dia (volta a dieta pro
+    // original), rende +1 mensagem no limite até um teto por plano.
+    reset: (token: string) =>
+      api<{ ok: boolean; remaining: number; limit: number }>("/nootr/noo", token, { method: "DELETE" }),
   },
 
   // sequência de dias de uso (check-in passivo, ver services/streak.py)

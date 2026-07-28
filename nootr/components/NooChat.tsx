@@ -140,7 +140,10 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
   const [limit, setLimit] = useState(0);
   const [plan, setPlan] = useState<Plan>("basic");
   const [error, setError] = useState("");
-  const [clearing, setClearing] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  // Ação destrutiva (desfaz o dia inteiro), então pede confirmação inline
+  // antes de executar, em vez de agir no primeiro clique.
+  const [confirmingReset, setConfirmingReset] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -195,17 +198,22 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
     }
   }
 
-  async function handleClear() {
-    if (clearing || messages.length === 0) return;
-    setClearing(true);
+  async function handleReset() {
+    if (resetting) return;
+    setConfirmingReset(false);
+    setResetting(true);
     setError("");
     try {
-      await nootrApi.noo.clear(token);
+      const r = await nootrApi.noo.reset(token);
       setMessages([]);
+      setRemaining(r.remaining);
+      setLimit(r.limit);
+      // A dieta voltou pro original: quem embute o chat recarrega.
+      onApplied?.();
     } catch {
-      setError("Não consegui limpar a conversa agora.");
+      setError("Não consegui reiniciar o Noo agora.");
     } finally {
-      setClearing(false);
+      setResetting(false);
     }
   }
 
@@ -235,15 +243,37 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
         {!isEmpty && (
           <button
             type="button"
-            onClick={handleClear}
-            disabled={clearing}
-            title="Limpar conversa"
+            onClick={() => setConfirmingReset(true)}
+            disabled={resetting}
+            title="Reiniciar Noo"
             className="shrink-0 text-xs text-nootr-faint transition-colors hover:text-nootr-bordoSoft disabled:opacity-50"
           >
-            {clearing ? "…" : "Limpar"}
+            {resetting ? "…" : "Reiniciar Noo"}
           </button>
         )}
       </header>
+
+      {confirmingReset && (
+        <div className="border-b border-nootr-bordo/30 bg-nootr-wine/25 px-5 py-3">
+          <p className="text-sm text-nootr-cream">Tem certeza?</p>
+          <p className="mt-1 text-xs text-nootr-muted">
+            Isso limpa esta conversa e desfaz TODAS as alterações de hoje, a dieta volta pro estado
+            original (como você montou, sem os ajustes do Noo nem das funções manuais).
+          </p>
+          <div className="mt-2.5 flex gap-2">
+            <button type="button" onClick={handleReset} className="btn-primary px-3 py-1.5 text-xs">
+              Sim, reiniciar
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmingReset(false)}
+              className="btn-ghost px-3 py-1.5 text-xs"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
         {loading && <div className="h-16 animate-pulse rounded-lg bg-nootr-line/40" />}
@@ -299,14 +329,14 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
 
         {outOfMessages ? (
           <div className="rounded-lg border border-nootr-bordo/30 bg-nootr-wine/25 px-3.5 py-3 text-center">
-            <p className="text-sm text-nootr-cream">
-              {plan === "pro"
-                ? "Você usou suas mensagens de hoje. O limite renova amanhã."
-                : "Você usou suas 3 mensagens de hoje."}
+            <p className="text-sm text-nootr-cream">Você usou suas mensagens de hoje.</p>
+            <p className="mt-1 text-xs text-nootr-muted">
+              O limite renova amanhã, ou reinicie o Noo pra ganhar mais uma (só rende bônus algumas
+              vezes por dia).
             </p>
             {plan !== "pro" && (
               <p className="mt-1 text-xs text-nootr-muted">
-                No Pro são 25 por dia, com um modelo de IA mais avançado.{" "}
+                No Pro são 20 por dia (+5 reiniciando), com um modelo de IA mais avançado.{" "}
                 <Link href="/plano" className="text-nootr-bordoSoft underline-offset-4 hover:underline">
                   Conhecer o Pro
                 </Link>
@@ -344,7 +374,7 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
 
         {plan !== "pro" && !outOfMessages && (
           <p className="mt-2 text-center text-[11px] text-nootr-faint">
-            O Noo do Pro tem 25 mensagens por dia e um modelo de IA mais avançado.{" "}
+            O Noo do Pro tem 20 mensagens por dia (+5 reiniciando) e um modelo de IA mais avançado.{" "}
             <Link href="/plano" className="underline-offset-4 hover:text-nootr-bordoSoft hover:underline">
               Saiba mais
             </Link>
