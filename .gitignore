@@ -42,3 +42,12 @@ ds-bundle/
 
 # Test files
 testes/
+
+# Local reference assets (images, spreadsheets — not app code)
+nutrir/local-assets/
+
+# Lixo de redirecionamento no Windows (">nul" cria um arquivo)
+nul
+
+# graphify (knowledge graph local, gerado por /graphify — não é código do app)
+graphify-out/
