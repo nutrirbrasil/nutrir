@@ -386,7 +386,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       {
         id: "veg-ervilha",
         name: "Vegetariano Ervilha",
-        description: "Ervilhas cozidas ao molho da casa, arroz branco soltinho e legumes salteados.",
+        description: "Ervilhas cozidas, arroz branco soltinho e legumes salteados.",
         prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
       },
       {

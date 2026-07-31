@@ -9,7 +9,8 @@ import { useCheckout } from "@/lib/checkout-context";
 import { useProfile } from "@/lib/profile-context";
 import { PickupScheduler } from "@/components/PickupScheduler";
 import { DeliveryScheduler } from "@/components/DeliveryScheduler";
-import { DeliveryAddressForm, type DeliveryAddressValue } from "@/components/DeliveryAddressForm";
+import { type DeliveryAddressValue } from "@/components/DeliveryAddressForm";
+import { DeliveryAddressPicker } from "@/components/DeliveryAddressPicker";
 import { formatItemAddonsLabel } from "@/lib/item-addons-label";
 import {
   analyzeCartItems,
@@ -304,7 +305,7 @@ export function OrderForm() {
 
           <DeliveryScheduler value={deliverySelection} onChange={setDeliverySelection} />
 
-          <DeliveryAddressForm
+          <DeliveryAddressPicker
             value={deliveryAddress}
             onChange={(patch) => setDeliveryAddress((prev) => ({ ...prev, ...patch }))}
           />

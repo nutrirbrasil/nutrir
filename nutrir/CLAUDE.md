@@ -8,6 +8,23 @@ Responda sempre em português.
 
 Nutrir — a Next.js 14 (App Router) marmitaria ordering site, live at `nutrirpicarras.com.br`. This is the one project in the monorepo with real payments and real customer data flowing through it — treat correctness and security here with more care than a typical marketing site. This file covers only `nutrir/`; see the repo root `CLAUDE.md` for the monorepo overview, VPS layout, and shared deploy notes.
 
+### Status (as of 2026-07-28)
+
+**Latest production commit**: `35d0db4` (fix: melhora textos do modal de adicionais e descricoes do cardapio)
+
+**What's live**:
+- Novo design visual completo (fonte Fraunces, cores refinadas, texturas, layout responsivo)
+- Sistema de admin `/admin/pedidos` com filtros (Todos/Pendentes/Pagos/Entregues)
+- Exibição de valor pago + desconto por item no admin
+- Modal de adicionais com UI melhorada ("Deseja adicionais ou substituições?", "Sim, ver opções")
+- Descrições de marmitas com detalhe (ao molho da casa, arroz soltinho, legumes salteados, com ponto final)
+- Pontos mudados de x1000 para x5 (1 ponto = R$0.20)
+- Remoção da política de retenção automática de pedidos (histórico permanente no admin)
+- Persistência de telegram_notified flags no Supabase (fix de "Novo pedido" vs "Atualização")
+- Títulos da aba: "Nutrir | Marmitas & Combos"
+
+**42 features/fixes completed in this session** (see git log; scope: design system refinement, admin page launch, order management, Telegram fixes, points system, mobile layout optimization).
+
 ## Commands
 
 ```bash
@@ -63,6 +80,29 @@ Guest checkout — no login required to order. Supabase Auth exists separately s
 - **Pix** (`lib/pix-brcode.ts`): generates copia-e-cola/QR from `PIX_KEY`/`PIX_RECEIVER_NAME`/`PIX_CITY` — this is a static key, not a payment gateway, so "confirmation" here is manual/Telegram-notified, not verified automatically.
 - **Telegram** (`lib/telegram.ts`, `order-telegram.ts`): sends order notifications to the store owner on new local-payment orders and payment confirmations.
 
+## Next Feature: Partner Program (Parceiros)
+
+A detailed plan exists at the repo root: `.claude/plans/dreamy-finding-dahl.md`. This feature adds:
+
+- **Coupon system**: each partner gets a unique code (e.g., `JOAO5`), 5% discount for anyone, points for the partner
+- **Points ledger**: `nutrir_partner_point_transactions` table with earn/redeem/cashout tracking
+- **Order attribution**: `coupon_code`, `partner_id`, `points_redeemed_cents` fields on `nutrir_orders`
+- **Admin page enhancements**: status transitions (pending → paid → delivered, one-way), idempotent point crediting
+- **Checkout resgate**: partners can redeem points as discount (requires Bearer token)
+- **Profile display**: partner balance + coupon shown in `/perfil`
+
+**Implementation order** (see plan for detail):
+1. Migrations 009-011 (tables, ledger, retention fix)
+2. Type updates + Supabase layer (`lib/types.ts`, `lib/supabase-db.ts`)
+3. `lib/partners.ts` + order route linking
+4. Pricing + payments layer (points discounts, auto-credit on card payment)
+5. Session/auth (`lib/session-auth.ts`)
+6. Admin routes (`admin/orders`, `admin/orders/[id]/status`)
+7. Checkout resgate field
+8. Profile display
+
+All steps include `npm run build` + `npx tsc --noEmit` verification.
+
 ## Deploy
 
 Manual — no CI/CD for this project (unlike Pauli, which auto-deploys via GitHub Actions):
@@ -70,3 +110,43 @@ Manual — no CI/CD for this project (unlike Pauli, which auto-deploys via GitHu
 cd ~/nutricao/nutrir && npm run build && pm2 restart nutrir-web
 ```
 See the root `CLAUDE.md` for the shared-VPS caveats (the same server also runs an unrelated trading project under the same Linux user).
+
+### Deployment Checklist
+
+Before any deploy to production:
+
+- [ ] Run `npx tsc --noEmit` — no type errors
+- [ ] Run `npm run build` — builds cleanly, no warnings
+- [ ] Verify no uncommitted files: `git status --porcelain` returns empty
+- [ ] Latest commit is on `main` branch and matches production intent
+- [ ] If migrations changed: run Supabase security advisor after applying
+- [ ] Visually spot-check critical paths in local dev (`npm run dev`)
+- [ ] After VPS deploy: curl one route to confirm server is up (e.g., `curl https://nutrirpicarras.com.br/` | grep -q "NUTRIR")
+
+### Resuming Work
+
+1. **Setup**: `npm install`, copy `.env.example` → `.env.local` (Supabase, InfinitePay, Telegram creds needed for full testing)
+2. **Dev**: `npm run dev` → http://localhost:3000
+3. **Type-check & build**: `npx tsc --noEmit` then `npm run build` before committing
+4. **Deploy**: `/deploy` skill (commits, pushes, builds on VPS, restarts pm2)
+
+All changes to **cardápio** (menu-data.ts), **hero text** (PageHero.tsx, MarmitasPage.tsx), **admin** (app/admin/pedidos), or **checkout flow** should be tested in browser before merging.
+
+### Knowledge Graph (Graphify)
+
+A knowledge graph of this project is maintained in `graphify-out/` (graph.json, GRAPH_REPORT.md, graph.html). **When making structural changes or modifying functions, use `/graphify query` or reference GRAPH_REPORT.md to understand dependencies and call relationships instead of reading code manually.** This saves tokens on structural discovery — the graph is already built.
+
+Core principles from the graph:
+- **God nodes** (most connected): `formatPrice()`, `getSupabaseAdmin()`, `POST /api/nutrir/orders`, `findOrder()`, `normalizePaymentMethod()`
+- **Major communities**: Backend API & Data Layer (74 nodes), Checkout Flow (50 nodes), Pricing & Payments (67 nodes)
+- **Critical hyperedges**: Payment Confirmation Flow, Server-Side Pricing Validation Layer, Partner Program Implementation
+
+### Quick Reference
+
+- **Cart**: `lib/cart-context.tsx` (persisted in localStorage)
+- **Menu**: `lib/menu-data.ts` (MENU_SECTIONS, KIT_PRODUCTS)
+- **Pricing**: `lib/order-pricing.ts` (server is source of truth)
+- **Admin**: `app/api/nutrir/admin/*` + `app/admin/pedidos/page.tsx`
+- **Supabase tables**: `nutrir_orders`, `nutrir_customers`, `nutrir_partners` (forthcoming), `nutrir_pacientes`
+- **Migrations**: `supabase/migrations/00X_*.sql` (always run advisor after schema changes)
+- **Graphify**: `graphify-out/graph.json`, `graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.html`

@@ -30,6 +30,7 @@ import {
 import { PAYMENT_METHOD_SHORT_LABELS } from "@/lib/payment-labels";
 import type { PaymentMethod } from "@/lib/types";
 import { OrderDetailsModal } from "@/components/OrderDetailsModal";
+import { SavedAddressesManager } from "@/components/SavedAddressesManager";
 
 const PAYMENT_LABELS = PAYMENT_METHOD_SHORT_LABELS;
 
@@ -639,17 +640,6 @@ export function ProfilePage() {
               readOnly
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">Endereço</label>
-            <input
-              required
-              className="input-field"
-              value={profile.address}
-              onChange={(e) => updateProfile({ address: e.target.value })}
-              placeholder="Rua, número, bairro"
-            />
-          </div>
-
           {saved && (
             <p className="text-sm font-medium text-nutrir-emerald">Dados salvos com sucesso!</p>
           )}
@@ -662,6 +652,8 @@ export function ProfilePage() {
             Sair da conta
           </button>
         </form>
+
+        <SavedAddressesManager />
 
         <section className="card mt-6 space-y-4">
           <div className="flex items-center justify-between gap-3">

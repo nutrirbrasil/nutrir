@@ -10,6 +10,11 @@ const ADMIN_PAGES = [
     label: "Pedidos",
     description: "Fila de pedidos, status de pagamento e entrega/retirada.",
   },
+  {
+    href: "/admin/rotulos",
+    label: "Rótulos nutricionais",
+    description: "Gera o rótulo ANVISA de cada marmita (P/G) para imprimir e colar na embalagem.",
+  },
 ];
 
 export default function AdminPage() {

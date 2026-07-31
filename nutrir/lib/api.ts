@@ -1,4 +1,4 @@
-import type { CreateOrderPayload, Order } from "./types";
+import type { CreateOrderPayload, CustomerAddress, CustomerAddressInput, Order } from "./types";
 
 export interface CreateOrderResponse {
   order: Order;
@@ -67,6 +67,27 @@ export const nutrirApi = {
   notifyPixPayment: (order_id: string) =>
     api<{ notified: boolean; already?: boolean }>(`/nutrir/orders/${order_id}/pix`, {
       method: "POST",
+    }),
+  listAddresses: (token: string) =>
+    api<{ addresses: CustomerAddress[] }>("/nutrir/addresses", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  createAddress: (body: CustomerAddressInput, token: string) =>
+    api<{ address: CustomerAddress }>("/nutrir/addresses", {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  updateAddress: (id: string, body: Partial<CustomerAddressInput>, token: string) =>
+    api<{ address: CustomerAddress }>(`/nutrir/addresses/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  deleteAddress: (id: string, token: string) =>
+    api<{ ok: boolean }>(`/nutrir/addresses/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
     }),
 };
 

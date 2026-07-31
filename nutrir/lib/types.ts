@@ -49,6 +49,35 @@ export interface CreateOrderPayload {
   points_redeemed_cents?: number;
 }
 
+/** Máximo de endereços salvos por cliente. Compartilhado entre client e server, por isso vive aqui (não em lib/customer-addresses.ts, que importa o service role). */
+export const MAX_SAVED_ADDRESSES = 3;
+
+/** Endereço de entrega salvo no perfil do cliente (até MAX_SAVED_ADDRESSES por cliente, ver lib/customer-addresses.ts). */
+export interface CustomerAddress {
+  id: string;
+  customer_id: string;
+  label: string;
+  municipio: string;
+  bairro_id: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  reference: string | null;
+  is_default: boolean;
+  created_at: string;
+}
+
+export interface CustomerAddressInput {
+  label: string;
+  municipio: string;
+  bairro_id: string;
+  street: string;
+  number: string;
+  complement?: string;
+  reference?: string;
+  set_default?: boolean;
+}
+
 export interface Order extends CreateOrderPayload {
   id: string;
   status: OrderStatus;
