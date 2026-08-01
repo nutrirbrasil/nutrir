@@ -1,12 +1,13 @@
-import { getMarmitaNutrition } from "@/lib/marmita-nutrition";
 import { NutritionTable } from "@/components/NutritionTable";
 import {
+  formatIngredientList,
   getLabelAllergenInfo,
   getLabelIngredients,
   MANUFACTURER,
   PREPARATION_INSTRUCTIONS,
   STORAGE_INSTRUCTIONS,
 } from "@/lib/nutrition-label-data";
+import { getLabelNutrition } from "@/lib/label-recipes";
 import type { MarmitaSize } from "@/lib/menu-data";
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
 }
 
 export function NutritionLabelPrint({ itemId, itemName, size }: Props) {
-  const facts = getMarmitaNutrition(itemId, size);
+  const facts = getLabelNutrition(itemId, size);
   if (!facts) return null;
 
   const ingredients = getLabelIngredients(itemId, size);
@@ -29,7 +30,7 @@ export function NutritionLabelPrint({ itemId, itemName, size }: Props) {
     >
       <div className="bg-nutrir-emerald px-3 py-1.5 text-nutrir-cream">
         <p className="font-display text-base font-bold leading-tight">
-          {itemName} — Tamanho {size}
+          {itemName} ({size})
         </p>
         <p className="text-xs opacity-90">Peso líquido: {facts.portion_g} g</p>
       </div>
@@ -42,7 +43,7 @@ export function NutritionLabelPrint({ itemId, itemName, size }: Props) {
             <div className="px-0.5 text-[9px] leading-tight">
               <p>
                 <span className="font-bold">INGREDIENTES: </span>
-                {ingredients.join(", ")}.
+                {formatIngredientList(ingredients)}.
               </p>
             </div>
           </div>

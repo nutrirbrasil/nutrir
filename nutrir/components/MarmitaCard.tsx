@@ -6,7 +6,7 @@ import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { MarmitaOption, MarmitaSize } from "@/lib/menu-data";
 import { getMarmitaCartSectionId } from "@/lib/menu-data";
 import { getMarmitaImageSrc } from "@/lib/marmita-images";
-import { getMarmitaNutrition } from "@/lib/marmita-nutrition";
+import { useRecipesData } from "@/lib/use-recipes-data";
 import { getMarmitaCardPriceCents } from "@/lib/order-pricing";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 import { NutritionModal } from "@/components/NutritionModal";
@@ -23,7 +23,8 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
 
   const price = item.prices[size];
   const cardPrice = getMarmitaCardPriceCents(price);
-  const nutrition = getMarmitaNutrition(item.id, size);
+  const { getNutrition } = useRecipesData();
+  const nutrition = getNutrition(item.id, size);
 
   function handleAdd() {
     const cartSectionId = getMarmitaCartSectionId(item.id);

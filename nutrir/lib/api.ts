@@ -1,4 +1,13 @@
 import type { CreateOrderPayload, CustomerAddress, CustomerAddressInput, Order } from "./types";
+import type { Food, FoodInput, Recipe } from "./marmita-nutrition";
+import type { MarmitaSize } from "./menu-data";
+
+export interface RecipeIngredientPayload {
+  food_id: string;
+  grams: number;
+  note?: string | null;
+  children?: RecipeIngredientPayload[];
+}
 
 export interface CreateOrderResponse {
   order: Order;
@@ -87,6 +96,31 @@ export const nutrirApi = {
   deleteAddress: (id: string, token: string) =>
     api<{ ok: boolean }>(`/nutrir/addresses/${id}`, {
       method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  listRecipes: () => api<{ recipes: Recipe[] }>("/nutrir/recipes"),
+  listFoods: () => api<{ foods: Food[] }>("/nutrir/foods"),
+  createFood: (body: FoodInput, token: string) =>
+    api<{ food: Food }>("/nutrir/foods", {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  updateFood: (id: string, body: Partial<FoodInput>, token: string) =>
+    api<{ food: Food }>(`/nutrir/foods/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  updateRecipe: (
+    itemId: string,
+    size: MarmitaSize,
+    body: { observations?: string | null; ingredients?: RecipeIngredientPayload[] },
+    token: string
+  ) =>
+    api<{ recipe: Recipe }>(`/nutrir/recipes/${itemId}/${size}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
       headers: { Authorization: `Bearer ${token}` },
     }),
 };

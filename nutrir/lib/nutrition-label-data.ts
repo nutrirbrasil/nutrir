@@ -1,12 +1,12 @@
 import type { MarmitaSize } from "./menu-data";
 
 /**
- * Dados de rotulagem (RDC 429/2020 + IN 75/2020 + Lei 10.674/2003 para glúten)
- * que não vêm do motor de cálculo nutricional (lib/marmita-nutrition.ts). A
- * lista de ingredientes é digitada manualmente pelo Pedro (receita real, com
- * óleo/molho/tempero) porque o motor de nutrição só modela os macros (proteína,
- * carboidrato, legumes) usados no cálculo de kcal — não é fonte confiável para
- * a lista de ingredientes exigida por lei.
+ * Dados de rotulagem (RDC 429/2020 + IN 75/2020 + Lei 10.674/2003 para
+ * glúten) do RÓTULO impresso — independente da ficha técnica (banco), que
+ * existe só como ferramenta de comparação em /admin/fichas-tecnicas. A lista
+ * de ingredientes é digitada manualmente (receita real, com óleo/molho/
+ * tempero) porque lib/label-recipes.ts só modela os macros usados no cálculo
+ * de kcal — não é fonte confiável pra lista de ingredientes exigida por lei.
  */
 
 export const MANUFACTURER = {
@@ -41,9 +41,9 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "cebola",
       "alho",
       "sal",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
       "azeite",
     ],
     G: [
@@ -54,9 +54,9 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "cebola",
       "alho",
       "sal",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
       "azeite",
     ],
   },
@@ -70,9 +70,9 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "alho",
       "sal",
       "azeite",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
     ],
     G: [
       "massa",
@@ -82,9 +82,9 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "alho",
       "sal",
       "azeite",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
     ],
   },
   "frg-batata": {
@@ -93,26 +93,26 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "peito de frango",
       "leite semidesnatado zero lactose",
       "molho de tomate",
-      "queijo mussarela",
+      "queijo",
       "cebola",
       "alho",
       "sal",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
     ],
     G: [
       "batata",
       "peito de frango",
       "leite semidesnatado zero lactose",
       "molho de tomate",
-      "queijo mussarela",
+      "queijo",
       "cebola",
       "alho",
       "sal",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
     ],
   },
   "car-arroz": {
@@ -125,9 +125,9 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "cebola",
       "alho",
       "sal",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
       "azeite",
     ],
     G: [
@@ -138,9 +138,9 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "cebola",
       "alho",
       "sal",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
       "azeite",
     ],
   },
@@ -154,9 +154,9 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "alho",
       "sal",
       "azeite",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
     ],
     G: [
       "massa",
@@ -166,9 +166,9 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "alho",
       "sal",
       "azeite",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
     ],
   },
   "car-batata": {
@@ -177,26 +177,26 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
       "patinho",
       "leite semidesnatado zero lactose",
       "molho de tomate",
-      "queijo mussarela",
+      "queijo",
       "cebola",
       "alho",
       "sal",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
     ],
     G: [
       "batata",
       "patinho",
       "leite semidesnatado zero lactose",
       "molho de tomate",
-      "queijo mussarela",
+      "queijo",
       "cebola",
       "alho",
       "sal",
-      "páprica defumada",
+      "páprica",
       "orégano",
-      "pimenta do reino",
+      "pimenta",
     ],
   },
   "veg-ervilha": {
@@ -204,8 +204,27 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
     G: ["arroz", "ervilha", "cenoura", "cebola", "sal", "azeite"],
   },
   "veg-grao": {
-    P: ["arroz", "grão de bico", "brócolis", "cenoura", "cebola", "sal", "azeite", "páprica defumada", "orégano"],
-    G: ["arroz", "grão de bico", "cenoura", "cebola", "sal", "azeite", "páprica defumada", "orégano"],
+    P: [
+      "arroz",
+      "grão de bico",
+      "brócolis",
+      "cenoura",
+      "cebola",
+      "sal",
+      "azeite",
+      "páprica",
+      "orégano",
+    ],
+    G: [
+      "arroz",
+      "grão de bico",
+      "cenoura",
+      "cebola",
+      "sal",
+      "azeite",
+      "páprica",
+      "orégano",
+    ],
   },
 };
 
@@ -255,4 +274,11 @@ export function getLabelAllergenInfo(itemId: string): LabelAllergenInfo {
 
 export function getLabelIngredients(itemId: string, size: MarmitaSize): string[] {
   return LABEL_INGREDIENTS[itemId]?.[size] ?? [];
+}
+
+/** Junta a lista com vírgulas, exceto o último item, que entra com "e" (ex: "arroz, frango e sal"). */
+export function formatIngredientList(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  return `${items.slice(0, -1).join(", ")} e ${items[items.length - 1]}`;
 }

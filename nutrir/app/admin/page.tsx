@@ -15,6 +15,11 @@ const ADMIN_PAGES = [
     label: "Rótulos nutricionais",
     description: "Gera o rótulo ANVISA de cada marmita (P/G) para imprimir e colar na embalagem.",
   },
+  {
+    href: "/admin/fichas-tecnicas",
+    label: "Fichas técnicas",
+    description: "Ingredientes e gramas de cada marmita — alimenta a tabela nutricional e o rótulo.",
+  },
 ];
 
 export default function AdminPage() {
