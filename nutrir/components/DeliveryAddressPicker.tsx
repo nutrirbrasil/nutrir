@@ -40,7 +40,7 @@ function addressSummary(address: CustomerAddress): string {
  * um endereço salvo ou digitado na hora.
  */
 export function DeliveryAddressPicker({ value, onChange }: Props) {
-  const { addresses, loading, createAddress } = useCustomerAddresses();
+  const { addresses, loading, loaded, createAddress } = useCustomerAddresses();
   const [mode, setMode] = useState<"summary" | "picker" | "form">("form");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
@@ -52,7 +52,7 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
   const [preFormSelectedId, setPreFormSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (initialized || loading) return;
+    if (initialized || !loaded) return;
     setInitialized(true);
 
     if (value.bairroId && value.street.trim() && value.number.trim()) {
@@ -74,7 +74,7 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
       setMode("form");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, addresses, initialized]);
+  }, [loaded, addresses, initialized]);
 
   const selectedAddress = addresses.find((a) => a.id === selectedId) ?? null;
 
@@ -145,7 +145,7 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
     setMode("summary");
   }
 
-  if (loading && !initialized) {
+  if (!initialized && (loading || !loaded)) {
     return <p className="text-sm text-nutrir-emerald/60">Carregando endereços salvos...</p>;
   }
 

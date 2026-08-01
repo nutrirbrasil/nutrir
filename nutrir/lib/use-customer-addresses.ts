@@ -7,15 +7,18 @@ import type { CustomerAddress, CustomerAddressInput } from "./types";
 
 /** Endereços de entrega salvos do cliente logado. Some (lista vazia) para quem não está logado. */
 export function useCustomerAddresses() {
-  const { session, isLoggedIn } = useProfile();
+  const { session, isLoggedIn, authLoading } = useProfile();
   const token = session?.access_token;
 
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
   const [loading, setLoading] = useState(false);
+  /** Vira true depois da primeira tentativa de carregar (com sucesso, erro, ou por não estar logado). Evita que quem consome o hook trate "ainda não sabemos" como "não tem endereço salvo". */
+  const [loaded, setLoaded] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!token) {
       setAddresses([]);
+      setLoaded(true);
       return;
     }
     setLoading(true);
@@ -26,16 +29,19 @@ export function useCustomerAddresses() {
       // Endereços salvos são um atalho, não bloqueiam o checkout se a busca falhar.
     } finally {
       setLoading(false);
+      setLoaded(true);
     }
   }, [token]);
 
   useEffect(() => {
+    if (authLoading) return; // ainda não sabemos se tem sessão — espera pra não travar "loaded" com um falso "deslogado"
     if (isLoggedIn) {
       refresh();
     } else {
       setAddresses([]);
+      setLoaded(true);
     }
-  }, [isLoggedIn, refresh]);
+  }, [authLoading, isLoggedIn, refresh]);
 
   const createAddress = useCallback(
     async (input: CustomerAddressInput) => {
@@ -66,5 +72,5 @@ export function useCustomerAddresses() {
     [token, refresh]
   );
 
-  return { addresses, loading, refresh, createAddress, updateAddress, deleteAddress };
+  return { addresses, loading, loaded, refresh, createAddress, updateAddress, deleteAddress };
 }
