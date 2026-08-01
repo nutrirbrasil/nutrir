@@ -1,8 +1,6 @@
-/** Segunda=1, Sexta=5 */
-const COMBO_WEEKDAYS = new Set([1, 5]);
-
-/** Segunda=1 … Sexta=5 — marmitas avulsas */
+/** Segunda=1 … Sexta=5 — retirada de marmitas e combos (só muda a antecedência mínima) */
 const REGULAR_WEEKDAYS = new Set([1, 2, 3, 4, 5]);
+const COMBO_WEEKDAYS = REGULAR_WEEKDAYS;
 
 const MS_HOUR = 60 * 60 * 1000;
 export const LEAD_COMBO_MS = 48 * MS_HOUR;

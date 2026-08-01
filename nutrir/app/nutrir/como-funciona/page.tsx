@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { InfoList, InfoPage, InfoSection } from "@/components/InfoPage";
+import { InfoPage, InfoSection } from "@/components/InfoPage";
+import { whatsappContactUrl } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Como Funciona — Nutrir Piçarras",
@@ -31,40 +32,47 @@ export default function ComoFuncionaPage() {
 
       <InfoSection title="Antecedência dos pedidos">
         <p>
-          Os pedidos devem ser feitos com no mínimo <strong>24 horas de antecedência</strong> para
-          marmitas individuais, ou <strong>48 horas de antecedência</strong> nos pedidos de combos.
-          Para <strong>entrega</strong>, o pedido deve ser feito até <strong>sexta-feira</strong>;
-          depois disso, a entrega passa para o domingo seguinte.
+          Pedidos para manhã devem ser feito até <strong>11:30</strong>.<br />
+          Pedidos para tarde devem ser feitos até <strong>19:00</strong>.
+        </p>
+        <p>
+          <strong>Marmitas Individuais:</strong> os pedidos devem ser feitos com no mínimo{" "}
+          <strong>24 horas de antecedência</strong>.
+        </p>
+        <p>
+          <strong>Combos:</strong> os pedidos devem ser feitos com no mínimo{" "}
+          <strong>48 horas de antecedência</strong>.
         </p>
       </InfoSection>
 
-      <InfoSection title="Dias de retirada">
-        <p className="font-semibold text-nutrir-emerald">Marmitas</p>
+      <InfoSection title="Entrega">
+        <p>
+          Todos os <strong>domingos, das 15h às 19h</strong>. O pedido deve ser feito até{" "}
+          <strong>sexta-feira, 19:00</strong>! Disponível para marmitas individuais e combos, com
+          taxa que varia conforme cidade e bairro.
+        </p>
+      </InfoSection>
+
+      <InfoSection title="Retirada">
         <p>De segunda a sexta, das 9:00 às 11:30 ou das 15:00 às 19:00.</p>
-
-        <p className="font-semibold text-nutrir-emerald">Combos</p>
-        <p>Apenas segunda e sexta, das 9:00 às 11:30 ou das 15:00 às 19:00.</p>
       </InfoSection>
 
-      <InfoSection title="Dias de entrega">
-        <p>
-          Aos <strong>domingos, das 15h às 19h</strong>. Disponível para marmitas individuais e
-          combos, com taxa que varia conforme o bairro — calculada automaticamente no checkout.
-        </p>
-      </InfoSection>
+      <p className="text-center font-display text-base italic text-nutrir-emerald md:text-lg">
+        Apenas se organize para pedir que nós organizamos sua semana!
+      </p>
 
-      <InfoSection title="Se programe para pedir">
-        <p>
-          Por se tratar de uma comida artesanal, feita sob encomenda, com produtos frescos:
-        </p>
-        <InfoList
-          items={[
-            "Pedidos para segunda-feira devem ser realizados até sábado.",
-            "Pedidos para sexta-feira devem ser realizados até quarta-feira.",
-            "Pedidos para entrega no domingo devem ser realizados até sexta-feira.",
-          ]}
-        />
-      </InfoSection>
+      <p className="text-center">
+        Dúvidas? Nos chame no{" "}
+        <a
+          href={whatsappContactUrl("Olá! Tenho uma dúvida sobre como funciona a Nutrir.")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-nutrir-burgundy hover:underline"
+        >
+          WhatsApp
+        </a>
+        !
+      </p>
     </InfoPage>
   );
 }

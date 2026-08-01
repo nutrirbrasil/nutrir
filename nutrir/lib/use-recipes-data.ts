@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { nutrirApi } from "./api";
-import { computeNutritionFacts, type MarmitaNutritionFacts, type Recipe } from "./marmita-nutrition";
-import type { MarmitaSize } from "./menu-data";
+import type { Recipe } from "./marmita-nutrition";
 
 let cachedPromise: Promise<Recipe[]> | null = null;
 
@@ -59,19 +58,5 @@ export function useRecipesData() {
     await load();
   }, [load]);
 
-  const findRecipe = useCallback(
-    (itemId: string, size: MarmitaSize): Recipe | null =>
-      recipes?.find((r) => r.item_id === itemId && r.size === size) ?? null,
-    [recipes]
-  );
-
-  const getNutrition = useCallback(
-    (itemId: string, size: MarmitaSize): MarmitaNutritionFacts | null => {
-      const recipe = findRecipe(itemId, size);
-      return recipe ? computeNutritionFacts(recipe) : null;
-    },
-    [findRecipe]
-  );
-
-  return { recipes, loading, refresh, findRecipe, getNutrition };
+  return { recipes, loading, refresh };
 }
