@@ -5,6 +5,8 @@ import { useRequireAdmin } from "@/lib/use-require-admin";
 import { useProfile } from "@/lib/profile-context";
 import { nutrirApi, type RecipeIngredientPayload } from "@/lib/api";
 import { MENU_SECTIONS, type MarmitaSize } from "@/lib/menu-data";
+import { getMarmitaImageSrc } from "@/lib/marmita-images";
+import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 import {
   computeNutritionFacts,
   getMergedIngredientTotals,
@@ -24,21 +26,31 @@ interface RecipeTarget {
   size: MarmitaSize;
 }
 
-function buildAllTargets(): RecipeTarget[] {
+interface MarmitaListItem {
+  itemId: string;
+  itemName: string;
+  imageSrc?: string;
+}
+
+function buildItemList(): MarmitaListItem[] {
   const seen = new Set<string>();
-  const targets: RecipeTarget[] = [];
+  const items: MarmitaListItem[] = [];
   for (const section of MENU_SECTIONS) {
     for (const item of section.items) {
       if (seen.has(item.id)) continue;
       seen.add(item.id);
-      targets.push({ itemId: item.id, itemName: item.name, size: "P" });
-      targets.push({ itemId: item.id, itemName: item.name, size: "G" });
+      items.push({ itemId: item.id, itemName: item.name, imageSrc: getMarmitaImageSrc(item.id) });
     }
   }
-  return targets;
+  return items;
 }
 
-const ALL_TARGETS = buildAllTargets();
+const ITEM_LIST = buildItemList();
+
+function fmt(n: number): string {
+  const rounded = Math.round(n * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1).replace(".", ",");
+}
 
 const EMPTY_FOOD_FORM: FoodInput = {
   display_name: "",
@@ -69,20 +81,24 @@ interface PendingIngredient {
   /** Peso pronto/como consumido (g) deste item — não inclui os subitens. */
   grams: number;
   note: string;
-  /** Só controla como o campo de gramas é exibido/editado, não o que é salvo. */
-  inputMode: "prepared" | "raw";
+  /**
+   * Só controla como o campo de peso é exibido/editado, não o que é salvo
+   * (sempre gramas). Itens principais alternam cru/pronto; subitens
+   * alternam gramas/% do peso cru do item principal.
+   */
+  inputMode: "prepared" | "raw" | "grams" | "percent";
   children: PendingIngredient[];
   showChildren: boolean;
 }
 
-function toPending(ingredients: RecipeIngredient[]): PendingIngredient[] {
+function toPending(ingredients: RecipeIngredient[], isChild = false): PendingIngredient[] {
   return ingredients.map((i) => ({
     key: nextKey(),
     food: i.food,
     grams: i.grams,
     note: i.note ?? "",
-    inputMode: "prepared",
-    children: toPending(i.children),
+    inputMode: isChild ? "percent" : "prepared",
+    children: toPending(i.children, true),
     showChildren: i.children.length > 0,
   }));
 }
@@ -136,38 +152,33 @@ function addChildByKey(
   });
 }
 
-function newPendingItem(food: Food): PendingIngredient {
-  return { key: nextKey(), food, grams: 10, note: "", inputMode: "prepared", children: [], showChildren: false };
+function newPendingItem(food: Food, isChild = false): PendingIngredient {
+  return {
+    key: nextKey(),
+    food,
+    grams: 10,
+    note: "",
+    inputMode: isChild ? "percent" : "prepared",
+    children: [],
+    showChildren: false,
+  };
 }
 
-interface ProductionRow {
-  key: string;
-  label: string;
-  food: Food;
-  grams: number;
+/** % do peso cru do item principal que este subitem representa (ex: sal = 0,75% do frango cru). Não muda com a escala de porções. */
+function pctOfParentCru(parentFood: Food, parentGrams: number, childGrams: number): number {
+  const parentCru = rawGramsForFood(parentFood, parentGrams);
+  return parentCru > 0 ? (childGrams / parentCru) * 100 : 0;
 }
 
-/**
- * Linhas pra produção em lote: item principal + cada subitem SEPARADO (não
- * mesclado entre grupos, ao contrário da lista de ingredientes do rótulo) —
- * pra saber quanto de cada coisa vai em cada componente (ex: sal no frango x
- * sal no arroz). Inclui os só-de-referência (água), que não entram em nenhum
- * outro cálculo.
- */
-function buildProductionRows(items: PendingIngredient[]): ProductionRow[] {
-  const rows: ProductionRow[] = [];
-  for (const top of items) {
-    rows.push({ key: top.key, label: top.food.display_name, food: top.food, grams: top.grams });
-    for (const child of top.children) {
-      rows.push({
-        key: child.key,
-        label: `↳ ${child.food.display_name} (${top.food.display_name})`,
-        food: child.food,
-        grams: child.grams,
-      });
-    }
-  }
-  return rows;
+/** Inverso de pctOfParentCru: converte uma % do peso cru do item principal em gramas do subitem. */
+function gramsFromPctOfParentCru(parentFood: Food, parentGrams: number, pct: number): number {
+  const parentCru = rawGramsForFood(parentFood, parentGrams);
+  return (pct / 100) * parentCru;
+}
+
+/** Peso cozido total de um item principal: ele mesmo + subitens que não são só-de-referência (água evapora, não soma). */
+function cookedTotalGrams(item: RecipeIngredient): number {
+  return rolledUpGrams(item);
 }
 
 /** Seletor de ingrediente do catálogo (usado tanto pra item principal quanto pra subitem). */
@@ -175,10 +186,12 @@ function AddIngredientControl({
   foods,
   onAdd,
   compact,
+  placeholder = "Escolha um ingrediente do catálogo…",
 }: {
   foods: Food[];
   onAdd: (food: Food) => void;
   compact?: boolean;
+  placeholder?: string;
 }) {
   const [selectedId, setSelectedId] = useState("");
   return (
@@ -188,7 +201,7 @@ function AddIngredientControl({
         value={selectedId}
         onChange={(e) => setSelectedId(e.target.value)}
       >
-        <option value="">Escolha um ingrediente do catálogo…</option>
+        <option value="">{placeholder}</option>
         {foods.map((f) => (
           <option key={f.id} value={f.id}>
             {f.display_name}
@@ -257,6 +270,128 @@ function GramsInput({
   );
 }
 
+/** Campo de peso do subitem: alterna entre digitar em gramas ou em % do peso cru do item principal. */
+function SubitemAmountInput({
+  parent,
+  child,
+  onChange,
+  onToggleMode,
+}: {
+  parent: PendingIngredient;
+  child: PendingIngredient;
+  onChange: (grams: number) => void;
+  onToggleMode: () => void;
+}) {
+  const isPercent = child.inputMode === "percent";
+  const displayed = isPercent
+    ? pctOfParentCru(parent.food, parent.grams, child.grams)
+    : child.grams;
+
+  function handleInput(typed: number) {
+    onChange(isPercent ? gramsFromPctOfParentCru(parent.food, parent.grams, typed) : typed);
+  }
+
+  return (
+    <>
+      <input
+        type="number"
+        min={0}
+        step="0.1"
+        className="input-field w-20"
+        value={Math.round(displayed * 100) / 100}
+        onChange={(e) => handleInput(Number(e.target.value))}
+      />
+      <span className="text-xs text-nutrir-emerald/60">{isPercent ? "%" : "g"}</span>
+      <button
+        type="button"
+        onClick={onToggleMode}
+        className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+          isPercent ? "bg-nutrir-burgundy text-nutrir-nude" : "bg-nutrir-emerald/10 text-nutrir-emerald"
+        }`}
+        title="Alternar entre gramas e % do peso cru do item principal"
+      >
+        {isPercent ? "%" : "g"}
+      </button>
+    </>
+  );
+}
+
+/**
+ * Cartão de um ingrediente principal em modo cozinha: cru → cozido (quando o
+ * alimento muda de peso ao preparar) e cada subitem (temperos, água) com
+ * gramas e % do peso cru do item principal — tudo já escalado pelas porções.
+ */
+function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; batchCount: number }) {
+  const cruTotal = rawGramsForFood(item.food, item.grams) * batchCount;
+  const cozidoTotal = cookedTotalGrams(item) * batchCount;
+
+  return (
+    <div className="rounded-2xl border-2 border-nutrir-emerald/15 bg-white/70 p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="font-display text-lg font-bold text-nutrir-emerald sm:text-xl">
+          {item.food.display_name}
+        </h3>
+        <div className="shrink-0 text-right">
+          <p className="text-lg font-bold text-nutrir-burgundy sm:text-xl">{fmt(cruTotal)} g cru</p>
+          <p className="text-[11px] text-nutrir-emerald/60">rende {fmt(cozidoTotal)} g cozido</p>
+        </div>
+      </div>
+
+      {item.children.length > 0 && (
+        <ul className="mt-3 space-y-1.5 border-t border-nutrir-nude-dark/30 pt-3">
+          {item.children.map((child) => {
+            const childTotal = child.grams * batchCount;
+            const pct = pctOfParentCru(item.food, item.grams, child.grams);
+            return (
+              <li key={child.id} className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-nutrir-emerald/85">
+                  <span className="text-nutrir-emerald/40">•</span> {child.food.display_name}
+                  {child.food.is_reference_only && (
+                    <span className="ml-1 text-[10px] text-nutrir-emerald/50">(não conta no total, evapora)</span>
+                  )}
+                </span>
+                <span className="shrink-0 tabular-nums font-semibold text-nutrir-emerald">
+                  {fmt(childTotal)} g{" "}
+                  <span className="font-normal text-nutrir-emerald/50">({pct.toFixed(1)}%)</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Ordena por quantidade cozida total (item principal + subitens, sem água) decrescente. */
+function sortByCookedTotalDesc(items: RecipeIngredient[]): RecipeIngredient[] {
+  return [...items].sort((a, b) => cookedTotalGrams(b) - cookedTotalGrams(a));
+}
+
+/** Visão de cozinha: bonita, grande, só leitura — o que o Pedro vai olhar com a mão suja de tempero. */
+function RecipeCookingView({ recipe, batchCount }: { recipe: Recipe; batchCount: number }) {
+  if (recipe.ingredients.length === 0) {
+    return <p className="text-sm text-nutrir-emerald/60">Nenhum ingrediente cadastrado ainda.</p>;
+  }
+
+  const ordered = sortByCookedTotalDesc(recipe.ingredients);
+
+  return (
+    <div className="space-y-3">
+      {ordered.map((item) => (
+        <CookingIngredientCard key={item.id} item={item} batchCount={batchCount} />
+      ))}
+
+      {recipe.observations && (
+        <div className="rounded-2xl border-2 border-nutrir-burgundy/20 bg-nutrir-burgundy/5 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-nutrir-burgundy">Modo de preparo</p>
+          <p className="mt-1 whitespace-pre-line text-sm text-nutrir-emerald/90">{recipe.observations}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RecipeEditor({
   target,
   recipe,
@@ -279,7 +414,6 @@ function RecipeEditor({
   const [newFood, setNewFood] = useState<FoodInput>(EMPTY_FOOD_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [batchCount, setBatchCount] = useState(1);
 
   const previewRecipe: Recipe = useMemo(
     () => ({ item_id: target.itemId, size: target.size, observations, ingredients: toRecipeIngredientTree(pending) }),
@@ -287,14 +421,13 @@ function RecipeEditor({
   );
   const previewFacts = useMemo(() => computeNutritionFacts(previewRecipe), [previewRecipe]);
   const mergedTotals = useMemo(() => getMergedIngredientTotals(previewRecipe), [previewRecipe]);
-  const productionRows = useMemo(() => buildProductionRows(pending), [pending]);
 
   function addTopLevel(food: Food) {
     setPending((prev) => [...prev, newPendingItem(food)]);
   }
 
   function addChild(parentKey: string, food: Food) {
-    setPending((prev) => addChildByKey(prev, parentKey, newPendingItem(food)));
+    setPending((prev) => addChildByKey(prev, parentKey, newPendingItem(food, true)));
   }
 
   async function handleCreateFood(forParentKey: string | null) {
@@ -308,7 +441,7 @@ function RecipeEditor({
     try {
       const { food } = await nutrirApi.createFood(newFood, session.access_token);
       if (forParentKey) {
-        setPending((prev) => addChildByKey(prev, forParentKey, newPendingItem(food)));
+        setPending((prev) => addChildByKey(prev, forParentKey, newPendingItem(food, true)));
       } else {
         setPending((prev) => [...prev, newPendingItem(food)]);
       }
@@ -347,123 +480,117 @@ function RecipeEditor({
   }
 
   return (
-    <div className="card mt-2 space-y-4 border-2 border-nutrir-emerald/30">
-      <h3 className="font-display text-lg font-bold text-nutrir-emerald">
-        {target.itemName} ({target.size})
-      </h3>
-
+    <div className="space-y-4">
       <div className="space-y-3">
-        {pending.map((item) => {
-          const total = rolledUpGrams({ id: item.key, food: item.food, grams: item.grams, note: null, children: toRecipeIngredientTree(item.children) });
-          return (
-            <div key={item.key} className="rounded-xl border border-nutrir-nude-dark/40 p-2.5">
-              <div className="flex items-center gap-2">
-                <span className="flex-1 text-sm text-nutrir-emerald">
-                  {item.food.display_name}
-                  {item.children.length > 0 && (
-                    <span className="ml-1 text-xs text-nutrir-emerald/60">
-                      (total {total} g = {item.grams} g + {total - item.grams} g de subitens)
-                    </span>
-                  )}
-                </span>
-                <GramsInput
-                  item={item}
-                  onChange={(grams) => setPending((prev) => updateNodeByKey(prev, item.key, { grams }))}
-                  onToggleMode={() =>
-                    setPending((prev) =>
-                      updateNodeByKey(prev, item.key, {
-                        inputMode: item.inputMode === "raw" ? "prepared" : "raw",
-                      })
-                    )
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => setPending((prev) => removeNodeByKey(prev, item.key))}
-                  className="text-sm font-bold text-nutrir-burgundy"
-                >
-                  Remover
-                </button>
-              </div>
-
-              <input
-                className="input-field mt-2 text-xs"
-                placeholder="Observação (ex: 1% do peso cru do frango)"
-                value={item.note}
-                onChange={(e) =>
-                  setPending((prev) => updateNodeByKey(prev, item.key, { note: e.target.value }))
+        {pending.map((item) => (
+          <div key={item.key} className="rounded-xl border border-nutrir-nude-dark/40 p-2.5">
+            <div className="flex items-center gap-2">
+              <span className="flex-1 text-sm text-nutrir-emerald">{item.food.display_name}</span>
+              <GramsInput
+                item={item}
+                onChange={(grams) => setPending((prev) => updateNodeByKey(prev, item.key, { grams }))}
+                onToggleMode={() =>
+                  setPending((prev) =>
+                    updateNodeByKey(prev, item.key, {
+                      inputMode: item.inputMode === "raw" ? "prepared" : "raw",
+                    })
+                  )
                 }
               />
-
               <button
                 type="button"
-                onClick={() =>
-                  setPending((prev) => updateNodeByKey(prev, item.key, { showChildren: !item.showChildren }))
-                }
-                className="mt-2 text-xs font-bold text-nutrir-emerald underline underline-offset-2"
+                onClick={() => setPending((prev) => removeNodeByKey(prev, item.key))}
+                className="text-sm font-bold text-nutrir-burgundy"
               >
-                {item.showChildren
-                  ? "Esconder subitens"
-                  : item.children.length > 0
-                    ? `Mostrar subitens (${item.children.length})`
-                    : "+ Adicionar subitem"}
+                Remover
               </button>
+            </div>
 
-              {item.showChildren && (
-                <div className="mt-2 space-y-2 border-l-2 border-nutrir-nude-dark/40 pl-3">
-                  {item.children.map((child) => (
-                    <div key={child.key} className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="flex-1 text-xs text-nutrir-emerald">{child.food.display_name}</span>
-                        <GramsInput
-                          item={child}
-                          onChange={(grams) =>
-                            setPending((prev) => updateNodeByKey(prev, child.key, { grams }))
-                          }
-                          onToggleMode={() =>
-                            setPending((prev) =>
-                              updateNodeByKey(prev, child.key, {
-                                inputMode: child.inputMode === "raw" ? "prepared" : "raw",
-                              })
-                            )
-                          }
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setPending((prev) => removeNodeByKey(prev, child.key))}
-                          className="text-xs font-bold text-nutrir-burgundy"
-                        >
-                          Remover
-                        </button>
-                      </div>
-                      <input
-                        className="input-field text-xs"
-                        placeholder="Observação (ex: 1% do peso cru do frango)"
-                        value={child.note}
-                        onChange={(e) =>
-                          setPending((prev) => updateNodeByKey(prev, child.key, { note: e.target.value }))
+            <input
+              className="input-field mt-2 text-xs"
+              placeholder="Observação (ex: refogar antes de adicionar o molho)"
+              value={item.note}
+              onChange={(e) =>
+                setPending((prev) => updateNodeByKey(prev, item.key, { note: e.target.value }))
+              }
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setPending((prev) => updateNodeByKey(prev, item.key, { showChildren: !item.showChildren }))
+              }
+              className="mt-2 text-xs font-bold text-nutrir-emerald underline underline-offset-2"
+            >
+              {item.showChildren
+                ? "Esconder subitens"
+                : item.children.length > 0
+                  ? `Mostrar subitens (${item.children.length})`
+                  : "+ Adicionar subitem (tempero, água...)"}
+            </button>
+
+            {item.showChildren && (
+              <div className="mt-2 space-y-2 border-l-2 border-nutrir-nude-dark/40 pl-3">
+                {item.children.map((child) => {
+                  const isPercent = child.inputMode === "percent";
+                  const hint = isPercent
+                    ? `${fmt(child.grams)} g`
+                    : `${pctOfParentCru(item.food, item.grams, child.grams).toFixed(1)}%`;
+                  return (
+                    <div key={child.key} className="flex items-center gap-2">
+                      <span className="flex-1 text-xs text-nutrir-emerald">{child.food.display_name}</span>
+                      <SubitemAmountInput
+                        parent={item}
+                        child={child}
+                        onChange={(grams) =>
+                          setPending((prev) => updateNodeByKey(prev, child.key, { grams }))
+                        }
+                        onToggleMode={() =>
+                          setPending((prev) =>
+                            updateNodeByKey(prev, child.key, {
+                              inputMode: isPercent ? "grams" : "percent",
+                            })
+                          )
                         }
                       />
+                      <span className="w-14 shrink-0 text-right text-[10px] text-nutrir-emerald/40">
+                        {hint}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPending((prev) => removeNodeByKey(prev, child.key))}
+                        className="text-xs font-bold text-nutrir-burgundy"
+                      >
+                        Remover
+                      </button>
                     </div>
-                  ))}
-                  <AddIngredientControl foods={foods} onAdd={(food) => addChild(item.key, food)} compact />
-                </div>
-              )}
-            </div>
-          );
-        })}
+                  );
+                })}
+                <AddIngredientControl
+                  foods={foods}
+                  onAdd={(food) => addChild(item.key, food)}
+                  compact
+                  placeholder={`Adicionar subitem em ${item.food.display_name}…`}
+                />
+              </div>
+            )}
+          </div>
+        ))}
         {pending.length === 0 && (
           <p className="text-sm text-nutrir-emerald/60">Nenhum ingrediente ainda.</p>
         )}
       </div>
 
-      <div className="border-t border-nutrir-nude-dark/40 pt-3">
-        <AddIngredientControl foods={foods} onAdd={addTopLevel} />
-        <button
-          type="button"
-          onClick={() => setShowNewFood((v) => !v)}
-          className="btn-secondary mt-2"
-        >
+      <div className="rounded-xl border-2 border-dashed border-nutrir-emerald/30 p-3">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/60">
+          + Novo ingrediente principal (não é subitem de nenhum outro)
+        </p>
+        <AddIngredientControl
+          foods={foods}
+          onAdd={addTopLevel}
+          placeholder="Escolha um novo ingrediente principal…"
+        />
+        <button type="button" onClick={() => setShowNewFood((v) => !v)} className="btn-secondary mt-2">
           + Criar novo ingrediente
         </button>
       </div>
@@ -495,9 +622,7 @@ function RecipeEditor({
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-nutrir-emerald">
-              Fonte (opcional)
-            </label>
+            <label className="mb-1 block text-xs font-medium text-nutrir-emerald">Fonte (opcional)</label>
             <input
               className="input-field"
               value={newFood.source ?? ""}
@@ -517,9 +642,7 @@ function RecipeEditor({
               ] as [keyof FoodInput, string][]
             ).map(([field, label]) => (
               <div key={field}>
-                <label className="mb-1 block text-[10px] font-medium text-nutrir-emerald">
-                  {label}
-                </label>
+                <label className="mb-1 block text-[10px] font-medium text-nutrir-emerald">{label}</label>
                 <input
                   type="number"
                   step="0.1"
@@ -576,7 +699,7 @@ function RecipeEditor({
 
       <div>
         <label className="mb-1 block text-sm font-medium text-nutrir-emerald">
-          Observações gerais da receita
+          Modo de preparo / observações gerais
         </label>
         <textarea
           className="input-field min-h-16"
@@ -584,54 +707,6 @@ function RecipeEditor({
           onChange={(e) => setObservations(e.target.value)}
           placeholder="Ex: refogar a cebola e o alho no azeite antes de adicionar o molho..."
         />
-      </div>
-
-      <div className="rounded-xl border border-nutrir-nude-dark/40 p-3">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-bold text-nutrir-emerald">Produção em lote</p>
-          <input
-            type="number"
-            min={1}
-            step="1"
-            className="input-field w-20"
-            value={batchCount}
-            onChange={(e) => setBatchCount(Math.max(1, Number(e.target.value)))}
-          />
-          <span className="text-xs text-nutrir-emerald/60">marmita(s)</span>
-        </div>
-        <p className="mt-1 text-[10px] text-nutrir-emerald/50">
-          Subitens aparecem separados por grupo (ex: sal do frango x sal do arroz) — não mesclados
-          como na lista de ingredientes do rótulo.
-        </p>
-        <div className="mt-2 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-nutrir-nude-dark/40 text-nutrir-emerald/70">
-                <th className="py-1 pr-2 font-semibold">Ingrediente</th>
-                <th className="py-1 pr-2 text-right font-semibold">Pronto</th>
-                <th className="py-1 text-right font-semibold">Cru</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productionRows.map((row) => {
-                const preparedTotal = row.grams * batchCount;
-                const rawTotal = rawGramsForFood(row.food, preparedTotal);
-                return (
-                  <tr key={row.key} className="border-b border-nutrir-nude-dark/20">
-                    <td className="py-1 pr-2 text-nutrir-emerald">
-                      {row.label}
-                      {row.food.is_reference_only && (
-                        <span className="text-nutrir-emerald/50"> (referência)</span>
-                      )}
-                    </td>
-                    <td className="py-1 pr-2 text-right tabular-nums">{preparedTotal.toFixed(1)} g</td>
-                    <td className="py-1 text-right tabular-nums">{rawTotal.toFixed(1)} g</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
       </div>
 
       <div className="rounded-xl border border-nutrir-nude-dark/40 p-3">
@@ -664,11 +739,126 @@ function RecipeEditor({
   );
 }
 
+function RecipeDetail({
+  item,
+  recipes,
+  foods,
+  onFoodCreated,
+  onRefresh,
+  onBack,
+}: {
+  item: MarmitaListItem;
+  recipes: Recipe[] | null;
+  foods: Food[];
+  onFoodCreated: (food: Food) => void;
+  onRefresh: () => Promise<void>;
+  onBack: () => void;
+}) {
+  const [size, setSize] = useState<MarmitaSize>("P");
+  const [mode, setMode] = useState<"cook" | "edit">("cook");
+  const [batchCount, setBatchCount] = useState(1);
+
+  const recipe = recipes?.find((r) => r.item_id === item.itemId && r.size === size) ?? null;
+  const target: RecipeTarget = { itemId: item.itemId, itemName: item.itemName, size };
+
+  return (
+    <div className="space-y-5">
+      <button type="button" onClick={onBack} className="text-sm font-bold text-nutrir-burgundy">
+        ← Todas as marmitas
+      </button>
+
+      <div className="flex items-center gap-4">
+        {item.imageSrc && (
+          <MarmitaPhoto
+            src={item.imageSrc}
+            alt={item.itemName}
+            className="h-20 w-20 shrink-0 sm:h-24 sm:w-24"
+            sizes="96px"
+          />
+        )}
+        <div>
+          <h1 className="font-display text-xl font-bold text-nutrir-emerald sm:text-2xl">{item.itemName}</h1>
+          <div className="mt-2 flex gap-2">
+            {(["P", "G"] as MarmitaSize[]).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  setSize(s);
+                  setMode("cook");
+                }}
+                className={`rounded-full px-4 py-1 text-sm font-bold transition ${
+                  size === s ? "bg-nutrir-emerald text-nutrir-cream" : "bg-nutrir-emerald/10 text-nutrir-emerald"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {mode === "cook" && (
+        <div className="flex items-center gap-3 rounded-2xl border-2 border-nutrir-emerald/15 bg-nutrir-emerald/5 p-3">
+          <label className="text-sm font-bold text-nutrir-emerald">Porções</label>
+          <button
+            type="button"
+            onClick={() => setBatchCount((n) => Math.max(1, n - 1))}
+            className="btn-secondary h-9 w-9 !p-0 text-lg leading-none"
+          >
+            −
+          </button>
+          <input
+            type="number"
+            min={1}
+            className="input-field w-16 text-center"
+            value={batchCount}
+            onChange={(e) => setBatchCount(Math.max(1, Number(e.target.value) || 1))}
+          />
+          <button
+            type="button"
+            onClick={() => setBatchCount((n) => n + 1)}
+            className="btn-secondary h-9 w-9 !p-0 text-lg leading-none"
+          >
+            +
+          </button>
+          <span className="text-xs text-nutrir-emerald/60">marmita(s) de {size}</span>
+        </div>
+      )}
+
+      {!recipe && <p className="text-sm text-nutrir-emerald/60">Carregando receita...</p>}
+
+      {recipe && mode === "cook" && (
+        <>
+          <RecipeCookingView recipe={recipe} batchCount={batchCount} />
+          <button type="button" onClick={() => setMode("edit")} className="btn-secondary w-full">
+            ✎ Editar receita
+          </button>
+        </>
+      )}
+
+      {recipe && mode === "edit" && (
+        <RecipeEditor
+          target={target}
+          recipe={recipe}
+          foods={foods}
+          onClose={() => setMode("cook")}
+          onSaved={async () => {
+            await onRefresh();
+            setMode("cook");
+          }}
+          onFoodCreated={onFoodCreated}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function FichasTecnicasPage() {
   const { ready } = useRequireAdmin();
   const { recipes, loading, refresh } = useRecipesData();
   const [foods, setFoods] = useState<Food[]>([]);
-  const [editingTarget, setEditingTarget] = useState<RecipeTarget | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
   useEffect(() => {
     nutrirApi
@@ -679,94 +869,51 @@ export default function FichasTecnicasPage() {
 
   if (!ready) return null;
 
-  function toggleEditing(t: RecipeTarget) {
-    setEditingTarget((prev) =>
-      prev && prev.itemId === t.itemId && prev.size === t.size ? null : t
-    );
-  }
-
-  function countIngredients(r: Recipe | undefined): number {
-    if (!r) return 0;
-    let count = 0;
-    const walk = (items: RecipeIngredient[]) => {
-      for (const i of items) {
-        count += 1;
-        walk(i.children);
-      }
-    };
-    walk(r.ingredients);
-    return count;
-  }
+  const selectedItem = ITEM_LIST.find((i) => i.itemId === selectedItemId) ?? null;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Fichas técnicas</h1>
-      <p className="mt-1 text-sm text-nutrir-emerald/60">
-        Ingredientes e gramas de cada marmita — alimenta a tabela nutricional e a lista de
-        ingredientes do rótulo automaticamente.
-      </p>
+      {!selectedItem ? (
+        <>
+          <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Fichas técnicas</h1>
+          <p className="mt-1 text-sm text-nutrir-emerald/60">
+            Toque numa marmita pra ver a receita pronta pra cozinha: cru, cozido, temperos e água, em
+            gramas e porcentagem.
+          </p>
 
-      {loading && <p className="mt-6 text-sm text-nutrir-emerald/60">Carregando...</p>}
+          {loading && <p className="mt-6 text-sm text-nutrir-emerald/60">Carregando...</p>}
 
-      <div className="mt-6 space-y-2">
-        {ALL_TARGETS.filter((t) => t.size === "P").map((t) => {
-          const recipeP = recipes?.find((r) => r.item_id === t.itemId && r.size === "P");
-          const recipeG = recipes?.find((r) => r.item_id === t.itemId && r.size === "G");
-          const targetP: RecipeTarget = { ...t, size: "P" };
-          const targetG: RecipeTarget = { ...t, size: "G" };
-          const isEditingP = editingTarget?.itemId === t.itemId && editingTarget.size === "P";
-          const isEditingG = editingTarget?.itemId === t.itemId && editingTarget.size === "G";
-
-          return (
-            <div key={t.itemId} className="card">
-              <p className="font-medium text-nutrir-emerald">{t.itemName}</p>
-              <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleEditing(targetP)}
-                  className={`btn-secondary flex-1 text-sm ${isEditingP ? "border-nutrir-emerald bg-nutrir-emerald/10" : ""}`}
-                >
-                  P · {countIngredients(recipeP)} ingredientes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleEditing(targetG)}
-                  className={`btn-secondary flex-1 text-sm ${isEditingG ? "border-nutrir-emerald bg-nutrir-emerald/10" : ""}`}
-                >
-                  G · {countIngredients(recipeG)} ingredientes
-                </button>
-              </div>
-
-              {isEditingP && recipeP && (
-                <RecipeEditor
-                  target={targetP}
-                  recipe={recipeP}
-                  foods={foods}
-                  onClose={() => setEditingTarget(null)}
-                  onSaved={async () => {
-                    await refresh();
-                    setEditingTarget(null);
-                  }}
-                  onFoodCreated={(food) => setFoods((prev) => [...prev, food])}
-                />
-              )}
-              {isEditingG && recipeG && (
-                <RecipeEditor
-                  target={targetG}
-                  recipe={recipeG}
-                  foods={foods}
-                  onClose={() => setEditingTarget(null)}
-                  onSaved={async () => {
-                    await refresh();
-                    setEditingTarget(null);
-                  }}
-                  onFoodCreated={(food) => setFoods((prev) => [...prev, food])}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {ITEM_LIST.map((item) => (
+              <button
+                key={item.itemId}
+                type="button"
+                onClick={() => setSelectedItemId(item.itemId)}
+                className="card flex flex-col items-center gap-2 !p-3 text-center transition hover:shadow-md"
+              >
+                {item.imageSrc && (
+                  <MarmitaPhoto
+                    src={item.imageSrc}
+                    alt={item.itemName}
+                    className="aspect-square w-full"
+                    sizes="200px"
+                  />
+                )}
+                <span className="text-sm font-bold text-nutrir-emerald">{item.itemName}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <RecipeDetail
+          item={selectedItem}
+          recipes={recipes}
+          foods={foods}
+          onFoodCreated={(food) => setFoods((prev) => [...prev, food])}
+          onRefresh={refresh}
+          onBack={() => setSelectedItemId(null)}
+        />
+      )}
     </div>
   );
 }

@@ -3,6 +3,10 @@ import { verifyAdminRequest } from "@/lib/session-auth";
 import { createFood, listFoods } from "@/lib/recipes-db";
 import type { FoodInput } from "@/lib/marmita-nutrition";
 
+// Sem isso o Next cacheia a resposta estaticamente e o catálogo novo/editado
+// não aparece até um rebuild.
+export const dynamic = "force-dynamic";
+
 /** Catálogo de ingredientes, público (alimenta o cálculo nutricional em /marmitas). */
 export async function GET() {
   const foods = await listFoods();
