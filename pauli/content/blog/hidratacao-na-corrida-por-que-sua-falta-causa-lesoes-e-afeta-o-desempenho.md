@@ -5,7 +5,7 @@ description: " Hidratação na Corrida: evite lesões e performe melhor."
 date: 2026-08-02
 published: true
 ---
- O Problema Silencioso dos Corredores
+ **O Problema Silencioso dos Corredores**
 
 Você corre regularmente, segue um bom programa de treino, investe em tênis adequado... mas ainda assim sofre com cãibras, dores persistentes nos tendões e uma recuperação lenta.
 
@@ -39,13 +39,13 @@ Quando você está desidratado, esse sistema falha. A temperatura corporal sobe 
 
 Seu coração é uma bomba que depende de volume de sangue. A água constitui aproximadamente 55% do plasma sanguíneo. Quando você perde água:
 
-\- O volume de sangue diminui
+ O volume de sangue diminui
 
-\- Seu coração precisa trabalhar mais para bombar
+ Seu coração precisa trabalhar mais para bombar
 
-\- A pressão arterial sobe
+ A pressão arterial sobe
 
-\- O oxigênio chega com dificuldade aos músculos
+ O oxigênio chega com dificuldade aos músculos
 
 Resultado: seu desempenho cai significativamente.
 
