@@ -5,7 +5,7 @@ description: " Hidratação na Corrida: evite lesões e performe melhor."
 date: 2026-08-02
 published: true
 ---
-> #####  **O Problema Silencioso dos Corredores**
+> ##### **O Problema Silencioso dos Corredores**
 
 Você corre regularmente, segue um bom programa de treino, investe em tênis adequado... mas ainda assim sofre com cãibras, dores persistentes nos tendões e uma recuperação lenta.
 
@@ -17,7 +17,7 @@ O pior? Você pode estar desidratado sem nem saber.
 
 Neste artigo, vamos explorar por que a hidratação é tão crítica para corredores, quais lesões estão associadas à sua falta, e como água e eletrólitos funcionam diferentemente no seu corpo. 
 
-##### *O Que a Hidratação Realmente Faz no Seu Corpo*
+#### O Que a Hidratação Realmente Faz no Seu Corpo
 
 Quando você corre, sua fisiologia muda dramaticamente. Seu corpo gera calor, perde água através do suor, e seus sistemas internos trabalham em overdrive. A hidratação é um sistema crítico de sobrevivência.
 
@@ -35,7 +35,7 @@ Essa evaporação depende inteiramente de água
 
 Quando você está desidratado, esse sistema falha. A temperatura corporal sobe anormalmente. Isso é é perigoso.
 
-### ***Função Cardiovascular***
+### **Função Cardiovascular**
 
 Seu coração é uma bomba que depende de volume de sangue. A água constitui aproximadamente 55% do plasma sanguíneo. Quando você perde água:
 
@@ -49,7 +49,7 @@ Seu coração é uma bomba que depende de volume de sangue. A água constitui ap
 
 Resultado: seu desempenho cai significativamente.
 
-### ***Funcionamento Muscular***
+### **Funcionamento Muscular**
 
 Os músculos são compostos por 75% de água. Durante a contração muscular:
 
@@ -63,7 +63,7 @@ Você já sentiu aquele "formigamento" estranho nos últimos km de uma corrida l
 
 Você pode estar comendo bem, mas sem hidratação adequada, seu corpo não consegue absorver eficientemente os nutrientes que você consome. A absorção de carboidratos, minerais e vitaminas depende diretamente de água.
 
-### ***Lesões Causadas Por Desidratação***
+### **Lesões Causadas Por Desidratação**
 
 Aqui é onde a hidratação deixa de ser apenas "recomendação" e vira prevenção de lesões.
 
@@ -88,9 +88,7 @@ Além disso, a desidratação causa perda de eletrólitos, que são essenciais p
 
 Estudos mostram que atletas com cãibras crônicas frequentemente apresentam padrões inadequados de hidratação e reposição de eletrólitos.
 
-**Tendinite**
-
-Por Que Tendões Sofrem Com Desidratação?
+*Por Que Tendões Sofrem Com Desidratação?*
 
 Tendões são estruturas fibrosas que conectam músculos aos ossos. Eles precisam estar constantemente hidratados para manter sua elasticidade e resistência.
 
@@ -112,13 +110,13 @@ O Ciclo Vicioso da Tendinite:
 
 Pesquisa mostra que desidratação, dieta desequilibrada e aquecimento inadequado aumentam significativamente a probabilidade de tendinite. A desidratação é um fator modificável que muitos corredores ignoram.
 
-Fraturas por Estresse: Dano Lento e Progressivo
+**Fraturas por Estresse: Dano Lento e Progressivo**
 
 O Que São Fraturas por Estresse?
 
 São pequenas fissuras nos ossos causadas por estresse repetitivo, exatamente o que acontece na corrida. Diferentemente de uma fratura aguda (que você sente imediatamente), fraturas por estresse se desenvolvem lentamente.
 
-##### **Como Desidratação Aumenta o Risco:**
+#### **Como Desidratação Aumenta o Risco:**
 
 A mineração óssea (quantidade de minerais no osso) é crítica para resistência óssea. Desidratação crônica afeta:
 
@@ -138,7 +136,7 @@ Síndrome do Overuse: Quando o seu corpo não aguenta mais.
 
 Overuse não é uma lesão específica, é quando você acumula microtraumas tão rápido que seu corpo não consegue se recuperar. Você treina demais, recupera de menos.
 
-##### *O Papel da Hidratação:*
+> #### *O Papel da Hidratação:*
 
 A recuperação depende de processos fisiológicos que requerem hidratação:
 
@@ -152,9 +150,9 @@ A recuperação depende de processos fisiológicos que requerem hidratação:
 * Seu corpo não consegue acompanhar o treino
 * Lesões começam a aparecer (tendinite, fascite plantar, etc)
 
-###### Um corredor bem hidratado recupera melhor do mesmo treino que um corredor desidratado.
+> ###### Um corredor bem hidratado recupera melhor do mesmo treino que um corredor desidratado.
 
-> ##### ***Hidratação Antes da Corrida***
+#### Hidratação Antes da Corrida
 
 Sua hidratação pré corrida determina muito do que acontece durante o treinamento.
 
@@ -178,7 +176,7 @@ Hidratação adequada é um processo contínuo:
 
 Se você quebrar qualquer um desses elos, sofre consequências.
 
-> ##### *Hidratação Durante a Corrida: O Desafio Fisiológico*
+> #### Hidratação Durante a Corrida: O Desafio Fisiológico
 
 Durante a corrida, seu corpo enfrenta um paradoxo:
 
@@ -248,7 +246,7 @@ Proteína para iniciar reparo muscular
 
 Uma estratégia de recuperação bem executada determina quão bem você vai treinar nos próximos dias. Faz diferença real.
 
-##### *Água vs Eletrólitos: Não São a Mesma Coisa*
+#### Água vs Eletrólitos: Não São a Mesma Coisa
 
 Seu intestino delgado absorve água através de um processo que depende de sódio e carboidratos.
 
@@ -266,7 +264,7 @@ Quando você bebe água com eletrólitos e carboidratos:
 * Você também repõe energia e minerais
 * Menos desconforto gástrico
 
- O cotransportador de glicose-sódio (SGLT1) no intestino delgado funciona como um "carona" - glicose e sódio entram, arrastando água com eles. É por isso que bebidas isotônicas funcionam melhor que água pura para absorção rápida.
+>  O cotransportador de glicose-sódio (SGLT1) no intestino delgado funciona como um "carona" - glicose e sódio entram, arrastando água com eles. É por isso que bebidas isotônicas funcionam melhor que água pura para absorção rápida.
 
 Água pura é apropriada para:
 
@@ -283,7 +281,7 @@ Eletrólitos Importam Quando:
 
 O tipo de bebida deve corresponder à demanda da atividade.
 
-##### Sinais de Desidratação: Como Você Sabe?
+#### Sinais de Desidratação: Como Você Sabe?
 
 **Durante a Corrida:**
 
