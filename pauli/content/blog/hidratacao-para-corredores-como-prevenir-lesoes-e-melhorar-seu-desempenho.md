@@ -1,9 +1,12 @@
 ---
 title: "Hidratação para corredores: como prevenir lesões e melhorar seu desempenho"
 slug: hidratacao-para-corredores
-description: Descubra como a hidratação para corredores melhora o desempenho,
-  acelera a recuperação e ajuda a prevenir lesões com estratégias baseadas em
-  evidências.
+description: >-
+  Leitura estimada: 15 minutos
+
+  Última atualização: 03 de agosto de 2026
+
+  Descubra como a hidratação para corredores melhora o desempenho, acelera a recuperação e ajuda a prevenir lesões com estratégias baseadas em evidências.
 date: 2026-08-03
 published: true
 ---
@@ -80,8 +83,6 @@ Quando o organismo está desidratado, a fadiga aparece mais rapidamente. Além d
 Na prática, a desidratação cria um ambiente favorável para que as cãibras ocorram com maior frequência, especialmente durante treinos longos, intensos ou realizados sob temperaturas elevadas.
 
 Diversos estudos mostram que corredores que apresentam episódios recorrentes de cãibras frequentemente possuem estratégias inadequadas de hidratação e reposição de eletrólitos, reforçando a importância de um planejamento individualizado.
-
-
 
 # Tendões e desidratação: qual é a relação?
 
