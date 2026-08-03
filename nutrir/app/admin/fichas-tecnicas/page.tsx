@@ -78,47 +78,62 @@ function nextKey(): string {
 interface PendingIngredient {
   key: string;
   food: Food;
-  /** Peso pronto/como consumido (g) deste item — não inclui os subitens. */
+  /**
+   * Item principal: porção alvo cozida (ele + subitens, sem água) — editada
+   * diretamente, fixa até o admin mudar. O peso do alimento "puro" é sempre
+   * derivado (alvo − subitens), nunca guardado aqui.
+   * Subitem: peso dele mesmo (pronto), em gramas.
+   */
   grams: number;
   note: string;
-  /**
-   * Só controla como o campo de peso é exibido/editado, não o que é salvo
-   * (sempre gramas). Itens principais alternam cru/pronto; subitens
-   * alternam gramas/% do peso cru do item principal.
-   */
-  inputMode: "prepared" | "raw" | "grams" | "percent";
+  /** Só controla como o campo do SUBITEM é exibido/editado (gramas ou % da porção alvo do pai). Não se aplica a itens principais. */
+  inputMode: "grams" | "percent";
   children: PendingIngredient[];
   showChildren: boolean;
 }
 
-function toPending(ingredients: RecipeIngredient[], isChild = false): PendingIngredient[] {
-  return ingredients.map((i) => ({
-    key: nextKey(),
-    food: i.food,
-    grams: i.grams,
-    note: i.note ?? "",
-    inputMode: isChild ? "percent" : "prepared",
-    children: toPending(i.children, true),
-    showChildren: i.children.length > 0,
-  }));
+/** Peso do alimento principal "puro", sem os subitens: porção alvo − soma dos subitens que não são só-de-referência (água não conta). */
+function ownPortionGrams(parent: PendingIngredient): number {
+  const childrenSum = parent.children
+    .filter((c) => !c.food.is_reference_only)
+    .reduce((s, c) => s + c.grams, 0);
+  return Math.max(0, parent.grams - childrenSum);
 }
 
-function toRecipeIngredientTree(items: PendingIngredient[]): RecipeIngredient[] {
+function toPending(ingredients: RecipeIngredient[], isChild = false): PendingIngredient[] {
+  return ingredients.map((i) => {
+    const childrenSum = isChild
+      ? 0
+      : i.children.filter((c) => !c.food.is_reference_only).reduce((s, c) => s + c.grams, 0);
+    return {
+      key: nextKey(),
+      food: i.food,
+      // Item principal salvo no banco guarda só o peso "puro"; aqui reconstruímos a porção alvo (puro + subitens) que o admin edita.
+      grams: isChild ? i.grams : i.grams + childrenSum,
+      note: i.note ?? "",
+      inputMode: "percent",
+      children: toPending(i.children, true),
+      showChildren: i.children.length > 0,
+    };
+  });
+}
+
+function toRecipeIngredientTree(items: PendingIngredient[], isChild = false): RecipeIngredient[] {
   return items.map((p) => ({
     id: p.key,
     food: p.food,
-    grams: p.grams,
+    grams: isChild ? p.grams : ownPortionGrams(p),
     note: p.note || null,
-    children: toRecipeIngredientTree(p.children),
+    children: toRecipeIngredientTree(p.children, true),
   }));
 }
 
-function toPayload(items: PendingIngredient[]): RecipeIngredientPayload[] {
+function toPayload(items: PendingIngredient[], isChild = false): RecipeIngredientPayload[] {
   return items.map((p) => ({
     food_id: p.food.id,
-    grams: p.grams,
+    grams: isChild ? p.grams : ownPortionGrams(p),
     note: p.note.trim() || null,
-    children: p.children.length ? toPayload(p.children) : undefined,
+    children: p.children.length ? toPayload(p.children, true) : undefined,
   }));
 }
 
@@ -152,110 +167,31 @@ function addChildByKey(
   });
 }
 
-function newPendingItem(food: Food, isChild = false): PendingIngredient {
+function newPendingItem(food: Food): PendingIngredient {
   return {
     key: nextKey(),
     food,
     grams: 10,
     note: "",
-    inputMode: isChild ? "percent" : "prepared",
+    inputMode: "percent",
     children: [],
     showChildren: false,
   };
 }
 
 /**
- * Porção alvo (cozida) de um item principal: ele mesmo + subitens que não
- * são só-de-referência (água evapora, não conta). Fica fixa — ver as funções
- * de rebalanceamento abaixo, que ajustam o peso do item principal pra manter
- * esse total constante sempre que um subitem muda.
+ * % da porção alvo (cozida) do item principal que este subitem representa.
+ * Como `parent.grams` já É a porção alvo (editável direto pelo admin), não
+ * muda quando subitens são adicionados/editados/removidos — só quando o
+ * próprio admin edita a porção alvo.
  */
-function pendingTargetGrams(parent: PendingIngredient): number {
-  return (
-    parent.grams +
-    parent.children.filter((c) => !c.food.is_reference_only).reduce((s, c) => s + c.grams, 0)
-  );
-}
-
-/** % da porção alvo (cozida) do item principal que este subitem representa. Não muda com a escala de porções. */
 function pctOfTarget(parent: PendingIngredient, childGrams: number): number {
-  const target = pendingTargetGrams(parent);
-  return target > 0 ? (childGrams / target) * 100 : 0;
+  return parent.grams > 0 ? (childGrams / parent.grams) * 100 : 0;
 }
 
 /** Inverso de pctOfTarget: converte uma % da porção alvo em gramas do subitem. */
 function gramsFromPctOfTarget(parent: PendingIngredient, pct: number): number {
-  return (pct / 100) * pendingTargetGrams(parent);
-}
-
-/**
- * Muda o peso de um subitem já existente, ajustando o item principal pelo
- * delta inverso — assim a porção alvo (item + subitens, sem água) nunca muda
- * sozinha: adicionar tempero tira peso do item principal, não soma em cima.
- */
-function updateChildGrams(
-  items: PendingIngredient[],
-  parentKey: string,
-  childKey: string,
-  newGrams: number
-): PendingIngredient[] {
-  return items.map((p) => {
-    if (p.key !== parentKey) {
-      if (p.children.length) return { ...p, children: updateChildGrams(p.children, parentKey, childKey, newGrams) };
-      return p;
-    }
-    const child = p.children.find((c) => c.key === childKey);
-    if (!child) return p;
-    const delta = newGrams - child.grams;
-    const affectsTarget = !child.food.is_reference_only;
-    return {
-      ...p,
-      grams: affectsTarget ? Math.max(0, p.grams - delta) : p.grams,
-      children: p.children.map((c) => (c.key === childKey ? { ...c, grams: newGrams } : c)),
-    };
-  });
-}
-
-/** Adiciona um subitem tirando o peso dele do item principal (mantém a porção alvo constante). */
-function addChildRebalanced(
-  items: PendingIngredient[],
-  parentKey: string,
-  child: PendingIngredient
-): PendingIngredient[] {
-  return items.map((p) => {
-    if (p.key === parentKey) {
-      const affectsTarget = !child.food.is_reference_only;
-      return {
-        ...p,
-        grams: affectsTarget ? Math.max(0, p.grams - child.grams) : p.grams,
-        children: [...p.children, child],
-        showChildren: true,
-      };
-    }
-    if (p.children.length) return { ...p, children: addChildRebalanced(p.children, parentKey, child) };
-    return p;
-  });
-}
-
-/** Remove um subitem devolvendo o peso dele pro item principal (mantém a porção alvo constante). */
-function removeChildRebalanced(
-  items: PendingIngredient[],
-  parentKey: string,
-  childKey: string
-): PendingIngredient[] {
-  return items.map((p) => {
-    if (p.key === parentKey) {
-      const removed = p.children.find((c) => c.key === childKey);
-      const affectsTarget = removed && !removed.food.is_reference_only;
-      return {
-        ...p,
-        grams: affectsTarget ? p.grams + (removed?.grams ?? 0) : p.grams,
-        children: p.children.filter((c) => c.key !== childKey),
-      };
-    }
-    if (p.children.length) return { ...p, children: removeChildRebalanced(p.children, parentKey, childKey) };
-    return p;
-  });
+  return (pct / 100) * parent.grams;
 }
 
 /** Peso cozido total de um item principal: ele mesmo + subitens que não são só-de-referência (água evapora, não soma). */
@@ -305,50 +241,6 @@ function AddIngredientControl({
         Adicionar
       </button>
     </div>
-  );
-}
-
-function GramsInput({
-  item,
-  onChange,
-  onToggleMode,
-}: {
-  item: PendingIngredient;
-  onChange: (grams: number) => void;
-  onToggleMode: () => void;
-}) {
-  const canToggleRaw = (item.food.cooking_factor || 1) !== 1;
-  const displayed = item.inputMode === "raw" ? rawGramsForFood(item.food, item.grams) : item.grams;
-
-  function handleInput(typed: number) {
-    const factor = item.food.cooking_factor || 1;
-    onChange(item.inputMode === "raw" ? typed * factor : typed);
-  }
-
-  return (
-    <>
-      <input
-        type="number"
-        min={0}
-        step="0.1"
-        className="input-field w-20"
-        value={displayed}
-        onChange={(e) => handleInput(Number(e.target.value))}
-      />
-      <span className="text-xs text-nutrir-emerald/60">g</span>
-      {canToggleRaw && (
-        <button
-          type="button"
-          onClick={onToggleMode}
-          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-            item.inputMode === "raw" ? "bg-nutrir-burgundy text-nutrir-nude" : "bg-nutrir-emerald/10 text-nutrir-emerald"
-          }`}
-          title="Alternar entre peso cru e peso pronto"
-        >
-          {item.inputMode === "raw" ? "cru" : "pronto"}
-        </button>
-      )}
-    </>
   );
 }
 
@@ -528,7 +420,7 @@ function RecipeEditor({
   }
 
   function addChild(parentKey: string, food: Food) {
-    setPending((prev) => addChildRebalanced(prev, parentKey, newPendingItem(food, true)));
+    setPending((prev) => addChildByKey(prev, parentKey, newPendingItem(food)));
   }
 
   async function handleCreateFood(forParentKey: string | null) {
@@ -542,7 +434,7 @@ function RecipeEditor({
     try {
       const { food } = await nutrirApi.createFood(newFood, session.access_token);
       if (forParentKey) {
-        setPending((prev) => addChildRebalanced(prev, forParentKey, newPendingItem(food, true)));
+        setPending((prev) => addChildByKey(prev, forParentKey, newPendingItem(food)));
       } else {
         setPending((prev) => [...prev, newPendingItem(food)]);
       }
@@ -587,17 +479,18 @@ function RecipeEditor({
           <div key={item.key} className="rounded-xl border border-nutrir-nude-dark/40 p-2.5">
             <div className="flex items-center gap-2">
               <span className="flex-1 text-sm text-nutrir-emerald">{item.food.display_name}</span>
-              <GramsInput
-                item={item}
-                onChange={(grams) => setPending((prev) => updateNodeByKey(prev, item.key, { grams }))}
-                onToggleMode={() =>
-                  setPending((prev) =>
-                    updateNodeByKey(prev, item.key, {
-                      inputMode: item.inputMode === "raw" ? "prepared" : "raw",
-                    })
-                  )
+              <label className="text-[10px] text-nutrir-emerald/50">Total cozido</label>
+              <input
+                type="number"
+                min={0}
+                step="0.1"
+                className="input-field w-20"
+                value={item.grams}
+                onChange={(e) =>
+                  setPending((prev) => updateNodeByKey(prev, item.key, { grams: Number(e.target.value) }))
                 }
               />
+              <span className="text-xs text-nutrir-emerald/60">g</span>
               <button
                 type="button"
                 onClick={() => setPending((prev) => removeNodeByKey(prev, item.key))}
@@ -606,6 +499,12 @@ function RecipeEditor({
                 Remover
               </button>
             </div>
+            {item.children.length > 0 && (
+              <p className="mt-1 text-[10px] text-nutrir-emerald/45">
+                = {fmt(ownPortionGrams(item))} g de {item.food.display_name} puro
+                {cruHint(item.food, ownPortionGrams(item))}
+              </p>
+            )}
 
             <input
               className="input-field mt-2 text-xs"
@@ -644,7 +543,7 @@ function RecipeEditor({
                         parent={item}
                         child={child}
                         onChange={(grams) =>
-                          setPending((prev) => updateChildGrams(prev, item.key, child.key, grams))
+                          setPending((prev) => updateNodeByKey(prev, child.key, { grams }))
                         }
                         onToggleMode={() =>
                           setPending((prev) =>
@@ -659,7 +558,7 @@ function RecipeEditor({
                       </span>
                       <button
                         type="button"
-                        onClick={() => setPending((prev) => removeChildRebalanced(prev, item.key, child.key))}
+                        onClick={() => setPending((prev) => removeNodeByKey(prev, child.key))}
                         className="text-xs font-bold text-nutrir-burgundy"
                       >
                         Remover
