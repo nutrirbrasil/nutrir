@@ -19,21 +19,19 @@ Neste artigo, vamos explorar por que a hidratação é tão crítica para corred
 
 ## *O Que a Hidratação Realmente Faz no Seu Corpo*
 
-> ##### Muito Além de "Beber Água''
-
 Quando você corre, sua fisiologia muda dramaticamente. Seu corpo gera calor, perde água através do suor, e seus sistemas internos trabalham em overdrive. A hidratação é um sistema crítico de sobrevivência.
 
  Funções Essenciais da Água no Corpo do Corredor
 
-1. Regulação da Temperatura Corporal
+**Regulação da Temperatura Corporal**
 
 Seu corpo precisa manter uma temperatura interna estável (em torno de 37°C). Quando você corre:
 
-\- Você gera muito calor
+Você gera muito calor
 
-\- Seu corpo sua para resfriar
+Seu corpo sua para resfriar
 
-\- Essa evaporação depende inteiramente de água
+Essa evaporação depende inteiramente de água
 
 Quando você está desidratado, esse sistema falha. A temperatura corporal sobe anormalmente. Isso é é perigoso.
 
@@ -55,15 +53,13 @@ Resultado: seu desempenho cai significativamente.
 
 Os músculos são compostos por 75% de água. Durante a contração muscular:
 
-\- Água participa de reações químicas
-
-\- Eletrólitos facilitam comunicação nervosa
-
-\- Sem hidratação, o músculo não funciona eficientemente
+* Água participa de reações químicas
+*  Eletrólitos facilitam comunicação nervosa
+*  Sem hidratação, o músculo não funciona eficientemente
 
 Você já sentiu aquele "formigamento" estranho nos últimos km de uma corrida longa? Parcialmente, é desidratação afetando a função muscular.
 
-Absorção de Nutrientes
+**Absorção de Nutrientes**
 
 Você pode estar comendo bem, mas sem hidratação adequada, seu corpo não consegue absorver eficientemente os nutrientes que você consome. A absorção de carboidratos, minerais e vitaminas depende diretamente de água.
 
@@ -83,19 +79,16 @@ Mas aqui está a conexão com hidratação:
 
 Quando você está desidratado:
 
-\- Seus músculos ficam mais fatigados mesmo com esforço menor
-
-\- O sistema nervoso fica comprometido
-
-\- A fadiga muscular chega mais rápido
-
-\- Resultado: cãibras mais frequentes e severas
+*  Seus músculos ficam mais fatigados mesmo com esforço menor
+*  O sistema nervoso fica comprometido
+*  A fadiga muscular chega mais rápido
+*  Resultado: cãibras mais frequentes e severas
 
 Além disso, a desidratação causa perda de eletrólitos, que são essenciais para comunicação nervosa. Sem eles, seu sistema nervoso não consegue regular corretamente as contrações musculares.
 
 Estudos mostram que atletas com cãibras crônicas frequentemente apresentam padrões inadequados de hidratação e reposição de eletrólitos.
 
-2.2 Tendinite: ***A Lesão Que Volta Sempre***
+**Tendinite**
 
 Por Que Tendões Sofrem Com Desidratação?
 
@@ -103,13 +96,10 @@ Tendões são estruturas fibrosas que conectam músculos aos ossos. Eles precisa
 
 Quando você está cronicamente desidratado:
 
-\- Tendões perdem elasticidade
-
-\- A estrutura do colágeno (proteína principal do tendão) fica comprometida
-
-\- O tendão fica mais rígido e quebradiço
-
-\- Mesmo esforços normais causam microtraumas
+*  Tendões perdem elasticidade
+*  A estrutura do colágeno (proteína principal do tendão) fica comprometida
+*  O tendão fica mais rígido e quebradiço
+*  Mesmo esforços normais causam microtraumas
 
 O Ciclo Vicioso da Tendinite:
 
@@ -119,35 +109,32 @@ O Ciclo Vicioso da Tendinite:
 4. Inflamação → Dor e redução de movimento
 5. Redução de movimento → Atrofia muscular
 6. Atrofia muscular → Mais sobrecarga no tendão
-7. Volta ao passo 1...
 
 Pesquisa mostra que desidratação, dieta desequilibrada e aquecimento inadequado aumentam significativamente a probabilidade de tendinite. A desidratação é um fator modificável que muitos corredores ignoram.
 
- 2.3 Fraturas por Estresse: Dano Lento e Progressivo
+**Fraturas por Estresse: Dano Lento e Progressivo**
 
 O Que São Fraturas por Estresse?
 
 São pequenas fissuras nos ossos causadas por estresse repetitivo, exatamente o que acontece na corrida. Diferentemente de uma fratura aguda (que você sente imediatamente), fraturas por estresse se desenvolvem lentamente.
 
-Como Desidratação Aumenta o Risco:
+**Como Desidratação Aumenta o Risco:**
 
 A mineração óssea (quantidade de minerais no osso) é crítica para resistência óssea. Desidratação crônica afeta:
 
-\- Absorção de cálcio (mineral essencial para ossos)
-
-\- Equilíbrio de eletrólitos (necessários para mineralização óssea)
-
-\- Taxa de renovação óssea (ossos se renovam constantemente)
+*  Absorção de cálcio (mineral essencial para ossos)
+*  Equilíbrio de eletrólitos (necessários para mineralização óssea)
+*  Taxa de renovação óssea (ossos se renovam constantemente)
 
 Quando você está desidratado, seus ossos literalmente ficam mais frágeis. Adicione treino de alta demanda (corrida), e você tem receita para fraturas por estresse.
 
 Quem está mais em risco?
 
-\- Corredores que aumentam quilometragem rapidamente; mulheres (naturalmente têm densidade óssea menor); corredores com padrão crônico de desidrataçã; atletas com deficiência de vitamina D ou cálcio.
+ **Corredores que aumentam quilometragem rapidamente; mulheres (naturalmente têm densidade óssea menor); corredores com padrão crônico de desidrataçã; atletas com deficiência de vitamina D ou cálcio.**
 
 Estudos mostram uma relação inversa clara: quanto menor a hidratação adequada e a ingestão de minerais, maior o risco de fraturas por estresse em corredores.
 
- 2.4 Síndrome do Overuse: Quando o seu corpo não aguenta mais.
+Síndrome do Overuse: Quando o seu corpo não aguenta mais.
 
 Overuse não é uma lesão específica, é quando você acumula microtraumas tão rápido que seu corpo não consegue se recuperar. Você treina demais, recupera de menos.
 
@@ -155,31 +142,21 @@ Overuse não é uma lesão específica, é quando você acumula microtraumas tã
 
 A recuperação depende de processos fisiológicos que requerem hidratação:
 
-\- Síntese de proteína (reparo muscular)
+*  Síntese de proteína (reparo muscular)
+*  Circulação de nutrientes
+*  Eliminação de resíduos metabólicos
+*  Redução da inflamação
+* Quando você está desidratado:
+*  Recuperação fica 30-50% mais lenta
+*  Inflamação se acumula
+*  Seu corpo não consegue acompanhar o treino
+*  Lesões começam a aparecer (tendinite, fascite plantar, etc)
 
-\- Circulação de nutrientes
-
-\- Eliminação de resíduos metabólicos
-
-\- Redução da inflamação
-
-Quando você está desidratado:
-
-\- Recuperação fica 30-50% mais lenta
-
-\- Inflamação se acumula
-
-\- Seu corpo não consegue acompanhar o treino
-
-\- Lesões começam a aparecer (tendinite, fascite plantar, etc)
-
-###### Um corredor bem hidratado recupera melhor do mesmo treino que um corredor desidratado. 
+###### Um corredor bem hidratado recupera melhor do mesmo treino que um corredor desidratado.
 
 ## ***Hidratação Antes da Corrida***
 
-Por Que Importa: Muitos corredores pensam: ''Vou beber durante a corrida e tudo fica bem."
-
-Errado. Sua hidratação pré corrida determina muito do que acontece durante o treinamento.
+Sua hidratação pré corrida determina muito do que acontece durante o treinamento.
 
 Se você chega ao treino desidratado:
 
@@ -215,21 +192,16 @@ Adicione clima quente, intensidade elevada, ou duração longa, e o desafio fica
 
 O Que Você Perde (E Precisa Repor)
 
-Quando você sua, você não perde apenas água. Você perde:
+Quando você sua, você não perde apenas água. Você perde eletrólitos.
 
-**Eletrólitos:** minerais críticos que seu corpo precisa para:
+Eletrólitos são minerais críticos que seu corpo precisa para:
 
-\- Transmitir sinais nervosos
-
-\- Contrair músculos
-
-\- Manter equilíbrio de fluidos
-
-\- Regular frequência cardíaca
-
-Energia (carboidratos armazenados), que seus músculos usam como combustível
-
-Temperatura corporal estável, que só água pura não consegue manter eficientemente
+* Transmitir sinais nervosos
+*  Contrair músculos
+*  Manter equilíbrio de fluidos
+*  Regular frequência cardíaca
+*  Energia (carboidratos armazenados), que seus músculos usam como combustível
+*  Temperatura corporal estável, que só água pura não consegue manter eficientemente
 
 **Se você apenas beber água pura durante uma corrida longa, você pode acabar com problemas (como veremos em hiponatremia), e sua performance cai porque você não está reabastecendo energia nem eletrólitos.**
 
@@ -246,25 +218,23 @@ Isso é por que estratégias genéricas falham. Você precisa entender seu corpo
 
 ## *Hidratação Após a Corrida: Quando a Recuperação Começa*
 
-O Período Crítico
-
 Muitos corredores negligenciam completamente a hidratação pós-corrida. Erro grave.
 
 Os primeiros 30-60 minutos após o exercício são críticos para recuperação. Nessa janela:
 
-* \-Seus músculos absorvem nutrientes mais facilmente
+* Seus músculos absorvem nutrientes mais facilmente
 * Seu corpo quer reparar dano muscular
 * Sua inflamação começa a ser resolvida
 * Sua função imunológica se recupera
 
-Sem hidratação adequada nesse período, você:
+**Sem hidratação adequada nesse período, você:**
 
 * Recupera mais lentamente
 * Tem mais dor muscular nos dias seguintes
 * Fica mais vulnerável a infecções (sistema imunológico enfraquecido)
 * Aumenta riscos de supertreinamento
 
- O Que Seu Corpo Precisa
+ **O Que Seu Corpo Precisa**
 
 Após a corrida, você não apenas precisa de água. Você precisa de:
 
@@ -277,8 +247,6 @@ Carboidratos para repor energia gasta
 Proteína para iniciar reparo muscular
 
 Uma estratégia de recuperação bem executada determina quão bem você vai treinar nos próximos dias. Faz diferença real.
-
-\---
 
 ## *Água vs Eletrólitos: Não São a Mesma Coisa*
 
@@ -300,9 +268,7 @@ Quando você bebe água com eletrólitos e carboidratos:
 
  O cotransportador de glicose-sódio (SGLT1) no intestino delgado funciona como um "carona" - glicose e sódio entram, arrastando água com eles. É por isso que bebidas isotônicas funcionam melhor que água pura para absorção rápida.
 
-
-
-Água Pura é apropriada Para:
+Água pura é apropriada para:
 
 * Corridas muito curtas (< 45 minutos)
 * Treinos leves de baixa intensidade
@@ -321,7 +287,7 @@ O tipo de bebida deve corresponder à demanda da atividade.
 
 **Durante a Corrida:**
 
-*  Fadiga desproporcional ao esforço
+* Fadiga desproporcional ao esforço
 * Dificuldade em manter ritmo
 * Frequência cardíaca elevada (mesmo ritmo, coração bate mais rápido)
 * Tontura ou sensação de leveza
@@ -329,7 +295,7 @@ O tipo de bebida deve corresponder à demanda da atividade.
 
 **Após a Corrida:**
 
-*  Dor de cabeça (às vezes severa)
+* Dor de cabeça (às vezes severa)
 * Tontura ao se levantar
 * Urina escura (sinal claro de desidratação)
 * Fadiga excessiva (além da fadiga normal de treino)
@@ -354,11 +320,11 @@ Verifique a cor da sua urina:
 
 Esse é um indicador fantástico que você pode monitorar todos os dias.
 
-***Hiponatremia: O Outro Extremo Perigoso***
+## ***Hiponatremia: O Outro Extremo Perigoso***
 
 O Problema Contrário
 
-Se desidratação é perigosa, pode parecer que "quanto mais água, melhor". Errado.
+Se desidratação é perigosa, pode parecer que "quanto mais água, melhor". **Errado.**
 
 Existe uma condição chamada hiponatremia (também chamada "intoxicação por água") onde você bebe demais água pura e dilui sua concentração de sódio no sangue para níveis perigosos.
 
@@ -367,23 +333,23 @@ Existe uma condição chamada hiponatremia (também chamada "intoxicação por �
 * Você sua muito (perde sódio)
 * Você bebe muita água pura (sem sódio)
 * Você continua urinando (eliminando mais sódio)
-*  Resultado: sódio no sangue fica perigosamente baixo
+* Resultado: sódio no sangue fica perigosamente baixo
 
-Isso pode causar:
+**Isso pode causar:**
 
 * Náusea e vômito
 * Dor de cabeça severa
-*  Confusão mental
-*  Em casos graves: convulsões
+* Confusão mental
+* Em casos graves: convulsões
 
-Quem Está em Risco
+**Quem Está em Risco**
 
 * Ultramaratonistas (corridas > 4 horas)
 * Corredores em clima muito quente/úmido
 * Pessoas que bebem água obsessivamente durante treino
 * Mulheres (biologicamente mais vulneráveis)
 
- ***Como Prevenir***
+  ***Como Prevenir***
 
 O ponto-chave:beber água conforme sua sede é geralmente seguro. Sua sede é um regulador melhor que a maioria das pessoas pensa.
 
@@ -393,38 +359,38 @@ A hiponatremia geralmente acontece quando alguém bebe de forma obsessiva (muito
 
 Se o artigo tivesse dado você um plano específico ("beba X mL a cada Y minutos"), seria potencialmente prejudicial. Aqui está por quê:
 
-Sua Taxa de Suor:
+**Sua Taxa de Suor:**
 
-*  Geneticamente determinada
+* Geneticamente determinada
 * Varia com temperatura corporal, clima, intensidade
-*  Pode variar de 0,5L a 2L por hora
+* Pode variar de 0,5L a 2L por hora
 * Impossível prever sem dados individuais
 
-Sua Sensibilidade Gástrica:
+**Sua Sensibilidade Gástrica:**
 
-* \- Alguns corredores toleram líquidos bem durante corrida
-* \- Outros têm problemas estomacais imediatamente
-* \- Alguns conseguem comer durante corrida, outros não conseguem
+*  Alguns corredores toleram líquidos bem durante corrida
+*  Outros têm problemas estomacais imediatamente
+*  Alguns conseguem comer durante corrida, outros não conseguem
 * Sua Composição de Suor:
-* \- Algumas pessoas perdem muito sódio no suor 
-* \- Outras perdem pouco
-* \- Isso determina quanto eletrólito você precisa
-* \- Só um nutricionista pode avaliar
+*  Algumas pessoas perdem muito sódio no suor 
+*  Outras perdem pouco
+*  Isso determina quanto eletrólito você precisa
+*  Só um nutricionista pode avaliar
 
 Seu Histórico Pessoal:
 
 * Você teve problemas intestinais? Isso muda recomendações
-*  Você é intolerante a certos ingredientes? Isso muda recomendações
+* Você é intolerante a certos ingredientes? Isso muda recomendações
 * Você teve lesões? Isso afeta sua capacidade de treinar e recuperar
 * Tudo isso é individualizado
 
 ***Variáveis Externas:***
 
-* \- Clima (calor, umidade)
-* \- Altitude
-* \- Hora do dia
-* \- Fase do ciclo menstrual (em mulheres, o ciclo hormonal afeta muito)
-* \- Histórico de sono e stress
+*  Clima (calor, umidade)
+*  Altitude
+*  Hora do dia
+*  Fase do ciclo menstrual (em mulheres, o ciclo hormonal afeta muito)
+*  Histórico de sono e stress
 
 Um nutricionista esportivo não vai te dar um plano genérico. Um bom nutricionista vai:
 
@@ -450,15 +416,15 @@ Você pode ler tudo sobre hidratação e ainda assim errar a implementação. Aq
 
 ***Diagnóstico:***
 
-* \- Identifica padrões que você não vê
-* \- Diferencia entre desidratação, overtreinamento, e outras condições
+*  Identifica padrões que você não vê
+*  Diferencia entre desidratação, overtreinamento, e outras condições
 
 Monitoramento:
 
-* \- Mudanças ao longo da temporada (conforme você melhora, sua capacidade cardiovascular muda)
-* \- Mudanças sazonais (verão vs inverno)
-* \- Resposta ao treinamento (seu corpo se adapta)
-* \- Um profissional acompanha e ajusta
+*  Mudanças ao longo da temporada (conforme você melhora, sua capacidade cardiovascular muda)
+*  Mudanças sazonais (verão vs inverno)
+*  Resposta ao treinamento (seu corpo se adapta)
+*  Um profissional acompanha e ajusta
 
  O Custo da Negligência
 
@@ -470,10 +436,10 @@ Lesões= semanas/meses sem treinar, custos de fisioterapia; performance ruim = f
 * Qualidade de vida = dor persistente, fadiga
 * Desidratação crônica não causa um problema óbvio e agudo. 
 * Causa problemas silenciosos e progressivos:
-*  Tendões ficam mais fracos → tendinite
-*  Ossos perdem densidade → fraturas por estresse  
-*  Músculos se recuperam lentamente → overuse
-*  Performance cai gerando frustração
+* Tendões ficam mais fracos → tendinite
+* Ossos perdem densidade → fraturas por estresse  
+* Músculos se recuperam lentamente → overuse
+* Performance cai gerando frustração
 
 **Se você é um corredor, sua hidratação merece a mesma atenção que seu treino.** E como você viu, isso não é simples ou genérico: é profundamente individual.
 
@@ -485,9 +451,7 @@ Mas você precisa de uma estratégia personalizada – não outro artigo genéri
 
 Se você está pronto para levar hidratação seriamente (e o desempenho que vem com isso), é hora de conversar com um profissional.
 
-
-
-*  **Referências Científicas**
+* **Referências Científicas**
 
 \[1] American College of Sports Medicine (ACSM). Position Stand on Hydration and Physical Performance. Disponível em: https://www.acsm.org/
 
