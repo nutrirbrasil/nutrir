@@ -180,18 +180,20 @@ function newPendingItem(food: Food): PendingIngredient {
 }
 
 /**
- * % da porção alvo (cozida) do item principal que este subitem representa.
- * Como `parent.grams` já É a porção alvo (editável direto pelo admin), não
- * muda quando subitens são adicionados/editados/removidos — só quando o
- * próprio admin edita a porção alvo.
+ * % relativa ao peso CRU do alimento principal (não ao total cozido do
+ * grupo) — é assim que se dosa tempero/água de verdade (ex: sal e água pra
+ * cozinhar são medidos em cima do arroz/massa cru, não do peso já pronto,
+ * que já inclui água absorvida e infla o total).
  */
 function pctOfTarget(parent: PendingIngredient, childGrams: number): number {
-  return parent.grams > 0 ? (childGrams / parent.grams) * 100 : 0;
+  const cru = rawGramsForFood(parent.food, ownPortionGrams(parent));
+  return cru > 0 ? (childGrams / cru) * 100 : 0;
 }
 
-/** Inverso de pctOfTarget: converte uma % da porção alvo em gramas do subitem. */
+/** Inverso de pctOfTarget: converte uma % do peso cru do item principal em gramas do subitem. */
 function gramsFromPctOfTarget(parent: PendingIngredient, pct: number): number {
-  return (pct / 100) * parent.grams;
+  const cru = rawGramsForFood(parent.food, ownPortionGrams(parent));
+  return (pct / 100) * cru;
 }
 
 /** Peso cozido total de um item principal: ele mesmo + subitens que não são só-de-referência (água evapora, não soma). */
@@ -306,6 +308,8 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
   const targetTotal = target * batchCount;
   const ingredientCount = 1 + item.children.length;
   const ownPct = target > 0 ? (item.grams / target) * 100 : 0;
+  // Subitens (tempero, água...) são dosados em cima do peso CRU do alimento principal, não do total cozido do grupo.
+  const cru = rawGramsForFood(item.food, item.grams);
 
   return (
     <div className="rounded-2xl border-2 border-nutrir-emerald/15 bg-white/70 p-4 sm:p-5">
@@ -335,7 +339,7 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
         </li>
         {item.children.map((child) => {
           const childTotal = child.grams * batchCount;
-          const pct = target > 0 ? (child.grams / target) * 100 : 0;
+          const pct = cru > 0 ? (child.grams / cru) * 100 : 0;
           return (
             <li key={child.id} className="flex items-center justify-between gap-3 text-sm">
               <span className="text-nutrir-emerald/85">
