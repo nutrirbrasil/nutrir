@@ -212,7 +212,7 @@ export function ReviewStep() {
                 <>
                   <p className="font-semibold text-nutrir-emerald">
                     {d.delivery_selection
-                      ? `Domingo — ${DELIVERY_WINDOW.label}`
+                      ? `Domingo, ${DELIVERY_WINDOW.label}`
                       : d.pickup_display}
                   </p>
                   <p className="text-sm leading-relaxed text-nutrir-emerald/70">

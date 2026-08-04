@@ -18,7 +18,7 @@ const ADMIN_PAGES = [
   {
     href: "/admin/fichas-tecnicas",
     label: "Fichas técnicas",
-    description: "Ingredientes e gramas de cada marmita — alimenta a tabela nutricional e o rótulo.",
+    description: "Ingredientes e gramas de cada marmita, alimenta a tabela nutricional e o rótulo.",
   },
 ];
 

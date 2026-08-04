@@ -94,7 +94,7 @@ const WEEKDAYS_LONG = [
 export function formatDeliverySummary(selection: DeliverySelection): string {
   const day = parseISODate(selection.date);
   const dateStr = day.toLocaleDateString("pt-BR");
-  return `${WEEKDAYS_LONG[day.getDay()]} ${dateStr} — ${DELIVERY_WINDOW.label}`;
+  return `${WEEKDAYS_LONG[day.getDay()]} ${dateStr}, ${DELIVERY_WINDOW.label}`;
 }
 
 export function formatDeliveryShort(selection: DeliverySelection): string {

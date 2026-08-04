@@ -659,7 +659,7 @@ function RecipeEditor({
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-nutrir-emerald">
-              Fator de cocção (peso pronto ÷ peso cru — 1 se não muda)
+              Fator de cocção (peso pronto ÷ peso cru, 1 se não muda)
             </label>
             <input
               type="number"
@@ -693,7 +693,7 @@ function RecipeEditor({
               checked={newFood.is_reference_only ?? false}
               onChange={(e) => setNewFood({ ...newFood, is_reference_only: e.target.checked })}
             />
-            Só referência de preparo (ex: água) — não conta na nutrição nem na lista de ingredientes
+            Só referência de preparo (ex: água), não conta na nutrição nem na lista de ingredientes
           </label>
           <button type="button" onClick={() => handleCreateFood(null)} disabled={saving} className="btn-primary">
             Criar e adicionar à receita

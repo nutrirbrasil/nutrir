@@ -7,7 +7,8 @@ export interface OrderItemDisplay {
 }
 
 function parseComboName(name: string): { title: string; lines: string[] } | null {
-  const legacy = name.match(/^Combo — (\d+) marmitas \((.+)\)$/);
+  // "Combo — X" é o formato antigo (pedidos ja salvos no banco); "Combo, X" é o atual.
+  const legacy = name.match(/^Combo(?: —|,) (\d+) marmitas \((.+)\)$/);
   if (legacy) {
     const lines = legacy[2].split(/,\s*/).map((part) => {
       const match = part.match(/^(.+?) ×(\d+)$/);

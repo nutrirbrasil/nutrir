@@ -232,7 +232,7 @@ export function OrderThankYouStep() {
             ⏳
           </p>
           <p className="text-sm leading-relaxed text-nutrir-emerald/75">
-            Pedido <strong>{orderLabel}</strong> — ainda estamos confirmando o pagamento com cartão.
+            Pedido <strong>{orderLabel}</strong>, ainda estamos confirmando o pagamento com cartão.
             Se você já concluiu no checkout, aguarde alguns instantes e atualize esta página.
           </p>
           <a

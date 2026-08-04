@@ -4,7 +4,6 @@ import { LegalList, LegalPage, LegalSection } from "@/components/LegalPage";
 import { legal, whatsappContactUrl } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade — Nutrir Piçarras",
   description: "Como o Nutrir Piçarras coleta, usa e protege seus dados pessoais.",
 };
 
@@ -47,11 +46,11 @@ export default function PoliticaPrivacidadePage() {
         <p>Solicitamos informações pessoais apenas quando precisamos delas para atender você. Podemos coletar:</p>
         <LegalList
           items={[
-            "Nome, e-mail, telefone, CPF e endereço — para cadastro, pedidos e emissão de documentos fiscais quando aplicável.",
-            "Dados do pedido — itens escolhidos (marmitas, combos, adicionais), tamanho, data e horário de retirada, forma de pagamento e observações.",
-            "Dados de pagamento — processados por parceiros (ex.: InfinitePay). Não armazenamos número completo de cartão em nossos servidores.",
-            "Dados de login — se você usar e-mail/senha ou entrar com Google, recebemos identificação básica da conta (nome e e-mail) conforme autorizado por você.",
-            "Dados técnicos — endereço IP, tipo de navegador, páginas visitadas e cookies necessários ao funcionamento do site e da sacola.",
+            "Nome, e-mail, telefone, CPF e endereço. Para cadastro, pedidos e emissão de documentos fiscais quando aplicável.",
+            "Dados do pedido. Itens escolhidos (marmitas, combos, adicionais), tamanho, data e horário de retirada, forma de pagamento e observações.",
+            "Dados de pagamento. Processados por parceiros (ex.: InfinitePay). Não armazenamos número completo de cartão em nossos servidores.",
+            "Dados de login. Se você usar e-mail/senha ou entrar com Google, recebemos identificação básica da conta (nome e e-mail) conforme autorizado por você.",
+            "Dados técnicos. Endereço IP, tipo de navegador, páginas visitadas e cookies necessários ao funcionamento do site e da sacola.",
           ]}
         />
       </LegalSection>
@@ -84,7 +83,7 @@ export default function PoliticaPrivacidadePage() {
           items={[
             "Processadores de pagamento (Pix e cartão online).",
             "Hospedagem e banco de dados (Supabase) para conta e pedidos.",
-            "Google — quando você opta por login com conta Google.",
+            "Google, quando você opta por login com conta Google.",
             "Autoridades públicas, quando exigido por lei.",
           ]}
         />

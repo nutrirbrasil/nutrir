@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { InfoPage, InfoSection } from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Sobre a Nutrir — Nutrir Piçarras",
   description:
     "Conheça a Nutrir: comida caseira, saudável e prática em Balneário Piçarras, criada por nutricionistas.",
 };
@@ -21,7 +20,7 @@ export default function SobreNutrirPage() {
       <p>
         Na Nutrir, a saúde e a praticidade se encontram, já que os fundadores são nutricionistas que
         vivem essa realidade. Tudo começou a partir da busca por uma alimentação mais saudável,
-        simples e prática na região, que não encontramos — então surgimos com uma proposta
+        simples e prática na região, que não encontramos. Então surgimos com uma proposta
         tecnológica, onde acreditamos que a distância entre você e a comida saudável deve ser tão
         curta quanto um clique.
       </p>

@@ -4,7 +4,6 @@ import { InfoPage, InfoSection } from "@/components/InfoPage";
 import { whatsappContactUrl } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: "Formas de Pagamento — Nutrir Piçarras",
   description:
     "Pix, cartão online, dinheiro, cartão físico e criptomoedas. Conheça as formas de pagamento da Nutrir Piçarras.",
 };
@@ -67,7 +66,7 @@ export default function FormasDePagamentoPage() {
           pedido pelo site, escolhe pagamento em dinheiro e, estando{" "}
           <strong>cadastrado com os dados corretos</strong>, identificamos seu perfil de paciente. A
           produção é <strong>prioritária</strong> e o pagamento em dinheiro é feito{" "}
-          <strong>na retirada ou na entrega</strong> — sem necessidade de pagamento antecipado no
+          <strong>na retirada ou na entrega</strong>, sem necessidade de pagamento antecipado no
           Nutrir.
         </p>
         <p>
@@ -80,7 +79,7 @@ export default function FormasDePagamentoPage() {
           Também exclusivo para pacientes em acompanhamento. Aceitamos cartão de crédito e débito
           nas maquininhas do Nutrir <strong>no momento da retirada</strong>, ou com o entregador{" "}
           <strong>no momento da entrega</strong>, após identificarmos seu cadastro como paciente. A
-          produção entra em <strong>prioridade</strong> assim que o pedido é confirmado — o
+          produção entra em <strong>prioridade</strong> assim que o pedido é confirmado. O
           pagamento no cartão ocorre quando você recebe as marmitas.
         </p>
       </InfoSection>
@@ -106,7 +105,7 @@ export default function FormasDePagamentoPage() {
         </p>
       </InfoSection>
 
-      <InfoSection title="Pagamento na retirada ou entrega — exclusivo para pacientes">
+      <InfoSection title="Pagamento na retirada ou entrega, exclusivo para pacientes">
         <p>
           Pagamento em dinheiro ou cartão físico na retirada ou na entrega é exclusivo para{" "}
           <strong>pacientes da nutricionista Paula Pastorino</strong>, cadastrados no site com os

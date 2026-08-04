@@ -4,7 +4,6 @@ import { InfoPage, InfoSection } from "@/components/InfoPage";
 import { whatsappContactUrl } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: "Como Funciona — Nutrir Piçarras",
   description:
     "Prazos de pedido, dias e horários de retirada e entrega de marmitas e combos na Nutrir Piçarras.",
 };
@@ -15,7 +14,7 @@ export default function ComoFuncionaPage() {
       <p>
         Queremos estar presente em todos os momentos da sua rotina, sempre com sabores que
         proporcionam uma vida mais saudável e simples. E é por isso que nosso site é completo, com
-        diversas formas de variar o pedido — e a retirada ou entrega é simples de agendar, sem
+        diversas formas de variar o pedido, e a retirada ou entrega é simples de agendar, sem
         intermediários.
       </p>
 

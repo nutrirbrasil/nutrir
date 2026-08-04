@@ -123,7 +123,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
         menu_id: `combo-build-${Date.now()}`,
         item_id: "combo-build",
         section_id: "combo",
-        name: `Combo — ${formatComboSummary(build.lines)}`,
+        name: `Combo, ${formatComboSummary(build.lines)}`,
         quantity: 1,
         price_cents: build.total_cents,
       },
@@ -142,7 +142,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
           </p>
           <p className="mx-auto mt-4 max-w-lg text-sm text-nutrir-nude/80">
             Defina quantas marmitas quer no combo (entre {COMBO_MEAL_MIN} e {COMBO_MEAL_MAX}) e escolha
-            cada uma — pode misturar tamanhos P e G.
+            cada uma, pode misturar tamanhos P e G.
           </p>
         </div>
       )}

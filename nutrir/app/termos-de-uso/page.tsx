@@ -4,7 +4,6 @@ import { LegalList, LegalPage, LegalSection } from "@/components/LegalPage";
 import { legal, whatsappContactUrl } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: "Termos de Uso — Nutrir Piçarras",
   description: "Condições para uso do site e pedidos de marmitas no Nutrir Piçarras.",
 };
 
@@ -43,7 +42,7 @@ export default function TermosUsoPage() {
         <LegalList
           items={[
             "Os valores finais, descontos e condições de pagamento seguem a seção 4 destes Termos e o que for exibido no checkout no momento da compra.",
-            "Combos podem exigir antecedência mínima para produção — as datas disponíveis no agendamento devem ser respeitadas.",
+            "Combos podem exigir antecedência mínima para produção, as datas disponíveis no agendamento devem ser respeitadas.",
             "É sua responsabilidade escolher corretamente itens, tamanhos (P/G), adicionais e data/horário de retirada.",
             "Pedidos não retirados no prazo combinado podem ser cancelados ou tratados conforme combinado com a loja, sem direito automático a reembolso por ausência.",
           ]}
@@ -61,7 +60,7 @@ export default function TermosUsoPage() {
             "Os preços exibidos no cardápio são referência. O valor total confirmado na etapa de revisão do pedido, antes da finalização, é o que prevalece.",
             "Descontos promocionais (especialmente em Pix e dinheiro) não são fixos: podem variar conforme o produto, a forma de pagamento e condições de mercado, em geral entre 5% e 15% em relação ao preço de referência do cartão, sem garantia de percentual mínimo ou máximo.",
             "Cupons percentuais incidem sobre o valor do pedido após os descontos da forma de pagamento escolhida, quando houver, conforme exibido no checkout.",
-            "Por trabalharmos de forma artesanal e com foco em sustentabilidade, a produção do pedido depende da confirmação do pagamento ou do sinal acordado, conforme a forma escolhida e as regras exibidas no momento da compra — com o objetivo de evitar desperdício.",
+            "Por trabalharmos de forma artesanal e com foco em sustentabilidade, a produção do pedido depende da confirmação do pagamento ou do sinal acordado, conforme a forma escolhida e as regras exibidas no momento da compra, com o objetivo de evitar desperdício.",
             "Dinheiro e cartão físico na retirada são opções restritas a pacientes em acompanhamento com a nutricionista Paula Pastorino, identificados no sistema mediante CPF e cadastro válido.",
             "Para quem não se enquadra nessa condição, dinheiro e cartão físico podem estar disponíveis apenas mediante pagamento antecipado, como sinal para iniciar a produção, quando oferecidos no checkout.",
             "Pagamentos com criptomoedas, quando disponíveis, dependem de acordo prévio com a loja (valor, cotação e confirmação), fora do fluxo automático do site.",
@@ -101,7 +100,7 @@ export default function TermosUsoPage() {
           items={[
             "Trabalhamos com ingredientes frescos; pequenas variações de apresentação ou disponibilidade podem ocorrer.",
             "Informe alergias, intolerâncias ou restrições alimentares nos observações do pedido ou diretamente conosco antes da produção.",
-            "O consumo é de sua responsabilidade após a retirada — conserve e consuma conforme orientações de segurança alimentar.",
+            "O consumo é de sua responsabilidade após a retirada, conserve e consuma conforme orientações de segurança alimentar.",
           ]}
         />
       </LegalSection>

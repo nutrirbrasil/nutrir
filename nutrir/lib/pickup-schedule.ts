@@ -206,7 +206,7 @@ export function formatPickupSummary(selection: PickupSelection): string {
   const slot = PICKUP_SLOTS.find((s) => s.id === selection.slot)!;
   const wd = WEEKDAYS_LONG[day.getDay()];
   const dateStr = day.toLocaleDateString("pt-BR");
-  return `${wd} ${dateStr} — ${slot.label} (${slot.range})`;
+  return `${wd} ${dateStr}, ${slot.label} (${slot.range})`;
 }
 
 export function analyzeCartItems(items: { section_id?: string }[]): {
