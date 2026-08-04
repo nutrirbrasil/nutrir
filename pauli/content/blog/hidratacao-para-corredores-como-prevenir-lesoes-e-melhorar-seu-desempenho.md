@@ -4,260 +4,266 @@ slug: hidratacao-para-corredores
 description: >-
   Leitura estimada: 15 minutos
 
-  Última atualização: 03 de agosto de 2026
-
   Descubra como a hidratação para corredores melhora o desempenho, acelera a recuperação e ajuda a prevenir lesões com estratégias baseadas em evidências.
-date: 2026-08-03
+date: 2026-08-04
 published: true
 ---
-# O Problema Silencioso da Desidratação em Corredores
+# O problema silencioso da desidratação em corredores
 
-Você treina regularmente, segue sua planilha, investe em um bom tênis e procura evoluir a cada corrida. Ainda assim, dores persistentes, cãibras frequentes ou uma recuperação lenta podem começar a fazer parte da rotina sem que você perceba o motivo.
+Você treina regularmente, segue sua planilha, investe em um bom tênis e busca evoluir a cada corrida. Ainda assim, dores persistentes, sensação de fadiga precoce, cãibras frequentes ou uma recuperação mais lenta do que o esperado podem começar a fazer parte da sua rotina sem que exista uma explicação evidente.
 
-Na maioria das vezes, quando pensamos em hidratação, associamos apenas à sensação de sede. No entanto, a água desempenha funções muito mais importantes do que simplesmente aliviar esse desconforto.
+Quando pensamos em hidratação, é comum associá-la apenas à sensação de sede. No entanto, a água desempenha funções muito mais amplas e indispensáveis para o organismo. Ela participa da regulação da temperatura corporal, do transporte de oxigênio e nutrientes, da manutenção do volume sanguíneo, da contração muscular e de diversos processos envolvidos na recuperação após o exercício.
 
-A desidratação é um dos fatores que podem contribuir silenciosamente para a redução do desempenho e aumentar o risco de lesões, especialmente quando se torna um hábito ao longo das semanas ou meses de treinamento. Tendinopatias, fraturas por estresse e lesões por sobrecarga são exemplos de problemas que podem ter sua ocorrência favorecida por uma hidratação inadequada.
+Embora a desidratação, isoladamente, não seja considerada uma causa direta de lesões, ela pode comprometer mecanismos fisiológicos importantes para o desempenho e para a recuperação do organismo. Quando associada a outros fatores, como aumento da carga de treinamento, recuperação insuficiente, baixa disponibilidade energética e condições ambientais desfavoráveis, pode contribuir para um cenário mais propício ao desenvolvimento de lesões por sobrecarga.
 
-O mais preocupante é que muitos corredores permanecem levemente desidratados sem apresentar sinais evidentes.
+Além disso, perdas relativamente pequenas de água corporal já são capazes de comprometer a termorregulação, aumentar o esforço cardiovascular e favorecer o aparecimento precoce da fadiga, especialmente em exercícios prolongados realizados sob calor. Essas alterações podem reduzir a qualidade do treinamento e dificultar a recuperação entre as sessões.
 
-Neste artigo, você entenderá por que a hidratação é uma das estratégias mais importantes para preservar o desempenho, favorecer a recuperação muscular e reduzir o risco de lesões, além de compreender quando apenas água é suficiente e em quais situações a reposição de eletrólitos se torna necessária.
+Um aspecto importante é que muitos corredores iniciam seus treinos em um estado de leve desidratação sem perceber. Como a sede costuma surgir quando o organismo já apresenta certo grau de déficit hídrico, confiar apenas nela nem sempre é a melhor estratégia para manter uma hidratação adequada.
+
+Neste artigo, você entenderá como a hidratação influencia o funcionamento do organismo durante a corrida, de que forma ela pode contribuir para preservar o desempenho e favorecer a recuperação, além de compreender quando apenas a água costuma ser suficiente e em quais situações a reposição de eletrólitos passa a ser recomendada.
 
 # O que a hidratação realmente faz no organismo?
 
-Durante uma corrida, o organismo passa por uma série de adaptações para manter o funcionamento adequado dos músculos e preservar a temperatura corporal. Conforme o exercício se prolonga, a produção de calor aumenta, ocorre perda de água pelo suor e diversos sistemas fisiológicos precisam trabalhar de maneira integrada para manter o desempenho.
+Durante a corrida, o organismo precisa manter um delicado equilíbrio entre a produção de energia, o controle da temperatura corporal e o fornecimento contínuo de oxigênio e nutrientes para os músculos em atividade. À medida que o exercício se prolonga, a produção de calor aumenta e a perda de água pelo suor torna-se mais intensa, exigindo uma atuação coordenada de diferentes sistemas fisiológicos.
 
-É justamente nesse momento que a hidratação deixa de ser apenas uma recomendação e passa a exercer um papel fundamental para que o corpo consiga responder adequadamente ao esforço físico.
+É nesse contexto que a hidratação deixa de ser apenas uma recomendação geral e passa a desempenhar um papel essencial para a manutenção do desempenho físico. Um estado adequado de hidratação contribui para preservar o volume plasmático, favorecer a dissipação de calor, manter o débito cardíaco e sustentar a capacidade de realizar esforço por períodos mais longos.
+
+Quando a perda de líquidos não é adequadamente reposta, o organismo passa a priorizar funções vitais para manter a pressão arterial e a perfusão dos órgãos. Como consequência, ocorre redução do volume plasmático, aumento da frequência cardíaca, maior percepção de esforço e diminuição da eficiência da termorregulação, alterações que tendem a se tornar mais evidentes conforme aumentam a intensidade do exercício e a temperatura ambiente.
 
 ## Regulação da temperatura corporal
 
-Durante a corrida, os músculos produzem grande quantidade de calor. Para evitar um aumento excessivo da temperatura interna, o organismo utiliza o suor como principal mecanismo de resfriamento.
+Durante a corrida, apenas uma pequena parte da energia produzida pelos músculos é convertida em movimento. A maior parte é liberada na forma de calor, tornando essencial a atuação de mecanismos capazes de impedir que a temperatura corporal aumente excessivamente.
 
-Quando o suor evapora na superfície da pele, parte desse calor é dissipado, permitindo que a temperatura corporal permaneça próxima dos 37 °C.
+O principal desses mecanismos é a evaporação do suor. Quando o suor evapora sobre a superfície da pele, ocorre dissipação de calor para o ambiente, permitindo que a temperatura corporal permaneça dentro de uma faixa compatível com o funcionamento adequado do organismo.
 
-Entretanto, esse mecanismo depende diretamente da disponibilidade de água. Quando o organismo está desidratado, a produção de suor diminui e a dissipação do calor se torna menos eficiente. Como consequência, a temperatura corporal pode subir de forma exagerada, aumentando o risco de exaustão pelo calor e comprometendo significativamente o desempenho.
+Para que esse processo seja eficiente, entretanto, é necessário que exista disponibilidade adequada de água no organismo. À medida que ocorre perda de líquidos pelo suor sem reposição suficiente, o volume plasmático diminui. Em resposta, o organismo reduz progressivamente o fluxo sanguíneo destinado à pele e a produção de suor, buscando preservar a pressão arterial e o funcionamento dos órgãos vitais.
 
-## Função cardiovascular
+Como consequência, a dissipação de calor torna-se menos eficiente, favorecendo o aumento da temperatura corporal, o crescimento da frequência cardíaca e da percepção de esforço. Em situações de exercício prolongado, principalmente sob calor e elevada umidade, essas alterações podem comprometer significativamente o desempenho físico e aumentar o risco de doenças relacionadas ao calor, como exaustão pelo calor e, em casos mais graves, insolação.
 
-A água também exerce papel essencial na circulação sanguínea. Aproximadamente 55% do plasma sanguíneo é composto por água, sendo esse volume indispensável para transportar oxigênio e nutrientes aos músculos durante o exercício.
 
-Quando há perda significativa de líquidos pelo suor, ocorre redução do volume sanguíneo. Para compensar essa alteração, o coração precisa bater mais rápido e com maior esforço para manter o fornecimento de sangue aos tecidos.
 
-Na prática, isso significa aumento da frequência cardíaca, maior sensação de esforço e redução da capacidade de sustentar o mesmo ritmo de corrida.
+# Função cardiovascular
 
-## Funcionamento muscular
+A água desempenha um papel fundamental na manutenção do sistema cardiovascular durante o exercício. O plasma sanguíneo, responsável pelo transporte de oxigênio, nutrientes, hormônios e metabólitos, é composto por aproximadamente **90 a 92% de água**, tornando a hidratação essencial para preservar o volume sanguíneo e garantir o adequado fornecimento de oxigênio aos músculos em atividade.
 
-Os músculos são compostos por aproximadamente 75% de água. Além de participar diretamente das reações químicas responsáveis pela produção de energia, a água permite que eletrólitos como sódio, potássio e cálcio desempenhem sua função na transmissão dos impulsos nervosos e na contração muscular.
+À medida que a corrida se prolonga, ocorre perda de líquidos pelo suor. Quando essa perda não é adequadamente reposta, o volume plasmático diminui, reduzindo o retorno do sangue ao coração. Para compensar essa alteração e manter o débito cardíaco, o organismo aumenta a frequência cardíaca e direciona maior esforço ao sistema cardiovascular.
 
-Quando a hidratação é inadequada, essas reações passam a ocorrer com menor eficiência. O músculo se torna mais suscetível à fadiga e sua capacidade de produzir força diminui.
+Na prática, isso significa que o corredor passa a perceber o exercício como mais intenso, mesmo mantendo o mesmo ritmo. Esse fenômeno, conhecido como **deriva cardiovascular**, contribui para o aumento da percepção de esforço, redução da tolerância ao exercício prolongado e queda do desempenho, especialmente em ambientes quentes e úmidos.
 
-É por isso que muitos corredores relatam sensação de perda de potência, dificuldade para manter o ritmo e até aquele formigamento que costuma aparecer nos quilômetros finais das provas mais longas.
+# Funcionamento muscular
 
-## Absorção de nutrientes
+O tecido muscular esquelético é composto, em média, por cerca de **75% de água**, embora essa proporção possa variar de acordo com fatores como idade, sexo e composição corporal.
 
-Pouca gente associa hidratação à alimentação, mas uma depende diretamente da outra.
+Além de fazer parte da estrutura muscular, a água participa diretamente das reações metabólicas responsáveis pela produção de energia e funciona como meio para o transporte de eletrólitos, como sódio, potássio, cálcio e magnésio. Esses minerais são indispensáveis para a condução dos impulsos nervosos e para o processo de contração e relaxamento muscular.
 
-Mesmo quando a dieta é adequada, o organismo necessita de água para absorver e transportar nutrientes como carboidratos, vitaminas e minerais até os tecidos.
+Quando ocorre desidratação, principalmente durante exercícios prolongados, o ambiente fisiológico torna-se menos favorável ao funcionamento muscular. A redução do volume plasmático compromete o fornecimento de oxigênio aos tecidos, aumenta a fadiga e reduz a capacidade de manter a intensidade do exercício.
 
-Isso significa que uma hidratação insuficiente também pode limitar o aproveitamento dos alimentos consumidos antes, durante e após os treinos, comprometendo tanto a produção de energia quanto a recuperação muscular.
+Por esse motivo, muitos corredores relatam sensação de perda de potência, dificuldade para sustentar o ritmo planejado e maior percepção de esforço nos quilômetros finais de treinos e provas longas.
 
-# Como a desidratação aumenta o risco de lesões?
 
-Muitas pessoas acreditam que a desidratação afeta apenas o rendimento durante a corrida. No entanto, seus efeitos vão muito além da queda de performance.
 
-Quando a ingestão de líquidos permanece insuficiente por dias ou semanas, diversos tecidos passam a funcionar em condições menos favoráveis. Músculos recuperam-se mais lentamente, tendões tornam-se mais suscetíveis a sobrecargas e o próprio tecido ósseo pode sofrer alterações que aumentam o risco de lesões.
+# Absorção e transporte de nutrientes
 
-Embora a desidratação raramente seja a única causa de um problema ortopédico, ela representa um importante fator de risco modificável, especialmente quando associada ao aumento do volume de treinamento, recuperação inadequada e alimentação insuficiente.
+A hidratação também influencia o aproveitamento dos nutrientes consumidos antes, durante e após o exercício.
 
-## Cãibras musculares
+A água participa dos processos de digestão, absorção e transporte de carboidratos, proteínas, vitaminas e minerais até os diferentes tecidos do organismo. Além disso, contribui para a distribuição desses nutrientes pelo sistema circulatório e para a remoção de metabólitos produzidos durante o exercício.
 
-Durante muitos anos, acreditava-se que as cãibras musculares eram provocadas exclusivamente pela perda de água e eletrólitos.
+Embora uma hidratação inadequada não impeça completamente a absorção dos alimentos, ela pode comprometer o funcionamento gastrointestinal e reduzir a eficiência de processos fisiológicos importantes para a recuperação, especialmente quando associada ao exercício prolongado realizado em ambientes quentes.
 
-Hoje sabemos que esse mecanismo é mais complexo.
+Por isso, uma estratégia nutricional eficiente depende não apenas da qualidade da alimentação, mas também da manutenção de um estado adequado de hidratação.
 
-As evidências científicas mostram que as cãibras associadas ao exercício acontecem principalmente devido a um **desequilíbrio no controle neuromuscular** provocado pela fadiga muscular. Quando o músculo entra em exaustão, ocorre uma alteração na comunicação entre músculos e sistema nervoso, favorecendo contrações involuntárias.
+# Como a desidratação pode contribuir para o risco de lesões?
 
-Isso não significa, porém, que a hidratação deixe de ser importante.
+Quando pensamos nos efeitos da desidratação, é comum associá-la apenas à queda do desempenho durante a corrida. No entanto, suas consequências podem ir além da performance.
 
-Quando o organismo está desidratado, a fadiga aparece mais rapidamente. Além disso, a perda de eletrólitos compromete a transmissão dos impulsos nervosos responsáveis pelo controle da contração muscular.
+A literatura científica atual demonstra que a desidratação, isoladamente, não é considerada causa direta de lesões musculoesqueléticas. Entretanto, ela pode comprometer mecanismos fisiológicos importantes, como a termorregulação, a função neuromuscular, a capacidade de recuperação e a tolerância ao exercício, criando um ambiente mais favorável ao surgimento de lesões quando associada a outros fatores de risco.
 
-Na prática, a desidratação cria um ambiente favorável para que as cãibras ocorram com maior frequência, especialmente durante treinos longos, intensos ou realizados sob temperaturas elevadas.
+Entre esses fatores destacam-se o aumento excessivo da carga de treinamento, recuperação insuficiente, baixa disponibilidade energética, alterações biomecânicas e sono inadequado.
 
-Diversos estudos mostram que corredores que apresentam episódios recorrentes de cãibras frequentemente possuem estratégias inadequadas de hidratação e reposição de eletrólitos, reforçando a importância de um planejamento individualizado.
+Por esse motivo, a hidratação deve ser entendida como um dos componentes de uma estratégia global de prevenção de lesões, e não como uma medida isolada.
 
-# Tendões e desidratação: qual é a relação?
+# Cãibras musculares
 
-Quando pensamos em hidratação, normalmente lembramos apenas dos músculos. No entanto, os tendões também dependem de um ambiente adequadamente hidratado para suportar as cargas repetitivas da corrida.
+Durante muitos anos acreditou-se que as cãibras musculares associadas ao exercício eram consequência exclusiva da perda de água e eletrólitos pelo suor.
 
-Essas estruturas são formadas principalmente por fibras de colágeno, responsáveis por conferir resistência e elasticidade. Embora possuam menor quantidade de água do que o tecido muscular, a hidratação continua sendo fundamental para preservar suas propriedades mecânicas e favorecer a adaptação aos estímulos do treinamento.
+Atualmente, as evidências indicam que esse fenômeno é mais complexo.
 
-Quando a desidratação se torna frequente, esse equilíbrio pode ser comprometido. A elasticidade diminui, a capacidade de absorver impactos fica reduzida e pequenas sobrecargas passam a gerar microlesões que, com o tempo, podem evoluir para um quadro de tendinopatia.
+O mecanismo mais aceito envolve alterações no controle neuromuscular decorrentes da fadiga muscular. À medida que o músculo entra em exaustão, ocorre um desequilíbrio entre os estímulos excitatórios e inibitórios responsáveis pelo controle da contração muscular, favorecendo o aparecimento de contrações involuntárias e dolorosas.
 
-É importante destacar que a desidratação, isoladamente, não causa uma tendinite. Entretanto, ela reduz a capacidade do tendão de tolerar as cargas impostas pelo treinamento, principalmente quando está associada ao aumento do volume de corrida, recuperação inadequada, alimentação insuficiente ou erros na programação dos treinos.
+Isso não significa que a hidratação seja irrelevante. Em exercícios prolongados, especialmente realizados sob calor intenso, a perda de líquidos e eletrólitos pode acelerar o aparecimento da fadiga, aumentando a probabilidade de ocorrência das cãibras em indivíduos suscetíveis.
 
-Em outras palavras, um tendão menos hidratado torna-se mais vulnerável ao estresse mecânico repetitivo.
+Por esse motivo, a prevenção deve considerar múltiplos fatores, incluindo treinamento adequado, progressão gradual da carga, condicionamento físico, reposição de líquidos e eletrólitos quando indicada e estratégias nutricionais individualizadas.
 
-## O ciclo silencioso da tendinopatia
 
-A evolução de uma tendinite costuma acontecer de forma gradual.
 
-Primeiro, o tendão perde parte da sua capacidade de suportar carga. Em seguida, começam a surgir pequenos microtraumas durante os treinos. Se o organismo não consegue reparar esses danos completamente, instala-se um processo inflamatório que pode evoluir para dor persistente e redução da capacidade funcional.
+# Tendões e hidratação: qual é a relação?
 
-Com menos movimento devido à dor, ocorre diminuição da força muscular, aumentando ainda mais a sobrecarga sobre o tendão e perpetuando um ciclo difícil de interromper.
+Os tendões são estruturas compostas predominantemente por fibras de colágeno organizadas em uma matriz extracelular rica em água, proteoglicanos e outras proteínas responsáveis por conferir resistência mecânica e permitir a transmissão eficiente das forças produzidas pelos músculos.
 
-Por esse motivo, a hidratação deve ser encarada como parte da estratégia de prevenção de lesões, juntamente com um treinamento adequado, alimentação equilibrada e recuperação suficiente.
+Embora possuam menor teor de água do que o tecido muscular, a manutenção desse ambiente é importante para preservar suas propriedades biomecânicas e favorecer a adaptação às cargas impostas pelo treinamento.
 
-# Fraturas por estresse: quando o osso deixa de acompanhar o treino
+Até o momento, não existem evidências robustas demonstrando que a desidratação cause tendinopatias. No entanto, sabe-se que ela pode reduzir a tolerância ao exercício, aumentar a fadiga e comprometer processos de recuperação tecidual, fatores que, em conjunto, podem favorecer o desenvolvimento de lesões por sobrecarga.
 
-As fraturas por estresse são pequenas fissuras que surgem no tecido ósseo devido à repetição contínua de impactos. Diferentemente de uma fratura causada por um trauma agudo, elas se desenvolvem lentamente, muitas vezes passando despercebidas nas fases iniciais.
+Assim, a hidratação deve ser considerada um fator complementar dentro de uma estratégia mais ampla que inclui progressão adequada da carga, alimentação suficiente, recuperação e fortalecimento muscular.
 
-A corrida é um esporte que impõe milhares de impactos ao sistema musculoesquelético. Em condições normais, o osso consegue reparar esses pequenos danos diariamente. O problema aparece quando a velocidade de desgaste supera a capacidade de recuperação do organismo.
 
-Diversos fatores influenciam esse processo, incluindo aumento brusco da quilometragem, baixa disponibilidade energética, deficiência de vitamina D, ingestão inadequada de cálcio e recuperação insuficiente.
 
-A hidratação também participa desse cenário.
 
-Embora muitas vezes seja negligenciada, ela interfere em diversos mecanismos relacionados ao metabolismo ósseo, como o equilíbrio eletrolítico, a absorção de minerais e os processos de remodelação do tecido ósseo. Quando esse ambiente fisiológico é constantemente comprometido, a capacidade de adaptação do osso tende a diminuir.
 
-Isso não significa que a desidratação cause uma fratura por estresse sozinha, mas ela representa mais um fator que reduz a capacidade do organismo de responder adequadamente às cargas repetitivas da corrida.
 
-Alguns grupos apresentam risco ainda maior, como corredores que aumentam rapidamente o volume de treino, mulheres com baixa densidade mineral óssea, atletas com ingestão insuficiente de cálcio e vitamina D e pessoas que mantêm um padrão crônico de hidratação inadequada.
-
-# Síndrome do overuse: quando o organismo deixa de acompanhar o treinamento
-
-Nem toda lesão acontece por causa de um único movimento errado. Em muitos corredores, o problema surge porque o organismo simplesmente não consegue se recuperar na mesma velocidade em que recebe novos estímulos.
-
-Esse quadro é conhecido como síndrome do overuse, ou lesão por sobrecarga.
-
-Na prática, pequenos danos musculares, tendíneos e ósseos se acumulam diariamente até que o corpo deixa de conseguir repará-los completamente.
-
-É nesse momento que começam a aparecer dores persistentes, perda de desempenho, sensação constante de fadiga e lesões recorrentes.
-
-A hidratação exerce um papel importante nesse processo porque praticamente todas as etapas da recuperação dependem de um adequado equilíbrio hídrico.
-
-Após o treino, o organismo precisa transportar nutrientes, eliminar metabólitos produzidos durante o exercício, sintetizar proteínas para reparar o tecido muscular e controlar a resposta inflamatória desencadeada pelo esforço físico.
-
-Quando existe desidratação, esses mecanismos tornam-se menos eficientes.
-
-Como consequência, a recuperação pode ser mais lenta, a inflamação tende a permanecer por mais tempo e a capacidade de suportar novos treinos diminui progressivamente.
-
-Por isso, dois corredores submetidos exatamente ao mesmo treinamento podem apresentar respostas completamente diferentes. Enquanto um consegue recuperar-se adequadamente entre as sessões, o outro acumula fadiga e aumenta o risco de desenvolver lesões por sobrecarga.
 
 # A hidratação começa muito antes da corrida
 
-Um erro bastante comum é acreditar que basta beber bastante água poucos minutos antes do treino para compensar horas de baixa ingestão de líquidos.
+Um dos erros mais comuns entre corredores é acreditar que basta beber uma grande quantidade de água poucos minutos antes do treino para compensar um dia inteiro de baixa ingestão de líquidos.
 
-Na realidade, isso não acontece.
+Na prática, essa estratégia não é suficiente.
 
-O organismo possui uma capacidade limitada de absorver e distribuir água. Grande parte do líquido ingerido imediatamente antes da corrida será eliminada pelos rins, sem que isso represente um estado adequado de hidratação durante o exercício.
+Embora a água seja absorvida rapidamente pelo trato gastrointestinal, o organismo precisa de tempo para distribuí-la adequadamente entre os diferentes compartimentos corporais e restabelecer o equilíbrio dos fluidos. Quando grandes volumes são ingeridos de uma só vez, especialmente imediatamente antes da corrida, parte desse excesso tende a ser eliminada pelos rins, aumentando a produção de urina.
 
-Por isso, a preparação começa muito antes de calçar o tênis.
+Por isso, a hidratação não deve ser encarada como uma ação pontual, mas como um processo contínuo que começa muito antes de calçar o tênis.
 
-Chegar ao treino já desidratado significa iniciar a atividade com menor volume sanguíneo, temperatura corporal mais elevada e maior dificuldade para transportar oxigênio até os músculos.
+Iniciar um treino em estado de desidratação pode comprometer a manutenção do volume plasmático, dificultar a dissipação de calor e aumentar o esforço cardiovascular necessário para sustentar o exercício. Como consequência, a percepção de esforço tende a aumentar e o desempenho pode ser reduzido, principalmente em treinos prolongados ou realizados sob temperaturas elevadas.
 
-Na prática, é como começar uma prova em desvantagem.
+Em outras palavras, chegar bem hidratado ao treino significa oferecer ao organismo melhores condições para responder às demandas fisiológicas impostas pela corrida.
 
-A hidratação deve ser encarada como um processo contínuo que envolve os dias anteriores às sessões mais intensas, as horas que antecedem o exercício, a reposição durante a corrida e a recuperação logo após o término da atividade.
+Por isso, uma estratégia eficiente de hidratação envolve não apenas o que é ingerido imediatamente antes do exercício, mas também os hábitos de ingestão de líquidos ao longo do dia, a hidratação nas horas que antecedem o treino, a reposição durante a corrida quando necessária e a recuperação após o término da atividade.
 
-Cada uma dessas etapas influencia diretamente o desempenho e a capacidade de recuperação do organismo.
-
-Quando uma delas falha, as consequências costumam aparecer não apenas naquele treino, mas também nos dias seguintes.
+Cada uma dessas etapas contribui para preservar o desempenho, favorecer a recuperação e reduzir o impacto do exercício sobre o organismo.
 
 # Como manter a hidratação durante a corrida?
 
-Se a hidratação antes do treino prepara o organismo para o esforço, durante a corrida o objetivo passa a ser minimizar as perdas provocadas pelo suor e preservar o funcionamento normal do corpo.
+Se a hidratação antes da corrida prepara o organismo para o esforço, durante o exercício o principal objetivo passa a ser minimizar as perdas provocadas pelo suor sem causar desconforto gastrointestinal.
 
-À medida que o exercício se prolonga, a produção de calor aumenta e a perda de líquidos torna-se cada vez maior. Ao mesmo tempo, ocorre uma redução do fluxo sanguíneo destinado ao sistema digestório, o que dificulta a absorção de água e nutrientes justamente quando eles são mais necessários.
+À medida que a corrida se prolonga, a produção de calor aumenta e a perda de água pelo suor torna-se mais intensa. Ao mesmo tempo, especialmente durante exercícios de maior intensidade e duração, ocorre redução do fluxo sanguíneo direcionado ao sistema digestório, tornando a absorção de líquidos e nutrientes menos eficiente do que em repouso.
 
-Por isso, manter a hidratação durante uma corrida longa é um desafio fisiológico muito maior do que simplesmente "beber água".
+Por esse motivo, manter a hidratação durante uma prova ou treino longo vai muito além de simplesmente "beber água". A estratégia deve considerar o tempo de exercício, a intensidade, as condições climáticas e a tolerância gastrointestinal de cada corredor.
 
-Outro ponto importante é que o suor não elimina apenas líquidos. A cada hora de exercício também ocorre perda de eletrólitos, como sódio, potássio e cloro, além de uma utilização contínua dos estoques de carboidrato para produção de energia.
+Além da água, o suor contém eletrólitos, sendo o **sódio** o principal mineral perdido durante o exercício. Em menor quantidade, também ocorrem perdas de potássio, cloreto, magnésio e cálcio. Esses eletrólitos desempenham funções importantes na manutenção do equilíbrio hídrico, da transmissão dos impulsos nervosos e da contração muscular.
 
-Esses minerais desempenham funções essenciais na contração muscular, na transmissão dos impulsos nervosos, no equilíbrio dos fluidos corporais e na manutenção da frequência cardíaca. Quando essas perdas não são repostas de maneira adequada, o desempenho tende a diminuir progressivamente.
+Entretanto, isso não significa que todos os corredores precisem repor eletrólitos durante qualquer treino. Em atividades de menor duração, iniciadas em bom estado de hidratação e realizadas em condições ambientais favoráveis, a reposição de água costuma ser suficiente. Já em exercícios prolongados, realizados sob calor intenso ou em indivíduos com elevadas taxas de sudorese, a reposição de sódio pode contribuir para manter o equilíbrio dos fluidos corporais e reduzir o risco de hiponatremia associada ao exercício.
 
-Entretanto, não existe uma estratégia universal. Algumas pessoas perdem menos de meio litro de suor por hora, enquanto outras podem ultrapassar dois litros no mesmo período. Essa variação depende da genética, da intensidade do exercício, das condições climáticas, do grau de aclimatação e até das características individuais de cada corredor.
+Outro aspecto importante é que a taxa de sudorese varia consideravelmente entre os indivíduos. Enquanto alguns corredores perdem menos de 500 mL de suor por hora, outros podem ultrapassar 2 litros no mesmo período. Essa variação depende de fatores como intensidade do exercício, temperatura e umidade ambiente, grau de aclimatação ao calor, características genéticas, composição corporal e nível de treinamento.
 
-É justamente por isso que recomendações genéricas raramente funcionam para todos.
+Por isso, recomendações genéricas dificilmente atendem às necessidades de todos os corredores. As diretrizes atuais recomendam que a estratégia de hidratação seja individualizada sempre que possível, considerando a taxa de suor, as perdas de eletrólitos, a duração do exercício e a tolerância gastrointestinal de cada atleta.
+
+
 
 # A recuperação começa logo após cruzar a linha de chegada
 
-Muitos corredores encerram o treino e acreditam que a parte mais importante já terminou. No entanto, é justamente nos primeiros minutos após o exercício que o organismo inicia um intenso processo de recuperação.
+Completar um treino ou cruzar a linha de chegada não significa que o trabalho do organismo terminou. Na verdade, é nesse momento que se inicia uma das etapas mais importantes para a evolução do corredor: a recuperação.
 
-Durante aproximadamente a primeira hora após a corrida, os músculos apresentam maior capacidade de absorver nutrientes, reconstruir fibras musculares danificadas e restaurar os estoques de energia utilizados durante o exercício.
+Durante o exercício, o organismo utiliza parte dos estoques de glicogênio, perde líquidos e eletrólitos pelo suor e sofre pequenas alterações musculares decorrentes da carga imposta pelo treinamento. Após a corrida, diversos mecanismos fisiológicos entram em ação para restaurar esse equilíbrio e preparar o corpo para os próximos estímulos.
 
-A hidratação faz parte desse processo.
+Nas horas seguintes ao exercício, especialmente quando existe outro treino programado em um curto intervalo de tempo, aumenta a capacidade de ressíntese do glicogênio muscular e ocorre maior estímulo aos processos de reparo e adaptação do tecido muscular. A ingestão adequada de líquidos, carboidratos e proteínas durante esse período favorece essa recuperação e contribui para que o atleta esteja preparado para as sessões seguintes.
 
-Quando a reposição de líquidos não acontece adequadamente, a recuperação tende a ser mais lenta, a dor muscular pode permanecer por mais tempo e o organismo demora mais para estar preparado para um novo treinamento.
+A hidratação faz parte desse processo. A reposição adequada dos líquidos perdidos pelo suor auxilia na restauração do volume plasmático, favorece o transporte de nutrientes, contribui para a recuperação do equilíbrio hidroeletrolítico e participa de diversos processos fisiológicos envolvidos na recuperação do organismo.
 
-Além da água, esse momento também representa uma oportunidade para repor carboidratos, proteínas e eletrólitos perdidos durante o exercício. Esses nutrientes trabalham em conjunto para favorecer a recuperação muscular, restaurar o equilíbrio hídrico e preparar o corpo para os próximos treinos.
+Quando essa reposição é insuficiente, o restabelecimento do estado de hidratação pode ser retardado, comprometendo a recuperação entre os treinos, principalmente em atletas que treinam diariamente ou realizam mais de uma sessão de exercício no mesmo dia.
 
-# Água e isotônicos: por que eles não exercem a mesma função?
+Por isso, o período após a corrida representa uma excelente oportunidade para repor líquidos, eletrólitos quando necessário, carboidratos e proteínas, promovendo uma recuperação mais eficiente e melhor preparação para os próximos desafios.
 
-Uma dúvida muito comum entre corredores é saber quando apenas água é suficiente e quando a utilização de bebidas contendo eletrólitos passa a ser necessária.
+# Água ou isotônicos: quando cada um é indicado?
 
-Embora ambas contribuam para a hidratação, seus mecanismos de ação são diferentes.
+Uma dúvida frequente entre corredores é saber quando apenas a água é suficiente e em quais situações as bebidas esportivas podem oferecer benefícios adicionais.
 
-No intestino delgado existe um transportador chamado **SGLT1**, responsável por absorver simultaneamente glicose e sódio. Quando essas duas moléculas entram nas células intestinais, a água é transportada junto, tornando a absorção muito mais eficiente.
+Embora ambas contribuam para a hidratação, elas possuem finalidades diferentes.
 
-Esse é um dos principais motivos pelos quais bebidas esportivas contendo carboidratos e sódio favorecem uma reposição hídrica mais rápida em exercícios prolongados.
+A água é suficiente para a maioria dos treinos de curta duração realizados por indivíduos que iniciam o exercício em bom estado de hidratação. Já as bebidas esportivas foram desenvolvidas para situações em que, além da perda de líquidos, ocorre perda significativa de sódio e elevado consumo dos estoques de carboidratos.
 
-Quando apenas água é ingerida, a absorção continua acontecendo, porém de forma menos eficiente para situações em que há grande perda de suor e eletrólitos.
+No intestino delgado existe um transportador chamado **SGLT1**, responsável pelo transporte simultâneo de glicose e sódio para o interior das células intestinais. Esse mecanismo favorece a absorção de água e melhora a retenção dos líquidos no organismo, tornando as bebidas que contêm carboidratos e sódio particularmente úteis durante exercícios prolongados.
 
-Isso não significa que a água seja insuficiente.
+Além de favorecer a reposição hídrica, essas bebidas fornecem carboidratos que ajudam a preservar a disponibilidade de energia durante atividades de longa duração, retardando a fadiga e contribuindo para a manutenção do desempenho.
 
-Para corridas curtas, com duração inferior a aproximadamente 45 minutos e realizadas em intensidade leve ou moderada, ela costuma atender perfeitamente às necessidades do organismo.
+Entretanto, isso não significa que todos os corredores precisem utilizar isotônicos.
 
-À medida que a duração do exercício aumenta — principalmente acima de uma hora — ou quando o treino acontece em ambientes muito quentes e úmidos, a reposição de sódio e carboidratos passa a oferecer vantagens importantes tanto para a manutenção do desempenho quanto para a recuperação.
+Em corridas com duração inferior a aproximadamente **60 minutos**, iniciadas em bom estado de hidratação e realizadas em intensidade moderada, a ingestão de água costuma ser suficiente para atender às necessidades da maioria das pessoas.
 
-Em outras palavras, a melhor estratégia depende da duração, da intensidade da atividade e das características individuais do corredor.
+Por outro lado, em exercícios com duração superior a **60–90 minutos**, especialmente quando realizados em ambientes quentes e úmidos ou por atletas com elevada taxa de sudorese, bebidas contendo sódio e carboidratos podem oferecer vantagens importantes para a manutenção do equilíbrio hídrico, da disponibilidade energética e do desempenho.
+
+Também é importante lembrar que a necessidade de reposição varia de acordo com cada indivíduo. Fatores como intensidade do exercício, temperatura ambiente, umidade do ar, taxa de suor, aclimatação ao calor e tolerância gastrointestinal influenciam diretamente a melhor estratégia de hidratação.
+
+Por isso, não existe uma recomendação única capaz de atender todos os corredores. As diretrizes atuais reforçam que a hidratação deve ser individualizada sempre que possível, considerando as características e necessidades de cada atleta.
+
+
 
 # Como identificar os sinais de desidratação?
 
-A sede costuma aparecer quando o organismo já perdeu parte dos líquidos corporais. Por isso, aprender a reconhecer outros sinais de desidratação pode ajudar a evitar uma queda importante no desempenho.
+A sede é um dos mecanismos naturais utilizados pelo organismo para estimular a ingestão de líquidos. No entanto, durante exercícios prolongados, especialmente em ambientes quentes, confiar exclusivamente nela pode não ser suficiente para repor todas as perdas provocadas pelo suor.
 
-Durante a corrida, é comum observar fadiga desproporcional ao esforço realizado, aumento da frequência cardíaca para um mesmo ritmo de corrida, dificuldade para manter a intensidade planejada, tontura e redução da produção de suor, sendo este último um sinal de alerta importante.
+Por isso, reconhecer outros sinais de desidratação pode ajudar o corredor a ajustar sua estratégia de hidratação antes que ocorra uma queda importante no desempenho.
 
-Após o treino, dor de cabeça, urina mais escura, sensação de fraqueza, tontura ao levantar e recuperação excessivamente lenta também podem indicar que a reposição hídrica foi insuficiente.
+Durante a corrida, alguns sinais merecem atenção, como aumento da percepção de esforço para manter um ritmo habitual, elevação da frequência cardíaca em comparação com treinos semelhantes, sensação de fadiga precoce, boca seca, tontura, dificuldade para manter a intensidade planejada e redução progressiva do desempenho.
 
-Nos dias seguintes, dores musculares persistentes, cãibras recorrentes, irritabilidade e dificuldade de concentração podem representar consequências de uma hidratação inadequada ao longo da rotina de treinos.
+Em situações de desidratação mais acentuada, especialmente quando associadas ao calor intenso, também pode ocorrer diminuição da produção de suor, indicando comprometimento dos mecanismos de termorregulação.
 
-Uma maneira simples de acompanhar seu estado de hidratação é observar a cor da urina. Em geral, um tom amarelo-claro indica boa hidratação, enquanto uma coloração progressivamente mais escura sugere maior necessidade de reposição de líquidos.
+Após o exercício, sintomas como dor de cabeça, sede persistente, urina concentrada, sensação de fraqueza, tontura ao levantar-se rapidamente e recuperação mais lenta do que o habitual podem indicar que a reposição de líquidos foi insuficiente.
 
-Naturalmente, esse parâmetro deve ser interpretado juntamente com outros fatores, já que alguns medicamentos, vitaminas e alimentos também podem modificar a coloração da urina.
+Quando esse padrão se repete ao longo da rotina de treinos, o atleta pode apresentar maior sensação de fadiga, dificuldade de concentração, queda do rendimento e recuperação menos eficiente entre as sessões.
 
-# Quando água em excesso também pode representar um problema
+Uma forma simples de acompanhar o estado de hidratação no dia a dia é observar a coloração da urina. Em condições normais, uma coloração amarelo-claro costuma indicar boa hidratação, enquanto urina progressivamente mais escura pode sugerir necessidade de maior ingestão de líquidos.
 
-Assim como a desidratação pode comprometer a saúde e o desempenho, o consumo exagerado de água também merece atenção.
+Entretanto, esse parâmetro deve ser interpretado com cautela, pois medicamentos, suplementos vitamínicos — especialmente vitaminas do complexo B — e alguns alimentos também podem modificar a coloração da urina.
 
-Durante provas muito longas, algumas pessoas ingerem grandes volumes de água acreditando que essa seja a melhor estratégia para prevenir a desidratação. Entretanto, quando esse consumo ultrapassa as perdas pelo suor e não ocorre reposição adequada de sódio, pode surgir uma condição conhecida como **hiponatremia associada ao exercício**.
+# Quando beber água em excesso também pode representar um problema
 
-Nesse quadro, a concentração de sódio no sangue diminui excessivamente devido à diluição provocada pelo excesso de água.
+Assim como a desidratação pode comprometer a saúde e o desempenho, o consumo excessivo de água também merece atenção.
 
-Os sintomas podem incluir náuseas, vômitos, dor de cabeça, confusão mental e, em situações mais graves, convulsões.
+Durante provas de longa duração, alguns corredores ingerem grandes volumes de água com o objetivo de evitar a desidratação. Entretanto, quando a ingestão de líquidos ultrapassa repetidamente as perdas pelo suor, principalmente sem reposição adequada de sódio, pode ocorrer uma condição conhecida como **hiponatremia associada ao exercício**.
 
-Embora seja uma condição relativamente incomum, ela costuma ocorrer principalmente em provas de longa duração, como maratonas e ultramaratonas, especialmente quando o atleta consome água em excesso sem respeitar os sinais naturais de sede.
+Nessa situação, a concentração de sódio no sangue diminui devido à combinação entre retenção de água e diluição do sódio circulante. Embora também exista perda de sódio pelo suor, o principal mecanismo da hiponatremia é o consumo excessivo de líquidos em relação à capacidade do organismo de eliminá-los.
 
-Por isso, as recomendações atuais reforçam que a hidratação deve buscar equilibrar as perdas individuais de líquidos, evitando tanto a desidratação quanto o consumo excessivo de água.
+Os sintomas podem variar de leves a graves, incluindo náuseas, vômitos, dor de cabeça, inchaço das mãos, confusão mental e, em casos mais severos, convulsões, edema cerebral e risco de morte.
+
+Apesar de relativamente incomum, essa condição é potencialmente grave e ocorre principalmente em maratonas, ultramaratonas e provas de longa duração, especialmente em atletas que ingerem água em excesso sem individualizar sua estratégia de hidratação.
+
+Por esse motivo, as recomendações atuais orientam que a ingestão de líquidos durante o exercício busque aproximar-se das perdas individuais pelo suor, evitando tanto a desidratação quanto a hiperidratação.
 
 # Não existe uma estratégia de hidratação que funcione para todos
 
-Uma das maiores dificuldades ao falar sobre hidratação é justamente a enorme variabilidade entre os corredores.
+Uma das maiores dificuldades ao falar sobre hidratação é justamente a enorme variabilidade entre os indivíduos.
 
-Cada pessoa apresenta uma taxa de suor diferente, perde quantidades distintas de sódio, possui maior ou menor sensibilidade gastrointestinal e responde de maneira particular às diferentes bebidas utilizadas durante os treinos.
+Cada corredor apresenta uma taxa de sudorese diferente, perde quantidades distintas de sódio, possui tolerância gastrointestinal própria e responde de maneira particular às estratégias de hidratação utilizadas durante os treinos e competições.
 
-Além disso, fatores externos como temperatura ambiente, umidade do ar, altitude, intensidade do exercício, fase do ciclo menstrual, qualidade do sono e nível de estresse também influenciam diretamente as necessidades hídricas.
+Além disso, fatores como temperatura e umidade do ambiente, intensidade e duração do exercício, aclimatação ao calor, composição corporal, nível de treinamento, altitude e até algumas condições fisiológicas, como o ciclo menstrual, podem modificar significativamente as necessidades hídricas.
 
-Isso explica por que copiar a estratégia de outro corredor ou seguir recomendações genéricas encontradas na internet raramente produz os mesmos resultados.
+Isso explica por que copiar a estratégia utilizada por outro corredor ou seguir recomendações genéricas encontradas na internet raramente produz os mesmos resultados.
 
-Uma prescrição realmente eficiente deve considerar todas essas variáveis para construir um plano individualizado, capaz de atender às necessidades específicas de cada atleta.
+As diretrizes atuais recomendam que, sempre que possível, a estratégia de hidratação seja individualizada. A avaliação da taxa de suor, das perdas de sódio, da duração do exercício e da tolerância gastrointestinal permite construir um plano mais eficiente, seguro e adequado às características de cada atleta.
 
 # Considerações finais
 
-A hidratação vai muito além de matar a sede.
+A hidratação vai muito além de simplesmente matar a sede.
 
-Ela participa da regulação da temperatura corporal, do transporte de oxigênio e nutrientes, da contração muscular, da recuperação dos tecidos e da adaptação ao treinamento. Quando negligenciada, pode favorecer a fadiga precoce, comprometer o desempenho e aumentar o risco de lesões relacionadas à sobrecarga.
+Ela participa da manutenção do volume plasmático, da regulação da temperatura corporal, do transporte de oxigênio e nutrientes, da contração muscular e da recuperação após o exercício. Esses processos são fundamentais para preservar o desempenho, favorecer as adaptações ao treinamento e manter a capacidade de realizar sessões sucessivas com qualidade.
 
-Ao mesmo tempo, hidratar-se corretamente não significa simplesmente beber grandes quantidades de água. A quantidade ideal, o momento da reposição e a necessidade de eletrólitos variam conforme as características individuais, o tipo de treino e as condições ambientais.
+Ao mesmo tempo, hidratar-se adequadamente não significa ingerir grandes quantidades de água indiscriminadamente. A quantidade ideal de líquidos, o momento da reposição e a necessidade de carboidratos e eletrólitos variam conforme a duração e intensidade do exercício, as condições ambientais e as características individuais de cada corredor.
 
-Por esse motivo, desenvolver uma estratégia personalizada é uma das formas mais eficientes de melhorar o desempenho, acelerar a recuperação e reduzir o risco de lesões ao longo da temporada.
+Por isso, desenvolver uma estratégia personalizada é uma das formas mais eficientes de otimizar o desempenho, favorecer a recuperação e reduzir fatores que podem contribuir para a fadiga e para lesões relacionadas ao treinamento.
 
-Se você corre regularmente e deseja otimizar sua hidratação de forma baseada em evidências, o acompanhamento com um nutricionista esportivo pode fazer toda a diferença, transformando recomendações genéricas em um plano adaptado à realidade do seu organismo.
+Se você corre regularmente e deseja aprimorar sua estratégia de hidratação com base nas evidências científicas mais atuais, o acompanhamento com um nutricionista esportivo pode ajudar a identificar suas necessidades individuais e construir um plano adaptado à sua rotina, aos seus objetivos e às características do seu organismo.
+
+
+
+##### Referências
+
+American College of Sports Medicine. **Exercise and Fluid Replacement**. *Medicine & Science in Sports &Exercise*. 2007;39(2):377-390.
+
+Baker LB. **Sweat Testing Methodology in Athletes: Applications for Hydration Assessment and Individualized Fluid Replacement.** *Sports Medicine*. 2023.
+
+Cheuvront SN, Kenefick RW. **Dehydration: Physiology, Assessment, and Performance Effects**. *Comprehensive Physiology*. 2014;4(1):257-285.
+
+Costa RJS, Knechtle B, Tarnopolsky M, Hoffman MD. **Nutrition for Ultramarathon Running: Trail, Track, and Road**. *International Journal of Sport Nutrition and Exercise Metabolism*. 2019;29(2):130-140.
+
+Hew-Butler T, Rosner MH, Fowkes-Godek S, et al. **Statement of the Third International Exercise-Associated Hyponatremia Consensus Development Conference**. *Clinical Journal of Sport Medicine*. 2015;25(4):303-320.
+
+Schwellnus MP. **Cause of Exercise-Associated Muscle Cramps (EAMC): Altered Neuromuscular Control, Dehydration or Electrolyte Depletion?** *British Journal of Sports Medicine*. 2009;43(6):401-408.
+
+Thomas DT, Erdman KA, Burke LM. **Position of the Academy of Nutrition and Dietetics, Dietitians of Canada, and the American College of Sports Medicine: Nutrition and Athletic Performance**. *Journal of the Academy of Nutrition and Dietetics*. 2016;116(3):501-528. doi:10.1016/j.jand.2015.12.006.
+
+
+
+# Sobre a autora
+
+**Paula Pastorino** é nutricionista clínica e esportiva, com atuação voltada para corredores, praticantes de musculação e atletas de endurance. Seu trabalho é baseado em evidências científicas e tem como objetivo desenvolver estratégias nutricionais individualizadas para melhorar o desempenho esportivo, favorecer a recuperação e promover saúde a longo prazo.
+
+> **Importante:** Este artigo tem finalidade exclusivamente educativa e não substitui a avaliação individual realizada por um profissional de saúde. As necessidades de hidratação e nutrição variam conforme as características de cada pessoa, o tipo de exercício, as condições ambientais e o estado de saúde.
