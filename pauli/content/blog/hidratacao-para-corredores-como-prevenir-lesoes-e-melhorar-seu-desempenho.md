@@ -42,7 +42,7 @@ Como consequência, a dissipação de calor torna-se menos eficiente, favorecend
 
 
 
-# Função cardiovascular
+## Função Cardiovascular
 
 A água desempenha um papel fundamental na manutenção do sistema cardiovascular durante o exercício. O plasma sanguíneo, responsável pelo transporte de oxigênio, nutrientes, hormônios e metabólitos, é composto por aproximadamente **90 a 92% de água**, tornando a hidratação essencial para preservar o volume sanguíneo e garantir o adequado fornecimento de oxigênio aos músculos em atividade.
 
@@ -50,7 +50,7 @@ A água desempenha um papel fundamental na manutenção do sistema cardiovascula
 
 Na prática, isso significa que o corredor passa a perceber o exercício como mais intenso, mesmo mantendo o mesmo ritmo. Esse fenômeno, conhecido como **deriva cardiovascular**, contribui para o aumento da percepção de esforço, redução da tolerância ao exercício prolongado e queda do desempenho, especialmente em ambientes quentes e úmidos.
 
-# Funcionamento muscular
+## Funcionamento muscular
 
 O tecido muscular esquelético é composto, em média, por cerca de **75% de água**, embora essa proporção possa variar de acordo com fatores como idade, sexo e composição corporal.
 
@@ -62,7 +62,7 @@ Por esse motivo, muitos corredores relatam sensação de perda de potência, dif
 
 
 
-# Absorção e transporte de nutrientes
+## Absorção e transporte de nutrientes
 
 A hidratação também influencia o aproveitamento dos nutrientes consumidos antes, durante e após o exercício.
 
@@ -72,7 +72,7 @@ Embora uma hidratação inadequada não impeça completamente a absorção dos a
 
 Por isso, uma estratégia nutricional eficiente depende não apenas da qualidade da alimentação, mas também da manutenção de um estado adequado de hidratação.
 
-# Como a desidratação pode contribuir para o risco de lesões?
+## Como a desidratação pode contribuir para o risco de lesões?
 
 Quando pensamos nos efeitos da desidratação, é comum associá-la apenas à queda do desempenho durante a corrida. No entanto, suas consequências podem ir além da performance.
 
@@ -82,7 +82,7 @@ Entre esses fatores destacam-se o aumento excessivo da carga de treinamento, rec
 
 Por esse motivo, a hidratação deve ser entendida como um dos componentes de uma estratégia global de prevenção de lesões, e não como uma medida isolada.
 
-# Cãibras musculares
+## Cãibras musculares
 
 Durante muitos anos acreditou-se que as cãibras musculares associadas ao exercício eram consequência exclusiva da perda de água e eletrólitos pelo suor.
 
@@ -96,7 +96,7 @@ Por esse motivo, a prevenção deve considerar múltiplos fatores, incluindo tre
 
 
 
-# Tendões e hidratação: qual é a relação?
+## Tendões e hidratação: qual é a relação?
 
 Os tendões são estruturas compostas predominantemente por fibras de colágeno organizadas em uma matriz extracelular rica em água, proteoglicanos e outras proteínas responsáveis por conferir resistência mecânica e permitir a transmissão eficiente das forças produzidas pelos músculos.
 
@@ -108,11 +108,7 @@ Assim, a hidratação deve ser considerada um fator complementar dentro de uma e
 
 
 
-
-
-
-
-# A hidratação começa muito antes da corrida
+## A hidratação começa muito antes da corrida
 
 Um dos erros mais comuns entre corredores é acreditar que basta beber uma grande quantidade de água poucos minutos antes do treino para compensar um dia inteiro de baixa ingestão de líquidos.
 
@@ -130,7 +126,7 @@ Por isso, uma estratégia eficiente de hidratação envolve não apenas o que é
 
 Cada uma dessas etapas contribui para preservar o desempenho, favorecer a recuperação e reduzir o impacto do exercício sobre o organismo.
 
-# Como manter a hidratação durante a corrida?
+## Como manter a hidratação durante a corrida?
 
 Se a hidratação antes da corrida prepara o organismo para o esforço, durante o exercício o principal objetivo passa a ser minimizar as perdas provocadas pelo suor sem causar desconforto gastrointestinal.
 
@@ -148,7 +144,7 @@ Por isso, recomendações genéricas dificilmente atendem às necessidades de to
 
 
 
-# A recuperação começa logo após cruzar a linha de chegada
+## A recuperação começa logo após cruzar a linha de chegada
 
 Completar um treino ou cruzar a linha de chegada não significa que o trabalho do organismo terminou. Na verdade, é nesse momento que se inicia uma das etapas mais importantes para a evolução do corredor: a recuperação.
 
@@ -162,7 +158,7 @@ Quando essa reposição é insuficiente, o restabelecimento do estado de hidrata
 
 Por isso, o período após a corrida representa uma excelente oportunidade para repor líquidos, eletrólitos quando necessário, carboidratos e proteínas, promovendo uma recuperação mais eficiente e melhor preparação para os próximos desafios.
 
-# Água ou isotônicos: quando cada um é indicado?
+## Água ou isotônicos: quando cada um é indicado?
 
 Uma dúvida frequente entre corredores é saber quando apenas a água é suficiente e em quais situações as bebidas esportivas podem oferecer benefícios adicionais.
 
@@ -186,7 +182,7 @@ Por isso, não existe uma recomendação única capaz de atender todos os corred
 
 
 
-# Como identificar os sinais de desidratação?
+## Como identificar os sinais de desidratação?
 
 A sede é um dos mecanismos naturais utilizados pelo organismo para estimular a ingestão de líquidos. No entanto, durante exercícios prolongados, especialmente em ambientes quentes, confiar exclusivamente nela pode não ser suficiente para repor todas as perdas provocadas pelo suor.
 
@@ -204,7 +200,7 @@ Uma forma simples de acompanhar o estado de hidratação no dia a dia é observa
 
 Entretanto, esse parâmetro deve ser interpretado com cautela, pois medicamentos, suplementos vitamínicos — especialmente vitaminas do complexo B — e alguns alimentos também podem modificar a coloração da urina.
 
-# Quando beber água em excesso também pode representar um problema
+## Quando beber água em excesso também pode representar um problema
 
 Assim como a desidratação pode comprometer a saúde e o desempenho, o consumo excessivo de água também merece atenção.
 
@@ -218,7 +214,7 @@ Apesar de relativamente incomum, essa condição é potencialmente grave e ocorr
 
 Por esse motivo, as recomendações atuais orientam que a ingestão de líquidos durante o exercício busque aproximar-se das perdas individuais pelo suor, evitando tanto a desidratação quanto a hiperidratação.
 
-# Não existe uma estratégia de hidratação que funcione para todos
+## Não existe uma estratégia de hidratação que funcione para todos
 
 Uma das maiores dificuldades ao falar sobre hidratação é justamente a enorme variabilidade entre os indivíduos.
 
@@ -230,7 +226,7 @@ Isso explica por que copiar a estratégia utilizada por outro corredor ou seguir
 
 As diretrizes atuais recomendam que, sempre que possível, a estratégia de hidratação seja individualizada. A avaliação da taxa de suor, das perdas de sódio, da duração do exercício e da tolerância gastrointestinal permite construir um plano mais eficiente, seguro e adequado às características de cada atleta.
 
-# Considerações finais
+## Considerações finais
 
 A hidratação vai muito além de simplesmente matar a sede.
 
@@ -244,7 +240,7 @@ Se você corre regularmente e deseja aprimorar sua estratégia de hidratação c
 
 
 
-##### Referências
+## Referências
 
 American College of Sports Medicine. **Exercise and Fluid Replacement**. *Medicine & Science in Sports &Exercise*. 2007;39(2):377-390.
 
@@ -262,8 +258,8 @@ Thomas DT, Erdman KA, Burke LM. **Position of the Academy of Nutrition and Diete
 
 
 
-# Sobre a autora
+### Sobre a autora
 
-**Paula Pastorino** é nutricionista clínica e esportiva, com atuação voltada para corredores, praticantes de musculação e atletas de endurance. Seu trabalho é baseado em evidências científicas e tem como objetivo desenvolver estratégias nutricionais individualizadas para melhorar o desempenho esportivo, favorecer a recuperação e promover saúde a longo prazo.
-
+> **Paula Pastorino** é nutricionista clínica e esportiva, com atuação voltada para corredores, praticantes de musculação e atletas de endurance. Seu trabalho é baseado em evidências científicas e tem como objetivo desenvolver estratégias nutricionais individualizadas para melhorar o desempenho esportivo, favorecer a recuperação e promover saúde a longo prazo.
+>
 > **Importante:** Este artigo tem finalidade exclusivamente educativa e não substitui a avaliação individual realizada por um profissional de saúde. As necessidades de hidratação e nutrição variam conforme as características de cada pessoa, o tipo de exercício, as condições ambientais e o estado de saúde.
