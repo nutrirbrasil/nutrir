@@ -38,7 +38,6 @@ export async function GET(request: Request) {
   ]);
 
   const restrictionError = validateCouponRestrictions(coupon, {
-    cpf,
     isPatient: !!paciente,
     isFirstPurchase,
   });

@@ -116,7 +116,6 @@ export async function POST(request: Request) {
         body.customer_phone ? hasPriorOrdersByPhone(body.customer_phone) : Promise.resolve(false),
       ]);
       const restrictionError = validateCouponRestrictions(coupon, {
-        cpf: body.customer_cpf,
         isPatient: !!paciente,
         isFirstPurchase: !priorOrders,
       });

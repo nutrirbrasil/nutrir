@@ -2,8 +2,6 @@ export interface CouponDefinition {
   /** Percentual de desconto (0–100) sobre a base informada no checkout. */
   percent: number;
   label?: string;
-  /** CPF (só dígitos) do único cliente que pode usar este cupom. */
-  onlyForCpf?: string;
   /** Só vale se o cliente nunca tiver feito um pedido antes (por telefone). */
   firstPurchaseOnly?: boolean;
   /** Só vale para quem está cadastrado como paciente (ver findPacienteByCpf). */
@@ -12,8 +10,10 @@ export interface CouponDefinition {
   expiresAt?: string;
 }
 
+// NUTRIPAULA não entra aqui: é um cupom de parceiro de verdade (nutrir_partners,
+// coupon_code = NUTRIPAULA), 5% de desconto pro cliente + pontos pra Paula, igual
+// qualquer outro parceiro — ver lib/partners.ts.
 const COUPONS: Record<string, CouponDefinition> = {
-  NUTRIPAULA: { percent: 5, label: "5% DE DESCONTO", onlyForCpf: "03633333045" },
   PRIMEIRACOMPRA: { percent: 15, label: "15% DE DESCONTO", firstPurchaseOnly: true },
   PACIENTEVIP: { percent: 10, label: "10% DE DESCONTO", patientOnly: true },
   DIADOSPAIS: { percent: 9, label: "9% DE DESCONTO", expiresAt: "2026-08-10" },
@@ -38,12 +38,11 @@ export function computeCouponDiscountCents(baseCents: number, coupon: CouponDefi
 }
 
 export interface CouponValidationContext {
-  cpf?: string | null;
   isFirstPurchase?: boolean;
   isPatient?: boolean;
 }
 
-/** Confere as restrições de um cupom (CPF, primeira compra, paciente, validade). Retorna null se estiver ok, ou a mensagem de erro. */
+/** Confere as restrições de um cupom (primeira compra, paciente, validade). Retorna null se estiver ok, ou a mensagem de erro. */
 export function validateCouponRestrictions(
   coupon: CouponDefinition,
   ctx: CouponValidationContext
@@ -51,10 +50,6 @@ export function validateCouponRestrictions(
   if (coupon.expiresAt) {
     const today = new Date().toISOString().slice(0, 10);
     if (today > coupon.expiresAt) return "Este cupom expirou.";
-  }
-  if (coupon.onlyForCpf) {
-    const digits = (ctx.cpf ?? "").replace(/\D/g, "");
-    if (digits !== coupon.onlyForCpf) return "Este cupom não é válido para você.";
   }
   if (coupon.firstPurchaseOnly && !ctx.isFirstPurchase) {
     return "Este cupom vale apenas na primeira compra.";
