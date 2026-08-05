@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DietBuilder } from "@/components/DietBuilder";
 import { DietView } from "@/components/DietView";
+import { SkeletonCard } from "@/components/Skeleton";
 import { StreakCard } from "@/components/StreakCard";
 import { RequireAuth } from "@/components/RequireAuth";
 import { PageHeader } from "@/components/PageHeader";
@@ -101,7 +102,12 @@ function DietaContent({ token }: { token: string }) {
       />
 
       <div className="mt-10">
-        {loading && <p className="text-sm text-nootr-muted">Carregando dieta…</p>}
+        {loading && (
+          <div className="space-y-6">
+            <SkeletonCard />
+            <SkeletonCard lines={4} />
+          </div>
+        )}
         {error && (
           <p className="rounded-xl border border-nootr-bordo/40 bg-nootr-wine/40 p-4 text-sm text-nootr-bordoSoft">
             {error}

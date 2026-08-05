@@ -59,8 +59,8 @@ export function DietView({ diet, date }: Props) {
               <span className="text-xs uppercase tracking-caps text-nootr-faint">{meal.time}</span>
             </div>
             <ul className="mt-3 space-y-2.5">
-              {meal.foods.map((food) => (
-                <li key={food.name} className="flex items-baseline justify-between gap-4 text-sm">
+              {meal.foods.map((food, i) => (
+                <li key={`${food.name}-${i}`} className="flex items-baseline justify-between gap-4 text-sm">
                   <span className="text-nootr-cream">
                     {food.name}{" "}
                     <span className="text-xs text-nootr-faint">

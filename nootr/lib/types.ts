@@ -254,7 +254,6 @@ export type ParseMealResponse =
       // foram comidos (esquema de troca, o resto da refeição fica intacto)
       skipped_names: string[];
       foods: AIMatchedFood[]; // o que foi comido no lugar (ou a mais), pode ser vazio
-      unmatched: string[];
       history: ConverseTurn[];
       // preenchido quando um prato composto novo foi decomposto e confirmado
       // agora, o app oferece "salvar como receita" usando `foods` acima.

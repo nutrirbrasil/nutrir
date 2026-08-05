@@ -299,18 +299,15 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
         setPendingRecipeSave({ name: data.proposed_dish_name, foods: parsed });
       }
       // O que a IA entendeu já aparece em linguagem natural no resumo (ver
-      // swapSummary), então aqui fica só o que ela NÃO conseguiu reconhecer,
-      // que é a única informação que o resumo não cobre.
-      if (data.unmatched.length) {
-        setAiNote(`Não reconheci: ${data.unmatched.join(", ")}. Adicione manualmente se precisar.`);
-      } else if (!data.skipped_names.length && !parsed.length) {
-        setAiNote("Não consegui entender o que mudou, tente descrever de outro jeito.");
-      } else {
-        setAiNote("");
-      }
+      // swapSummary); só sobra um aviso quando ela não encontrou nada.
+      setAiNote(
+        !data.skipped_names.length && !parsed.length
+          ? "Não consegui entender o que mudou, tente descrever de outro jeito."
+          : ""
+      );
       // Abre o detalhamento pra pessoa conferir/corrigir o que a IA entendeu
       // antes de adaptar o dia.
-      if (data.skipped_names.length || parsed.length || data.unmatched.length) setManualMode(true);
+      if (data.skipped_names.length || parsed.length) setManualMode(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao interpretar com IA");
     } finally {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Icon } from "@/components/Icon";
+import { SkeletonPage } from "@/components/Skeleton";
 import { nootrApi } from "@/lib/api";
 import type { Profile } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -26,8 +27,8 @@ function NootricionistaContent({ token }: { token: string }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-nootr-bg">
-        <div className="text-nootr-cream">Carregando...</div>
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <SkeletonPage cards={2} />
       </div>
     );
   }

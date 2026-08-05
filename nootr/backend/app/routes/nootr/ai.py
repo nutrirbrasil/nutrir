@@ -29,7 +29,7 @@ class ParseMealRequest(BaseModel):
 
 def _match_items(
     items: list[dict], preferred: set[int] = frozenset(), tie_resolver=None,
-) -> tuple[list[dict], list[str]]:
+) -> list[dict]:
     """
     Casa cada item com um alimento real: primeiro na tabela de itens comuns
     (fast-food/industrializados que a TACO não cobre), depois na TACO, e por
@@ -39,7 +39,7 @@ def _match_items(
     `tie_resolver`: quando não há favorito e ainda assim empata, pergunta pra
     IA qual é o mais comum no país do usuário (ver ai.build_country_tie_resolver).
     """
-    foods, unmatched = [], []
+    foods = []
     for it in items:
         name = it["name"].strip()
         if not name:
@@ -59,7 +59,7 @@ def _match_items(
             "grams": grams,
             "match_confidence": match.confidence,
         })
-    return foods, unmatched
+    return foods
 
 
 @router.post("/parse-meal")
@@ -110,12 +110,11 @@ def parse_meal(body: ParseMealRequest, user: CurrentUser = CurrentUserDep):
             "history": new_history,
         }
 
-    new_foods, unmatched = _match_items(result["new_items"], preferred_ids, tie_resolver)
+    new_foods = _match_items(result["new_items"], preferred_ids, tie_resolver)
     return {
         "status": "done",
         "skipped_names": result["skipped_names"],
         "foods": new_foods,
-        "unmatched": unmatched,
         "history": history,
         # Preenchido só quando um prato composto novo (fora da lista já \
         # conhecida e sem receita salva) foi decomposto e confirmado agora \
