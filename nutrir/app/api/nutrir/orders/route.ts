@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCoupon } from "@/lib/coupons";
+import { getCoupon, validateCouponRestrictions } from "@/lib/coupons";
 import { findPartnerByCouponCode, findPartnerByEmail, redeemPartnerPoints, PARTNER_COUPON_PERCENT } from "@/lib/partners";
 import { verifyUserEmail } from "@/lib/session-auth";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
@@ -23,7 +23,7 @@ import {
 import { isPixConfigured } from "@/lib/pix-brcode";
 import { generateUniqueOrderId } from "@/lib/order-id";
 import { saveOrder } from "@/lib/order-store";
-import { findPacienteByCpf } from "@/lib/supabase-db";
+import { findPacienteByCpf, hasPriorOrdersByPhone } from "@/lib/supabase-db";
 import { sendOrderTelegramNotification } from "@/lib/order-telegram";
 import type { CreateOrderPayload, FulfillmentType, Order } from "@/lib/types";
 
@@ -106,8 +106,23 @@ export async function POST(request: Request) {
     if (partner) {
       partner_id = partner.id;
       couponOverride = { percent: PARTNER_COUPON_PERCENT };
-    } else if (!getCoupon(body.coupon_code)) {
-      return NextResponse.json({ error: "Cupom inválido." }, { status: 400 });
+    } else {
+      const coupon = getCoupon(body.coupon_code);
+      if (!coupon) {
+        return NextResponse.json({ error: "Cupom inválido." }, { status: 400 });
+      }
+      const [paciente, priorOrders] = await Promise.all([
+        body.customer_cpf ? findPacienteByCpf(body.customer_cpf) : Promise.resolve(null),
+        body.customer_phone ? hasPriorOrdersByPhone(body.customer_phone) : Promise.resolve(false),
+      ]);
+      const restrictionError = validateCouponRestrictions(coupon, {
+        cpf: body.customer_cpf,
+        isPatient: !!paciente,
+        isFirstPurchase: !priorOrders,
+      });
+      if (restrictionError) {
+        return NextResponse.json({ error: restrictionError }, { status: 400 });
+      }
     }
   }
 

@@ -13,9 +13,12 @@ interface Props {
   applied?: AppliedCoupon | null;
   onApply: (coupon: AppliedCoupon) => void;
   onRemove: () => void;
+  /** CPF e telefone já preenchidos no checkout — conferidos contra restrições do cupom (ex: só paciente, só 1ª compra). */
+  cpf?: string;
+  phone?: string;
 }
 
-export function CouponField({ applied, onApply, onRemove }: Props) {
+export function CouponField({ applied, onApply, onRemove, cpf, phone }: Props) {
   const [input, setInput] = useState(applied?.code ?? "");
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
@@ -32,11 +35,19 @@ export function CouponField({ applied, onApply, onRemove }: Props) {
 
     try {
       const code = normalizeCouponCode(trimmed);
-      const res = await fetch(`/api/nutrir/coupons/check?code=${encodeURIComponent(code)}`);
-      const data = (await res.json()) as { valid: boolean; percent?: number; label?: string };
+      const params = new URLSearchParams({ code });
+      if (cpf?.trim()) params.set("cpf", cpf.trim());
+      if (phone?.trim()) params.set("phone", phone.trim());
+      const res = await fetch(`/api/nutrir/coupons/check?${params.toString()}`);
+      const data = (await res.json()) as {
+        valid: boolean;
+        percent?: number;
+        label?: string;
+        error?: string;
+      };
 
       if (!data.valid || !data.percent) {
-        setError("Cupom inválido.");
+        setError(data.error || "Cupom inválido.");
         return;
       }
 

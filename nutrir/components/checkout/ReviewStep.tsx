@@ -258,6 +258,8 @@ export function ReviewStep() {
 
             <section className="p-5">
               <CouponField
+                cpf={d.customer_cpf}
+                phone={d.customer_phone}
                 applied={
                   d.coupon_code
                     ? { code: d.coupon_code, percent: d.coupon_percent ?? 0, label: d.coupon_label }

@@ -30,6 +30,28 @@ export interface PacienteRecord {
   cpf: string;
 }
 
+/** Já existe algum pedido salvo com esse telefone (qualquer status)? Usado pra restringir cupom de "primeira compra". */
+export async function hasPriorOrdersByPhone(phone: string): Promise<boolean> {
+  const db = getSupabaseAdmin();
+  if (!db) return false;
+
+  const normalized = normalizePhone(phone);
+  if (!normalized) return false;
+
+  const { data, error } = await db
+    .from("nutrir_orders")
+    .select("order_nsu")
+    .eq("customer_phone", normalized)
+    .limit(1);
+
+  if (error) {
+    console.error("[Supabase] hasPriorOrdersByPhone:", error.message);
+    return false;
+  }
+
+  return (data ?? []).length > 0;
+}
+
 export async function findPacienteByCpf(cpf: string): Promise<PacienteRecord | null> {
   const db = getSupabaseAdmin();
   if (!db) return null;
