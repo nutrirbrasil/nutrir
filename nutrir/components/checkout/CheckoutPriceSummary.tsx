@@ -17,6 +17,11 @@ function formatPercent(pct: number): string {
   return `${text}%`;
 }
 
+/** Arredonda pra cima até o 0,5 mais próximo (6,1 -> 6,5; 5,6 -> 6) — só pro rótulo do desconto extra, o valor em R$ continua exato. */
+function roundUpToHalf(pct: number): number {
+  return Math.ceil(pct * 2) / 2;
+}
+
 const BASE_DISCOUNT_PERCENT = 10;
 
 export function CheckoutPriceSummary({ pricing, method, compact = false }: Props) {
@@ -33,50 +38,55 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
     ? Math.round((pricing.subtotal_cents * BASE_DISCOUNT_PERCENT) / 100)
     : pricing.pix_discount_cents;
   const extraDiscountCents = pricing.pix_discount_cents - baseDiscountCents;
-  const extraDiscountPercent = discountPercent - BASE_DISCOUNT_PERCENT;
+  const extraDiscountPercent = roundUpToHalf(discountPercent - BASE_DISCOUNT_PERCENT);
 
   return (
     <div className={compact ? "space-y-2" : "space-y-3"}>
       {!compact && <h3 className="font-bold text-nutrir-emerald">Resumo da compra</h3>}
 
-      {pricing.show_pix_discount ? (
-        <>
-          <div className="flex justify-between text-sm">
-            <span>Subtotal</span>
-            <span>{formatPrice(pricing.subtotal_cents)}</span>
-          </div>
-          {hasExtraDiscount ? (
-            <>
-              <div className="flex justify-between text-sm text-nutrir-emerald/75">
-                <span>
-                  {discountLabel} ({formatPercent(BASE_DISCOUNT_PERCENT)})
-                </span>
-                <span>− {formatPrice(baseDiscountCents)}</span>
-              </div>
-              <div className="flex justify-between text-sm text-nutrir-burgundy">
-                <span>Desconto extra especial ({formatPercent(extraDiscountPercent)})</span>
-                <span>− {formatPrice(extraDiscountCents)}</span>
-              </div>
-            </>
-          ) : (
-            <div className="flex justify-between text-sm text-nutrir-emerald/75">
-              <span>{discountLabel}</span>
-              <span>− {formatPrice(pricing.pix_discount_cents)}</span>
-            </div>
-          )}
-        </>
-      ) : (
-        (!compact || pricing.show_coupon_discount) && (
-          <div className="flex justify-between text-sm">
-            <span>Subtotal</span>
-            <span>{formatPrice(pricing.subtotal_cents)}</span>
-          </div>
-        )
+      {(!compact || pricing.show_coupon_discount || pricing.show_pix_discount) && (
+        <div className="flex justify-between text-sm">
+          <span>Subtotal</span>
+          <span>{formatPrice(pricing.subtotal_cents)}</span>
+        </div>
       )}
+
+      {pricing.delivery_fee_cents > 0 && (
+        <div className="flex justify-between text-sm">
+          <span>Taxa de entrega</span>
+          <span>{formatPrice(pricing.delivery_fee_cents)}</span>
+        </div>
+      )}
+
+      {pricing.show_pix_discount &&
+        (hasExtraDiscount ? (
+          <>
+            <div className="flex justify-between text-sm text-nutrir-emerald/75">
+              <span>
+                {discountLabel} ({formatPercent(BASE_DISCOUNT_PERCENT)})
+              </span>
+              <span>− {formatPrice(baseDiscountCents)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-nutrir-burgundy">
+              <span>Desconto Extra Especial ({formatPercent(extraDiscountPercent)})</span>
+              <span>− {formatPrice(extraDiscountCents)}</span>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between text-sm text-nutrir-emerald/75">
+            <span>
+              {discountLabel} ({formatPercent(discountPercent)})
+            </span>
+            <span>− {formatPrice(pricing.pix_discount_cents)}</span>
+          </div>
+        ))}
 
       {pricing.show_coupon_discount && (
         <div className="flex justify-between text-sm text-nutrir-emerald/75">
-          <span>Cupom {pricing.coupon_code}</span>
+          <span>
+            Cupom {pricing.coupon_code}
+            {pricing.coupon_percent ? ` (${formatPercent(pricing.coupon_percent)})` : ""}
+          </span>
           <span>− {formatPrice(pricing.coupon_discount_cents)}</span>
         </div>
       )}
@@ -85,13 +95,6 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         <div className="flex justify-between text-sm text-nutrir-emerald/75">
           <span>Pontos</span>
           <span>− {formatPrice(pricing.points_discount_cents)}</span>
-        </div>
-      )}
-
-      {pricing.delivery_fee_cents > 0 && (
-        <div className="flex justify-between text-sm">
-          <span>Taxa de entrega</span>
-          <span>{formatPrice(pricing.delivery_fee_cents)}</span>
         </div>
       )}
 

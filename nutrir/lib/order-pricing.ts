@@ -71,6 +71,7 @@ export interface OrderPricing {
   subtotal_cents: number;
   pix_discount_cents: number;
   coupon_code?: string;
+  coupon_percent?: number;
   coupon_discount_cents: number;
   delivery_fee_cents: number;
   points_discount_cents: number;
@@ -111,6 +112,7 @@ export function computeOrderPricing(
       subtotal_cents: listTotal,
       pix_discount_cents: 0,
       coupon_code: appliedCouponCode,
+      coupon_percent: coupon?.percent,
       coupon_discount_cents: couponDiscount,
       delivery_fee_cents: deliveryFeeCents,
       points_discount_cents: pointsDiscount,
@@ -131,6 +133,7 @@ export function computeOrderPricing(
     subtotal_cents: listTotal,
     pix_discount_cents: pixDiscount,
     coupon_code: appliedCouponCode,
+    coupon_percent: coupon?.percent,
     coupon_discount_cents: couponDiscount,
     delivery_fee_cents: deliveryFeeCents,
     points_discount_cents: pointsDiscount,
