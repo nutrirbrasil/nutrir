@@ -20,6 +20,11 @@ const ADMIN_PAGES = [
     label: "Fichas técnicas",
     description: "Ingredientes e gramas de cada marmita, alimenta a tabela nutricional e o rótulo.",
   },
+  {
+    href: "/admin/cupons",
+    label: "Cupons",
+    description: "Lista de todos os cupons ativos, fixos e de parceiro, com suas regras e descontos.",
+  },
 ];
 
 export default function AdminPage() {

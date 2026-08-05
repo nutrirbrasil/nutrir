@@ -1,4 +1,5 @@
 import type { AdminOrderRow } from "./supabase-db";
+import type { PartnerRecord } from "./partners";
 import type { OrderStatus } from "./types";
 
 const API_PREFIX = "/api/nutrir/admin";
@@ -43,4 +44,7 @@ export const adminNutrirApi = {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }),
+  deleteOrder: (token: string, orderId: string) =>
+    adminApi<{ ok: boolean }>(`/orders/${orderId}`, token, { method: "DELETE" }),
+  listPartners: (token: string) => adminApi<{ partners: PartnerRecord[] }>("/partners", token),
 };

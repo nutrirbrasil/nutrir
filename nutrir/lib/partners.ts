@@ -32,6 +32,23 @@ export async function findPartnerByCouponCode(code: string): Promise<PartnerReco
   return (data as PartnerRecord) ?? null;
 }
 
+export async function listPartners(): Promise<PartnerRecord[]> {
+  const db = getSupabaseAdmin();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from("nutrir_partners")
+    .select("id, name, coupon_code, email, points_balance_cents")
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error("[Supabase] listPartners:", error.message);
+    return [];
+  }
+
+  return (data as PartnerRecord[]) ?? [];
+}
+
 export async function findPartnerByEmail(email: string): Promise<PartnerRecord | null> {
   const db = getSupabaseAdmin();
   if (!db) return null;

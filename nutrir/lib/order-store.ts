@@ -1,4 +1,5 @@
 import {
+  deleteOrderFromSupabase,
   getOrderByNsuFromSupabase,
   saveOrderToSupabase,
   updateOrderPaymentInSupabase,
@@ -73,6 +74,12 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
   await updateOrderStatusInSupabase(id, status);
 
   return updated;
+}
+
+export async function deleteOrder(id: string): Promise<boolean> {
+  const ok = await deleteOrderFromSupabase(id);
+  if (ok) cache.delete(id);
+  return ok;
 }
 
 export function patchOrderCache(id: string, patch: Partial<Order>): Order | undefined {

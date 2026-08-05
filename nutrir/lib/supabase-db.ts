@@ -276,6 +276,21 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
   return true;
 }
 
+/** Apaga um pedido de vez (cancelado ou de teste) — usado só pelo admin, não tem volta. */
+export async function deleteOrderFromSupabase(orderNsu: string): Promise<boolean> {
+  const db = getSupabaseAdmin();
+  if (!db) return false;
+
+  const { error } = await db.from("nutrir_orders").delete().eq("order_nsu", orderNsu);
+
+  if (error) {
+    console.error("[Supabase] deleteOrder:", error.message);
+    return false;
+  }
+
+  return true;
+}
+
 export async function updateOrderPaymentInSupabase(
   orderNsu: string,
   payment_status: PaymentStatus,

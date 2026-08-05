@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { FiTrash2 } from "react-icons/fi";
 import { formatPrice } from "@/lib/api";
 import { adminNutrirApi } from "@/lib/admin-api";
 import { formatOrderLabel } from "@/lib/order-id";
@@ -62,11 +63,15 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 function OrderCard({
   order,
   updating,
+  deleting,
   onStatusChange,
+  onDelete,
 }: {
   order: AdminOrderRow;
   updating: boolean;
+  deleting: boolean;
   onStatusChange: (status: OrderStatus) => void;
+  onDelete: () => void;
 }) {
   const isDelivery = order.fulfillment_type === "delivery";
   const mealCount = getOrderMealCount(order.items);
@@ -88,11 +93,22 @@ function OrderCard({
             {formatOrderDateTime(order.created_at)}
           </span>
         </div>
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${statusBadgeClass(order.status)}`}
-        >
-          {STATUS_LABELS[order.status]}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${statusBadgeClass(order.status)}`}
+          >
+            {STATUS_LABELS[order.status]}
+          </span>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={deleting}
+            title="Excluir pedido (cancelado ou de teste) — apaga do banco, sem volta"
+            className="rounded-full p-1.5 text-nutrir-emerald/40 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+          >
+            <FiTrash2 className="text-base" />
+          </button>
+        </div>
       </div>
 
       <div>
@@ -222,6 +238,7 @@ export default function AdminPedidosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!session?.access_token) return;
@@ -262,6 +279,23 @@ export default function AdminPedidosPage() {
     }
   }
 
+  async function handleDelete(orderId: string) {
+    if (!session?.access_token) return;
+    if (!confirm(`Excluir o pedido ${orderId}? Isso apaga ele do banco de dados, sem volta.`)) {
+      return;
+    }
+    setDeletingId(orderId);
+    setError("");
+    try {
+      await adminNutrirApi.deleteOrder(session.access_token, orderId);
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir pedido.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   if (!ready) return null;
 
   return (
@@ -299,7 +333,9 @@ export default function AdminPedidosPage() {
             key={order.id}
             order={order}
             updating={updatingId === order.id}
+            deleting={deletingId === order.id}
             onStatusChange={(status) => handleStatusChange(order.id, status)}
+            onDelete={() => handleDelete(order.id)}
           />
         ))}
 

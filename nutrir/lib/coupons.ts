@@ -19,6 +19,11 @@ const COUPONS: Record<string, CouponDefinition> = {
   DIADOSPAIS: { percent: 9, label: "9% DE DESCONTO", expiresAt: "2026-08-10" },
 };
 
+/** Lista os cupons fixos (não inclui os de parceiro, que vêm do banco — ver lib/partners.ts). */
+export function listCoupons(): (CouponDefinition & { code: string })[] {
+  return Object.entries(COUPONS).map(([code, coupon]) => ({ code, ...coupon }));
+}
+
 export function normalizeCouponCode(code: string): string {
   return code.trim().toUpperCase();
 }
