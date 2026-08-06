@@ -1,4 +1,6 @@
 """Rotas Nootr, busca de alimentos (TACO + itens próprios do usuário) e código de barras (Open Food Facts)."""
+from concurrent.futures import ThreadPoolExecutor
+
 import httpx
 from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel, Field
@@ -20,16 +22,21 @@ def search_foods(
     """
     Busca alimentos na TACO + itens próprios do usuário (cadastrados à mão via
     "Adicionar novo alimento"). Valores por 100g.
+
+    A busca na TACO é local (em memória); as duas buscas de alimentos
+    customizados são chamadas de rede ao Supabase, sem dependência entre si,
+    então rodam em paralelo em vez de uma esperar a outra.
     """
     taco_results = food_matcher.search_taco(q, limit=limit)
-    custom_results = repository.search_custom_foods(user, q, limit=limit)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        own_future = pool.submit(repository.search_custom_foods, user, q, limit=limit)
+        global_future = pool.submit(repository.search_global_custom_foods, user, q, limit=limit)
+        custom_results = own_future.result()
+        global_results = global_future.result()
     # Alimentos aprovados de OUTROS usuários (ver /aprovar), dedupe por id
     # com os próprios, que já vêm em custom_results independente do status.
     own_ids = {c["id"] for c in custom_results}
-    custom_results += [
-        c for c in repository.search_global_custom_foods(user, q, limit=limit)
-        if c["id"] not in own_ids
-    ]
+    custom_results += [c for c in global_results if c["id"] not in own_ids]
     return {
         "results": [
             {

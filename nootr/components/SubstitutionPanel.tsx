@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { SkeletonPage } from "@/components/Skeleton";
 import { nootrApi } from "@/lib/api";
-import { FoodAdder, AddedFoodList, addedFoodToInput, type AddedFood } from "@/components/FoodAdder";
-import { formatQuantityWithGrams, gramsSuffix } from "@/lib/units";
+import { FoodAdder, AddedFoodList, addedFoodToInput, absoluteFoodToAdded, type AddedFood } from "@/components/FoodAdder";
+import { gramsSuffix } from "@/lib/units";
 import type {
   ConverseTurn,
   Meal,
@@ -19,22 +19,7 @@ import type {
 } from "@/lib/types";
 
 function pantryMatchToAdded(m: PantryMatch): AddedFood {
-  const grams = m.grams || 100;
-  const r = grams > 0 ? 100 / grams : 1;
-  return {
-    taco_id: m.taco_id,
-    name: m.name,
-    grams,
-    quantity_label: `${Math.round(grams)}g`,
-    calories: m.calories,
-    protein_g: m.protein_g,
-    carbs_g: m.carbs_g,
-    fat_g: m.fat_g,
-    kcal_100g: Math.round(m.calories * r * 10) / 10,
-    protein_100g: Math.round(m.protein_g * r * 10) / 10,
-    carbs_100g: Math.round(m.carbs_g * r * 10) / 10,
-    fat_100g: Math.round(m.fat_g * r * 10) / 10,
-  };
+  return absoluteFoodToAdded(m);
 }
 
 function PantryMatchCard({ match, onAdd }: { match: PantryMatch; onAdd: () => void }) {
@@ -272,23 +257,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
         }
         return;
       }
-      const parsed: AddedFood[] = data.foods.map((f) => {
-        const r = f.grams > 0 ? 100 / f.grams : 1;
-        return {
-          taco_id: f.taco_id,
-          name: f.name,
-          grams: f.grams,
-          quantity_label: formatQuantityWithGrams(f.quantity, f.grams),
-          calories: f.calories,
-          protein_g: f.protein_g,
-          carbs_g: f.carbs_g,
-          fat_g: f.fat_g,
-          kcal_100g: Math.round(f.calories * r * 10) / 10,
-          protein_100g: Math.round(f.protein_g * r * 10) / 10,
-          carbs_100g: Math.round(f.carbs_g * r * 10) / 10,
-          fat_100g: Math.round(f.fat_g * r * 10) / 10,
-        };
-      });
+      const parsed: AddedFood[] = data.foods.map(absoluteFoodToAdded);
       setFoods((prev) => [...prev, ...parsed]);
       setSkippedNames((prev) => Array.from(new Set([...prev, ...data.skipped_names])));
       setConversation([]);
@@ -718,6 +687,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                     className="input-field min-h-[60px]"
                     value={aiText}
                     onChange={(e) => setAiText(e.target.value)}
+                    aria-label="Descrever o que mudou, para a IA interpretar"
                     placeholder={
                       proposedIngredients.length > 0
                         ? "Ou digite uma correção (ex: também tem queijo)…"

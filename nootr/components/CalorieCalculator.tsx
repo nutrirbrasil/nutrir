@@ -92,8 +92,9 @@ export function CalorieCalculator({
         // a dieta corretamente.
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2 max-w-xs">
-            <label className="label-caps">Calorias diárias (kcal)</label>
+            <label className="label-caps" htmlFor="calorie-calc-manual-calories">Calorias diárias (kcal)</label>
             <input
+              id="calorie-calc-manual-calories"
               className="input-field"
               inputMode="numeric"
               placeholder="Ex: 2000"
@@ -106,8 +107,8 @@ export function CalorieCalculator({
             calculadas por quilo de peso, não pela porcentagem das calorias.
           </p>
           <div>
-            <label className="label-caps">Sexo</label>
-            <div className="flex gap-2">
+            <p className="label-caps">Sexo</p>
+            <div className="flex gap-2" role="group" aria-label="Sexo">
               {[
                 { id: "m", label: "Masculino" },
                 { id: "f", label: "Feminino" },
@@ -124,8 +125,9 @@ export function CalorieCalculator({
             </div>
           </div>
           <div>
-            <label className="label-caps">Idade</label>
+            <label className="label-caps" htmlFor="calorie-calc-age">Idade</label>
             <input
+              id="calorie-calc-age"
               className="input-field"
               inputMode="numeric"
               placeholder="anos"
@@ -134,8 +136,9 @@ export function CalorieCalculator({
             />
           </div>
           <div>
-            <label className="label-caps">Peso (kg)</label>
+            <label className="label-caps" htmlFor="calorie-calc-weight">Peso (kg)</label>
             <input
+              id="calorie-calc-weight"
               className="input-field"
               inputMode="decimal"
               placeholder="Ex: 72,5"
@@ -144,8 +147,9 @@ export function CalorieCalculator({
             />
           </div>
           <div>
-            <label className="label-caps">Altura (cm)</label>
+            <label className="label-caps" htmlFor="calorie-calc-height">Altura (cm)</label>
             <input
+              id="calorie-calc-height"
               className="input-field"
               inputMode="numeric"
               placeholder="Ex: 175"
@@ -157,8 +161,8 @@ export function CalorieCalculator({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="label-caps">Objetivo</label>
-            <div className="flex flex-wrap gap-2">
+            <p className="label-caps">Objetivo</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Objetivo">
               {OBJECTIVE_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
@@ -174,8 +178,8 @@ export function CalorieCalculator({
             </div>
           </div>
           <div>
-            <label className="label-caps">Sexo</label>
-            <div className="flex gap-2">
+            <p className="label-caps">Sexo</p>
+            <div className="flex gap-2" role="group" aria-label="Sexo">
               {[
                 { id: "m", label: "Masculino" },
                 { id: "f", label: "Feminino" },
@@ -192,8 +196,9 @@ export function CalorieCalculator({
             </div>
           </div>
           <div>
-            <label className="label-caps">Idade</label>
+            <label className="label-caps" htmlFor="calorie-calc-age">Idade</label>
             <input
+              id="calorie-calc-age"
               className="input-field"
               inputMode="numeric"
               placeholder="anos"
@@ -202,8 +207,9 @@ export function CalorieCalculator({
             />
           </div>
           <div>
-            <label className="label-caps">Peso (kg)</label>
+            <label className="label-caps" htmlFor="calorie-calc-weight">Peso (kg)</label>
             <input
+              id="calorie-calc-weight"
               className="input-field"
               inputMode="decimal"
               placeholder="Ex: 72,5"
@@ -212,8 +218,9 @@ export function CalorieCalculator({
             />
           </div>
           <div>
-            <label className="label-caps">Altura (cm)</label>
+            <label className="label-caps" htmlFor="calorie-calc-height">Altura (cm)</label>
             <input
+              id="calorie-calc-height"
               className="input-field"
               inputMode="numeric"
               placeholder="Ex: 175"
@@ -222,8 +229,8 @@ export function CalorieCalculator({
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="label-caps">Nível de atividade</label>
-            <div className="flex flex-wrap gap-2">
+            <p className="label-caps">Nível de atividade</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Nível de atividade">
               {ACTIVITY_OPTIONS.map((a) => (
                 <button
                   key={a.id}

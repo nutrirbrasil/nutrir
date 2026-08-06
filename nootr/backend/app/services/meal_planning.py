@@ -17,7 +17,8 @@ Usado em dois lugares:
    fator.
 """
 import re
-import unicodedata
+
+from backend.app.services.food_matcher import normalize
 
 MAIN_MEAL_SHARE = 0.30  # ponto médio da faixa 25-35% pedida pra almoço/jantar
 MAIN_MEAL_MIN_SHARE = 0.25  # extremo inferior da faixa 25-35%, piso rígido de almoço/jantar
@@ -38,13 +39,6 @@ MEAL_TEMPLATES: dict[int, list[tuple[str, str]]] = {
     ],
 }
 _MAX_TEMPLATE_COUNT = max(MEAL_TEMPLATES)
-
-
-def normalize(text: str) -> str:
-    """Minúsculas + sem acento, tolera pequenas variações de nome (ex: "Café da
-    Manhã" ou "café da manha") ao classificar uma refeição em `meal_role`."""
-    text = unicodedata.normalize("NFKD", text.lower().strip())
-    return "".join(c for c in text if not unicodedata.combining(c))
 
 
 def meal_template(count: int) -> list[tuple[str, str]]:

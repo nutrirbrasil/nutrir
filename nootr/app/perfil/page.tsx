@@ -135,10 +135,11 @@ function PerfilContent({ token }: { token: string }) {
         subtitle="Seu plano e os dados usados para calcular suas calorias diárias."
         right={
           <div className="w-40">
-            <label className="label-caps flex items-center gap-1.5">
+            <label className="label-caps flex items-center gap-1.5" htmlFor="perfil-country">
               <Icon name="globe" size={12} /> País
             </label>
             <select
+              id="perfil-country"
               className="input-field"
               value={currentCountry}
               onChange={(e) => switchCountry(e.target.value)}
@@ -378,9 +379,10 @@ function PreferencesSection({ token }: { token: string }) {
           </div>
 
           <div>
-            <label className="label-caps">Observações</label>
+            <label className="label-caps" htmlFor="perfil-notes">Observações</label>
             <p className="mb-1.5 text-xs text-nootr-faint">Escreva aqui detalhes para ajudar o Nootr a fazer as melhores escolhas de substituições</p>
             <textarea
+              id="perfil-notes"
               className="input-field min-h-[80px]"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -468,6 +470,7 @@ function MacroPctInput({
           step={1}
           value={value}
           onChange={(e) => commit(e.target.value)}
+          aria-label={`${label} (%)`}
           className="input-field w-20 px-2.5 py-1 text-right tabular-nums"
         />
         <span className="text-sm text-nootr-muted">%</span>
@@ -547,6 +550,7 @@ function MacroPerKgEditor({
             step={0.1}
             value={proteinGPerKg}
             onChange={(e) => commit(onProteinChange, e.target.value)}
+            aria-label="Proteína (g/kg)"
             className="input-field w-16 px-1.5 py-0.5 text-right text-xs tabular-nums"
           />
           <span className="text-[10px] text-nootr-faint">g/kg</span>
@@ -577,6 +581,7 @@ function MacroPerKgEditor({
             step={0.1}
             value={fatGPerKg}
             onChange={(e) => commit(onFatChange, e.target.value)}
+            aria-label="Gordura (g/kg)"
             className="input-field w-16 px-1.5 py-0.5 text-right text-xs tabular-nums"
           />
           <span className="text-[10px] text-nootr-faint">g/kg</span>

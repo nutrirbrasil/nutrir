@@ -356,6 +356,7 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
               rows={1}
               value={text}
               disabled={sending}
+              aria-label="Mensagem para o Noo"
               placeholder="Ex: não comi o pão e vou comer pizza no jantar"
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => {

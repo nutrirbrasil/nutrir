@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { nootrApi } from "@/lib/api";
 import type { FoodInput, TacoFoodResult } from "@/lib/types";
-import { UNITS, toGrams, quantityLabel, parseQuantityLabel } from "@/lib/units";
+import { UNITS, toGrams, quantityLabel, parseQuantityLabel, formatQuantityWithGrams } from "@/lib/units";
 import { useIsMobile, hasBarcodeDetector } from "@/lib/device";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 
@@ -49,6 +49,45 @@ function build(basis: Basis, quantity: number, unitId: string): AddedFood {
     protein_100g: basis.protein_100g,
     carbs_100g: basis.carbs_100g,
     fat_100g: basis.fat_100g,
+  };
+}
+
+/**
+ * Deriva um AddedFood a partir de um alimento com valores JÁ ABSOLUTOS
+ * (grams + calorias/macros totais, não por 100g), voltando a base por 100g
+ * pela razão inversa. É o caminho contrário de `build()` acima: usado sempre
+ * que o alimento chega pronto de outro lugar (uma refeição já salva, uma
+ * sugestão da despensa, o retorno da IA), não de uma busca na TACO + escolha
+ * manual de quantidade.
+ *
+ * `quantity`: rótulo de medida caseira já pronto (ex: "3 fatias"), quando o
+ * alimento de origem tiver um; sem ele, cai em "XXXg".
+ */
+export function absoluteFoodToAdded(f: {
+  taco_id?: number | null;
+  name: string;
+  grams?: number | null;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  quantity?: string;
+}): AddedFood {
+  const grams = f.grams || 100;
+  const r = grams > 0 ? 100 / grams : 1;
+  return {
+    taco_id: f.taco_id ?? null,
+    name: f.name,
+    grams,
+    quantity_label: f.quantity ? formatQuantityWithGrams(f.quantity, grams) : `${Math.round(grams)}g`,
+    calories: f.calories,
+    protein_g: f.protein_g,
+    carbs_g: f.carbs_g,
+    fat_g: f.fat_g,
+    kcal_100g: Math.round(f.calories * r * 10) / 10,
+    protein_100g: Math.round(f.protein_g * r * 10) / 10,
+    carbs_100g: Math.round(f.carbs_g * r * 10) / 10,
+    fat_100g: Math.round(f.fat_g * r * 10) / 10,
   };
 }
 
@@ -235,12 +274,12 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
         </div>
         <div className="mt-3 flex flex-wrap items-end gap-2">
           <div className="w-20">
-            <label className="label-caps">Qtd.</label>
-            <input className="input-field" inputMode="decimal" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+            <label className="label-caps" htmlFor="food-adder-qty">Qtd.</label>
+            <input id="food-adder-qty" className="input-field" inputMode="decimal" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
           </div>
           <div className="min-w-[150px] flex-1">
-            <label className="label-caps">Medida</label>
-            <select className="input-field" value={unitId} onChange={(e) => setUnitId(e.target.value)}>
+            <label className="label-caps" htmlFor="food-adder-unit">Medida</label>
+            <select id="food-adder-unit" className="input-field" value={unitId} onChange={(e) => setUnitId(e.target.value)}>
               {UNITS.map((u) => (
                 <option key={u.id} value={u.id}>{u.labelPlural}</option>
               ))}
@@ -296,6 +335,7 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
             className="input-field"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            aria-label="Buscar alimento"
             placeholder="Busque um alimento, ex: pão, arroz, doce de leite"
           />
           {open && (
@@ -372,25 +412,25 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
             Fica salvo na sua conta e disponível pra usar de novo. Valores por 100g. Passa por uma revisão antes de entrar na base geral do Nootr.
           </p>
           <div>
-            <label className="label-caps">Nome</label>
-            <input className="input-field" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Ex: Bolo da vovó" />
+            <label className="label-caps" htmlFor="food-adder-new-name">Nome</label>
+            <input id="food-adder-new-name" className="input-field" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Ex: Bolo da vovó" />
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <div>
-              <label className="label-caps">Kcal</label>
-              <input className="input-field" inputMode="decimal" value={newKcal} onChange={(e) => setNewKcal(e.target.value)} placeholder="0" />
+              <label className="label-caps" htmlFor="food-adder-new-kcal">Kcal</label>
+              <input id="food-adder-new-kcal" className="input-field" inputMode="decimal" value={newKcal} onChange={(e) => setNewKcal(e.target.value)} placeholder="0" />
             </div>
             <div>
-              <label className="label-caps">Prot. (g)</label>
-              <input className="input-field" inputMode="decimal" value={newProtein} onChange={(e) => setNewProtein(e.target.value)} placeholder="0" />
+              <label className="label-caps" htmlFor="food-adder-new-protein">Prot. (g)</label>
+              <input id="food-adder-new-protein" className="input-field" inputMode="decimal" value={newProtein} onChange={(e) => setNewProtein(e.target.value)} placeholder="0" />
             </div>
             <div>
-              <label className="label-caps">Carb. (g)</label>
-              <input className="input-field" inputMode="decimal" value={newCarbs} onChange={(e) => setNewCarbs(e.target.value)} placeholder="0" />
+              <label className="label-caps" htmlFor="food-adder-new-carbs">Carb. (g)</label>
+              <input id="food-adder-new-carbs" className="input-field" inputMode="decimal" value={newCarbs} onChange={(e) => setNewCarbs(e.target.value)} placeholder="0" />
             </div>
             <div>
-              <label className="label-caps">Gord. (g)</label>
-              <input className="input-field" inputMode="decimal" value={newFat} onChange={(e) => setNewFat(e.target.value)} placeholder="0" />
+              <label className="label-caps" htmlFor="food-adder-new-fat">Gord. (g)</label>
+              <input id="food-adder-new-fat" className="input-field" inputMode="decimal" value={newFat} onChange={(e) => setNewFat(e.target.value)} placeholder="0" />
             </div>
           </div>
           {newError && <p className="text-xs text-nootr-bordoSoft">{newError}</p>}
@@ -448,12 +488,12 @@ export function AddedFoodList({
             <div className="flex flex-wrap items-end gap-2">
               <p className="w-full text-sm text-nootr-cream">{food.name}</p>
               <div className="w-20">
-                <label className="label-caps">Qtd.</label>
-                <input className="input-field" inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value)} />
+                <label className="label-caps" htmlFor="food-adder-edit-qty">Qtd.</label>
+                <input id="food-adder-edit-qty" className="input-field" inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value)} />
               </div>
               <div className="min-w-[130px] flex-1">
-                <label className="label-caps">Medida</label>
-                <select className="input-field" value={unitId} onChange={(e) => setUnitId(e.target.value)}>
+                <label className="label-caps" htmlFor="food-adder-edit-unit">Medida</label>
+                <select id="food-adder-edit-unit" className="input-field" value={unitId} onChange={(e) => setUnitId(e.target.value)}>
                   {UNITS.map((u) => (
                     <option key={u.id} value={u.id}>{u.labelPlural}</option>
                   ))}

@@ -102,21 +102,17 @@ def macro_targets_from_weight(
     }
 
 
-def macro_targets_for_generation(profile: dict, calories: float) -> dict:
+def _macro_targets_by_weight_or_percent(profile: dict, calories: float, use_per_kg: bool) -> dict:
     """
-    Metas que o NOOTR usa pra montar a dieta: sempre por g/kg de peso, porque
-    é o que garante proteína e gordura em faixa fisiológica (percentual puro
-    distorce nos extremos, ver macro_targets_from_weight). Independe do
-    `macro_mode`, que só governa como o usuário vê e edita as metas depois.
-
-    Sem peso válido não há como calcular por kg, aí cai no percentual. Se o
-    usuário já ajustou protein_g_per_kg/fat_g_per_kg à mão (ver
-    routes/nootr/profile.py), essa passa a ser a meta usada aqui também, não
-    só na tela de perfil, o Nootr monta a dieta pro alvo que a pessoa
-    realmente quer.
+    Núcleo compartilhado por `macro_targets_for_generation` e
+    `macro_targets_for_profile`: por g/kg de peso (usando o ajuste manual do
+    perfil quando existir, ver routes/nootr/profile.py) quando `use_per_kg` e
+    há peso válido, senão cai no percentual salvo (com o fallback 30/40/30 de
+    sempre). Peso 0 ou ausente também cai no percentual, pra não dividir por
+    zero.
     """
     weight_kg = profile.get("weight_kg")
-    if weight_kg and float(weight_kg) > 0:
+    if use_per_kg and weight_kg and float(weight_kg) > 0:
         protein_g_per_kg = profile.get("protein_g_per_kg")
         fat_g_per_kg = profile.get("fat_g_per_kg")
         return macro_targets_from_weight(
@@ -132,6 +128,21 @@ def macro_targets_for_generation(profile: dict, calories: float) -> dict:
     )
 
 
+def macro_targets_for_generation(profile: dict, calories: float) -> dict:
+    """
+    Metas que o NOOTR usa pra montar a dieta: sempre por g/kg de peso, porque
+    é o que garante proteína e gordura em faixa fisiológica (percentual puro
+    distorce nos extremos, ver macro_targets_from_weight). Independe do
+    `macro_mode`, que só governa como o usuário vê e edita as metas depois.
+
+    Se o usuário já ajustou protein_g_per_kg/fat_g_per_kg à mão (ver
+    routes/nootr/profile.py), essa passa a ser a meta usada aqui também, não
+    só na tela de perfil, o Nootr monta a dieta pro alvo que a pessoa
+    realmente quer.
+    """
+    return _macro_targets_by_weight_or_percent(profile, calories, use_per_kg=True)
+
+
 def macro_targets_for_profile(profile: dict, calories: float) -> dict:
     """
     Metas de macro do perfil, no modo que ele escolheu (`profiles.macro_mode`):
@@ -141,24 +152,9 @@ def macro_targets_for_profile(profile: dict, calories: float) -> dict:
       nutricionista raciocina.
     - "percent" (padrão): pelos percentuais salvos, mais simples de ajustar na
       tela e o único modo do Basic.
-
-    Cai no percentual também quando o modo é "per_kg" mas não há peso válido
-    (0 ou ausente dividiria por zero), em vez de estourar 500 na geração.
     """
-    weight_kg = profile.get("weight_kg")
-    if profile.get("macro_mode") == "per_kg" and weight_kg and float(weight_kg) > 0:
-        protein_g_per_kg = profile.get("protein_g_per_kg")
-        fat_g_per_kg = profile.get("fat_g_per_kg")
-        return macro_targets_from_weight(
-            calories, float(weight_kg),
-            float(protein_g_per_kg) if protein_g_per_kg is not None else None,
-            float(fat_g_per_kg) if fat_g_per_kg is not None else None,
-        )
-    return macro_targets_g(
-        calories,
-        float(profile.get("protein_pct") or 30),
-        float(profile.get("carbs_pct") or 40),
-        float(profile.get("fat_pct") or 30),
+    return _macro_targets_by_weight_or_percent(
+        profile, calories, use_per_kg=profile.get("macro_mode") == "per_kg",
     )
 
 

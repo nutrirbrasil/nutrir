@@ -445,19 +445,19 @@ def list_global_recipes(user: CurrentUser) -> list[dict]:
 def admin_emails_for(admin: CurrentUser, user_ids: list[str]) -> dict[str, str]:
     """
     Mapa user_id -> email pra exibir na fila de aprovação (ver
-    app/aprovar/page.tsx), em vez do uuid puro. Usa a view
-    `admin_user_emails` (migration add_admin_user_emails_view), que só
-    devolve linhas quando quem consulta é o próprio admin (mesmo gate
-    auth.email() das policies *_admin_all), nunca a service key.
+    app/aprovar/page.tsx), em vez do uuid puro. Usa a função
+    `admin_user_emails` (migration replace_admin_user_emails_view_with_function),
+    SECURITY DEFINER com search_path fixo, só devolve linhas quando quem
+    consulta é o próprio admin (mesmo gate auth.email() das policies
+    *_admin_all), nunca a service key. Antes era uma VIEW sobre auth.users
+    (sinalizada pelos advisors do Supabase como "Security Definer View" e
+    "Exposed Auth Users"), uma função com grants restritos a `authenticated`
+    e sem acesso de anon é o padrão recomendado pra esse tipo de leitura.
     """
     ids = sorted({uid for uid in user_ids if uid})
     if not ids:
         return {}
-    rows = supabase_client.select(
-        "admin_user_emails",
-        admin.token,
-        {"select": "user_id,email", "user_id": f"in.({','.join(ids)})"},
-    )
+    rows = supabase_client.rpc("admin_user_emails", admin.token, {"ids": ids})
     return {r["user_id"]: r["email"] for r in rows}
 
 

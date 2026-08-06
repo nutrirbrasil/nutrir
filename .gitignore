@@ -45,6 +45,7 @@ testes/
 
 # Local reference assets (images, spreadsheets — not app code)
 nutrir/local-assets/
+nootr/local-assets/
 
 # Lixo de redirecionamento no Windows (">nul" cria um arquivo)
 nul

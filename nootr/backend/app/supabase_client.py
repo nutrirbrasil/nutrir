@@ -101,6 +101,15 @@ def delete(table: str, user_token: str, params: dict[str, str]) -> None:
         raise SupabaseError(resp.status_code, resp.text)
 
 
+def rpc(function_name: str, user_token: str, args: dict[str, Any]) -> list[dict[str, Any]]:
+    """Chama uma função Postgres exposta via PostgREST (POST /rest/v1/rpc/{fn})."""
+    url = f"{_base_url()}/rest/v1/rpc/{function_name}"
+    resp = httpx.post(url, headers=_headers(user_token), json=args, timeout=15.0)
+    if resp.status_code >= 300:
+        raise SupabaseError(resp.status_code, resp.text)
+    return resp.json()
+
+
 def update(table: str, user_token: str, params: dict[str, str], patch: dict[str, Any]) -> dict[str, Any]:
     url = f"{_base_url()}/rest/v1/{table}"
     resp = httpx.patch(

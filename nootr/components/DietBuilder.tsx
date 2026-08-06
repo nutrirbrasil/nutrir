@@ -4,11 +4,10 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { SkeletonPage } from "@/components/Skeleton";
-import { FoodAdder, AddedFoodList, addedFoodToInput, type AddedFood } from "@/components/FoodAdder";
+import { FoodAdder, AddedFoodList, addedFoodToInput, absoluteFoodToAdded, type AddedFood } from "@/components/FoodAdder";
 import { DishReviewModal, detectDishes, applyDishDecisions, type DetectedDish, type DishDecision } from "@/components/DishReviewModal";
 import { ProLockButton } from "@/components/ProLockButton";
 import { nootrApi } from "@/lib/api";
-import { formatQuantityWithGrams } from "@/lib/units";
 import {
   PRO_DIET_DISCLAIMER,
   GENERATE_DIET_WARNING,
@@ -34,22 +33,7 @@ function todayWeekday(): number {
 }
 
 export function mealFoodToAdded(f: Meal["foods"][number]): AddedFood {
-  const grams = f.grams ?? 0;
-  const r = grams > 0 ? 100 / grams : 1;
-  return {
-    taco_id: f.taco_id ?? null,
-    name: f.name,
-    grams,
-    quantity_label: formatQuantityWithGrams(f.quantity, f.grams),
-    calories: f.calories,
-    protein_g: f.protein_g,
-    carbs_g: f.carbs_g,
-    fat_g: f.fat_g,
-    kcal_100g: Math.round(f.calories * r * 10) / 10,
-    protein_100g: Math.round(f.protein_g * r * 10) / 10,
-    carbs_100g: Math.round(f.carbs_g * r * 10) / 10,
-    fat_100g: Math.round(f.fat_g * r * 10) / 10,
-  };
+  return absoluteFoodToAdded(f);
 }
 
 function dietToDrafts(diet: DietSummary): MealDraft[] {
@@ -673,8 +657,9 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
 
               {diets.some((d) => d.weekday !== slot && d.weekday !== null) && (
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-nootr-muted">Copiar de:</label>
+                  <label className="text-xs text-nootr-muted" htmlFor={`diet-builder-copy-from-${slot}`}>Copiar de:</label>
                   <select
+                    id={`diet-builder-copy-from-${slot}`}
                     className="input-field w-auto py-1.5 text-xs"
                     value=""
                     onChange={(e) => {
@@ -716,13 +701,14 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
           <div className="card space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="label-caps">Nome da dieta</label>
-                <input className="input-field" value={name} onChange={(e) => setName(e.target.value)} />
+                <label className="label-caps" htmlFor="diet-builder-name">Nome da dieta</label>
+                <input id="diet-builder-name" className="input-field" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
               <div>
-                <label className="label-caps">Calorias alvo (kcal/dia)</label>
+                <label className="label-caps" htmlFor="diet-builder-target-calories">Calorias alvo (kcal/dia)</label>
                 <div className="flex gap-2">
                   <input
+                    id="diet-builder-target-calories"
                     className="input-field"
                     inputMode="numeric"
                     placeholder={`automático (${totals.calories || "0"})`}
@@ -752,12 +738,12 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
               <div className="flex items-end justify-between gap-3">
                 <div className="grid flex-1 gap-3 sm:grid-cols-[1fr_120px]">
                   <div>
-                    <label className="label-caps">Refeição</label>
-                    <input className="input-field" placeholder="Ex: Café da manhã" value={meal.name} onChange={(e) => updateMeal(i, { name: e.target.value })} />
+                    <label className="label-caps" htmlFor={`diet-builder-meal-name-${i}`}>Refeição</label>
+                    <input id={`diet-builder-meal-name-${i}`} className="input-field" placeholder="Ex: Café da manhã" value={meal.name} onChange={(e) => updateMeal(i, { name: e.target.value })} />
                   </div>
                   <div>
-                    <label className="label-caps">Horário</label>
-                    <input type="time" className="input-field" value={meal.time} onChange={(e) => updateMeal(i, { time: e.target.value })} />
+                    <label className="label-caps" htmlFor={`diet-builder-meal-time-${i}`}>Horário</label>
+                    <input id={`diet-builder-meal-time-${i}`} type="time" className="input-field" value={meal.time} onChange={(e) => updateMeal(i, { time: e.target.value })} />
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-2 pb-2.5 text-xs text-nootr-muted">
