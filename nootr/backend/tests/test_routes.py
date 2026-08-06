@@ -615,6 +615,15 @@ def test_delete_custom_food(client, monkeypatch):
     assert deleted["id"] == "cf-1"
 
 
+def test_delete_account(client, monkeypatch):
+    called = {}
+    monkeypatch.setattr(repository, "delete_own_account", lambda user: called.setdefault("id", user.id))
+    resp = client.delete("/nootr/profile")
+    assert resp.status_code == 200
+    assert resp.json() == {"ok": True}
+    assert called["id"] == "u1"  # nunca apaga user_id vindo do corpo, só o do token
+
+
 def test_profile_calculates_mifflin(client, monkeypatch):
     stored = {}
 

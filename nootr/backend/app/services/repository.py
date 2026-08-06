@@ -79,6 +79,18 @@ def upsert_profile(user: CurrentUser, patch: dict) -> dict:
     )
 
 
+def delete_own_account(user: CurrentUser) -> None:
+    """
+    Apaga a conta inteira (direito de exclusão da LGPD): todas as tabelas com
+    dado do usuário (profiles, diets, day_plans, preferences, custom_foods,
+    recipes, noo_messages, substitution_logs) e o próprio login (auth.users).
+    Função SECURITY DEFINER (migration add_delete_own_account_function): só
+    apaga o UID de quem chama (`auth.uid()`, do token repassado), nunca
+    recebe um user_id do corpo do request.
+    """
+    supabase_client.rpc("delete_own_account", user.token, {})
+
+
 # ---------- preferences ----------
 
 def get_preferences(user: CurrentUser) -> dict | None:

@@ -138,6 +138,9 @@ export const nootrApi = {
   getProfile: (token: string) => api<Profile>("/nootr/profile", token),
   updateProfile: (token: string, body: Partial<Omit<Profile, "user_id">>) =>
     api<Profile>("/nootr/profile", token, { method: "PUT", body: JSON.stringify(body) }),
+  // Exclui a conta inteira, sem volta (dieta, preferências, conversas do
+  // Noo, alimentos/receitas próprias e o login).
+  deleteAccount: (token: string) => api<{ ok: boolean }>("/nootr/profile", token, { method: "DELETE" }),
 
   // preferências (alergias, não gosta, gosta, despensa), contexto para a IA
   getPreferences: (token: string) => api<Preferences>("/nootr/preferences", token),

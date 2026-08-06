@@ -116,3 +116,14 @@ def update_profile(body: ProfileUpdate, user: CurrentUser = CurrentUserDep):
     merged = _with_computed_calories(merged)
     saved = repository.upsert_profile(user, merged)
     return {**_with_macro_targets(dict(saved)), "has_profile": True}
+
+
+@router.delete("")
+def delete_account(user: CurrentUser = CurrentUserDep):
+    """
+    Exclui a conta inteira, sem volta: todos os dados do usuário (dieta,
+    preferências, alimentos/receitas próprias, conversas do Noo, histórico de
+    substituições) e o login. Ver repository.delete_own_account.
+    """
+    repository.delete_own_account(user)
+    return {"ok": True}

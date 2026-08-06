@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { SkeletonPage } from "@/components/Skeleton";
 import { RequireAuth } from "@/components/RequireAuth";
+import { useAuth } from "@/components/AuthProvider";
 import { TagListInput } from "@/components/TagListInput";
 import { TacoTagListInput } from "@/components/TacoTagListInput";
 import { PageHeader } from "@/components/PageHeader";
@@ -25,11 +27,16 @@ function mergeUnique(a: string[], b: string[]): string[] {
 }
 
 function PerfilContent({ token }: { token: string }) {
+  const router = useRouter();
+  const { signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const [calState, setCalState] = useState<CalorieCalculatorState>(CALORIE_CALCULATOR_DEFAULT);
   const [macroMode, setMacroMode] = useState<"percent" | "per_kg">("percent");
@@ -115,6 +122,20 @@ function PerfilContent({ token }: { token: string }) {
       setError(err instanceof Error ? err.message : "Erro ao salvar");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setConfirmingDelete(false);
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await nootrApi.deleteAccount(token);
+      await signOut();
+      router.replace("/");
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Não consegui excluir a conta agora.");
+      setDeleting(false);
     }
   }
 
@@ -299,6 +320,43 @@ function PerfilContent({ token }: { token: string }) {
       </section>
 
       <PreferencesSection token={token} />
+
+      {/* Zona de risco: mesmo padrão de confirmação inline usado no "Reiniciar
+          Noo" (ver NooChat.tsx), nunca window.confirm() nativo. */}
+      <section className="card card-sheen mt-6 border-nootr-bordo/30" style={{ animationDelay: "0.15s" }}>
+        <p className="text-sm font-semibold text-nootr-cream">Excluir conta</p>
+        <p className="mt-1 text-xs text-nootr-muted">
+          Apaga sua dieta, preferências, conversas com o Noo, alimentos e receitas próprias, e o
+          login. Não tem como desfazer.
+        </p>
+        {deleteError && <p className="mt-2 text-xs text-nootr-bordoSoft">{deleteError}</p>}
+        {confirmingDelete ? (
+          <div className="mt-3 rounded-lg border border-nootr-bordo/30 bg-nootr-wine/25 px-3.5 py-3">
+            <p className="text-sm text-nootr-cream">Tem certeza? Isso não pode ser desfeito.</p>
+            <div className="mt-2.5 flex gap-2">
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="rounded-lg bg-nootr-bordo px-3 py-1.5 text-xs font-semibold text-nootr-cream transition-colors hover:bg-nootr-bordoDeep disabled:opacity-50"
+              >
+                {deleting ? "Excluindo…" : "Sim, excluir minha conta"}
+              </button>
+              <button type="button" onClick={() => setConfirmingDelete(false)} className="btn-ghost px-3 py-1.5 text-xs">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            className="btn-ghost mt-3 px-3 py-1.5 text-xs text-nootr-bordoSoft"
+          >
+            Excluir conta
+          </button>
+        )}
+      </section>
     </div>
   );
 }

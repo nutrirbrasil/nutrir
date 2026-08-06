@@ -101,12 +101,18 @@ def delete(table: str, user_token: str, params: dict[str, str]) -> None:
         raise SupabaseError(resp.status_code, resp.text)
 
 
-def rpc(function_name: str, user_token: str, args: dict[str, Any]) -> list[dict[str, Any]]:
-    """Chama uma função Postgres exposta via PostgREST (POST /rest/v1/rpc/{fn})."""
+def rpc(function_name: str, user_token: str, args: dict[str, Any]) -> Any:
+    """
+    Chama uma função Postgres exposta via PostgREST (POST /rest/v1/rpc/{fn}).
+    Funções que devolvem `void` (ex: delete_own_account) vêm com corpo vazio
+    (204), devolve None nesse caso em vez de tentar parsear JSON.
+    """
     url = f"{_base_url()}/rest/v1/rpc/{function_name}"
     resp = httpx.post(url, headers=_headers(user_token), json=args, timeout=15.0)
     if resp.status_code >= 300:
         raise SupabaseError(resp.status_code, resp.text)
+    if not resp.text:
+        return None
     return resp.json()
 
 
