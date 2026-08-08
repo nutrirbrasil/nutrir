@@ -1,0 +1,203 @@
+page,name,kcal,carbs_g,fat_g,protein_g,fiber_g,suspect,taco_match,taco_similarity
+10,Abóbora moranga (crua),40.0,9.8,0.3,1.2,0.6,False,"Abóbora, moranga, crua",1.0
+10,Abobrinha (cozida),20.0,4.32,0.31,0.91,1.4,False,"Abobrinha, italiana, cozida",0.667
+10,Abobrinha (crua),20.0,4.36,0.21,1.19,1.9,False,"Abobrinha, italiana, crua",0.667
+10,Acarajé,278.0,22.3,15.6,13.1,1.8,False,Acarajé,1.0
+10,Acelga (crua),19.0,3.75,0.2,1.0,,False,"Acelga, crua",1.0
+11,Açúcar cristal,387.0,99.9,0.0,,0.0,False,"Açúcar, cristal",1.0
+11,Açúcar mascavo,376.0,97.3,0.0,0.0,0.0,False,"Açúcar, mascavo",1.0
+11,Açúcar refinado,387.0,99.9,0.0,0.0,0.0,False,"Açúcar, refinado",1.0
+11,Adoçante em pó -Aspasweet®,397.5,,,,,False,Adoçante em pó,0.667
+11,Adoçante em pó -Finn®,400.0,,,,,False,Adoçante em pó,0.667
+11,Adoçante em pó -Frutak®,350.0,,,,,False,Adoçante em pó,0.667
+12,Água de coco verde,19.0,3.72,0.2,0.72,1.11,False,"Coco, água de",0.667
+12,Aipo (cru),16.0,3.66,0.14,0.75,1.5,False,"Aipo, cru",1.0
+13,Alface lisa,18.0,3.51,0.3,1.31,1.27,False,"Alface, lisa, crua",0.667
+13,Alho poró,61.0,14.2,0.3,1.51,2.5,False,"Alho-poró, cru",0.667
+14,Apresuntado,463.0,1.1,45.2,11.9,0.0,False,Apresuntado,1.0
+14,Arroz integral (cozido),76.76,14.56,1.34,1.5,0.66,False,"Arroz, integral, cozido",1.0
+14,Arroz integral (cru),370.0,77.2,2.93,7.95,3.5,False,"Arroz, integral, cru",1.0
+15,Atum (cru),144.0,0.0,4.91,23.3,0.0,False,"Atum, fresco, cru",0.667
+15,Azeite de dendê,878.0,0.4,99.1,,,False,"Azeite, de dendê",1.0
+16,Azeitona verde,116.0,1.3,12.7,1.4,1.0,False,"Azeitona, verde, conserva",0.667
+16,Bacalhau (cru),82.0,,0.67,17.8,0.0,False,"Bacalhau, salgado, cru",0.667
+17,Barreado,280.5,2.89,12.63,37.06,0.47,False,Barreado,1.0
+17,Batata cozida,87.0,20.0,,0.88,,False,"Batata, baroa, cozida",0.667
+17,Batata crua,79.0,18.0,0.1,2.08,1.6,False,"Batata, baroa, crua",0.667
+17,Batata doce cozida sem sal I,5.0,24.3,0.3,1.66,2.3,False,"Batata, doce, cozida",0.6
+19,Berinjela (cozida),28.0,6.65,0.23,0.83,2.5,False,"Berinjela, cozida",1.0
+19,Berinjela (crua),26.0,6.08,0.18,1.03,2.5,False,"Berinjela, crua",1.0
+19,Beterraba (crua),43.0,9.57,0.17,0.62,2.8,False,"Beterraba, crua",1.0
+19,"Bife ""rolê"" de contra filé",354.69,,94.0,17.86,0.45,False,"Bife à cavalo, com contra filé",0.6
+22,Biscoito de polvilho,292.88,52.32,9.04,2.8,0.4,False,Biscoito de polvilho,1.0
+23,Biscoito recheado chocolate -Tostines,493.0,66.5,22.6,,,False,"Biscoito, doce, recheado com chocolate",0.6
+23,Biscoito recheado morango -Tostines,503.0,67.7,23.4,,,False,"Biscoito, doce, recheado com morango",0.6
+25,Bolinho de arroz,355.53,49.54,13.34,8.01,1.32,False,Bolinho de arroz,1.0
+26,Bolo de chocolate,358.49,52.44,14.76,5.36,,False,"Bolo, pronto, chocolate",0.667
+27,Bombom Alpino chocolate ao leite,568.0,54.6,35.8,,,False,"Chocolate, ao leite",0.6
+28,Brócolis (cozido),28.0,5.07,0.35,2.99,3.0,False,"Brócolis, cozido",1.0
+28,Brócolis (cru),28.0,5.25,0.35,2.99,3.0,False,"Brócolis, cru",1.0
+29,Broto de feijão (cru),30.0,5.94,0.18,3.05,1.8,False,"Feijão, broto, cru",1.0
+29,Café em pó,41.0,13.4,1.7,5.0,0.0,False,"Café, pó, torrado",0.667
+30,Calda de chocolate meio amargo,264.0,62.8,0.9,,,False,"Chocolate, meio amargo",0.75
+30,Caldo de cana,82.0,20.5,0.1,0.3,0.4,False,"Cana, caldo de",1.0
+31,Capuccino em pó,427.97,43.93,19.07,20.9,0.45,False,"Capuccino, pó",1.0
+31,Cará (cozido) I,16.0,27.6,0.14,1.5,3.9,False,"Cará, cozido",0.667
+31,Cará (cru),118.0,27.9,0.17,1.54,4.1,False,"Cará, cru",1.0
+31,Carne bovina assada (Patinho),270.97,0.47,17.55,25.99,0.08,False,"Carne, bovina, costela, assada",0.6
+32,Carne bovina seca (charque),441.0,,29.0,42.0,,False,"Carne, bovina, charque, cozido",0.6
+32,Castanha de caju torrada com sal,574.0,32.7,46.4,15.3,3.2,False,"Castanha-de-caju, torrada, salgada",0.6
+32,Castanha de caju torrada sem sal,574.0,32.7,46.4,15.3,3.02,False,"Castanha-de-caju, torrada, salgada",0.6
+33,Cereal de milho com açúcar,383.3,89.9,0.67,,,False,"Cereal matinal, milho, açúcar",0.75
+34,Chá mate com açúcar (infusão),9.45,2.38,0.0,0.07,0.02,False,"Chá, mate, infusão 5%",0.6
+34,Chá preto sem açúcar (infusão),1.0,0.3,0.0,0.0,0.0,False,"Chá, preto, infusão 5%",0.6
+35,Chocolate ao leite -Lacta®,540.0,58.67,30.67,8.0,0.33,False,"Chocolate, ao leite",0.75
+35,Chocolate ao leite-Nestlé®,568.0,54.6,35.8,6.9,,False,"Chocolate, ao leite",0.75
+35,Chocolate ao leite para cobertura,568.0,54.6,35.8,,,False,"Chocolate, ao leite, com castanha do Pará",0.667
+35,Chocolate com leite e castanha de,546.1,54.17,32.5,,,False,"Chocolate, ao leite, com castanha do Pará",0.6
+35,"Chocolate com leite, caju e passas ao",537.2,59.0,,,,False,"Chocolate, ao leite",0.6
+37,Chocolate meio amargo -Nestlé®,550.0,62.4,31.9,3.5,,False,"Chocolate, meio amargo",0.75
+37,Chocolate SuOair ao leite -Nestlé®,568.0,54.6,35.8,6.9,,False,"Chocolate, ao leite",0.6
+38,Chuchu (cozido),24.0,5.1,,0.62,0.58,False,"Chuchu, cozido",1.0
+38,Chuchu (cru),24.0,5.41,0.3,0.9,3.0,False,"Chuchu, cru",1.0
+38,Clara de ovo de galinha,50.0,1.04,0.0,10.5,0.0,False,"Ovo, de galinha, clara, cozida/10minutos",0.6
+40,Coração de frango (cru),121.67,0.0,5.83,17.3,,False,"Frango, coração, cru",1.0
+40,Couve (cozida),32.0,5.64,0.4,1.91,2.0,False,"Couve-flor, cozida",0.667
+40,Couve (crua),50.0,10.0,0.7,3.31,3.0,False,"Couve, manteiga, crua",0.667
+41,Coxa de frango inteira (assada),234.69,0.71,14.55,23.64,0.16,False,"Frango, coxa, com pele, assada",0.6
+41,Coxa de frango sem pele (assada),199.05,0.71,10.24,24.39,0.16,False,"Frango, coxa, com pele, assada",1.0
+41,Coxa de frango sem pele (crua),119.0,0.0,3.92,19.7,0.0,False,"Frango, coxa, com pele, crua",1.0
+41,Coxa de peru sem pele (crua),114.0,0.0,3.61,20.5,,False,"Frango, coxa, com pele, crua",0.6
+41,Coxinha de frango,374.44,42.02,18.62,9.1,1.88,False,"Coxinha de frango, frita",0.667
+42,Creme de leite-Glória®,251.0,4.0,,2.5,,False,Creme de Leite,0.667
+42,Creme de leite -Nestlé®,249.0,3.6,25.0,2.4,,False,Creme de Leite,0.667
+42,Creme de leite -Parmalat®,255.0,4.8,25.0,2.8,,False,Creme de Leite,0.667
+42,Creme de leite fresco,292.0,2.97,30.9,2.18,0.0,False,Creme de Leite,0.667
+44,Cuscuz paulista,184.68,23.0,13.0,5.18,4.27,False,"Cuscuz, paulista",1.0
+44,Dobradinha,43.5,1.63,2.53,3.71,0.34,False,Dobradinha,1.0
+45,Doce de leite pronto cremoso -Moça,309.0,57.6,5.9,,,False,"Doce, de leite, cremoso",0.6
+47,Farinha de arroz -Mococa®,379.0,86.7,0.6,6.7,,False,Farinha de arroz,0.667
+47,Farinha de arroz tradicional,360.0,88.0,0.1,,,False,Farinha de arroz,0.667
+48,Farinha de centeio,324.0,68.7,2.7,0.14,22.6,False,"Farinha, de centeio, integral",0.667
+48,Farinha de mandioca (crua),354.0,86.4,0.3,1.7,1.8,False,"Farinha, de mandioca, crua",1.0
+48,Farinha de mandioca torrada,354.0,86.4,0.3,1.7,1.8,False,"Farinha, de mandioca, torrada",1.0
+48,Farinha de milho,361.0,77.9,3.87,6.94,13.4,False,"Farinha, de milho, amarela",0.667
+48,Farinha de rosca,395.0,72.5,5.15,12.5,4.2,False,"Farinha, de rosca",1.0
+48,Farinha de soja,433.0,31.9,20.7,37.8,1.98,False,"Soja, farinha",1.0
+48,Farinha de trigo comum,371.0,77.7,1.3,9.4,3.6,False,"Farinha, de trigo",0.667
+48,Farinha de trigo integral,339.0,72.6,,13.7,11.55,False,"Farinha, de trigo",0.667
+49,Feijão (cru),337.0,61.3,1.07,22.5,19.1,False,"Feijão, broto, cru",0.667
+49,Feijão tropeiro,330.65,49.24,9.09,14.43,12.68,False,Feijão tropeiro mineiro,0.667
+49,Feijoada,172.31,6.67,12.55,8.32,2.07,False,Feijoada,1.0
+50,Fermento químico cm pó,163.0,37.8,,5.2,0.0,False,"Fermento em pó, químico",0.75
+50,Fígado de frango (cru),135.0,0.6,6.3,19.1,0.0,False,"Frango, fígado, cru",1.0
+50,Filé de frango à milanesa,233.06,,0.87,23.97,0.09,False,"Frango, filé, à milanesa",1.0
+52,Frango inteiro assado,227.21,0.5,12.8,25.8,0.08,False,"Frango, inteiro, sem pele, assado",0.75
+53,Geléia de mocotó,147.0,35.0,,3.0,,False,"Geléia, mocotó, natural",0.667
+53,Gema de ovo de galinha,358.0,,0.79,16.8,0.0,False,"Ovo, de galinha, gema, cozida/10minutos",0.6
+53,Gergelim semente seca,573.0,23.5,49.7,17.7,9.1,False,"Gergelim, semente",0.667
+54,Grão de bico (cru),364.0,60.7,6.05,19.3,12.0,False,"Grão-de-bico, cru",1.0
+55,Hambúrguer grelhado,174.87,5.71,8.47,17.67,0.37,False,"Hambúrguer, bovino, grelhado",0.667
+56,Iogurte desnatado natural-PADRÃO,63.3,7.05,1.43,5.26,0.0,False,"Iogurte, natural, desnatado",0.75
+57,Iogurte integral natural-PADRÃO,61.4,4.67,3.26,3.48,0.0,False,Iogurte natural integral,0.75
+57,Iogurte natural -Batavo®,59.2,4.0,3.13,3.76,,False,"Iogurte, natural",0.667
+57,Iogurte natural -Danone®,69.0,6.3,2.8,4.7,,False,"Iogurte, natural",0.667
+57,Iogurte natural -Nestlé®,77.0,5.8,4.2,4.0,,False,"Iogurte, natural",0.667
+57,Iogurte natural -Parmalat®,61.7,5.1,2.8,4.03,,False,"Iogurte, natural",0.667
+57,Iogurte natural -Paulista®,25.0,,0.64,3.2,,False,"Iogurte, natural",0.667
+57,Iogurte natural desnatado -Batavo®,41.8,4.21,0.98,4.0,,False,"Iogurte, natural, desnatado",0.75
+57,Iogurte natural desnatado -Danone®,57.0,7.4,0.9,5.15,,False,"Iogurte, natural, desnatado",0.75
+58,Iogurte natural desnatado -Nestlé®,42.7,6.0,0.27,4.12,,False,"Iogurte, natural, desnatado",0.75
+58,Iogurte natural desnatado-Paulista®,21.0,1.7,,3.2,,False,"Iogurte, natural, desnatado",0.75
+61,Lagarto (carne bovina crua),175.18,0.0,5.72,29.03,0.0,False,"Carne, bovina, costela, crua",0.6
+62,Leite condensado-Glória®,328.0,55.5,8.5,7.4,,False,"Leite, condensado",0.667
+62,Leite condensado enriquecido com,324.0,54.9,8.2,,,False,"Leite, condensado",0.667
+62,Leite em pó integral -Ninho,499.0,45.3,26.0,,,False,"Leite, de vaca, integral, pó",0.6
+63,Leite em pó integral de cabra com,530.8,3.0,,,,False,"Leite, de vaca, integral, pó",0.6
+63,Leite em pó integral enriquecido,490.0,37.7,26.0,,,False,"Leite, de vaca, integral, pó",0.6
+63,Leite em pó integral enriquecido,494.0,38.0,26.0,,,False,"Leite, de vaca, integral, pó",0.6
+63,Leite em pó integral enriquecido com,615.0,38.0,26.0,,,False,"Leite, de vaca, integral, pó",0.6
+63,Leite em pó integral instantâneo,496.0,38.6,26.0,,,False,"Leite, de vaca, integral, pó",0.6
+64,Leite integral em pó-PADRÃO,496.0,38.4,26.7,26.3,0.0,False,"Leite, de vaca, integral, pó",0.6
+66,Lentilha cozida (grãos),116.0,20.1,0.38,9.03,4.55,False,"Lentilha, cozida",0.667
+66,Limão (suco),25.0,8.64,0.13,0.38,0.4,False,"Limão, cravo, suco",0.667
+67,Língua bovina crua e salgada,220.0,0.0,17.5,15.7,0.0,False,"Carne, bovina, língua, crua",0.6
+67,Lingüiça de porco frita,383.64,1.01,33.14,19.17,0.0,False,"Lingüiça, porco, frita",1.0
+67,Lombo de porco assado,181.3,1.67,11.91,16.14,0.19,False,"Porco, lombo, assado",1.0
+68,Macarrão (cozido),141.0,28.3,0.67,4.78,1.5,False,Macarrão cozido,1.0
+68,Macarrão (cru),369.0,75.2,1.2,12.5,,False,"Macarrão, trigo, cru",0.667
+69,Macarrão massa com ovos cru,1.0,362.0,72.5,,,False,"Macarrão, trigo, cru, com ovos",0.6
+70,Mamão formosa,32.0,8.3,0.1,0.5,0.6,False,"Mamão, Formosa, cru",0.667
+70,Mamão papaia,39.0,9.82,0.14,0.61,1.8,False,"Mamão, Papaia, cru",0.667
+71,Manjuba frita,177.5,0.0,12.2,18.5,,False,"Manjuba, frita",1.0
+71,Manteiga com sal,717.0,0.1,81.1,0.9,0.0,False,"Manteiga, com sal",1.0
+71,Manteiga sem sal,717.0,0.06,81.1,0.85,0.0,False,"Manteiga, com sal",1.0
+71,Maria mole-Nutrimental®*,375.0,65.0,11.0,3.5,,False,Maria mole,0.667
+71,Marmelada,249.0,64.1,0.1,0.5,0.9,False,Marmelada,1.0
+72,Massa fresca para lasanha,284.0,61.0,0.9,,,False,"Lasanha, massa fresca, cozida",0.6
+73,Milho verde,129.0,27.8,0.8,3.3,1.5,False,"Curau, milho verde",0.667
+75,Molho de tomate,39.47,5.27,2.08,0.93,1.16,False,"Tomate, molho industrializado",0.667
+76,Mortadela,312.0,0.8,29.43,12.2,0.0,False,Mortadela,1.0
+76,Mostarda folha (crua),26.0,4.91,0.2,2.71,2.0,False,"Mostarda, folha, crua",1.0
+77,Nabo (cru),27.0,6.24,0.1,0.9,2.45,False,"Nabo, cru",1.0
+79,Óleo de canola -Purilev®,720.0,,100.0,,,False,"Óleo, de canola",0.667
+79,Óleo de girassol,884.0,0.0,,0.0,0.0,False,"Óleo, de girassol",1.0
+79,Óleo de girassol -Becel®,900.0,,100.0,,,False,"Óleo, de girassol",0.667
+79,Óleo de milho,884.0,0.0,,0.0,0.0,False,"Óleo, de milho",1.0
+79,Óleo de milho -Mazola®,900.0,,100.0,,,False,"Óleo, de milho",0.667
+79,Óleo de soja,884.0,0.0,,0.0,0.0,False,"Óleo, de soja",1.0
+79,Óleo de soja -Liza®,828.0,,92.0,,,False,"Óleo, de soja",0.667
+79,Omelete simples,171.44,,15.0,11.72,0.0,False,Omelete simples,1.0
+81,Óleo de canola -Purilev®,720.0,,100.0,,,False,"Óleo, de canola",0.667
+81,Óleo de girassol,884.0,0.0,,0.0,0.0,False,"Óleo, de girassol",1.0
+81,Óleo de girassol -8ecel®,900.0,,100.0,,,False,"Óleo, de girassol",0.667
+81,Óleo de milho,884.0,0.0,,0.0,0.0,False,"Óleo, de milho",1.0
+81,Óleo de soja,884.0,0.0,,0.0,0.0,False,"Óleo, de soja",1.0
+81,Óleo de soja -Liza®,828.0,,92.0,,,False,"Óleo, de soja",0.667
+81,Omelete simples,171.44,1.15,12.97,11.72,0.0,False,Omelete simples,1.0
+82,Ovo de galinha inteiro,149.0,1.23,10.0,12.5,0.0,False,"Ovo, de galinha, inteiro, cru",0.75
+82,Palmito em conserva,18.0,3.7,0.1,1.6,0.4,False,"Palmito, juçara, em conserva",0.667
+83,Pão de forma diet aveia -Pullman®,295.2,38.57,9.14,14.62,2.09,False,"Pão, aveia, forma",0.6
+83,Pão de forma diet aveia -Wickbold®,244.0,46.0,0.8,12.2,3.5,False,"Pão, aveia, forma",0.6
+83,Pão de forma glúten -Wickbold®,225.0,39.5,1.0,15.5,,False,"Pão, glúten, forma",0.75
+84,Pão francês,285.6,56.8,2.55,9.42,2.8,False,"Pão, trigo, francês",0.667
+85,Pastel de carne,300.49,33.91,10.85,15.31,1.47,False,"Pastel, de carne, cru",0.667
+86,Patinho (carne bovina crua),185.19,0.0,6.92,28.73,0.0,False,"Carne, bovina, costela, crua",0.6
+86,Peito de frango (cru),172.0,0.0,9.26,20.9,0.0,False,"Frango, peito, com pele, cru",0.75
+86,Peito de frango cru sem pele,110.0,0.0,1.25,23.1,0.0,False,"Frango, peito, com pele, cru",1.0
+87,Peru inteiro cru com pele,145.0,0.0,6.9,20.6,0.0,False,"Frango, inteiro, com pele, cru",0.6
+87,Peru inteiro cru sem pele,107.0,,2.2,21.9,,False,"Frango, inteiro, com pele, cru",0.6
+87,Pescada (crua),217.38,7.87,11.29,20.04,0.44,False,"Pescada, branca, crua",0.667
+87,Pescada frita,217.6,,11.3,20.06,0.44,False,"Pescada, branca, frita",0.667
+88,Pimentão amarelo (cru),27.0,6.33,0.21,1.01,2.3,False,"Pimentão, amarelo, cru",1.0
+88,Pimentão verde (cru),27.0,6.44,0.19,0.89,1.73,False,"Pimentão, verde, cru",1.0
+88,Pimentão vermelho (cru),27.0,6.44,0.19,0.89,1.75,False,"Pimentão, vermelho, cru",1.0
+88,Pinhão (cozido) I,70.5,5.8,,3.48,3.21,False,"Pinhão, cozido",0.667
+90,Pimentão amarelo (cru),27.0,6.33,0.21,1.01,2.3,False,"Pimentão, amarelo, cru",1.0
+90,Pimentão verde (cru),27.0,6.44,0.19,0.89,1.73,False,"Pimentão, verde, cru",1.0
+90,Pimentão vermelho (cru),27.0,6.44,0.19,0.89,1.75,False,"Pimentão, vermelho, cru",1.0
+90,Pinhão (cozido),170.5,5.8,18.3,3.48,3.21,False,"Pinhão, cozido",1.0
+93,Pudim de leite condensado,216.1,,33.98,6.57,0.0,False,"Leite, condensado",0.667
+94,"Queijo ""petit suisse"" Batavinho",162.2,18.14,6.33,,,False,"Queijo, petit suisse, morango",0.6
+94,"Queijo ""petit suisse"" Chambinho com",157.7,19.0,,,,False,"Queijo, petit suisse, morango",0.6
+94,"Queijo ""petit suisse"" Chambinho",157.0,19.5,5.8,,,False,"Queijo, petit suisse, morango",0.6
+94,"Queijo ""petit suissc"" morango",157.7,19.11,6.0,,,False,"Queijo, petit suisse, morango",0.6
+95,"Queijo ""petit suisse"" morango I",52.0,2.0,,,,False,"Queijo, petit suisse, morango",0.8
+95,"Queijo ""petit suisse"" morango-Maxi I",57.0,,9.5,,,False,"Queijo, petit suisse, morango",0.667
+96,Queijo tipo parmesão,392.0,3.23,25.8,35.8,0.0,False,"Queijo, parmesão",0.667
+96,Queijo tipo prato,357.0,,0.44,25.0,0.0,False,"Queijo, prato",0.667
+97,Quindim,273.34,45.58,8.67,4.73,0.78,False,Quindim,1.0
+97,Rabanete (cru),17.0,3.6,0.54,0.6,1.0,False,"Rabanete, cru",1.0
+97,Repolho branco (cru),25.0,5.44,0.27,1.45,2.03,False,"Repolho, branco, cru",1.0
+98,Repolho roxo (cru),27.0,6.13,0.26,1.4,2.95,False,"Repolho, roxo, cru",1.0
+100,Salame,250.0,2.26,,13.9,0.0,False,Salame,1.0
+101,Sarapatel,201.57,3.71,16.3,10.37,3.72,False,Sarapatel,1.0
+102,Sobrecoxa de frango (assada),237.78,0.38,14.82,24.05,0.06,False,"Frango, sobrecoxa, com pele, assada",0.75
+102,Sobrecoxa de frango cozida sem pele,173.56,1.38,9.82,,,False,"Frango, coxa, sem pele, cozida",0.6
+102,Sobrecoxa de frango sem pele assada,201.44,0.38,,24.82,0.06,False,"Frango, sobrecoxa, com pele, assada",1.0
+112,Suco de laranja com acerola e açúcar,39.17,9.25,0.18,0.51,0.18,False,Suco de laranja sem açúcar,0.75
+112,Suco de laranja com cenoura e açúcar,51.06,12.07,0.19,0.81,1.09,False,Suco de laranja sem açúcar,0.75
+113,Suco de laranja sem açúcar,45.0,10.41,0.2,0.7,0.2,False,Suco de laranja sem açúcar,1.0
+118,Torrada de pão francês,428.2,85.16,2.4,14.12,4.19,False,"Torrada, pão francês",1.0
+119,Vagem (crua),31.0,7.15,0.12,1.83,3.4,False,"Vagem, crua",1.0
+120,Virado à paulista,242.61,14.59,14.19,13.9,3.69,False,Virado à paulista,1.0
