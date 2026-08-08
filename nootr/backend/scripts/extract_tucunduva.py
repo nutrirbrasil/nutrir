@@ -55,12 +55,74 @@ def split_name_and_numbers(line: str) -> tuple[str, list[str]] | None:
     return " ".join(name_tokens), tokens[i:]
 
 
-def looks_like_continuation(line: str) -> bool:
-    """Linha de continuação começa direto com números (proteína etc)."""
+def strip_leading_noise(tokens: list[str]) -> list[str]:
+    """
+    Descarta tokens de ruído de OCR (ex: "I" solto, "-" solto, às vezes os
+    dois juntos: "- I 165,00...") antes do primeiro valor de verdade. Usado
+    tanto na linha do alimento (depois do nome) quanto na linha de
+    continuação, que tem exatamente o mesmo tipo de sujeira. Só avança
+    enquanto o token for claramente ruído (não é "nd" nem número), ou for um
+    "-"/"I" isolado bem curto; um "nd" já é um valor de coluna de verdade
+    (não determinado), não ruído, então para ali.
+    """
+    offset = 0
+    while offset < len(tokens):
+        tok = tokens[offset]
+        if parse_number(tok) is not None or tok.lower() == "nd":
+            break
+        if tok == "-" or len(tok) <= 2:
+            offset += 1
+            continue
+        break
+    return tokens[offset:]
+
+
+def looks_like_continuation(line: str) -> list[str] | None:
+    """
+    Linha de continuação começa (a menos de ruído de OCR solto) com números
+    (proteína, fibra...). Devolve os tokens já limpos, ou None se a linha
+    ainda parece ser nome de alimento (texto real, não ruído de 1-2 chars).
+    """
     tokens = line.split()
     if not tokens:
-        return False
-    return bool(NUM_RE.match(tokens[0]))
+        return None
+    cleaned = strip_leading_noise(tokens)
+    # Ruído de OCR é sempre bem curto (1-3 chars); se sobrou muito texto
+    # antes do primeiro número, é nome de alimento quebrando a linha, não
+    # continuação.
+    noise_len = sum(len(t) for t in tokens[:len(tokens) - len(cleaned)])
+    if not cleaned or noise_len > 3:
+        return None
+    return cleaned
+
+
+_GHOST_DIGIT_TOLERANCE_KCAL = 80.0
+
+
+def correct_ghost_digit(rows: list[dict]) -> int:
+    """
+    Corrige o "1" fantasma grudado na frente da Energia (padrão de OCR visto
+    na amostra: "570" virando "1570"), conferido contra a fórmula de Atwater
+    (kcal = carb*4 + gordura*9 + proteína*4) calculada com os OUTROS valores
+    da própria linha, que não têm esse problema. Só corrige quando o valor
+    sem o "1" bate com Atwater dentro de uma tolerância generosa (nozes/
+    oleaginosas têm mais gordura "não digerível" que o Atwater simples não
+    captura, por isso a folga); fora disso mantém `suspect` pra revisão
+    manual (ex: "Banha de porco", que legitimamente passa de 900 kcal/100g,
+    é gordura quase pura).
+    Muda `rows` in-place, devolve quantas linhas foram corrigidas.
+    """
+    corrected = 0
+    for r in rows:
+        if not r["suspect"] or r["kcal"] < 1000:
+            continue
+        atwater = (r["carbs_g"] or 0) * 4 + (r["fat_g"] or 0) * 9 + (r["protein_g"] or 0) * 4
+        stripped = r["kcal"] - 1000
+        if abs(stripped - atwater) <= _GHOST_DIGIT_TOLERANCE_KCAL:
+            r["kcal"] = round(stripped, 2)
+            r["suspect"] = False
+            corrected += 1
+    return corrected
 
 
 def main(pdf_path: str, out_path: str, start_page: int = 9):
@@ -82,12 +144,7 @@ def main(pdf_path: str, out_path: str, start_page: int = 9):
                 # antes da Energia (provável artefato de OCR numa coluna
                 # anterior ausente nesses itens); se o 1º token não é um
                 # número de verdade, tenta a partir do próximo.
-                offset = 0
-                while offset < len(nums) and parse_number(nums[offset]) is None and nums[offset] not in ("nd", "-"):
-                    offset += 1
-                if nums[offset:offset + 1] == ["-"]:
-                    offset += 1
-                nums = nums[offset:]
+                nums = strip_leading_noise(nums)
                 if len(nums) < 3:
                     i += 1
                     continue
@@ -102,8 +159,8 @@ def main(pdf_path: str, out_path: str, start_page: int = 9):
                 for lookahead in (1, 2):
                     if i + lookahead >= len(lines):
                         break
-                    if looks_like_continuation(lines[i + lookahead]):
-                        cont = lines[i + lookahead].split()
+                    cont = looks_like_continuation(lines[i + lookahead])
+                    if cont is not None:
                         if len(cont) >= 1:
                             protein = parse_number(cont[0])
                         if len(cont) >= 2:
@@ -115,9 +172,9 @@ def main(pdf_path: str, out_path: str, start_page: int = 9):
                     skipped.append((page_idx, name, nums[:3]))
                     continue
                 # Kcal >900/100g é implausível pra quase todo alimento (só
-                # óleo puro chega perto de 900); sinaliza como suspeito em vez
-                # de aceitar calado, é um padrão de corrupção de OCR visto na
-                # amostra (ex: "570" virando "1570").
+                # óleo puro chega perto de 900); provável "1" fantasma
+                # grudado no OCR (ver correct_ghost_digit no pós-processo).
+                # Sinaliza em vez de aceitar calado ou corrigir sem checar.
                 suspect = kcal is not None and kcal > 900
                 rows.append({
                     "page": page_idx,
@@ -130,6 +187,8 @@ def main(pdf_path: str, out_path: str, start_page: int = 9):
                     "suspect": suspect,
                 })
 
+    fixed = correct_ghost_digit(rows)
+
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["page", "name", "kcal", "carbs_g", "fat_g", "protein_g", "fiber_g", "suspect"])
         w.writeheader()
@@ -138,7 +197,8 @@ def main(pdf_path: str, out_path: str, start_page: int = 9):
     suspects = sum(1 for r in rows if r["suspect"])
     missing_protein = sum(1 for r in rows if r["protein_g"] is None)
     print(f"extraidos: {len(rows)}")
-    print(f"  suspeitos (kcal > 900): {suspects}")
+    print(f"  corrigidos (digito fantasma na energia): {fixed}")
+    print(f"  suspeitos restantes (kcal > 900): {suspects}")
     print(f"  sem proteina: {missing_protein}")
     print(f"pulados (sem kcal parseavel): {len(skipped)}")
     for s in skipped[:15]:
