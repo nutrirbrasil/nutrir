@@ -43,6 +43,9 @@ ds-bundle/
 # Test files
 testes/
 
+# Graphify outputs (large, generated per-session)
+graphify-out/
+
 # Local reference assets (images, spreadsheets — not app code)
 nutrir/local-assets/
 nootr/local-assets/
