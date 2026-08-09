@@ -32,7 +32,7 @@ interface AddonsFlowContextValue {
 
 const AddonsFlowContext = createContext<AddonsFlowContextValue | null>(null);
 
-type ModalStep = "closed" | "ask" | "mode" | "pick_same" | "pick_custom";
+type ModalStep = "closed" | "pick_same" | "pick_custom";
 
 function emptyPerMeal(count: number): AddonSelectionMap[] {
   return Array.from({ length: count }, () => ({}));
@@ -56,31 +56,14 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
 
   const finalizeAdd = useCallback(
     (
-      mode: "none" | "same" | "custom" | "single",
+      mode: "same" | "custom" | "single",
       same?: AddonSelectionMap,
       perMeal?: AddonSelectionMap[]
     ) => {
       if (!pending) return;
 
-      const addons_cents =
-        mode === "none"
-          ? 0
-          : computeMealAddonsCents(
-              mode === "single" ? "single" : mode,
-              pending.mealCount,
-              same,
-              perMeal
-            );
-
-      const addons_note =
-        mode === "none"
-          ? undefined
-          : buildAddonsNote(
-              mode === "single" ? "single" : mode,
-              pending.mealLabels,
-              same,
-              perMeal
-            );
+      const addons_cents = computeMealAddonsCents(mode, pending.mealLabels, same, perMeal);
+      const addons_note = buildAddonsNote(mode, pending.mealLabels, same, perMeal);
 
       const menuSuffix =
         addons_cents > 0
@@ -103,7 +86,7 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
     setSameSelection({});
     setPerMealSelection(emptyPerMeal(next.mealCount));
     setActiveMealIndex(0);
-    setStep("ask");
+    setStep(next.mealCount > 1 ? "pick_custom" : "pick_same");
   }, []);
 
   const value = useMemo(() => ({ requestAdd }), [requestAdd]);
@@ -122,24 +105,14 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
           perMealSelection={perMealSelection}
           activeMealIndex={activeMealIndex}
           onClose={close}
-          onDeclineAddons={() => finalizeAdd("none")}
-          onAcceptAddons={() => {
-            if (isMultiMeal) setStep("mode");
-            else setStep("pick_same");
-          }}
           onChooseSameMode={() => setStep("pick_same")}
-          onChooseCustomMode={() => setStep("pick_custom")}
           onSameSelectionChange={setSameSelection}
           onPerMealSelectionChange={setPerMealSelection}
           onActiveMealIndexChange={setActiveMealIndex}
           onConfirmSame={() => finalizeAdd(isMultiMeal ? "same" : "single", sameSelection)}
           onConfirmCustom={() => finalizeAdd("custom", undefined, perMealSelection)}
           onBack={() => {
-            if (step === "pick_same" || step === "pick_custom") {
-              setStep(isMultiMeal ? "mode" : "ask");
-            } else if (step === "mode") {
-              setStep("ask");
-            }
+            if (step === "pick_same" && isMultiMeal) setStep("pick_custom");
           }}
         />
       )}

@@ -8,6 +8,7 @@ import { FiMenu, FiShoppingBag, FiUser } from "react-icons/fi";
 import { CombosNavMenu } from "@/components/CombosNavMenu";
 import { MobileNavDrawer } from "@/components/MobileNavDrawer";
 import { NutrirNavMenu } from "@/components/NutrirNavMenu";
+import { SucosLockedNavItem } from "@/components/SucosLockedNavItem";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
 import { logoUrl } from "@/lib/brand-assets";
@@ -61,6 +62,7 @@ export function Navbar() {
             <Link href={links[0].href} className={navLinkClass(links[0].href)}>
               {links[0].label}
             </Link>
+            <SucosLockedNavItem variant="desktop" />
             <NutrirNavMenu variant="desktop" />
           </nav>
 

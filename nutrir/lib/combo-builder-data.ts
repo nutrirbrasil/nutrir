@@ -69,9 +69,10 @@ export function getDiscountedUnitPriceCents(option: ComboMarmitaOption, targetTo
 }
 
 export function getComboMarmitaOptions(): ComboMarmitaOption[] {
-  return MENU_SECTIONS.filter((s) => COMBO_SECTIONS.has(s.id as MenuSectionId)).flatMap(
-    (section) =>
-      section.items.flatMap((item) =>
+  return MENU_SECTIONS.filter((s) => COMBO_SECTIONS.has(s.id as MenuSectionId)).flatMap((section) =>
+    section.items
+      .filter((item) => !item.comingSoon)
+      .flatMap((item) =>
         SIZES.map((size) => ({
           id: `${item.id}-${size}`,
           item_id: item.id,
@@ -95,14 +96,16 @@ export function getComboSectionsWithOptions() {
   return MENU_SECTIONS.filter((s) => COMBO_SECTIONS.has(s.id as MenuSectionId)).map((section) => ({
     id: section.id,
     title: section.title,
-    items: section.items.map((item) => ({
-      item_id: item.id,
-      name: item.name,
-      bySize: {
-        P: options.find((o) => o.id === `${item.id}-P`)!,
-        G: options.find((o) => o.id === `${item.id}-G`)!,
-      },
-    })),
+    items: section.items
+      .filter((item) => !item.comingSoon)
+      .map((item) => ({
+        item_id: item.id,
+        name: item.name,
+        bySize: {
+          P: options.find((o) => o.id === `${item.id}-P`)!,
+          G: options.find((o) => o.id === `${item.id}-G`)!,
+        },
+      })),
   }));
 }
 

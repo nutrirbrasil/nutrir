@@ -23,7 +23,7 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
 
   const price = item.prices[size];
   const cardPrice = getMarmitaCardPriceCents(price);
-  const nutrition = getLabelNutrition(item.id, size);
+  const nutrition = item.comingSoon ? null : getLabelNutrition(item.id, size);
 
   function handleAdd() {
     const cartSectionId = getMarmitaCartSectionId(item.id);
@@ -57,12 +57,18 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
             ★
           </span>
         )}
+        {item.comingSoon && (
+          <span className="absolute right-2 top-2 z-10 rounded-full bg-nutrir-burgundy px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-nutrir-nude sm:right-2.5 sm:top-2.5 sm:text-[10px]">
+            Novidade
+          </span>
+        )}
         {imageSrc && (
           <MarmitaPhoto
             src={imageSrc}
             alt={item.name}
             className="h-full w-full"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+            fit="cover"
           />
         )}
       </div>
@@ -75,40 +81,47 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
           {item.description}
         </p>
 
-        <div className="mt-2 flex gap-1.5 sm:mt-3 sm:gap-2">
-          {(["P", "G"] as MarmitaSize[]).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setSize(s)}
-              className={`flex-1 rounded-lg py-1.5 text-center text-[10px] font-bold transition sm:py-2 sm:text-sm ${
-                size === s
-                  ? "bg-nutrir-burgundy text-nutrir-nude"
-                  : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+        {!item.comingSoon && (
+          <div className="mt-2 flex gap-1.5 sm:mt-3 sm:gap-2">
+            {(["P", "G"] as MarmitaSize[]).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSize(s)}
+                className={`flex-1 rounded-lg py-1.5 text-center text-[10px] font-bold transition sm:py-2 sm:text-sm ${
+                  size === s
+                    ? "bg-nutrir-burgundy text-nutrir-nude"
+                    : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="mt-2 flex flex-col gap-1.5 border-t border-nutrir-nude-dark/50 pt-2 sm:mt-3 sm:gap-2 sm:pt-3">
-          <div className="text-[10px] text-nutrir-emerald/70 sm:text-sm">
-            <p>
-              De{" "}
-              <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>
-            </p>
-            <p className="leading-snug">
-              Por <strong className="text-nutrir-emerald">{formatPrice(price)}</strong> (dinheiro ou
-              pix)
-            </p>
-          </div>
+          {item.comingSoon ? (
+            <p className="text-[10px] font-bold text-nutrir-emerald sm:text-sm">Em breve</p>
+          ) : (
+            <div className="text-[10px] text-nutrir-emerald/70 sm:text-sm">
+              <p>
+                De{" "}
+                <span className="line-through text-nutrir-emerald/60">{formatPrice(cardPrice)}</span>
+              </p>
+              <p className="leading-snug">
+                Por <strong className="text-nutrir-emerald">{formatPrice(price)}</strong> (dinheiro ou
+                pix)
+              </p>
+            </div>
+          )}
           <button
             type="button"
             onClick={handleAdd}
-            className="btn-primary w-full px-2 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
+            disabled={item.comingSoon}
+            className="btn-primary w-full px-2 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:py-2 sm:text-sm"
           >
-            Adicionar
+            {item.comingSoon ? "Em breve" : "Adicionar"}
           </button>
           {nutrition && (
             <button

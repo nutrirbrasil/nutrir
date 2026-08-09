@@ -3,6 +3,7 @@
 import { FiX } from "react-icons/fi";
 import { formatPrice } from "@/lib/api";
 import {
+  computeSameModeAddonsCents,
   getAddonUnitPriceCents,
   getAddonsForMealHint,
   getAddonsForSameSelection,
@@ -15,7 +16,7 @@ import type { PendingCartAdd } from "@/lib/addons-flow-context";
 import { getMarmitaImageFromLabel, shortMealLabel } from "@/lib/marmita-images";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
-type ModalStep = "ask" | "mode" | "pick_same" | "pick_custom";
+type ModalStep = "pick_same" | "pick_custom";
 
 interface Props {
   pending: PendingCartAdd;
@@ -25,10 +26,7 @@ interface Props {
   perMealSelection: AddonSelectionMap[];
   activeMealIndex: number;
   onClose: () => void;
-  onDeclineAddons: () => void;
-  onAcceptAddons: () => void;
   onChooseSameMode: () => void;
-  onChooseCustomMode: () => void;
   onSameSelectionChange: (next: AddonSelectionMap) => void;
   onPerMealSelectionChange: (next: AddonSelectionMap[]) => void;
   onActiveMealIndexChange: (index: number) => void;
@@ -37,16 +35,124 @@ interface Props {
   onBack: () => void;
 }
 
+function QtyStepper({
+  qty,
+  onDec,
+  onInc,
+}: {
+  qty: number;
+  onDec: () => void;
+  onInc: () => void;
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-1.5">
+      <button
+        type="button"
+        onClick={onDec}
+        disabled={qty <= 0}
+        className="btn-secondary px-2 py-0.5 text-sm disabled:opacity-40"
+      >
+        −
+      </button>
+      <span className="min-w-[1.25rem] text-center text-sm font-bold tabular-nums text-nutrir-emerald">
+        {qty}
+      </span>
+      <button
+        type="button"
+        onClick={onInc}
+        disabled={qty >= MAX_ADDON_PORTIONS}
+        className="btn-secondary px-2 py-0.5 text-sm disabled:opacity-40"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+function formatAddonPriceTag(unitCents: number): string {
+  return unitCents > 0 ? `+${formatPrice(unitCents)}` : formatPrice(unitCents);
+}
+
+function SubstitutionToggle({ selected, onToggle }: { selected: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold transition ${
+        selected
+          ? "bg-nutrir-burgundy text-nutrir-nude"
+          : "border border-nutrir-emerald/30 text-nutrir-emerald hover:bg-nutrir-emerald/5"
+      }`}
+    >
+      {selected ? "Selecionado" : "Selecionar"}
+    </button>
+  );
+}
+
+function AddonCard({
+  addon,
+  qty,
+  onDec,
+  onInc,
+}: {
+  addon: MealAddon;
+  qty: number;
+  onDec: () => void;
+  onInc: () => void;
+}) {
+  const unitCents = getAddonUnitPriceCents(addon);
+  return (
+    <div className="flex flex-col gap-1.5 rounded-xl border border-nutrir-nude-dark/60 bg-nutrir-cream/50 px-2.5 py-2.5">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-semibold text-nutrir-emerald">{addon.name}</p>
+        <span className="shrink-0 text-sm font-bold text-nutrir-burgundy">
+          {formatAddonPriceTag(unitCents)}
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-nutrir-emerald/60">{addon.portionLabel}</span>
+        <QtyStepper qty={qty} onDec={onDec} onInc={onInc} />
+      </div>
+    </div>
+  );
+}
+
+function SubstitutionCard({
+  addon,
+  selected,
+  onToggle,
+}: {
+  addon: MealAddon;
+  selected: boolean;
+  onToggle: () => void;
+}) {
+  const unitCents = getAddonUnitPriceCents(addon);
+  return (
+    <div className="flex flex-col gap-1.5 rounded-xl border border-nutrir-nude-dark/60 bg-white px-2.5 py-2.5">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-semibold text-nutrir-emerald">{addon.name}</p>
+        <span className="shrink-0 text-sm font-bold text-nutrir-burgundy">
+          {formatAddonPriceTag(unitCents)}
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-nutrir-emerald/60">{addon.portionLabel}</span>
+        <SubstitutionToggle selected={selected} onToggle={onToggle} />
+      </div>
+    </div>
+  );
+}
+
 function AddonPicker({
   addons,
   selection,
   onChange,
-  compact = false,
+  columns,
 }: {
   addons: MealAddon[];
   selection: AddonSelectionMap;
   onChange: (next: AddonSelectionMap) => void;
-  compact?: boolean;
+  columns: 2 | 3;
 }) {
   function setPortions(id: string, portions: number) {
     const next = { ...selection };
@@ -55,50 +161,69 @@ function AddonPicker({
     onChange(next);
   }
 
+  function toggleSubstitution(addon: MealAddon) {
+    const currentlySelected = (selection[addon.id] ?? 0) > 0;
+    const next = { ...selection };
+    if (currentlySelected) {
+      delete next[addon.id];
+    } else {
+      if (addon.exclusiveGroup) {
+        for (const other of addons) {
+          if (other.id !== addon.id && other.exclusiveGroup === addon.exclusiveGroup) {
+            delete next[other.id];
+          }
+        }
+      }
+      next[addon.id] = 1;
+    }
+    onChange(next);
+  }
+
+  const regularAddons = addons.filter((a) => !a.forStarch);
+  const substitutionAddons = addons.filter((a) => a.forStarch);
+  const gridClass =
+    columns === 3 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2";
+
   return (
-    <div className="space-y-1.5">
-      {addons.map((addon) => {
-        const qty = selection[addon.id] ?? 0;
-        const unitCents = getAddonUnitPriceCents(addon);
-        return (
-          <div
-            key={addon.id}
-            className={`flex items-center gap-2 rounded-xl border border-nutrir-nude-dark/60 bg-nutrir-cream/50 ${
-              compact ? "px-2.5 py-2" : "flex-col gap-2 px-3 py-3 sm:flex-row sm:items-center sm:gap-3"
-            }`}
-          >
-            <div className="min-w-0 flex-1">
-              <p className={`font-semibold text-nutrir-emerald ${compact ? "text-sm" : ""}`}>
-                {addon.name}
-              </p>
-              <p className="text-xs text-nutrir-emerald/60">
-                {addon.portionLabel} · {formatPrice(unitCents)} cada
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setPortions(addon.id, qty - 1)}
-                disabled={qty <= 0}
-                className={`btn-secondary disabled:opacity-40 ${compact ? "px-2 py-0.5 text-sm" : "px-3 py-1 text-sm"}`}
-              >
-                −
-              </button>
-              <span className="min-w-[1.25rem] text-center text-sm font-bold tabular-nums text-nutrir-emerald">
-                {qty}
-              </span>
-              <button
-                type="button"
-                onClick={() => setPortions(addon.id, qty + 1)}
-                disabled={qty >= MAX_ADDON_PORTIONS}
-                className={`btn-secondary disabled:opacity-40 ${compact ? "px-2 py-0.5 text-sm" : "px-3 py-1 text-sm"}`}
-              >
-                +
-              </button>
-            </div>
+    <div className="space-y-4">
+      {regularAddons.length > 0 && (
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
+            Adicionais
+          </p>
+          <div className={`grid gap-2 ${gridClass}`}>
+            {regularAddons.map((addon) => (
+              <AddonCard
+                key={addon.id}
+                addon={addon}
+                qty={selection[addon.id] ?? 0}
+                onDec={() => setPortions(addon.id, (selection[addon.id] ?? 0) - 1)}
+                onInc={() => setPortions(addon.id, (selection[addon.id] ?? 0) + 1)}
+              />
+            ))}
           </div>
-        );
-      })}
+        </div>
+      )}
+      {substitutionAddons.length > 0 && (
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
+            Substituições
+          </p>
+          <div className="space-y-2">
+            {substitutionAddons.map((addon) => {
+              const selected = (selection[addon.id] ?? 0) > 0;
+              return (
+                <SubstitutionCard
+                  key={addon.id}
+                  addon={addon}
+                  selected={selected}
+                  onToggle={() => toggleSubstitution(addon)}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -161,10 +286,7 @@ export function AddonsModal({
   perMealSelection,
   activeMealIndex,
   onClose,
-  onDeclineAddons,
-  onAcceptAddons,
   onChooseSameMode,
-  onChooseCustomMode,
   onSameSelectionChange,
   onPerMealSelectionChange,
   onActiveMealIndexChange,
@@ -173,8 +295,7 @@ export function AddonsModal({
   onBack,
 }: Props) {
   const perMealTotal = selectionMapTotalCents(perMealSelection[activeMealIndex] ?? {});
-  const sameTotalPerMeal = selectionMapTotalCents(sameSelection);
-  const previewSameTotal = sameTotalPerMeal * pending.mealCount;
+  const previewSameTotal = computeSameModeAddonsCents(pending.mealLabels, sameSelection);
   const previewCustomTotal = perMealSelection.reduce(
     (sum, meal) => sum + selectionMapTotalCents(meal),
     0
@@ -189,17 +310,14 @@ export function AddonsModal({
   );
 
   const isCustomStep = step === "pick_custom";
+  const reachedSameViaLink = step === "pick_same" && isMultiMeal;
 
   const title =
-    step === "ask"
-      ? "Deseja adicionais ou substituições?"
-      : step === "mode"
-        ? "Como aplicar os adicionais?"
-        : step === "pick_same"
-          ? isMultiMeal
-            ? "Adicionais em todas as marmitas"
-            : "Escolha os adicionais"
-          : "Adicionais por marmita";
+    step === "pick_same"
+      ? isMultiMeal
+        ? "Adicionais em todas as marmitas"
+        : "Escolha os adicionais"
+      : "Adicionais e Substituições por marmita";
 
   return (
     <>
@@ -220,6 +338,15 @@ export function AddonsModal({
           <div>
             <h2 className="font-display text-xl font-bold text-nutrir-emerald">{title}</h2>
             <p className="mt-1 text-sm text-nutrir-emerald/65">{pending.baseItem.name}</p>
+            {isCustomStep && (
+              <button
+                type="button"
+                onClick={onChooseSameMode}
+                className="mt-1.5 text-xs font-semibold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-emerald"
+              >
+                Adicionar mesmo adicional em todas
+              </button>
+            )}
           </div>
           <button
             type="button"
@@ -231,11 +358,7 @@ export function AddonsModal({
         </header>
 
         <div
-          className={
-            step === "ask"
-              ? "hidden"
-              : `flex min-h-0 flex-1 ${isCustomStep ? "flex-row overflow-hidden" : "overflow-y-auto px-5 py-4"}`
-          }
+          className={`flex min-h-0 flex-1 ${isCustomStep ? "flex-row overflow-hidden" : "overflow-y-auto px-5 py-4"}`}
         >
           {isCustomStep && (
             <MealSidebar
@@ -248,52 +371,19 @@ export function AddonsModal({
           <div className={`min-w-0 flex-1 overflow-y-auto ${isCustomStep ? "px-4 py-3" : ""}`}>
             {!isCustomStep && (
               <>
-                {step === "mode" && (
-                  <div className="space-y-3">
-                    <button
-                      type="button"
-                      onClick={onChooseSameMode}
-                      className="w-full rounded-xl border-2 border-nutrir-emerald/25 bg-nutrir-nude px-4 py-4 text-left transition hover:border-nutrir-burgundy"
-                    >
-                      <p className="font-semibold text-nutrir-emerald">Mesmo adicional em todas</p>
-                      <p className="mt-1 text-xs text-nutrir-emerald/60">
-                        Escolha uma vez para todas marmitas.
-                      </p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={onChooseCustomMode}
-                      className="w-full rounded-xl border-2 border-nutrir-emerald/25 bg-nutrir-nude px-4 py-4 text-left transition hover:border-nutrir-burgundy"
-                    >
-                      <p className="font-semibold text-nutrir-emerald">Personalizar por marmita</p>
-                      <p className="mt-1 text-xs text-nutrir-emerald/60">
-                        Escolha adicionais individualmente para cada marmita.
-                      </p>
-                    </button>
-                  </div>
-                )}
-
-                {step === "pick_same" && (
-                  <>
-                    <AddonPicker
-                      addons={sameModeAddons}
-                      selection={sameSelection}
-                      onChange={onSameSelectionChange}
-                    />
-                    {previewSameTotal > 0 && (
-                      <p className="mt-4 text-center text-sm text-nutrir-emerald/70">
-                        Total adicionais:{" "}
-                        <strong className="text-nutrir-burgundy">
-                          {formatPrice(previewSameTotal)}
-                        </strong>
-                        {isMultiMeal && (
-                          <span className="block text-xs">
-                            ({formatPrice(sameTotalPerMeal)} × {pending.mealCount} marmitas)
-                          </span>
-                        )}
-                      </p>
-                    )}
-                  </>
+                <AddonPicker
+                  columns={2}
+                  addons={sameModeAddons}
+                  selection={sameSelection}
+                  onChange={onSameSelectionChange}
+                />
+                {previewSameTotal > 0 && (
+                  <p className="mt-4 text-center text-sm text-nutrir-emerald/70">
+                    Total adicionais:{" "}
+                    <strong className="text-nutrir-burgundy">
+                      {formatPrice(previewSameTotal)}
+                    </strong>
+                  </p>
                 )}
               </>
             )}
@@ -304,7 +394,7 @@ export function AddonsModal({
                   {shortMealLabel(pending.mealLabels[activeMealIndex] ?? "")}
                 </p>
                 <AddonPicker
-                  compact
+                  columns={3}
                   addons={customModeAddons}
                   selection={perMealSelection[activeMealIndex] ?? {}}
                   onChange={(next) => {
@@ -332,33 +422,18 @@ export function AddonsModal({
         </div>
 
         <footer className="flex flex-wrap gap-2 border-t border-nutrir-nude-dark/40 px-5 py-4">
-          {step === "ask" ? (
-            <>
-              <button type="button" onClick={onDeclineAddons} className="btn-secondary flex-1 py-2.5">
-                Não, obrigado
-              </button>
-              <button type="button" onClick={onAcceptAddons} className="btn-primary flex-1 py-2.5">
-                Sim, ver opções
-              </button>
-            </>
-          ) : step === "mode" ? (
-            <button type="button" onClick={onBack} className="btn-secondary w-full py-2.5">
+          {reachedSameViaLink && (
+            <button type="button" onClick={onBack} className="btn-secondary flex-1 py-2.5">
               Voltar
             </button>
-          ) : (
-            <>
-              <button type="button" onClick={onBack} className="btn-secondary flex-1 py-2.5">
-                Voltar
-              </button>
-              <button
-                type="button"
-                onClick={step === "pick_same" ? onConfirmSame : onConfirmCustom}
-                className="btn-primary flex-1 py-2.5"
-              >
-                Adicionar à sacola
-              </button>
-            </>
           )}
+          <button
+            type="button"
+            onClick={step === "pick_same" ? onConfirmSame : onConfirmCustom}
+            className="btn-primary flex-1 py-2.5"
+          >
+            Adicionar à sacola
+          </button>
         </footer>
       </div>
     </>

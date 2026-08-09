@@ -13,111 +13,111 @@ export interface KitContentOptions {
 
 const FRANGO_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Frango e arroz", count: 3 },
-    { label: "Frango e massa", count: 2 },
+    { label: "Frango da Casa", count: 3 },
+    { label: "Frango ao Sugo", count: 2 },
     { label: "Escondidinho de Frango", count: 2 },
   ],
   14: [
-    { label: "Frango e arroz", count: 5 },
-    { label: "Frango e massa", count: 5 },
+    { label: "Frango da Casa", count: 5 },
+    { label: "Frango ao Sugo", count: 5 },
     { label: "Escondidinho de Frango", count: 4 },
   ],
   28: [
-    { label: "Frango e arroz", count: 10 },
-    { label: "Frango e massa", count: 10 },
+    { label: "Frango da Casa", count: 10 },
+    { label: "Frango ao Sugo", count: 10 },
     { label: "Escondidinho de Frango", count: 8 },
   ],
 };
 
 const CARNE_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Carne e arroz", count: 3 },
-    { label: "Carne e massa", count: 2 },
+    { label: "Carne da Casa", count: 3 },
+    { label: "Ragu à Bolonhesa", count: 2 },
     { label: "Escondidinho de Carne", count: 2 },
   ],
   14: [
-    { label: "Carne e arroz", count: 5 },
-    { label: "Carne e massa", count: 5 },
+    { label: "Carne da Casa", count: 5 },
+    { label: "Ragu à Bolonhesa", count: 5 },
     { label: "Escondidinho de Carne", count: 4 },
   ],
   28: [
-    { label: "Carne e arroz", count: 10 },
-    { label: "Carne e massa", count: 10 },
+    { label: "Carne da Casa", count: 10 },
+    { label: "Ragu à Bolonhesa", count: 10 },
     { label: "Escondidinho de Carne", count: 8 },
   ],
 };
 
 const VEG_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Ervilha", count: 4 },
-    { label: "Grão de Bico", count: 3 },
+    { label: "Mix de Ervilha", count: 4 },
+    { label: "Mix de Grão de Bico", count: 3 },
   ],
   14: [
-    { label: "Ervilha", count: 7 },
-    { label: "Grão de Bico", count: 7 },
+    { label: "Mix de Ervilha", count: 7 },
+    { label: "Mix de Grão de Bico", count: 7 },
   ],
   28: [
-    { label: "Ervilha", count: 14 },
-    { label: "Grão de Bico", count: 14 },
+    { label: "Mix de Ervilha", count: 14 },
+    { label: "Mix de Grão de Bico", count: 14 },
   ],
 };
 
 const MISTO_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Frango e arroz", count: 2 },
-    { label: "Frango e massa", count: 1 },
+    { label: "Frango da Casa", count: 2 },
+    { label: "Frango ao Sugo", count: 1 },
     { label: "Escondidinho de Frango", count: 1 },
-    { label: "Carne e arroz", count: 1 },
-    { label: "Carne e massa", count: 1 },
+    { label: "Carne da Casa", count: 1 },
+    { label: "Ragu à Bolonhesa", count: 1 },
     { label: "Escondidinho de Carne", count: 1 },
   ],
   14: [
-    { label: "Frango e arroz", count: 3 },
-    { label: "Frango e massa", count: 3 },
+    { label: "Frango da Casa", count: 3 },
+    { label: "Frango ao Sugo", count: 3 },
     { label: "Escondidinho de Frango", count: 2 },
-    { label: "Carne e arroz", count: 2 },
-    { label: "Carne e massa", count: 2 },
+    { label: "Carne da Casa", count: 2 },
+    { label: "Ragu à Bolonhesa", count: 2 },
     { label: "Escondidinho de Carne", count: 2 },
   ],
   28: [
-    { label: "Frango e arroz", count: 5 },
-    { label: "Frango e massa", count: 5 },
+    { label: "Frango da Casa", count: 5 },
+    { label: "Frango ao Sugo", count: 5 },
     { label: "Escondidinho de Frango", count: 5 },
-    { label: "Carne e arroz", count: 5 },
-    { label: "Carne e massa", count: 4 },
+    { label: "Carne da Casa", count: 5 },
+    { label: "Ragu à Bolonhesa", count: 4 },
     { label: "Escondidinho de Carne", count: 4 },
   ],
 };
 
 const MISTO_WITH_VEG_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Frango e arroz", count: 1 },
-    { label: "Frango e massa", count: 1 },
+    { label: "Frango da Casa", count: 1 },
+    { label: "Frango ao Sugo", count: 1 },
     { label: "Escondidinho de Frango", count: 1 },
-    { label: "Carne e arroz", count: 1 },
-    { label: "Carne e massa", count: 1 },
-    { label: "Ervilha", count: 1 },
-    { label: "Grão de Bico", count: 1 },
+    { label: "Carne da Casa", count: 1 },
+    { label: "Ragu à Bolonhesa", count: 1 },
+    { label: "Mix de Ervilha", count: 1 },
+    { label: "Mix de Grão de Bico", count: 1 },
   ],
   14: [
-    { label: "Frango e arroz", count: 2 },
-    { label: "Frango e massa", count: 2 },
+    { label: "Frango da Casa", count: 2 },
+    { label: "Frango ao Sugo", count: 2 },
     { label: "Escondidinho de Frango", count: 2 },
-    { label: "Carne e arroz", count: 2 },
-    { label: "Carne e massa", count: 2 },
+    { label: "Carne da Casa", count: 2 },
+    { label: "Ragu à Bolonhesa", count: 2 },
     { label: "Escondidinho de Carne", count: 2 },
-    { label: "Ervilha", count: 1 },
-    { label: "Grão de Bico", count: 1 },
+    { label: "Mix de Ervilha", count: 1 },
+    { label: "Mix de Grão de Bico", count: 1 },
   ],
   28: [
-    { label: "Frango e arroz", count: 4 },
-    { label: "Frango e massa", count: 4 },
+    { label: "Frango da Casa", count: 4 },
+    { label: "Frango ao Sugo", count: 4 },
     { label: "Escondidinho de Frango", count: 4 },
-    { label: "Carne e arroz", count: 4 },
-    { label: "Carne e massa", count: 3 },
+    { label: "Carne da Casa", count: 4 },
+    { label: "Ragu à Bolonhesa", count: 3 },
     { label: "Escondidinho de Carne", count: 3 },
-    { label: "Ervilha", count: 3 },
-    { label: "Grão de Bico", count: 3 },
+    { label: "Mix de Ervilha", count: 3 },
+    { label: "Mix de Grão de Bico", count: 3 },
   ],
 };
 

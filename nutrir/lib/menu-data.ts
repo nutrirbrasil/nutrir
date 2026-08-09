@@ -299,6 +299,8 @@ export interface MarmitaOption {
   name: string;
   description: string;
   prices: Record<MarmitaSize, number>;
+  /** Item ainda não disponível para pedido, aparece só como prévia ("Em breve"). */
+  comingSoon?: boolean;
 }
 
 export interface MenuSection {
@@ -330,96 +332,112 @@ export function getMarmitaCartSectionId(
 export const MENU_SECTIONS: MenuSection[] = [
   {
     id: "frango",
-    title: "Opções com Frango",
+    title: "Linha Frango",
     subtitle: "Peito de frango, sem gordura",
     items: [
       {
         id: "frg-arroz",
-        name: "Frango & Arroz",
-        description: "Frango em cubos ao molho da casa, arroz branco soltinho e legumes salteados.",
+        name: "Frango da Casa",
+        description: "Frango em cubos ao molho da casa, arroz de brócolis com chia e cenoura salteada.",
         prices: { P: PRICES.frangoArrozMassa.P, G: PRICES.frangoArrozMassa.G },
       },
       {
         id: "frg-massa",
-        name: "Frango & Massa",
-        description: "Frango em cubos ao molho da casa, massa fusilli e legumes salteados.",
+        name: "Frango ao Sugo",
+        description: "Frango em cubos com macarrão ao molho sugo.",
         prices: { P: PRICES.frangoArrozMassa.P, G: PRICES.frangoArrozMassa.G },
       },
       {
         id: "frg-batata",
         name: "Escondidinho de Frango",
-        description: "Purê de batata inglesa, frango desfiado ao molho da casa e queijo.",
+        description: "Purê de batata, frango desfiado ao molho da casa e queijo.",
         prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
       },
     ],
   },
   {
     id: "carne",
-    title: "Opções com Carne",
+    title: "Linha Carne",
     subtitle: "Carne magra, patinho",
     items: [
       {
         id: "car-arroz",
-        name: "Carne & Arroz",
-        description: "Carne moída ao molho da casa, arroz branco soltinho e legumes salteados.",
+        name: "Carne da Casa",
+        description: "Carne moída com cenoura ao molho da casa, arroz de brócolis e cenoura salteada.",
         prices: { P: PRICES.carneArrozMassa.P, G: PRICES.carneArrozMassa.G },
       },
       {
         id: "car-massa",
-        name: "Carne & Massa",
-        description: "Carne moída ao molho da casa, massa fusilli e legumes salteados.",
+        name: "Ragu à Bolonhesa",
+        description: "Carne moída e macarrão ao molho bolonhesa.",
         prices: { P: PRICES.carneArrozMassa.P, G: PRICES.carneArrozMassa.G },
       },
       {
         id: "car-batata",
         name: "Escondidinho de Carne",
-        description: "Purê de batata inglesa, carne moída ao molho da casa e queijo.",
+        description: "Purê de batata, carne moída ao molho da casa e queijo.",
         prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
       },
     ],
   },
   {
     id: "vegetariano",
-    title: "Opções Vegetarianas",
+    title: "Linha Vegetariana",
     subtitle: "Vegetariano e vegano",
     items: [
       {
-        id: "veg-ervilha",
-        name: "Vegetariano Ervilha",
-        description: "Ervilhas cozidas, arroz branco soltinho e legumes salteados.",
+        id: "veg-grao",
+        name: "Mix de Grão de Bico",
+        description:
+          "Grão de bico cozido com seleta de legumes (cenoura, cebola, brócolis, abobrinha...), arroz de brócolis com chia e cenoura salteada.",
         prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
       },
       {
-        id: "veg-grao",
-        name: "Vegetariano Grão de Bico",
-        description: "Grãos de bico cozidos, arroz branco soltinho e legumes salteados.",
+        id: "veg-ervilha",
+        name: "Mix de Ervilha",
+        description:
+          "Ervilhas cozidas com seleta de legumes (cenoura, cebola, brócolis, abobrinha...), arroz de brócolis com chia e cenoura salteada.",
         prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
+      },
+      {
+        id: "veg-cogumelo",
+        name: "Escondidinho de Cogumelos",
+        description: "Purê de batata com mix de cogumelos e brócolis ao molho shoyu.",
+        prices: { P: 0, G: 0 },
+        comingSoon: true,
       },
     ],
   },
   {
     id: "premium",
-    title: "Opções Premium",
+    title: "Linha Premium",
     subtitle: "Para fugir do básico...",
     items: [
       {
         id: "frg-batata",
         name: "Escondidinho de Frango",
-        description: "Purê de batata inglesa, frango desfiado ao molho da casa e queijo.",
+        description: "Purê de batata, frango desfiado ao molho da casa e queijo.",
         prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
       },
       {
         id: "car-batata",
         name: "Escondidinho de Carne",
-        description: "Purê de batata inglesa, carne moída ao molho da casa e queijo.",
+        description: "Purê de batata, carne moída ao molho da casa e queijo.",
         prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+      },
+      {
+        id: "veg-cogumelo",
+        name: "Escondidinho de Cogumelos",
+        description: "Purê de batata com mix de cogumelos e brócolis ao molho shoyu.",
+        prices: { P: 0, G: 0 },
+        comingSoon: true,
       },
     ],
   },
 ];
 
-/** Escondidinhos — aparecem em Premium e na seção de frango/carne. */
-export const PREMIUM_MARMITA_IDS = new Set(["frg-batata", "car-batata"]);
+/** Itens que também aparecem na Linha Premium, além da seção de origem. */
+export const PREMIUM_MARMITA_IDS = new Set(["frg-batata", "car-batata", "veg-cogumelo"]);
 
 export function isPremiumMarmita(itemId: string): boolean {
   return PREMIUM_MARMITA_IDS.has(itemId);
@@ -438,7 +456,7 @@ export function getCartSuggestions(
   if (!section || section.comingSoon) return [];
   const sizeInfo = SIZE_INFO[size];
   return section.items
-    .filter((item) => !excludeItemIds.includes(item.id))
+    .filter((item) => !excludeItemIds.includes(item.id) && !item.comingSoon)
     .map((item) => ({
       item: { ...item, section_id: sectionId },
       price_cents: item.prices[size],

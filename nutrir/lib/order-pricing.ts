@@ -150,7 +150,7 @@ function getMarmitaCatalogPriceCents(
 ): number | undefined {
   if (!size) return undefined;
   for (const section of MENU_SECTIONS) {
-    const found = section.items.find((item) => item.id === itemId);
+    const found = section.items.find((item) => item.id === itemId && !item.comingSoon);
     if (found) return found.prices[size];
   }
   return undefined;

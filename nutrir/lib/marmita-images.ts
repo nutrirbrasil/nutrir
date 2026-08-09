@@ -1,42 +1,50 @@
 import type { KitProduct } from "./menu-data";
 import type { OrderItem } from "./types";
 
+const COM_FUNDO = "/marmitas/Com fundo";
 const SEM_FUNDO = "/marmitas/Sem fundo";
 
 /** Incremente ao trocar as fotos em public/marmitas para forçar atualização no navegador. */
-export const MARMITA_IMAGES_VERSION = "2";
+export const MARMITA_IMAGES_VERSION = "5";
 
 function imagePath(name: string): string {
+  return `${encodeURI(`${COM_FUNDO}/${name}.png`)}?v=${MARMITA_IMAGES_VERSION}`;
+}
+
+/** Fotos de kit/combo continuam na pasta antiga (sem fundo), não fazem parte do Marmitas V2. */
+function kitImagePath(name: string): string {
   return `${encodeURI(`${SEM_FUNDO}/${name}.png`)}?v=${MARMITA_IMAGES_VERSION}`;
 }
 
 export const MARMITA_IMAGES: Record<string, string> = {
-  "frg-batata": imagePath("Escondidinho de frango"),
-  "frg-arroz": imagePath("frango e arroz lado"),
-  "frg-massa": imagePath("frango e massa lado"),
-  "car-batata": imagePath("Escondidinho de carne"),
-  "car-arroz": imagePath("carne e arroz lado"),
-  "car-massa": imagePath("carne e massa lado"),
-  "veg-ervilha": imagePath("ervilha lado"),
-  "veg-grao": imagePath("grao de bico lado"),
+  "frg-batata": imagePath("Escondidinho de Frango"),
+  "frg-arroz": imagePath("Frango da Casa"),
+  "frg-massa": imagePath("Frango ao Sugo"),
+  "car-batata": imagePath("Escondidinho de Carne"),
+  "car-arroz": imagePath("Carne da Casa"),
+  "car-massa": imagePath("Ragu à Bolonhesa"),
+  "veg-ervilha": imagePath("Mix de Ervilha"),
+  "veg-grao": imagePath("Mix de Grão de Bico"),
+  "veg-cogumelo": imagePath("Escondidinho de Cogumelos"),
 };
 
 const MARMITA_IMAGES_TOP: Record<string, string> = {
-  "frg-batata": imagePath("Escondidinho de frango"),
-  "frg-arroz": imagePath("frango e arroz cima"),
-  "frg-massa": imagePath("frango e massa cima"),
-  "car-batata": imagePath("Escondidinho de carne"),
-  "car-arroz": imagePath("carne e arroz cima"),
-  "car-massa": imagePath("carne e massa cima"),
-  "veg-ervilha": imagePath("ervilha cima"),
-  "veg-grao": imagePath("grao de bico cima"),
+  "frg-batata": imagePath("Escondidinho de Frango"),
+  "frg-arroz": imagePath("Frango da Casa"),
+  "frg-massa": imagePath("Frango ao Sugo"),
+  "car-batata": imagePath("Escondidinho de Carne"),
+  "car-arroz": imagePath("Carne da Casa"),
+  "car-massa": imagePath("Ragu à Bolonhesa"),
+  "veg-ervilha": imagePath("Mix de Ervilha"),
+  "veg-grao": imagePath("Mix de Grão de Bico"),
+  "veg-cogumelo": imagePath("Escondidinho de Cogumelos"),
 };
 
 export const KIT_IMAGES: Record<KitProduct["id"], string> = {
-  frango: imagePath("combo frango"),
-  carne: imagePath("combo carne"),
-  veg: imagePath("combo vegetariano"),
-  misto: imagePath("combo misto"),
+  frango: kitImagePath("combo frango"),
+  carne: kitImagePath("combo carne"),
+  veg: kitImagePath("Combo Veg"),
+  misto: kitImagePath("combo misto"),
 };
 
 const SECTION_TO_KIT: Record<string, KitProduct["id"]> = {
@@ -49,14 +57,15 @@ function itemKeyFromLabel(label: string): string | undefined {
   const lower = label.toLowerCase();
   if (lower.includes("frango") && (lower.includes("batata") || lower.includes("escondidinho")))
     return "frg-batata";
-  if (lower.includes("frango") && lower.includes("massa")) return "frg-massa";
-  if (lower.includes("frango") && lower.includes("arroz")) return "frg-arroz";
   if (lower.includes("carne") && (lower.includes("batata") || lower.includes("escondidinho")))
     return "car-batata";
-  if (lower.includes("carne") && lower.includes("massa")) return "car-massa";
-  if (lower.includes("carne") && lower.includes("arroz")) return "car-arroz";
+  if (lower.includes("ragu") || lower.includes("bolonhesa")) return "car-massa";
+  if (lower.includes("sugo")) return "frg-massa";
+  if (lower.includes("carne") && lower.includes("casa")) return "car-arroz";
+  if (lower.includes("frango") && lower.includes("casa")) return "frg-arroz";
   if (lower.includes("ervilha")) return "veg-ervilha";
   if (lower.includes("grão") || lower.includes("grao")) return "veg-grao";
+  if (lower.includes("cogumelo")) return "veg-cogumelo";
   return undefined;
 }
 
