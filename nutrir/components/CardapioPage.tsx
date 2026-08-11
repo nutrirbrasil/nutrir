@@ -120,7 +120,7 @@ export function CardapioPage() {
           className="animate-fade-up mx-auto mt-3 max-w-xl font-display text-lg font-bold uppercase tracking-wide text-nutrir-nude/90 sm:text-xl md:text-2xl"
           style={{ animationDelay: "260ms" }}
         >
-          A partir de <strong className="hero-underline">R$14,99</strong>
+          A partir de <strong className="hero-underline">R$15,99</strong>
         </p>
 
         <p

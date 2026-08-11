@@ -279,15 +279,15 @@ export const KIT_PRODUCTS: KitProduct[] = [
         prices: {
           P: {
             card_total_cents: 53200,
-            cash_total_cents: 42000,
+            cash_total_cents: 44800,
             card_per_meal_cents: 1899,
-            cash_per_meal_cents: 1499,
+            cash_per_meal_cents: 1599,
           },
           G: {
             card_total_cents: 58800,
-            cash_total_cents: 50400,
+            cash_total_cents: 53200,
             card_per_meal_cents: 2099,
-            cash_per_meal_cents: 1799,
+            cash_per_meal_cents: 1899,
           },
         },
       },
@@ -318,6 +318,7 @@ const PRICES = {
   carneArrozMassa: { P: 2599, G: 2799 },
   carneEscondidinho: { P: 2799, G: 2999 },
   vegetariano: { P: 2199, G: 2399 },
+  cogumeloEscondidinho: { P: 2699, G: 2899 },
 } as const;
 
 /** section_id no carrinho (adicionais / sugestões) a partir do item_id */
@@ -389,22 +390,21 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "veg-grao",
         name: "Mix de Grão de Bico",
         description:
-          "Grão de bico cozido com seleta de legumes (cenoura, cebola, brócolis, abobrinha...), arroz de brócolis com chia e cenoura salteada.",
+          "Grão de bico cozido com seleta de legumes, arroz de brócolis com chia e cenoura salteada.",
         prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
       },
       {
         id: "veg-ervilha",
         name: "Mix de Ervilha",
         description:
-          "Ervilhas cozidas com seleta de legumes (cenoura, cebola, brócolis, abobrinha...), arroz de brócolis com chia e cenoura salteada.",
+          "Ervilhas cozidas com seleta de legumes, arroz de brócolis com chia e cenoura salteada.",
         prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
       },
       {
         id: "veg-cogumelo",
-        name: "Escondidinho de Cogumelos",
+        name: "Escondidinho de Cogu",
         description: "Purê de batata com mix de cogumelos e brócolis ao molho shoyu.",
-        prices: { P: 0, G: 0 },
-        comingSoon: true,
+        prices: { P: PRICES.cogumeloEscondidinho.P, G: PRICES.cogumeloEscondidinho.G },
       },
     ],
   },
@@ -427,10 +427,9 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         id: "veg-cogumelo",
-        name: "Escondidinho de Cogumelos",
+        name: "Escondidinho de Cogu",
         description: "Purê de batata com mix de cogumelos e brócolis ao molho shoyu.",
-        prices: { P: 0, G: 0 },
-        comingSoon: true,
+        prices: { P: PRICES.cogumeloEscondidinho.P, G: PRICES.cogumeloEscondidinho.G },
       },
     ],
   },

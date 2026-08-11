@@ -49,16 +49,19 @@ const CARNE_LINES: Record<number, KitContentLine[]> = {
 
 const VEG_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Mix de Ervilha", count: 4 },
-    { label: "Mix de Grão de Bico", count: 3 },
+    { label: "Mix de Ervilha", count: 3 },
+    { label: "Mix de Grão de Bico", count: 2 },
+    { label: "Escondidinho de Cogu", count: 2 },
   ],
   14: [
-    { label: "Mix de Ervilha", count: 7 },
-    { label: "Mix de Grão de Bico", count: 7 },
+    { label: "Mix de Ervilha", count: 5 },
+    { label: "Mix de Grão de Bico", count: 5 },
+    { label: "Escondidinho de Cogu", count: 4 },
   ],
   28: [
-    { label: "Mix de Ervilha", count: 14 },
-    { label: "Mix de Grão de Bico", count: 14 },
+    { label: "Mix de Ervilha", count: 10 },
+    { label: "Mix de Grão de Bico", count: 10 },
+    { label: "Escondidinho de Cogu", count: 8 },
   ],
 };
 
@@ -105,17 +108,19 @@ const MISTO_WITH_VEG_LINES: Record<number, KitContentLine[]> = {
     { label: "Escondidinho de Frango", count: 2 },
     { label: "Carne da Casa", count: 2 },
     { label: "Ragu à Bolonhesa", count: 2 },
-    { label: "Escondidinho de Carne", count: 2 },
+    { label: "Escondidinho de Carne", count: 1 },
+    { label: "Escondidinho de Cogu", count: 1 },
     { label: "Mix de Ervilha", count: 1 },
     { label: "Mix de Grão de Bico", count: 1 },
   ],
   28: [
     { label: "Frango da Casa", count: 4 },
     { label: "Frango ao Sugo", count: 4 },
-    { label: "Escondidinho de Frango", count: 4 },
-    { label: "Carne da Casa", count: 4 },
+    { label: "Escondidinho de Frango", count: 3 },
+    { label: "Carne da Casa", count: 3 },
     { label: "Ragu à Bolonhesa", count: 3 },
     { label: "Escondidinho de Carne", count: 3 },
+    { label: "Escondidinho de Cogu", count: 2 },
     { label: "Mix de Ervilha", count: 3 },
     { label: "Mix de Grão de Bico", count: 3 },
   ],

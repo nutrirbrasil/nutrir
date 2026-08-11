@@ -77,7 +77,7 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
         <h3 className="line-clamp-2 font-display text-sm font-bold leading-tight text-nutrir-emerald sm:text-base lg:text-lg">
           {item.name}
         </h3>
-        <p className="mt-1 line-clamp-2 flex-1 text-[10px] leading-snug text-nutrir-emerald/70 sm:text-sm">
+        <p className="mt-1 line-clamp-3 min-h-[41px] flex-1 text-[10px] leading-snug text-nutrir-emerald/70 sm:min-h-[48px] sm:text-sm">
           {item.description}
         </p>
 

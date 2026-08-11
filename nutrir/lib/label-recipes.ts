@@ -28,6 +28,7 @@ const TACO_FOODS: Record<string, TacoNutrientsPer100g> = {
   cenoura: { kcal: 30, protein_g: 0.8, carbs_g: 6.7, fat_g: 0.2, fiber_g: 2.6, sodium_mg: 26 },
   grao_de_bico: { kcal: 161.4, protein_g: 9.64, carbs_g: 26.32, fat_g: 2.45, fiber_g: 5.64, sodium_mg: 4.55 },
   ervilha: { kcal: 118, protein_g: 8.34, carbs_g: 21.1, fat_g: 0.39, fiber_g: 8.3, sodium_mg: 2 },
+  cogumelo: { kcal: 28, protein_g: 3.0, carbs_g: 4.0, fat_g: 0.4, fiber_g: 1.5, sodium_mg: 5 },
   queijo: { kcal: 330, protein_g: 22.6, carbs_g: 3, fat_g: 25.2, fiber_g: 0, sodium_mg: 875, saturated_fat_g: 14.2 },
   molho_de_tomate: { kcal: 29, protein_g: 1.4, carbs_g: 5.8, fat_g: 0.3, fiber_g: 1.4, sodium_mg: 380 },
   sal: { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0, sodium_mg: 38700 },
@@ -49,7 +50,13 @@ type RecipeBuilder = Record<MarmitaSize, LabelIngredient[]>;
  * pro molho de tomate). Não conta no peso líquido exibido — só no cálculo
  * nutricional (ver getLabelNutrition).
  */
-const SALT_PCT_PROTEIN_FOODS = new Set<FoodId>(["frango", "patinho", "ervilha", "grao_de_bico"]);
+const SALT_PCT_PROTEIN_FOODS = new Set<FoodId>([
+  "frango",
+  "patinho",
+  "ervilha",
+  "grao_de_bico",
+  "cogumelo",
+]);
 const SALT_PCT_CARB_FOODS = new Set<FoodId>(["arroz", "batata", "massa"]);
 
 function computeAutoSaltGrams(recipe: LabelIngredient[]): number {
@@ -145,6 +152,20 @@ const RECIPES: Record<string, RecipeBuilder> = {
     ],
     G: [
       { food: "patinho", grams: 110 },
+      { food: "molho_de_tomate", grams: 10 },
+      { food: "batata", grams: 250 },
+      { food: "queijo", grams: 10 },
+    ],
+  },
+  "veg-cogumelo": {
+    P: [
+      { food: "cogumelo", grams: 80 },
+      { food: "molho_de_tomate", grams: 10 },
+      { food: "batata", grams: 120 },
+      { food: "queijo", grams: 10 },
+    ],
+    G: [
+      { food: "cogumelo", grams: 110 },
       { food: "molho_de_tomate", grams: 10 },
       { food: "batata", grams: 250 },
       { food: "queijo", grams: 10 },

@@ -65,7 +65,7 @@ function itemKeyFromLabel(label: string): string | undefined {
   if (lower.includes("frango") && lower.includes("casa")) return "frg-arroz";
   if (lower.includes("ervilha")) return "veg-ervilha";
   if (lower.includes("grão") || lower.includes("grao")) return "veg-grao";
-  if (lower.includes("cogumelo")) return "veg-cogumelo";
+  if (lower.includes("cogu")) return "veg-cogumelo";
   return undefined;
 }
 

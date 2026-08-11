@@ -181,8 +181,7 @@ function AddonPicker({
 
   const regularAddons = addons.filter((a) => !a.forStarch);
   const substitutionAddons = addons.filter((a) => a.forStarch);
-  const gridClass =
-    columns === 3 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2";
+  const gridClass = columns === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2";
 
   return (
     <div className="space-y-4">
@@ -416,25 +415,30 @@ export function AddonsModal({
                     Esta marmita: {formatPrice(perMealTotal)}
                   </p>
                 )}
+                <button
+                  type="button"
+                  onClick={onConfirmCustom}
+                  className="btn-primary mt-4 w-full py-2.5"
+                >
+                  Adicionar à sacola
+                </button>
               </>
             )}
           </div>
         </div>
 
-        <footer className="flex flex-wrap gap-2 border-t border-nutrir-nude-dark/40 px-5 py-4">
-          {reachedSameViaLink && (
-            <button type="button" onClick={onBack} className="btn-secondary flex-1 py-2.5">
-              Voltar
+        {!isCustomStep && (
+          <footer className="flex flex-wrap gap-2 border-t border-nutrir-nude-dark/40 px-5 py-4">
+            {reachedSameViaLink && (
+              <button type="button" onClick={onBack} className="btn-secondary flex-1 py-2.5">
+                Voltar
+              </button>
+            )}
+            <button type="button" onClick={onConfirmSame} className="btn-primary flex-1 py-2.5">
+              Adicionar à sacola
             </button>
-          )}
-          <button
-            type="button"
-            onClick={step === "pick_same" ? onConfirmSame : onConfirmCustom}
-            className="btn-primary flex-1 py-2.5"
-          >
-            Adicionar à sacola
-          </button>
-        </footer>
+          </footer>
+        )}
       </div>
     </>
   );
