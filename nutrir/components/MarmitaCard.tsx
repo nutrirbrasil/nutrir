@@ -10,6 +10,7 @@ import { getLabelNutrition } from "@/lib/label-recipes";
 import { getMarmitaCardPriceCents } from "@/lib/order-pricing";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 import { NutritionModal } from "@/components/NutritionModal";
+import { GlutenFreeBadge, LactoseFreeBadge } from "@/components/DietaryBadges";
 
 interface Props {
   item: MarmitaOption;
@@ -61,6 +62,12 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
           <span className="absolute right-2 top-2 z-10 rounded-full bg-nutrir-burgundy px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-nutrir-nude sm:right-2.5 sm:top-2.5 sm:text-[10px]">
             Novidade
           </span>
+        )}
+        {!item.comingSoon && (item.glutenFree || item.lactoseFree) && (
+          <div className="absolute right-2 top-2 z-10 flex gap-1 sm:right-2.5 sm:top-2.5">
+            {item.glutenFree && <GlutenFreeBadge />}
+            {item.lactoseFree && <LactoseFreeBadge />}
+          </div>
         )}
         {imageSrc && (
           <MarmitaPhoto

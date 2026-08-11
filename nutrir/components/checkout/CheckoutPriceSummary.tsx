@@ -75,7 +75,10 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         ) : (
           <div className="flex justify-between text-sm text-nutrir-emerald/75">
             <span>
-              {discountLabel} ({formatPercent(discountPercent)})
+              {discountLabel}
+              {discountPercent >= BASE_DISCOUNT_PERCENT - 0.05
+                ? ` (${formatPercent(discountPercent)})`
+                : ""}
             </span>
             <span>− {formatPrice(pricing.pix_discount_cents)}</span>
           </div>

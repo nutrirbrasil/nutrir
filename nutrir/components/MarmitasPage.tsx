@@ -32,6 +32,10 @@ export function MarmitasPage() {
           </Reveal>
         ))}
         <p className="text-center text-xs leading-relaxed text-nutrir-emerald/55">
+          *Escondidinhos usam leite zero lactose, se você é vegano ou tem alergia ao leite, é
+          possível substituir por leite vegetal em Substituições, logo após Adicionar.
+        </p>
+        <p className="text-center text-xs leading-relaxed text-nutrir-emerald/55">
           *Valor promocional válido apenas para pagamentos em dinheiro ou pix
         </p>
       </div>

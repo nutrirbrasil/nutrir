@@ -301,6 +301,10 @@ export interface MarmitaOption {
   prices: Record<MarmitaSize, number>;
   /** Item ainda não disponível para pedido, aparece só como prévia ("Em breve"). */
   comingSoon?: boolean;
+  /** Receita padrão sem trigo/massa. */
+  glutenFree?: boolean;
+  /** Receita padrão sem queijo/laticínio (escondidinhos levam queijo, viram sem lactose só removendo em Substituições). */
+  lactoseFree?: boolean;
 }
 
 export interface MenuSection {
@@ -339,20 +343,24 @@ export const MENU_SECTIONS: MenuSection[] = [
       {
         id: "frg-arroz",
         name: "Frango da Casa",
-        description: "Frango em cubos ao molho da casa, arroz de brócolis com chia e cenoura salteada.",
+        description: "Frango em cubos ao molho da casa, arroz de brócolis e cenoura salteada.",
         prices: { P: PRICES.frangoArrozMassa.P, G: PRICES.frangoArrozMassa.G },
+        glutenFree: true,
+        lactoseFree: true,
       },
       {
         id: "frg-massa",
         name: "Frango ao Sugo",
         description: "Frango em cubos com macarrão ao molho sugo.",
         prices: { P: PRICES.frangoArrozMassa.P, G: PRICES.frangoArrozMassa.G },
+        lactoseFree: true,
       },
       {
         id: "frg-batata",
         name: "Escondidinho de Frango",
-        description: "Purê de batata, frango desfiado ao molho da casa e queijo.",
+        description: "Frango desfiado ao molho da casa, coberto por purê de batata e finalizado com queijo.",
         prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
+        glutenFree: true,
       },
     ],
   },
@@ -366,18 +374,22 @@ export const MENU_SECTIONS: MenuSection[] = [
         name: "Carne da Casa",
         description: "Carne moída com cenoura ao molho da casa, arroz de brócolis e cenoura salteada.",
         prices: { P: PRICES.carneArrozMassa.P, G: PRICES.carneArrozMassa.G },
+        glutenFree: true,
+        lactoseFree: true,
       },
       {
         id: "car-massa",
         name: "Ragu à Bolonhesa",
         description: "Carne moída e macarrão ao molho bolonhesa.",
         prices: { P: PRICES.carneArrozMassa.P, G: PRICES.carneArrozMassa.G },
+        lactoseFree: true,
       },
       {
         id: "car-batata",
         name: "Escondidinho de Carne",
-        description: "Purê de batata, carne moída ao molho da casa e queijo.",
+        description: "Carne moída ao molho da casa, coberta por purê de batata e finalizada com queijo.",
         prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+        glutenFree: true,
       },
     ],
   },
@@ -390,21 +402,26 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "veg-grao",
         name: "Mix de Grão de Bico",
         description:
-          "Grão de bico cozido com seleta de legumes, arroz de brócolis com chia e cenoura salteada.",
+          "Grão de bico cozido com seleta de legumes, arroz de brócolis e cenoura salteada.",
         prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
+        glutenFree: true,
+        lactoseFree: true,
       },
       {
         id: "veg-ervilha",
         name: "Mix de Ervilha",
         description:
-          "Ervilhas cozidas com seleta de legumes, arroz de brócolis com chia e cenoura salteada.",
+          "Ervilhas cozidas com seleta de legumes, arroz de brócolis e cenoura salteada.",
         prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
+        glutenFree: true,
+        lactoseFree: true,
       },
       {
         id: "veg-cogumelo",
         name: "Escondidinho de Cogu",
-        description: "Purê de batata com mix de cogumelos e brócolis ao molho shoyu.",
+        description: "Mix de cogumelos e brócolis salteados no molho shoyu, coberto por purê de batatas.",
         prices: { P: PRICES.cogumeloEscondidinho.P, G: PRICES.cogumeloEscondidinho.G },
+        glutenFree: true,
       },
     ],
   },
@@ -416,20 +433,23 @@ export const MENU_SECTIONS: MenuSection[] = [
       {
         id: "frg-batata",
         name: "Escondidinho de Frango",
-        description: "Purê de batata, frango desfiado ao molho da casa e queijo.",
+        description: "Frango desfiado ao molho da casa, coberto por purê de batata e finalizado com queijo.",
         prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
+        glutenFree: true,
       },
       {
         id: "car-batata",
         name: "Escondidinho de Carne",
-        description: "Purê de batata, carne moída ao molho da casa e queijo.",
+        description: "Carne moída ao molho da casa, coberta por purê de batata e finalizada com queijo.",
         prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+        glutenFree: true,
       },
       {
         id: "veg-cogumelo",
         name: "Escondidinho de Cogu",
-        description: "Purê de batata com mix de cogumelos e brócolis ao molho shoyu.",
+        description: "Mix de cogumelos e brócolis salteados no molho shoyu, coberto por purê de batatas.",
         prices: { P: PRICES.cogumeloEscondidinho.P, G: PRICES.cogumeloEscondidinho.G },
+        glutenFree: true,
       },
     ],
   },

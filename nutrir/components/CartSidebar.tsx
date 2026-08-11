@@ -259,7 +259,7 @@ export function CartSidebar() {
                 items.length === 0 || authLoading ? "pointer-events-none opacity-50" : ""
               }`}
             >
-              Agendar retirada
+              Fazer Pedido
             </Link>
           )}
         </footer>

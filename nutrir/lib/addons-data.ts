@@ -159,6 +159,16 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionUnitPlural: "porções",
     forStarch: "batata",
   },
+  {
+    id: "add-remover-queijo",
+    name: "Remover Queijo",
+    baseCost: 0,
+    additionalPrice: 0,
+    portionLabel: "Sou intolerante a lactose e desejo remover a finalização com queijo",
+    portionUnit: "porção",
+    portionUnitPlural: "porções",
+    forStarch: "batata",
+  },
 ];
 
 const ADDON_BY_ID = Object.fromEntries(MEAL_ADDONS.map((a) => [a.id, a]));
