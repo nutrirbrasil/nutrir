@@ -8,12 +8,14 @@ import { FiMenu, FiShoppingBag, FiUser } from "react-icons/fi";
 import { CombosNavMenu } from "@/components/CombosNavMenu";
 import { MobileNavDrawer } from "@/components/MobileNavDrawer";
 import { NutrirNavMenu } from "@/components/NutrirNavMenu";
-import { SucosLockedNavItem } from "@/components/SucosLockedNavItem";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
 import { logoUrl } from "@/lib/brand-assets";
 
-const links = [{ href: "/marmitas", label: "Marmitas" }] as const;
+const links = [
+  { href: "/marmitas", label: "Marmitas" },
+  { href: "/sucos", label: "Sucos" },
+] as const;
 
 export function Navbar() {
   const pathname = usePathname();
@@ -59,10 +61,11 @@ export function Navbar() {
 
           <nav className="hidden items-center gap-1 md:flex">
             <CombosNavMenu variant="desktop" />
-            <Link href={links[0].href} className={navLinkClass(links[0].href)}>
-              {links[0].label}
-            </Link>
-            <SucosLockedNavItem variant="desktop" />
+            {links.map((link) => (
+              <Link key={link.href} href={link.href} className={navLinkClass(link.href)}>
+                {link.label}
+              </Link>
+            ))}
             <NutrirNavMenu variant="desktop" />
           </nav>
 

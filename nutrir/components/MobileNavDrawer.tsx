@@ -7,10 +7,10 @@ import { FiChevronDown, FiX } from "react-icons/fi";
 import { ComboNavLink } from "@/components/CombosNavMenu";
 import { COMBO_MENU_LINKS } from "@/lib/combo-nav-links";
 import { NUTRIR_MENU_LINKS } from "@/components/NutrirNavMenu";
-import { SucosLockedNavItem } from "@/components/SucosLockedNavItem";
 
 const mainLinks = [
   { href: "/marmitas", label: "Marmitas" },
+  { href: "/sucos", label: "Sucos" },
   { href: "/perfil", label: "Perfil" },
 ] as const;
 
@@ -150,10 +150,6 @@ export function MobileNavDrawer({ open, onClose }: Props) {
               </li>
             ))}
           </ul>
-
-          <div className="mt-1">
-            <SucosLockedNavItem variant="mobile" />
-          </div>
 
           <div className="mt-4 border-t border-nutrir-nude-dark/50 pt-4">
             <DrawerAccordion

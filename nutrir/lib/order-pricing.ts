@@ -1,6 +1,7 @@
 import { computeCouponDiscountCents, getCoupon, normalizeCouponCode, type CouponDefinition } from "./coupons";
 import { getComboCardTotalCents } from "./combo-builder-data";
 import { KIT_PRODUCTS, MENU_SECTIONS, type MarmitaSize } from "./menu-data";
+import { getJuiceCatalogPricing, type JuiceSize } from "./juice-data";
 import { isCardPayment, isCashDiscountPayment, normalizePaymentMethod } from "./payment-utils";
 import type { OrderItem, PaymentMethod } from "./types";
 
@@ -23,7 +24,8 @@ function isSingleMarmitaItem(item: OrderItem): boolean {
   return (
     !!item.section_id &&
     item.section_id !== "kit" &&
-    item.section_id !== "combo"
+    item.section_id !== "combo" &&
+    item.section_id !== "suco"
   );
 }
 
@@ -53,6 +55,11 @@ export function getItemListPriceCents(item: OrderItem): number {
     const tier = product?.tiers.find((t) => t.meals === kit.meals);
     const pricing = tier?.prices[kit.size];
     if (pricing) return pricing.card_total_cents + addons;
+  }
+
+  if (item.section_id === "suco") {
+    const juicePricing = getJuiceCatalogPricing(item.item_id, item.size as JuiceSize | undefined);
+    if (juicePricing) return juicePricing.card_cents + addons;
   }
 
   if (isSingleMarmitaItem(item)) {
@@ -175,6 +182,15 @@ export function validateCatalogItemPrice(item: OrderItem): string | null {
     return null;
   }
 
+  if (item.section_id === "suco" && item.item_id) {
+    const juicePricing = getJuiceCatalogPricing(item.item_id, item.size as JuiceSize | undefined);
+    if (!juicePricing) return `Suco inválido: ${item.item_id}`;
+    if (item.price_cents !== juicePricing.cash_cents) {
+      return "Preço de um dos sucos não confere com o cardápio.";
+    }
+    return null;
+  }
+
   if (isSingleMarmitaItem(item) && item.item_id) {
     const catalogPrice = getMarmitaCatalogPriceCents(item.item_id, item.size);
     if (catalogPrice === undefined) return `Item inválido: ${item.item_id}`;
@@ -225,6 +241,12 @@ function restoreBaseOrderItem(item: OrderItem, from: PaymentMethod): OrderItem {
     const product = KIT_PRODUCTS.find((p) => p.id === kit.kitId);
     const tier = product?.tiers.find((t) => t.meals === kit.meals);
     const cashBase = tier?.prices[kit.size]?.cash_total_cents ?? Math.max(0, charged - addons);
+    return { ...item, price_cents: cashBase };
+  }
+
+  if (item.section_id === "suco") {
+    const juicePricing = getJuiceCatalogPricing(item.item_id, item.size as JuiceSize | undefined);
+    const cashBase = juicePricing?.cash_cents ?? Math.max(0, charged - addons);
     return { ...item, price_cents: cashBase };
   }
 

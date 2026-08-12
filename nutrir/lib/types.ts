@@ -1,4 +1,4 @@
-export type MenuSectionId = "frango" | "carne" | "vegetariano" | "kit" | "combo";
+export type MenuSectionId = "frango" | "carne" | "vegetariano" | "kit" | "combo" | "suco";
 
 export interface OrderItem {
   menu_id?: string | null;

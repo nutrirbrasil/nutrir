@@ -171,7 +171,7 @@ export function CartSidebar() {
             ) : (
               <>
                 <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-nutrir-emerald/70">
-                  Marmita
+                  Itens
                 </h3>
                 <ul className="space-y-4">
                   {items.map((item, i) => (
