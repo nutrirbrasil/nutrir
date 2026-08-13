@@ -28,6 +28,9 @@ export const SIZE_INFO: Record<MarmitaSize, SizeInfo> = {
   },
 };
 
+/** Peso real de cada marmita pronta (etiqueta na foto do card, "Total" nos kits). */
+export const MARMITA_WEIGHT_G: Record<MarmitaSize, number> = { P: 220, G: 380 };
+
 export interface KitTierPricing {
   card_total_cents: number;
   cash_total_cents: number;

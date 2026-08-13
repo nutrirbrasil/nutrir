@@ -28,6 +28,7 @@ export async function PUT(request: Request) {
     email?: string;
     cpf?: string;
     address?: string;
+    instagram?: string;
   };
 
   try {
@@ -59,6 +60,7 @@ export async function PUT(request: Request) {
     email: body.email,
     cpf: body.cpf,
     address: body.address,
+    instagram: body.instagram,
   });
 
   if (!customer) {

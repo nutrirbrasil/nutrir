@@ -1,5 +1,6 @@
 import {
   formatCpfDisplay,
+  formatInstagramDisplay,
   formatPhoneDisplay,
 } from "./br-fields";
 import type { OrderItem, PaymentMethod } from "./types";
@@ -44,6 +45,7 @@ export async function syncCustomerToServer(input: {
   email?: string;
   cpf?: string;
   address?: string;
+  instagram?: string;
 }): Promise<boolean> {
   if (typeof window === "undefined") return false;
 
@@ -69,6 +71,7 @@ function mapCustomerRecord(c: {
   email: string | null;
   cpf: string | null;
   address: string | null;
+  instagram: string | null;
 }) {
   return {
     name: c.name ?? "",
@@ -77,6 +80,7 @@ function mapCustomerRecord(c: {
     email: c.email ?? "",
     cpf: formatCpfDisplay(c.cpf ?? ""),
     address: c.address ?? "",
+    instagram: formatInstagramDisplay(c.instagram ?? ""),
   };
 }
 
@@ -98,6 +102,7 @@ export async function fetchCustomerByEmail(email: string): Promise<RemoteCustome
         email: string | null;
         cpf: string | null;
         address: string | null;
+        instagram: string | null;
       } | null;
     };
     if (!data.customer) return null;
@@ -122,6 +127,7 @@ export async function fetchCustomerByPhone(phone: string): Promise<RemoteCustome
         email: string | null;
         cpf: string | null;
         address: string | null;
+        instagram: string | null;
       } | null;
     };
     if (!data.customer) return null;

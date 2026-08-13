@@ -4,7 +4,7 @@ import { useState } from "react";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import type { MarmitaOption, MarmitaSize } from "@/lib/menu-data";
-import { getMarmitaCartSectionId } from "@/lib/menu-data";
+import { getMarmitaCartSectionId, MARMITA_WEIGHT_G } from "@/lib/menu-data";
 import { getMarmitaImageSrc } from "@/lib/marmita-images";
 import { getLabelNutrition } from "@/lib/label-recipes";
 import { getMarmitaCardPriceCents } from "@/lib/order-pricing";
@@ -77,6 +77,11 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
             fit="cover"
           />
+        )}
+        {!item.comingSoon && (
+          <span className="absolute bottom-2 right-2 z-10 rounded-full bg-nutrir-emerald-dark/80 px-2 py-0.5 text-[9px] font-bold text-nutrir-nude sm:bottom-2.5 sm:right-2.5 sm:text-[10px]">
+            {MARMITA_WEIGHT_G[size]}g
+          </span>
         )}
       </div>
 

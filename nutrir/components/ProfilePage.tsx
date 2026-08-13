@@ -8,6 +8,7 @@ import { FcGoogle } from "react-icons/fc";
 import {
   cpfValidationMessage,
   formatCpf,
+  formatInstagramDisplay,
   formatPhoneBR,
   phoneValidationMessage,
 } from "@/lib/br-fields";
@@ -255,6 +256,7 @@ export function ProfilePage() {
       email: profile.email,
       cpf,
       address: profile.address,
+      instagram: profile.instagram,
     });
     if (!ok) {
       setError("Não foi possível salvar no servidor. Dados ficaram só neste aparelho.");
@@ -628,6 +630,17 @@ export function ProfilePage() {
               value={profile.cpf}
               onChange={(e) => updateProfile({ cpf: formatCpf(e.target.value) })}
               placeholder="000.000.000-00"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Instagram</label>
+            <input
+              type="text"
+              autoComplete="off"
+              className="input-field"
+              value={profile.instagram}
+              onChange={(e) => updateProfile({ instagram: formatInstagramDisplay(e.target.value) })}
+              placeholder="@seuusuario"
             />
           </div>
           <div>

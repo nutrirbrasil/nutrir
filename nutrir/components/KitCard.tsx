@@ -4,7 +4,7 @@ import { useState } from "react";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import { COMBO_SECTION_IDS, navigateToComboSection } from "@/lib/combo-nav-links";
-import type { KitProduct, KitTier, MarmitaSize } from "@/lib/menu-data";
+import { MARMITA_WEIGHT_G, type KitProduct, type KitTier, type MarmitaSize } from "@/lib/menu-data";
 import { getKitMealLabels } from "@/lib/kit-contents-data";
 import { KIT_IMAGES } from "@/lib/marmita-images";
 import { KitContentModal } from "./KitContentModal";
@@ -13,8 +13,6 @@ import { MarmitaPhoto } from "./MarmitaPhoto";
 interface Props {
   kit: KitProduct;
 }
-
-const KIT_MARMITA_TOTAL_G: Record<MarmitaSize, number> = { P: 220, G: 380 };
 
 function TierRow({
   kit,
@@ -195,7 +193,7 @@ export function KitCard({ kit }: Props) {
                   ))}
                 </div>
                 <span className="text-xs text-nutrir-emerald/50">
-                  Total: {KIT_MARMITA_TOTAL_G[size]}g
+                  Total: {MARMITA_WEIGHT_G[size]}g
                 </span>
               </div>
 

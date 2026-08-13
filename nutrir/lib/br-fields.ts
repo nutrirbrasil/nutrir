@@ -82,6 +82,17 @@ export function cpfValidationMessage(cpf: string): string | null {
   return null;
 }
 
+/** Guarda só o @usuario, sem o "@" na frente e sem espaços. */
+export function normalizeInstagramHandle(value: string): string {
+  return value.trim().replace(/^@+/, "").toLowerCase();
+}
+
+/** Exibe com "@" na frente, se houver valor. */
+export function formatInstagramDisplay(value: string): string {
+  const handle = normalizeInstagramHandle(value);
+  return handle ? `@${handle}` : "";
+}
+
 export function phoneValidationMessage(phone: string): string | null {
   const d = stripPhoneDigits(phone);
   if (d.length === 0) return "Informe o celular.";

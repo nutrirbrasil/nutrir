@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { mapAuthError } from "./auth-errors";
-import { formatCpfDisplay, formatPhoneDisplay } from "./br-fields";
+import { formatCpfDisplay, formatInstagramDisplay, formatPhoneDisplay } from "./br-fields";
 import { usePatientStatus } from "./use-patient-status";
 import { usePartnerStatus, type PartnerStatus } from "./use-partner-status";
 import { fetchCustomerByEmail, fetchCustomerByPhone, syncCustomerToServer } from "./order-history";
@@ -24,6 +24,7 @@ export interface UserProfile {
   cpf: string;
   email: string;
   address: string;
+  instagram: string;
 }
 
 interface ProfileContextValue {
@@ -63,6 +64,7 @@ const emptyProfile: UserProfile = {
   cpf: "",
   email: "",
   address: "",
+  instagram: "",
 };
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
@@ -77,6 +79,7 @@ function loadProfile(): UserProfile {
       ...parsed,
       phone: formatPhoneDisplay(parsed.phone),
       cpf: formatCpfDisplay(parsed.cpf),
+      instagram: formatInstagramDisplay(parsed.instagram),
     };
   } catch {
     return emptyProfile;
@@ -94,6 +97,7 @@ function mergeRemoteProfile(
     email: string;
     cpf: string;
     address: string;
+    instagram: string;
   },
   sessionEmail?: string
 ): UserProfile {
@@ -103,6 +107,7 @@ function mergeRemoteProfile(
     cpf: remote.cpf || current.cpf,
     address: remote.address || current.address,
     email: sessionEmail || remote.email || current.email,
+    instagram: remote.instagram || current.instagram,
   };
 }
 
@@ -350,6 +355,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         name: next.name,
         cpf: next.cpf,
         address: next.address,
+        instagram: next.instagram,
       });
       return next;
     });

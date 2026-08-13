@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from "./supabase-server";
 import {
   formatCpfDisplay,
   formatPhoneDisplay,
+  normalizeInstagramHandle,
   normalizePhoneStorage,
   stripCpfDigits,
 } from "./br-fields";
@@ -22,6 +23,7 @@ export interface CustomerRecord {
   email: string | null;
   cpf: string | null;
   address: string | null;
+  instagram: string | null;
 }
 
 export interface PacienteRecord {
@@ -92,6 +94,7 @@ function buildCustomerPatch(input: {
   email?: string;
   cpf?: string;
   address?: string;
+  instagram?: string;
 }): {
   phone: string;
   whatsapp: string;
@@ -99,6 +102,7 @@ function buildCustomerPatch(input: {
   email?: string;
   cpf?: string | null;
   address?: string | null;
+  instagram?: string | null;
 } {
   const phone = normalizePhone(input.phone);
   const whatsapp = input.whatsapp ? normalizePhone(input.whatsapp) : phone;
@@ -111,6 +115,9 @@ function buildCustomerPatch(input: {
     ...(email ? { email } : {}),
     ...(input.cpf !== undefined ? { cpf: stripCpfDigits(input.cpf) || null } : {}),
     ...(input.address !== undefined ? { address: input.address.trim() || null } : {}),
+    ...(input.instagram !== undefined
+      ? { instagram: normalizeInstagramHandle(input.instagram) || null }
+      : {}),
   };
 }
 
@@ -121,6 +128,7 @@ export async function upsertCustomer(input: {
   email?: string;
   cpf?: string;
   address?: string;
+  instagram?: string;
 }): Promise<CustomerRecord | null> {
   const db = getSupabaseAdmin();
   if (!db) return null;
@@ -136,7 +144,7 @@ export async function upsertCustomer(input: {
         .from("nutrir_customers")
         .update(patch)
         .eq("id", existing.id)
-        .select("id, phone, whatsapp, name, email, cpf, address")
+        .select("id, phone, whatsapp, name, email, cpf, address, instagram")
         .single();
 
       if (error) {
@@ -153,7 +161,7 @@ export async function upsertCustomer(input: {
       .from("nutrir_customers")
       .update(patch)
       .eq("id", byPhone.id)
-      .select("id, phone, whatsapp, name, email, cpf, address")
+      .select("id, phone, whatsapp, name, email, cpf, address, instagram")
       .single();
 
     if (error) {
@@ -169,7 +177,7 @@ export async function upsertCustomer(input: {
       ...patch,
       name: patch.name ?? "",
     })
-    .select("id, phone, whatsapp, name, email, cpf, address")
+    .select("id, phone, whatsapp, name, email, cpf, address, instagram")
     .single();
 
   if (error) {
@@ -189,7 +197,7 @@ export async function getCustomerByEmail(email: string): Promise<CustomerRecord 
 
   const { data, error } = await db
     .from("nutrir_customers")
-    .select("id, phone, whatsapp, name, email, cpf, address")
+    .select("id, phone, whatsapp, name, email, cpf, address, instagram")
     .ilike("email", key)
     .maybeSingle();
 
@@ -208,7 +216,7 @@ export async function getCustomerByPhone(phone: string): Promise<CustomerRecord 
   const key = normalizePhone(phone);
   const { data, error } = await db
     .from("nutrir_customers")
-    .select("id, phone, whatsapp, name, email, cpf, address")
+    .select("id, phone, whatsapp, name, email, cpf, address, instagram")
     .eq("phone", key)
     .maybeSingle();
 
