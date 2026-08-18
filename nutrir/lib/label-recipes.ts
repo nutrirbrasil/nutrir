@@ -103,7 +103,7 @@ const RECIPES: Record<string, RecipeBuilder> = {
     P: [
       { food: "frango", grams: 80 },
       { food: "molho_de_tomate", grams: 10 },
-      { food: "batata", grams: 120 },
+      { food: "batata", grams: 140 },
       { food: "queijo", grams: 10 },
     ],
     G: [
@@ -147,7 +147,7 @@ const RECIPES: Record<string, RecipeBuilder> = {
     P: [
       { food: "patinho", grams: 80 },
       { food: "molho_de_tomate", grams: 10 },
-      { food: "batata", grams: 120 },
+      { food: "batata", grams: 140 },
       { food: "queijo", grams: 10 },
     ],
     G: [
@@ -161,7 +161,7 @@ const RECIPES: Record<string, RecipeBuilder> = {
     P: [
       { food: "cogumelo", grams: 80 },
       { food: "molho_de_tomate", grams: 10 },
-      { food: "batata", grams: 120 },
+      { food: "batata", grams: 140 },
       { food: "queijo", grams: 10 },
     ],
     G: [
@@ -247,7 +247,7 @@ export function getLabelNutrition(itemId: string, size: MarmitaSize): MarmitaNut
   const recipe: LabelIngredient[] =
     saltGrams > 0 ? [...baseRecipe, { food: "sal", grams: saltGrams }] : baseRecipe;
 
-  // Peso líquido exibido = só a receita base (220/380 g) — o sal entra no
+  // Peso líquido exibido = só a soma da receita base — o sal entra no
   // cálculo nutricional mas não soma no peso do rótulo.
   const portion_g = baseRecipe.reduce((s, i) => s + i.grams, 0);
   const raw = recipe.reduce<NutrientTotals>(

@@ -31,6 +31,15 @@ export const SIZE_INFO: Record<MarmitaSize, SizeInfo> = {
 /** Peso real de cada marmita pronta (etiqueta na foto do card, "Total" nos kits). */
 export const MARMITA_WEIGHT_G: Record<MarmitaSize, number> = { P: 220, G: 380 };
 
+/** Escondidinhos têm um P mais robusto (240g em vez do padrão 220g). */
+const HEAVIER_P_ITEM_IDS = new Set(["frg-batata", "car-batata", "veg-cogumelo"]);
+
+/** Peso exibido pro card avulso — considera a exceção dos escondidinhos no P. */
+export function getMarmitaWeightG(itemId: string, size: MarmitaSize): number {
+  if (size === "P" && HEAVIER_P_ITEM_IDS.has(itemId)) return 240;
+  return MARMITA_WEIGHT_G[size];
+}
+
 export interface KitTierPricing {
   card_total_cents: number;
   cash_total_cents: number;
