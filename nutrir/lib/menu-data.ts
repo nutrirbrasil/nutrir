@@ -325,7 +325,8 @@ const PRICES = {
   carneArrozMassa: { P: 2599, G: 2799 },
   carneEscondidinho: { P: 2799, G: 2999 },
   vegetariano: { P: 2199, G: 2399 },
-  cogumeloEscondidinho: { P: 2699, G: 2899 },
+  ervilha: { P: 2299, G: 2499 },
+  cogumeloEscondidinho: { P: 2899, G: 3199 },
 } as const;
 
 /** section_id no carrinho (adicionais / sugestões) a partir do item_id */
@@ -415,7 +416,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         name: "Mix de Ervilha",
         description:
           "Ervilhas cozidas com seleta de legumes, arroz de brócolis e cenoura salteada.",
-        prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
+        prices: { P: PRICES.ervilha.P, G: PRICES.ervilha.G },
         glutenFree: true,
         lactoseFree: true,
       },
