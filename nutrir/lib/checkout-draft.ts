@@ -1,6 +1,6 @@
 import { isValidCpf, isValidPhoneBR } from "./br-fields";
 import type { DeliverySelection } from "./delivery-schedule";
-import type { MixedPickupMode, PickupSelection } from "./pickup-schedule";
+import type { PickupSelection } from "./pickup-schedule";
 import type { FulfillmentType, OrderItem, PaymentMethod } from "./types";
 
 export interface CheckoutDraft {
@@ -14,10 +14,7 @@ export interface CheckoutDraft {
   pickup_display: string;
   user_notes?: string;
   internal_notes?: string;
-  mixed_mode?: MixedPickupMode | null;
   pickup_unified?: PickupSelection | null;
-  pickup_combo?: PickupSelection | null;
-  pickup_regular?: PickupSelection | null;
   payment_method?: PaymentMethod;
   coupon_code?: string;
   /** Resolvidos ao aplicar o cupom (estático ou de parceiro) — só pra exibir o preview de preço. */

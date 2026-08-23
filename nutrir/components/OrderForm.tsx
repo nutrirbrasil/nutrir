@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/api";
 import { formatPhoneBR, phoneValidationMessage } from "@/lib/br-fields";
@@ -13,10 +13,8 @@ import { type DeliveryAddressValue } from "@/components/DeliveryAddressForm";
 import { DeliveryAddressPicker } from "@/components/DeliveryAddressPicker";
 import { formatItemAddonsLabel } from "@/lib/item-addons-label";
 import {
-  analyzeCartItems,
   formatPickupShort,
   formatPickupSummary,
-  type MixedPickupMode,
   type PickupSelection,
 } from "@/lib/pickup-schedule";
 import {
@@ -48,14 +46,9 @@ export function OrderForm() {
   const items = cart.items;
   const [error, setError] = useState("");
   const [fulfillmentType, setFulfillmentType] = useState<FulfillmentType>("pickup");
-  const [mixedMode, setMixedMode] = useState<MixedPickupMode | null>(null);
   const [pickupUnified, setPickupUnified] = useState<PickupSelection | null>(null);
-  const [pickupCombo, setPickupCombo] = useState<PickupSelection | null>(null);
-  const [pickupRegular, setPickupRegular] = useState<PickupSelection | null>(null);
   const [deliverySelection, setDeliverySelection] = useState<DeliverySelection | null>(null);
   const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddressValue>(EMPTY_DELIVERY_ADDRESS);
-
-  const cartAnalysis = useMemo(() => analyzeCartItems(items), [items]);
 
   const [form, setForm] = useState({
     customer_name: profile.name,
@@ -73,19 +66,6 @@ export function OrderForm() {
     }));
   }, [profile]);
 
-  useEffect(() => {
-    if (!cartAnalysis.isMixed) {
-      setMixedMode(null);
-    }
-  }, [cartAnalysis.isMixed]);
-
-  const pickupRule = useMemo(() => {
-    if (cartAnalysis.isMixed && mixedMode === "separate") return null;
-    if (cartAnalysis.isMixed && mixedMode === "together") return "combo" as const;
-    if (cartAnalysis.hasCombo && !cartAnalysis.hasRegular) return "combo" as const;
-    return "regular" as const;
-  }, [cartAnalysis, mixedMode]);
-
   const total = items.reduce((sum, i) => sum + getItemCashTotalCents(i) * i.quantity, 0);
 
   function buildPickupDisplay(): string {
@@ -93,15 +73,7 @@ export function OrderForm() {
       return deliverySelection ? formatDeliveryShort(deliverySelection) : "";
     }
 
-    if (cartAnalysis.isMixed && mixedMode === "separate") {
-      const parts: string[] = [];
-      if (pickupCombo) parts.push(`Combo: ${formatPickupShort(pickupCombo)}`);
-      if (pickupRegular) parts.push(`Marmitas: ${formatPickupShort(pickupRegular)}`);
-      return parts.join(" · ");
-    }
-
-    if (pickupUnified) return formatPickupShort(pickupUnified);
-    return "";
+    return pickupUnified ? formatPickupShort(pickupUnified) : "";
   }
 
   function buildInternalNotes(): string | undefined {
@@ -114,13 +86,7 @@ export function OrderForm() {
       return parts.filter(Boolean).join(" · ") || undefined;
     }
 
-    if (cartAnalysis.isMixed && mixedMode === "separate") {
-      if (pickupCombo) parts.push(`Combo: ${formatPickupSummary(pickupCombo)}`);
-      if (pickupRegular) parts.push(`Marmitas: ${formatPickupSummary(pickupRegular)}`);
-    } else if (pickupUnified) {
-      parts.push(formatPickupSummary(pickupUnified));
-    }
-
+    if (pickupUnified) parts.push(formatPickupSummary(pickupUnified));
     if (form.notes) parts.push(form.notes);
     parts.push("Retirada na loja");
 
@@ -130,10 +96,6 @@ export function OrderForm() {
   function getPrimaryDeliveryDate(): string {
     if (fulfillmentType === "delivery") {
       return deliverySelection?.date ?? "";
-    }
-
-    if (cartAnalysis.isMixed && mixedMode === "separate") {
-      return pickupCombo?.date ?? pickupRegular?.date ?? "";
     }
     return pickupUnified?.date ?? "";
   }
@@ -148,20 +110,6 @@ export function OrderForm() {
       }
       if (!deliveryAddress.street.trim() || !deliveryAddress.number.trim()) {
         return "Informe o endereço de entrega (rua e número).";
-      }
-      return null;
-    }
-
-    if (cartAnalysis.isMixed && !mixedMode) {
-      return "Escolha se deseja retirar tudo junto ou em dias separados.";
-    }
-
-    if (cartAnalysis.isMixed && mixedMode === "separate") {
-      if (!pickupCombo?.date || !pickupCombo.slot) {
-        return "Selecione data e horário para retirada do combo.";
-      }
-      if (!pickupRegular?.date || !pickupRegular.slot) {
-        return "Selecione data e horário para retirada das marmitas.";
       }
       return null;
     }
@@ -213,10 +161,7 @@ export function OrderForm() {
       pickup_display: buildPickupDisplay(),
       user_notes: form.notes.trim() || undefined,
       internal_notes: buildInternalNotes(),
-      mixed_mode: mixedMode,
       pickup_unified: pickupUnified,
-      pickup_combo: pickupCombo,
-      pickup_regular: pickupRegular,
       fulfillment_type: fulfillmentType,
       delivery_selection: isDelivery ? deliverySelection : null,
       delivery_street: isDelivery ? deliveryAddress.street.trim() : undefined,
@@ -316,85 +261,15 @@ export function OrderForm() {
             <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-emerald">
               Agende sua retirada
             </h2>
-            {cartAnalysis.hasCombo && !cartAnalysis.hasRegular && (
-              <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
-                Retirada apenas Segunda ou Sexta
-                <br />
-                Pedidos devem ser feitos com mínimo de 48h de antecedência (2 dias).
-              </p>
-            )}
-            {!cartAnalysis.hasCombo && cartAnalysis.hasRegular && (
-              <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
-                Retirada de Segunda a Sexta.
-                <br />
-                Pedidos para o dia seguinte só serão entregues no período da tarde e devem ser
-                realizados até as 19h.
-              </p>
-            )}
+            <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
+              Retirada de Segunda a Sexta.
+              <br />
+              Pedidos devem ser feitos com no mínimo 24 horas de antecedência (pedidos até as
+              19h30 retiram na tarde do dia seguinte; depois disso, só a partir do outro dia).
+            </p>
           </div>
 
-          {cartAnalysis.isMixed && (
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-nutrir-emerald">
-                Você tem combo e marmitas avulsas. Como prefere retirar?
-              </p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMixedMode("together");
-                    setPickupCombo(null);
-                    setPickupRegular(null);
-                    setPickupUnified(null);
-                  }}
-                  className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
-                    mixedMode === "together"
-                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
-                  }`}
-                >
-                  Tudo junto
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMixedMode("separate");
-                    setPickupUnified(null);
-                    setPickupCombo(null);
-                    setPickupRegular(null);
-                  }}
-                  className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
-                    mixedMode === "separate"
-                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
-                  }`}
-                >
-                  Separado
-                </button>
-              </div>
-            </div>
-          )}
-
-          {cartAnalysis.isMixed && mixedMode === "separate" && (
-            <>
-              <PickupScheduler
-                rule="combo"
-                title="Retirada do combo"
-                value={pickupCombo}
-                onChange={setPickupCombo}
-              />
-              <PickupScheduler
-                rule="regular"
-                title="Retirada das marmitas"
-                value={pickupRegular}
-                onChange={setPickupRegular}
-              />
-            </>
-          )}
-
-          {pickupRule && (
-            <PickupScheduler rule={pickupRule} value={pickupUnified} onChange={setPickupUnified} />
-          )}
+          <PickupScheduler value={pickupUnified} onChange={setPickupUnified} />
         </div>
       )}
 

@@ -21,7 +21,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Nutrir | Marmitas & Combos",
+  title: "Nutrir Piçarras | Marmitas Saudáveis & Combos",
   description:
     "Marmitas saudáveis em Piçarras. Combos, marmitas avulsas, monte seu combo e peça online.",
   icons: {

@@ -1,16 +1,10 @@
-/** Segunda=1 … Sexta=5 — retirada de marmitas e combos (só muda a antecedência mínima) */
-const REGULAR_WEEKDAYS = new Set([1, 2, 3, 4, 5]);
-const COMBO_WEEKDAYS = REGULAR_WEEKDAYS;
+/** Segunda=1 … Sexta=5 — retirada de marmitas e combos, mesma regra pra todos. */
+const WEEKDAYS = new Set([1, 2, 3, 4, 5]);
 
-const MS_HOUR = 60 * 60 * 1000;
-export const LEAD_COMBO_MS = 48 * MS_HOUR;
-export const LEAD_REGULAR_MS = 24 * MS_HOUR;
+/** Pedidos até este horário podem retirar amanhã à tarde; depois disso, só depois de amanhã. */
+const ORDER_CUTOFF_HOUR = 19;
+const ORDER_CUTOFF_MINUTE = 30;
 
-/** Pedidos de marmita avulsa até este horário podem retirar amanhã à tarde; depois disso, só depois de amanhã. */
-const REGULAR_ORDER_CUTOFF_HOUR = 19;
-const REGULAR_ORDER_CUTOFF_MINUTE = 0;
-
-export type PickupRule = "combo" | "regular";
 export type PickupSlotId = "morning" | "afternoon";
 
 export interface PickupSlot {
@@ -22,8 +16,8 @@ export interface PickupSlot {
 }
 
 export const PICKUP_SLOTS: PickupSlot[] = [
-  { id: "morning", label: "Manhã", range: "9:00 - 11:30", hour: 9, minute: 0 },
-  { id: "afternoon", label: "Tarde", range: "15:00 - 19:00", hour: 15, minute: 0 },
+  { id: "morning", label: "Manhã", range: "09:00 - 12:00", hour: 9, minute: 0 },
+  { id: "afternoon", label: "Tarde", range: "14:00 - 19:30", hour: 14, minute: 0 },
 ];
 
 export interface PickupSelection {
@@ -31,7 +25,6 @@ export interface PickupSelection {
   slot: PickupSlotId;
 }
 
-const WEEKDAYS_SHORT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const WEEKDAYS_LONG = [
   "Domingo",
   "Segunda",
@@ -59,18 +52,14 @@ export function getSlotDateTime(day: Date, slotId: PickupSlotId): Date {
   return new Date(day.getFullYear(), day.getMonth(), day.getDate(), slot.hour, slot.minute);
 }
 
-export function getLeadMs(rule: PickupRule): number {
-  return rule === "combo" ? LEAD_COMBO_MS : LEAD_REGULAR_MS;
-}
-
-/** Retirada avulsa: antes das 19h → amanhã à tarde; após 19h → depois de amanhã (qualquer turno). */
-export function getRegularEarliestSlotStart(now: Date): Date {
+/** Antes das 19h30 → amanhã à tarde; após 19h30 → depois de amanhã (qualquer turno). Isso garante ~24h de antecedência mínima pra qualquer pedido. */
+export function getEarliestSlotStart(now: Date): Date {
   const cutoff = new Date(
     now.getFullYear(),
     now.getMonth(),
     now.getDate(),
-    REGULAR_ORDER_CUTOFF_HOUR,
-    REGULAR_ORDER_CUTOFF_MINUTE,
+    ORDER_CUTOFF_HOUR,
+    ORDER_CUTOFF_MINUTE,
     0,
     0
   );
@@ -86,49 +75,22 @@ export function getRegularEarliestSlotStart(now: Date): Date {
   return getSlotDateTime(day, "afternoon");
 }
 
-export function isComboWeekday(day: Date): boolean {
-  return COMBO_WEEKDAYS.has(day.getDay());
+export function isWeekday(day: Date): boolean {
+  return WEEKDAYS.has(day.getDay());
 }
 
-export function isRegularWeekday(day: Date): boolean {
-  return REGULAR_WEEKDAYS.has(day.getDay());
+export function isDayEligible(day: Date, now: Date): boolean {
+  if (!isWeekday(day)) return false;
+  if (isSameCalendarDay(day, now)) return false;
+  return getAvailableSlotsForDay(day, now).length > 0;
 }
 
-/** Pedido no domingo não pode retirar na segunda imediatamente seguinte. */
-export function isComboDayBlocked(day: Date, now: Date): boolean {
-  if (now.getDay() !== 0 || day.getDay() !== 1) return false;
-  const nextMonday = new Date(now);
-  nextMonday.setDate(now.getDate() + 1);
-  return isSameCalendarDay(day, nextMonday);
-}
-
-export function isDayEligible(rule: PickupRule, day: Date, now: Date): boolean {
-  if (rule === "combo") {
-    if (!isComboWeekday(day)) return false;
-    if (isComboDayBlocked(day, now)) return false;
-  }
-  if (rule === "regular") {
-    if (!isRegularWeekday(day)) return false;
-    if (isSameCalendarDay(day, now)) return false;
-  }
-  return getAvailableSlotsForDay(rule, day, now).length > 0;
-}
-
-export function getAvailableSlotsForDay(
-  rule: PickupRule,
-  day: Date,
-  now: Date
-): PickupSlotId[] {
-  if (rule === "regular") {
-    if (!isRegularWeekday(day) || isSameCalendarDay(day, now)) {
-      return [];
-    }
+export function getAvailableSlotsForDay(day: Date, now: Date): PickupSlotId[] {
+  if (!isWeekday(day) || isSameCalendarDay(day, now)) {
+    return [];
   }
 
-  const minTime =
-    rule === "regular"
-      ? getRegularEarliestSlotStart(now).getTime()
-      : now.getTime() + getLeadMs(rule);
+  const minTime = getEarliestSlotStart(now).getTime();
 
   return PICKUP_SLOTS.filter((slot) => {
     const slotStart = getSlotDateTime(day, slot.id);
@@ -136,11 +98,7 @@ export function getAvailableSlotsForDay(
   }).map((s) => s.id);
 }
 
-export function getNextAvailablePickupDates(
-  rule: PickupRule,
-  now: Date = new Date(),
-  count = 5
-): Date[] {
+export function getNextAvailablePickupDates(now: Date = new Date(), count = 5): Date[] {
   const results: Date[] = [];
   const cursor = startOfDay(now);
 
@@ -148,7 +106,7 @@ export function getNextAvailablePickupDates(
     const day = new Date(cursor);
     day.setDate(cursor.getDate() + offset);
 
-    if (isDayEligible(rule, day, now)) {
+    if (isDayEligible(day, now)) {
       results.push(day);
     }
   }
@@ -209,6 +167,7 @@ export function formatPickupSummary(selection: PickupSelection): string {
   return `${wd} ${dateStr}, ${slot.label} (${slot.range})`;
 }
 
+/** Usado só pra decidir opções de pagamento local (ver PaymentMethodStep) — não afeta mais o agendamento. */
 export function analyzeCartItems(items: { section_id?: string }[]): {
   hasCombo: boolean;
   hasRegular: boolean;
@@ -220,5 +179,3 @@ export function analyzeCartItems(items: { section_id?: string }[]): {
   );
   return { hasCombo, hasRegular, isMixed: hasCombo && hasRegular };
 }
-
-export type MixedPickupMode = "together" | "separate";

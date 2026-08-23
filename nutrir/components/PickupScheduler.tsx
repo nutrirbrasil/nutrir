@@ -8,28 +8,26 @@ import {
   parseISODate,
   toISODate,
   PICKUP_SLOTS,
-  type PickupRule,
   type PickupSelection,
   type PickupSlotId,
 } from "@/lib/pickup-schedule";
 
 interface Props {
-  rule: PickupRule;
   title?: string;
   value: PickupSelection | null;
   onChange: (value: PickupSelection | null) => void;
   now?: Date;
 }
 
-export function PickupScheduler({ rule, title, value, onChange, now = new Date() }: Props) {
-  const dates = useMemo(() => getNextAvailablePickupDates(rule, now, 5), [rule, now]);
+export function PickupScheduler({ title, value, onChange, now = new Date() }: Props) {
+  const dates = useMemo(() => getNextAvailablePickupDates(now, 5), [now]);
 
   const selectedDate = value?.date ? parseISODate(value.date) : null;
-  const slots = selectedDate ? getAvailableSlotsForDay(rule, selectedDate, now) : [];
+  const slots = selectedDate ? getAvailableSlotsForDay(selectedDate, now) : [];
 
   function selectDate(iso: string) {
     const day = parseISODate(iso);
-    const daySlots = getAvailableSlotsForDay(rule, day, now);
+    const daySlots = getAvailableSlotsForDay(day, now);
     onChange({
       date: iso,
       slot: value?.date === iso && value.slot && daySlots.includes(value.slot)

@@ -4,11 +4,11 @@ import { startOfDay, toISODate, parseISODate } from "./pickup-schedule";
 export const DELIVERY_WEEKDAY = 0;
 
 export const DELIVERY_WINDOW = {
-  label: "15h às 19h",
-  startHour: 15,
+  label: "14h às 19h30",
+  startHour: 14,
   startMinute: 0,
   endHour: 19,
-  endMinute: 0,
+  endMinute: 30,
 };
 
 /** Corte: sexta-feira 23:59. Pedidos depois disso caem pro domingo seguinte. */

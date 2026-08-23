@@ -87,7 +87,6 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
       {
         meals: 14,
-        note: "Pode ser dividido em 2 encomendas",
         prices: {
           P: {
             card_total_cents: 30100,
@@ -105,7 +104,6 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
       {
         meals: 28,
-        note: "Pode ser dividido em até 4 encomendas",
         prices: {
           P: {
             card_total_cents: 56000,
@@ -148,7 +146,6 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
       {
         meals: 14,
-        note: "Pode ser dividido em 2 encomendas",
         prices: {
           P: {
             card_total_cents: 37100,
@@ -166,7 +163,6 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
       {
         meals: 28,
-        note: "Pode ser dividido em até 4 encomendas",
         prices: {
           P: {
             card_total_cents: 70000,
@@ -208,7 +204,6 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
       {
         meals: 14,
-        note: "Pode ser dividido em 2 encomendas",
         prices: {
           P: {
             card_total_cents: 33600,
@@ -226,7 +221,6 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
       {
         meals: 28,
-        note: "Pode ser dividido em até 4 encomendas",
         prices: {
           P: {
             card_total_cents: 63000,
@@ -269,7 +263,6 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
       {
         meals: 14,
-        note: "Pode ser dividido em 2 encomendas",
         prices: {
           P: {
             card_total_cents: 29400,
@@ -287,7 +280,6 @@ export const KIT_PRODUCTS: KitProduct[] = [
       },
       {
         meals: 28,
-        note: "Pode ser dividido em até 4 encomendas",
         prices: {
           P: {
             card_total_cents: 53200,

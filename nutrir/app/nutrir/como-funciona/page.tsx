@@ -31,29 +31,29 @@ export default function ComoFuncionaPage() {
 
       <InfoSection title="Antecedência dos pedidos">
         <p>
-          Pedidos para manhã devem ser feito até <strong>11:30</strong>.<br />
-          Pedidos para tarde devem ser feitos até <strong>19:00</strong>.
-        </p>
-        <p>
-          <strong>Marmitas Individuais:</strong> os pedidos devem ser feitos com no mínimo{" "}
+          Todos os pedidos devem ser feitos com no mínimo{" "}
           <strong>24 horas de antecedência</strong>.
         </p>
         <p>
-          <strong>Combos:</strong> os pedidos devem ser feitos com no mínimo{" "}
-          <strong>48 horas de antecedência</strong>.
+          Você pode pedir a qualquer dia e qualquer momento, mas se deseja pedir para o dia
+          seguinte:
+          <br />
+          Pedidos para a manhã do dia seguinte devem ser feito até <strong>12:00</strong>.
+          <br />
+          Pedidos para a tarde do dia seguinte devem ser feitos até <strong>19:30</strong>.
         </p>
       </InfoSection>
 
       <InfoSection title="Entrega">
         <p>
-          Todos os <strong>domingos, das 15h às 19h</strong>. O pedido deve ser feito até{" "}
+          Todos os <strong>domingos, das 14h às 19h30</strong>. O pedido deve ser feito até{" "}
           <strong>sexta-feira, 19:00</strong>! Disponível para marmitas individuais e combos, com
           taxa que varia conforme cidade e bairro.
         </p>
       </InfoSection>
 
       <InfoSection title="Retirada">
-        <p>De segunda a sexta, das 9:00 às 11:30 ou das 15:00 às 19:00.</p>
+        <p>De segunda a sexta, das 09:00 às 12:00 ou das 14:00 às 19:30.</p>
       </InfoSection>
 
       <p className="text-center font-display text-base italic text-nutrir-emerald md:text-lg">
