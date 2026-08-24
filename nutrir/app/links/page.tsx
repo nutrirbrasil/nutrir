@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { IconType } from "react-icons";
 import { FaGoogle, FaInstagram, FaUserDoctor, FaWhatsapp } from "react-icons/fa6";
 import { FiShoppingBag } from "react-icons/fi";
 import { whatsappContactUrl } from "@/lib/legal";
 import { logoUrl } from "@/lib/brand-assets";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
 
 export const metadata: Metadata = {
   title: "Links | Nutrir Piçarras",
@@ -16,18 +19,39 @@ const INSTAGRAM_URL = "https://www.instagram.com/nutrirpicarras";
 const GOOGLE_REVIEW_URL = "https://g.page/r/CXJ5WKkcHYgMEAI/review";
 const PAULI_URL = "https://pauli.nutrirpicarras.com.br/";
 
+/**
+ * O navegador embutido do Instagram roda numa WebView isolada, sem o login do
+ * Google sincronizado com o Chrome/Safari do sistema — por isso o link de
+ * avaliação pede pra logar de novo. Detectamos pelo user-agent (o app do
+ * Instagram sempre inclui "Instagram" nele) pra contornar isso.
+ */
+function isInstagramInAppBrowser(userAgent: string): boolean {
+  return /Instagram/i.test(userAgent);
+}
+
+function isAndroidUserAgent(userAgent: string): boolean {
+  return /Android/i.test(userAgent);
+}
+
+/** No Android, esse esquema pede pro sistema abrir o link no Chrome de verdade, saindo da WebView do Instagram. */
+function buildAndroidChromeIntentUrl(url: string): string {
+  const withoutProtocol = url.replace(/^https?:\/\//, "");
+  return `intent://${withoutProtocol}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
+}
+
 interface LinkButtonProps {
   href: string;
   external?: boolean;
   icon: IconType;
   title: string;
   subtitle: string;
+  hint?: string;
+  extra?: ReactNode;
 }
 
-function LinkButton({ href, external, icon: Icon, title, subtitle }: LinkButtonProps) {
-  const className =
-    "card flex items-center gap-4 !p-4 transition hover:-translate-y-0.5 hover:shadow-md";
-  const content = (
+function LinkButton({ href, external, icon: Icon, title, subtitle, hint, extra }: LinkButtonProps) {
+  const cardClassName = "card !p-4 transition hover:-translate-y-0.5 hover:shadow-md";
+  const rowContent = (
     <>
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald text-xl text-nutrir-nude">
         <Icon />
@@ -43,22 +67,37 @@ function LinkButton({ href, external, icon: Icon, title, subtitle }: LinkButtonP
     </>
   );
 
-  if (external) {
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
-        {content}
-      </a>
-    );
-  }
+  const link = external ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4">
+      {rowContent}
+    </a>
+  ) : (
+    <Link href={href} className="flex items-center gap-4">
+      {rowContent}
+    </Link>
+  );
 
   return (
-    <Link href={href} className={className}>
-      {content}
-    </Link>
+    <div className={cardClassName}>
+      {link}
+      {hint && (
+        <p className="mt-3 rounded-lg bg-nutrir-emerald/5 px-3 py-2 text-xs leading-relaxed text-nutrir-emerald/80">
+          {hint}
+        </p>
+      )}
+      {extra}
+    </div>
   );
 }
 
 export default function LinksPage() {
+  const userAgent = headers().get("user-agent") ?? "";
+  const inInstagram = isInstagramInAppBrowser(userAgent);
+  const reviewHref =
+    inInstagram && isAndroidUserAgent(userAgent)
+      ? buildAndroidChromeIntentUrl(GOOGLE_REVIEW_URL)
+      : GOOGLE_REVIEW_URL;
+
   return (
     <div className="mx-auto flex max-w-md flex-col items-center px-4 py-12">
       <Image
@@ -94,11 +133,17 @@ export default function LinksPage() {
           subtitle="Tire suas dúvidas | Envie feedbacks."
         />
         <LinkButton
-          href={GOOGLE_REVIEW_URL}
+          href={reviewHref}
           external
           icon={FaGoogle}
           title="Avalie e ganhe"
           subtitle="Nos avalie no Google com 5 estrelas e ganhe um suco grátis no seu próximo pedido!"
+          hint={
+            inInstagram
+              ? "Você está no navegador do Instagram — se pedir login de novo, toque em ⋯ no topo da tela e escolha \"Abrir no navegador\" pra usar sua conta Google já conectada."
+              : undefined
+          }
+          extra={inInstagram ? <CopyLinkButton url={GOOGLE_REVIEW_URL} /> : undefined}
         />
         <LinkButton
           href={PAULI_URL}
