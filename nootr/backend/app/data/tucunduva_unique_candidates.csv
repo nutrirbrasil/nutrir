@@ -268,672 +268,189 @@ page,name,kcal,carbs_g,fat_g,protein_g,fiber_g,suspect,taco_match,taco_similarit
 55,Iogurte com mel,82.2,14.99,1.24,2.6,,False,"Iogurte, natural",0.2
 56,Iogurte de fruta,97.7,18.9,1.12,3,,False,Fruta,0.333
 60,Iogurte de fruta diet ou light,30.6,4.17,0.1,3,,False,"Iogurte, sabor morango",0.333
-60,Ioiô Nut® cream com avelã,530.0,60.0,3.0,5.0,,False,"Biscoito, salgado, cream cracker",0.143
-61,Kani kama (cru),80.0,,0.3,10.5,,False,"Agrião, cru",0.25
+61,Kani (sushi),80.0,,0.3,10.5,,False,"Agrião, cru",0.25
 61,Kinder Ovo,568.0,54.6,35.8,7,,False,"Ovo, de codorna, inteiro, cru",0.2
 61,Lagosta (crua),90.0,0.5,0.9,18.8,0.0,False,"Acelga, crua",0.333
-61,Laranja,47.0,11.8,0.12,0.94,1.9,False,"Laranja, baía, crua",0.333
-61,Laranja albuminada,68.71,15.64,0.16,1.69,0.18,False,"Laranja, baía, crua",0.25
 61,Laranjada,35.66,8.38,0.14,0.47,0.14,False,,0.0
-61,Lasanha,185.0,12.3,9.0,12.91,0.74,False,"Lasanha, massa fresca, cozida",0.25
-61,Lasanha bolonhesa -Findus Nestlé®,136.0,,,6.9,,False,"Lasanha, massa fresca, cozida",0.143
-61,Lasanha verde-Findus Nestlé®,136.0,13.0,6.9,5.4,,False,"Curau, milho verde",0.167
-62,Leite de soja-PADRÃO,33.0,,0.82,2.76,1.31,False,"Pão, de soja",0.25
-62,Leite desnatado com ferro (sulfato,46.0,4.6,0.64,,,False,"Leite, de vaca, desnatado, pó",0.333
-62,Leite desnatado longa vida 1% de,41.9,4.79,1.07,,,False,"Leite, de vaca, desnatado, pó",0.333
-62,Leite em pó -Nestogeno Soy Nestlé®,464.0,57.5,18.6,16.6,0.9,False,"Leite, de vaca, desnatado, pó",0.286
-62,"Leite em pó de soja -Sobee® 469,oo 58,8o",19.8,,,14.0,0.7,False,"Leite, de vaca, desnatado, pó",0.2
-62,"Leite em pó de soja enriquecido 5o3,oo",55.4,25.0,6.1,,,False,"Leite, de vaca, desnatado, pó",0.25
-63,Leite em pó modificado-Alsoy Ncstlé®,503.0,55.4,25.0,14.0,,False,"Leite, de vaca, desnatado, pó",0.286
-63,Leite em pó modificado -Enfalac,490.0,54.9,24.7,,,False,"Leite, de vaca, desnatado, pó",0.333
-63,Leite cm pó modilicado-Nan I Nestlé®,509.0,57.9,25.8,11.4,,False,"Leite, de vaca, desnatado, pó",0.222
-63,Leite em pó modificado-Nan 2 Nestlé®,482.0,56.8,21.2,15.9,,False,"Leite, de vaca, desnatado, pó",0.286
-63,Leite em pó modificado -Nan HA 5 I,1.0,56.7,26.0,,,False,"Leite, de vaca, desnatado, pó",0.222
-63,Leite em pó modificado -Nestogeno I,445.0,60.8,14.5,,,False,"Leite, de vaca, desnatado, pó",0.286
-63,Leite em pó modificado-Nestogeno 2,478.0,51.4,21.5,,,False,"Leite, de vaca, desnatado, pó",0.333
-63,Leite em pó modificado -Pelargon,456.0,57.6,17.0,,,False,"Leite, de vaca, desnatado, pó",0.333
-64,Leite em pó modificado -Pregestimil® r,460.0,63.0,18.4,12.9,,False,"Leite, de vaca, desnatado, pó",0.286
-64,Leite em pó modificado -Sobee Mead,469.0,58.8,19.8,,,False,"Leite, de vaca, desnatado, pó",0.286
-64,"Leite em pó sem i desnatado 427.oo 46,2o",13.0,,,,,False,"Leite, de vaca, desnatado, pó",0.333
-64,Leite Ideal -Nestlé®,138.0,9.8,7.9,6.8,,False,Creme de Leite,0.25
-64,Leite integral -Nescau Nestlé® I,2.0,16.4,0.1,2.1,,False,"Canjica, com leite integral",0.333
-64,"Leite integral longa vida 3,5% de",61.4,4.67,3.32,,,False,"Canjica, com leite integral",0.286
-64,Leite longa vida desnatado -Molico,36.0,5.3,0.1,,,False,"Leite, de vaca, desnatado, pó",0.286
-64,Leite longa vida desnatado-Parmalat®,36.94,4.9,0.5,3.18,0.1,False,"Leite, de vaca, desnatado, pó",0.286
-64,Leite longa vida desnatado enriquecido,36.9,4.9,0.5,,,False,"Leite, de vaca, desnatado, pó",0.286
-65,Leite longa vida desnatado light,32.5,4.8,0.1,,,False,"Leite, de vaca, desnatado, pó",0.286
-65,Leite longa vida integral -Cotochés®,55.0,4.8,3.1,3.3,,False,"Canjica, com leite integral",0.333
-65,Leite longa vida integral-Elegê®,63.0,4.75,3.25,3.0,,False,"Canjica, com leite integral",0.333
-65,Leite longa vida integral -Parmalat® I,60.4,4.8,3.2,3.1,,False,"Canjica, com leite integral",0.286
-65,Leite longa vida integral com lactose,60.4,4.8,3.2,,,False,"Canjica, com leite integral",0.333
-65,Leite longa vida integral enriquecido,61.0,4.8,3.2,,,False,"Canjica, com leite integral",0.333
-65,"Leite longa vida integral enriquecido I 61 ,00",4.8,3.1,,,,False,"Canjica, com leite integral",0.222
-65,Leite longa vida magro -Long,51.2,4.9,2.0,,,False,Creme de Leite,0.167
-65,Leite longa vida semi desnatado,48.0,5.1,1.5,,,False,"Leite, de vaca, desnatado, pó",0.286
-65,Leite longa vida semi desnatado,40.6,4.8,1.0,,,False,"Leite, de vaca, desnatado, pó",0.286
-65,Leite longa vida sem i desnatado -Toda,50.7,5.0,1.9,,,False,"Leite, de vaca, desnatado, pó",0.25
-65,Leite longuinho magro morango,78.0,10.64,2.0,,,False,"Morango, cru",0.2
-65,Leite longuinho semi desnatado,84.4,14.77,1.1,,,False,"Leite, de vaca, desnatado, pó",0.333
+62,Leite de soja,33.0,1.8,1.92,2.76,1.31,False,"Pão, de soja",0.25
+62,Leite em pó (Nestogeno) ,464.0,57.5,18.6,16.6,0.9,False,"Leite, de vaca, desnatado, pó",0.286
+63,Leite em pó modilicado (NAN) ,509.0,57.9,25.8,11.4,,False,"Leite, de vaca, desnatado, pó",0.222
+64,Leite desnatado,36.94,4.9,0.5,3.18,0.1,False,"Leite, de vaca, desnatado, pó",0.286
+65,Leite integral,60.4,4.8,3.2,3.1,,False,"Canjica, com leite integral",0.286
+65,Leite sem lactose,60.4,4.8,3.2,3.1,,False,"Canjica, com leite integral",0.333
+65,Leite semidesnatado,40.6,4.8,1.0,3.1,,False,"Leite, de vaca, desnatado, pó",0.286
 65,Leite Materno,69.6,6.9,4.39,1.04,0.0,False,Creme de Leite,0.333
-66,Leite Nesquik morango -Nestlé®,88.0,14.8,2.4,1.7,,False,"Morango, cru",0.2
-66,Leite pasteurizado light -Paulista®,39.0,5.63,0.25,3.29,,False,Creme de Leite,0.2
-66,Leite semi desnatado longa vida 2% de,49.7,4.81,1.93,,,False,"Leite, de vaca, desnatado, pó",0.286
-66,"Leite tipo A 3,7% de gordura",64.2,4.66,3.67,,,False,Creme de Leite,0.167
-66,"Leite tipo A pasteurizado-Bela Vista® 61, 70",4.7,3.4,,3.2,,False,Creme de Leite,0.125
-66,"Leite tipo B 3,5% de gordura",61.4,4.67,3.32,,,False,Creme de Leite,0.143
-66,Leite tipo B pasteurizado -Paulista®,62.0,4.6,3.5,3.2,,False,Creme de Leite,0.167
-66,"Leite tipo C 3,0% de gordura",60.6,4.63,3.0,,,False,Creme de Leite,0.143
-66,Leite tipo C pasteurizado -l'armalat®,60.6,4.63,3.0,3.34,,False,Creme de Leite,0.143
-66,Leite tipo C pasteurizado -Paulista®,60.6,4.63,3.0,3.34,,False,Creme de Leite,0.167
-66,Lentilha enlatada -Bonduelle®,84.0,10.9,1.4,5.4,4.2,False,"Lentilha, cozida",0.25
+66,Lentilha enlatada,84.0,10.9,1.4,5.4,4.2,False,"Lentilha, cozida",0.25
 66,Lentilha seca,338.0,57.1,0.96,28.1,13.1,False,"Lentilha, cozida",0.333
 66,Licor,342.0,25.4,,,,False,,0.0
-67,Limonada com açúcar,145.86,14.43,0.02,0.07,0.07,False,"Açúcar, cristal",0.333
-67,Limonada sem açúcar,5.0,1.73,0.01,0.08,0.08,False,"Açúcar, cristal",0.333
-67,Linguado (cozido),117.0,0.0,1.54,24.2,0.0,False,"Brócolis, cozido",0.333
+67,Suco de limão,5.0,1.73,0.01,0.08,0.08,False,"Açúcar, cristal",0.333
+67,Linguado,117.0,0.0,1.54,24.2,0.0,False,"Brócolis, cozido",0.333
 67,Linguado (cru),91.0,0.0,1.2,18.8,0.0,False,"Agrião, cru",0.333
-67,Lula (cozida),138.0,3.75,4.7,18.81,0.0,False,"Berinjela, cozida",0.333
+67,Lula,138.0,3.75,4.7,18.81,0.0,False,"Berinjela, cozida",0.333
 67,Lula (crua),91.78,3.06,1.41,15.53,0.0,False,"Acelga, crua",0.333
-67,Lula ensopada recheada com camarão,150.66,2.39,9.93,12.7,0.41,False,Camarão à baiana,0.2
-67,Maçã vermelha,59.0,15.3,0.36,0.19,1.97,False,"Banana, maçã, crua",0.25
+67,Maçã,59.0,15.3,0.36,0.19,1.97,False,"Banana, maçã, crua",0.25
 67,Macadâmia,702.0,13.7,73.7,8.31,5.31,False,,0.0
 68,Macarrão à bolonhesa,126.12,22.11,1.67,1.0,,False,"Macarrão, instantâneo",0.333
-68,Macarrão à matriciana -Maggi®,139.6,26.88,,5.0,,False,"Macarrão, instantâneo",0.25
-68,Macarrão ao queijo -Maggi®,138.8,28.35,0.38,5.54,,False,"Macarrão, instantâneo",0.2
 68,Macarrão ao sugo,85.23,15.65,1.45,2.65,1.29,False,"Macarrão, instantâneo",0.25
 68,Macarrão carbonara -Maggi®,150.7,26.31,2.54,5.65,,False,"Macarrão, instantâneo",0.25
-68,Macarrão carne com ovos oriental,125.0,24.58,,,,False,"Macarrão, trigo, cru, com ovos",0.333
-68,Macarrão carne sem ovos oriental,125.0,25.0,,,,False,"Macarrão, trigo, cru, com ovos",0.333
-68,Macarrão champignon e ervas finas,140.0,28.46,0.77,,,False,"Macarrão, instantâneo",0.2
-68,Macarrão de sêmola de grão duro,348.0,72.0,0.7,,,False,"Macarrão, instantâneo",0.2
-68,"Macarrão espaguete com ovos 152,3o 3o,5o",1.81,,,,,False,"Macarrão, trigo, cru, com ovos",0.25
-68,Macarrão galinha com ovo oriental,124.2,24.0,19.0,,,False,"Ovo, de galinha, inteiro, cru",0.333
-68,Macarrão galinha sem ovos oriental,124.2,24.54,1.5,,,False,"Macarrão, trigo, cru, com ovos",0.333
-68,Macarrão massa com ovos cozida,143.0,29.0,1.0,,,False,"Lasanha, massa fresca, cozida",0.333
-69,Macarrão ninho -Premiata®,132.1,29.1,0.17,5.2,,False,"Macarrão, instantâneo",0.25
-69,Macarrão Nissin Miojo® cru (qualquer,395.0,47.0,19.0,,,False,"Macarrão, trigo, cru",0.333
-69,Macarrão parafuso tricolor,121.8,27.7,0.09,,,False,"Macarrão, instantâneo",0.25
-69,Macarrão queijo com ovos oriental,126.5,24.85,1.61,,,False,"Macarrão, trigo, cru, com ovos",0.333
-69,Macarrão tomate com ovos oriental,127.6,25.04,1.61,,,False,"Macarrão, trigo, cru, com ovos",0.333
-69,Macarrão tomate sem ovos oriental,125.0,24.96,1.38,,,False,"Macarrão, trigo, cru, com ovos",0.333
+68,"Macarrão",141,28.3,0.67,4.78,1.5,False,"Macarrão, trigo, cru, com ovos",0.25
 69,Macis em pó,475.0,50.5,32.4,6.71,20.2,False,"Achocolatado, pó",0.333
-69,Maionese,554.21,1.37,60.39,0.2891,,False,"Maionese, tradicional com ovos",0.333
-69,"Maizena -Nutre® (milho, aveia, arroz",360.0,,,,,False,"Óleo, de milho",0.167
-69,Maizena® -Refinações de Milho Brasil,354.0,88.2,,,,False,"Óleo, de milho",0.2
-70,Malto Dextrina -Nidex®,379.0,23.7,,15.0,,False,,0.0
-70,Mandioca gratinada,127.72,16.94,4.86,4.6,0.97,False,"Fécula, de mandioca",0.333
-70,Mandioquinha I,4.0,24.9,0.2,0.8,0.6,False,,0.0
+69,Maizena,354.0,88.2,,0.3,,False,"Óleo, de milho",0.2
+70,Malto Dextrina,379.0,23.7,,15.0,,False,,0.0
+70,Mandioquinha,104.0,24.9,0.2,0.8,0.6,False,,0.0
 70,Manga,65.0,17.0,0.27,0.51,2.77,False,"Cajá-Manga, cru",0.333
 70,Mangaba,43.0,10.5,0.3,0.7,0.8,False,,0.0
-70,Manjar pronto -Royal®,109.3,19.87,2.53,3.0,,False,"Bolo, pronto, aipim",0.2
-70,Manjericão fresco,27.0,4.35,0.61,2.54,2.52,False,"Manjericão, cru",0.333
 70,Manjericão seco,251.0,61.0,3.98,14.4,17.7,False,"Manjericão, cru",0.333
-70,"Manjerona seca 271 ,00",60.6,7.04,,12.7,18.1,False,"Carne, bovina, seca, cozida",0.143
+70,"Manjerona seca",271,60,7,12.7,18.1,False,"Carne, bovina, seca, cozida",0.143
 71,Manjuba (crua),99.0,0.0,2.2,18.5,,False,"Acelga, crua",0.333
-71,"Margarina vegetal -Ooriana® ""light""",342.0,,30.0,,,False,"Chantilly, spray, com gordura vegetal",0.143
-71,Margarina vegetal com sal-Claybon®,740.0,,,0.1,,False,"Margarina, com óleo hidrogenado, com sal (65% de lipídeos)",0.25
-71,Margarina vegetal cremosa com sal,740.0,0.1,82.0,,,False,"Margarina, com óleo hidrogenado, com sal (65% de lipídeos)",0.25
-71,Margarina vegetal cremosa sem sal,750.0,,,,,False,"Margarina, com óleo hidrogenado, com sal (65% de lipídeos)",0.25
-71,Margarina vegetal culinária-Doriana®,750.0,,,0.1,,False,"Chantilly, spray, com gordura vegetal",0.143
-71,Margarina vegetal culinária com sal-,720.0,,83.0,,,False,"Margarina, com óleo hidrogenado, com sal (65% de lipídeos)",0.25
-71,Margarina vegetal líquida -Ooriana®,750.0,0.1,83.0,0.1,,False,"Chantilly, spray, com gordura vegetal",0.143
 71,Marmelo,63.0,16.3,0.3,0.6,2.2,False,,0.0
 72,Marrom glacê,249.0,64.1,0.1,0.5,0.9,False,,0.0
-72,Massa com ovos soltinho -Adria®,358.0,74.0,1.5,12.5,,False,"Pastel, massa, crua",0.167
-72,Massa de sêmola vitaminada cozida,140.0,30.0,0.3,,,False,"Lasanha, massa fresca, cozida",0.333
-72,Massa fresca para talharim,285.0,61.4,0.5,,,False,"Lasanha, massa fresca, cozida",0.333
-72,Me Chicken -Me Donald's®,257.8,20.95,15.05,10.1,,False,,0.0
-72,Me Fish -Me Donald's®,309.8,26.69,18.38,9.718,,False,,0.0
-72,Medalhão de filé mignon,264.23,0.06,17.64,24.95,0.0,False,"Merluza, filé, assado",0.2
-72,Melão cantaloupe,35.0,8.37,0.28,1.0,,False,"Melão, cru",0.333
+72,Mc Chicken (Mc Donald's),257.8,20.95,15.05,10.1,,False,,0.0
+72,Me Fish (Mc Donald's),309.8,26.69,18.38,9.718,,False,,0.0
 72,Merluza (cozida),108.8,0.0,0.9,23.64,0.0,False,"Berinjela, cozida",0.333
-72,Merluza (crua),87.0,0.0,0.72,18.9,0.0,False,"Acelga, crua",0.333
-73,Merluza defumada,116.0,0.0,0.96,25.2,0.0,False,"Merluza, filé, assado",0.25
-73,Mexerica,44.0,11.2,0.19,0.63,1.5,False,"Mexerica, Murcote, crua",0.333
 73,Mexilhão (cru),86.0,3.7,2.25,11.9,0.0,False,"Agrião, cru",0.333
-73,Milharina -Quaker®,354.0,75.0,2.0,9.0,1.0,False,,0.0
-73,Milho para canjica seco,371.0,79.6,1.2,8.8,,False,"Curau, milho verde, mistura para",0.286
-73,Milho para pipoca-Yoki®,444.0,69.4,14.5,9.9,,False,"Curau, milho verde, mistura para",0.286
-73,Milho verde cozido (grão) I,8.0,25.0,,3.33,2.8,False,"Curau, milho verde",0.333
-73,Milho verde cm conserva-Jurema® I,9.0,18.0,2.5,3.5,,False,"Curau, milho verde",0.286
-73,Milkshakc baunilha -Me Donald's® I,15.5,18.38,3.37,3.37,,False,,0.0
-73,Milkshakc chocolate-Me Donald's®,128.3,20.59,3.49,3.62,,False,"Bolo, pronto, chocolate",0.143
-73,Milkshakc morango-Me Donald's®,125.4,20.86,3.33,3.33,,False,"Morango, cru",0.167
+73,Milho para canjica,371.0,79.6,1.2,8.8,,False,"Curau, milho verde, mistura para",0.286
+73,Milho para pipoca,444.0,69.4,14.5,9.9,,False,"Curau, milho verde, mistura para",0.286
+73,Milkshake,128.3,20.59,3.49,3.62,,False,"Bolo, pronto, chocolate",0.143
 73,Mingau de aveia,95.08,12.8,3.31,3.82,0.55,False,Leite de aveia,0.333
-73,Mini chicken -Turma da Mônica,293.5,14.5,19.5,,,False,,0.0
-73,Mini kibe -Sadia®,200.4,,,10.0,,False,,0.0
 74,Missô,206.0,28.0,6.08,1.8,5.41,False,,0.0
-74,Misto frio,246.14,23.21,10.94,14.26,0.92,False,,0.0
-74,Misto quente,288.9,2.0,,13.02,0.84,False,,0.0
+74,Misto quente,288.9,21,17,13.02,0.84,False,,0.0
 74,Molho à bolonhesa,86.79,5.8,4.31,6.89,,False,"Cuxá, molho",0.333
-74,Molho ao curry -Maggi®,207.0,3.1,21.1,1.2,,False,"Cuxá, molho",0.2
-74,Molho barbecue-Me Donald's®,156.0,37.8,1.6,0.9,,False,"Cuxá, molho",0.167
-74,Molho branco I,28.5,,8.05,3.4,0.17,False,"Cuxá, molho",0.25
-74,"Molho branco ""béarnaise"" -Maggi®",233.0,3.5,23.9,0.9,,False,"Cuxá, molho",0.2
-74,"Molho branco à ""la cream""-Maggi® I",79.0,7.2,,1.7,,False,"Cuxá, molho",0.143
-74,Molho branco bechamel -Maggi® I,45.0,5.0,,1.2,,False,"Cuxá, molho",0.167
-74,Molho branco champignon -Maggi®,148.0,7.1,12.0,3.0,,False,"Cuxá, molho",0.2
-74,Molho branco com queijo -Alfredo I,87.6,6.79,,,,False,"Queijo, mozarela",0.167
-74,Molho branco gratin -Maggi® I,69.0,5.2,,2.5,,False,"Cuxá, molho",0.167
-74,Molho chinês,36.79,9.59,0.06,0.27,0.25,False,"Cuxá, molho",0.333
-75,Molho cremoso -Becel®,458.0,5.5,47.5,2.0,,False,"Cuxá, molho",0.25
-75,Molho de soja -Sakura®,53.3,,,6.67,,False,"Pão, de soja",0.25
-75,Molho de tomate ao sugo -Cica®,70.0,10.0,2.7,1.4,,False,"Tomate, molho industrializado",0.333
-75,"Molho de tomate com pedaços -Etti® 35, I O",6.8,0.6,,1.2,,False,"Tomate, molho industrializado",0.286
-75,M Pe o p l e h r o o n d e e M tom ag a g t i e ® c om pimentão,60.8,5.88,3.48,1.48,,False,"Pimentão, amarelo, cru",0.056
-75,Molho de tomate di bologna -Maggi®,58.0,5.3,2.9,2.7,,False,"Tomate, molho industrializado",0.333
-75,Molho de tomate ervas finas -Maggi®,61.4,6.0,3.48,1.48,,False,"Tomate, molho industrializado",0.333
-75,Molho de tomate pizza-Cantina Cica®,35.0,7.7,1.0,1.0,,False,"Tomate, molho industrializado",0.333
-76,Molho de tomate spaguetti -Cica® I,54.0,9.5,1.1,1.6,,False,"Tomate, molho industrializado",0.333
+74,Molho barbecue,156.0,37.8,1.6,0.9,,False,"Cuxá, molho",0.167
+74,Molho branco,128,8,9.2,3.4,0.17,False,"Cuxá, molho",0.25
+75,Shoyu (Sakura),53.3,,,6.67,,False,"Pão, de soja",0.25
+75,Molho de tomate,35.0,7.7,1.0,1.0,,False,"Tomate, molho industrializado",0.333
 76,Molho inglês,38.0,9.6,0.2,1.3,2.53,False,"Cuxá, molho",0.333
 76,Molho madeira,83.67,4.89,6.17,0.94,0.19,False,"Cuxá, molho",0.333
-76,Molho rosé -Gourmet®,463.0,6.0,48.0,0.7,,False,"Cuxá, molho",0.25
-76,Molho tártaro -Gourmet®,525.0,0.6,56.0,2.2,,False,"Cuxá, molho",0.25
-76,Molho vinagrete,100.06,4.8,9.59,0.38,0.5,False,"Cuxá, molho",0.333
-76,Mostarda-Me Donald's®,233.0,27.3,12.0,1.66,,False,"Mostarda, folha, crua",0.167
-77,Mucilon de arroz -Nestlé®,380.0,87.0,0.6,6.6,2.6,False,Arroz carreteiro,0.25
-77,Mucilon de milho -Nestlé®,367.0,86.3,0.4,7.2,2.6,False,"Óleo, de milho",0.25
+76,Mostarda,233.0,27.3,12.0,1.66,,False,"Mostarda, folha, crua",0.167
+77,Mucilon,380.0,87.0,0.6,6.6,2.6,False,Arroz carreteiro,0.25
 77,Mungunzá,100.0,19.6,1.7,2.2,0.2,False,,0.0
-77,Müsli -Kellogg's®,375.0,77.5,5.0,10.0,7.5,False,,0.0
+77,Müsli,375.0,77.5,5.0,10.0,7.5,False,,0.0
 77,Musse de chocolate,377.31,33.81,25.39,8.04,7.56,False,"Bolo, pronto, chocolate",0.25
-77,Musse de maracujá,198.57,0.0,7.7,4.37,0.08,False,"Maracujá, cru",0.333
 77,Nabo (cozido),18.0,4.91,0.08,0.71,2.0,False,"Brócolis, cozido",0.333
 77,Nectarina,49.0,11.8,0.46,0.94,1.57,False,,0.0
-77,Nescau Syrup -Nestlé®,283.0,65.4,1.2,2.6,2.9,False,,0.0
-77,Nescau®,381.0,83.5,3.0,5.0,,False,,0.0
-77,Nesquik em pó chocolate Alpino,380.0,79.6,4.1,,,False,"Achocolatado, pó",0.2
-78,Nesquik em pó morango -Nestlé®,393.0,96.4,0.1,1.7,,False,"Morango, cru",0.2
-78,Neston aveia -Nestlé®,375.0,76.9,2.2,11.8,,False,Leite de aveia,0.25
-78,"Neston vitamina banana, pêra e melão-",390.0,89.6,0.6,,,False,"Melão, cru",0.167
-78,Nhoque de batatas,185.85,34.0,,4.88,1.72,False,"Nhoque, batata, cozido",0.25
-78,Nhoque de batatas com molho de,115.44,20.17,2.68,,,False,"Cuxá, molho",0.25
-78,Nhoque de frango -Nestlé®,158.0,17.1,6.3,8.3,,False,Estrogonofe de frango,0.25
-78,Novomilk® em pó chocolate,430.0,66.5,12.0,14.0,0.5,False,"Achocolatado, pó",0.25
-78,Novomilk® mamão e banana*,410.0,80.0,6.0,9.0,,False,"Banana, da terra, crua",0.2
 78,Noz moscada,525.0,49.3,36.3,5.84,20.8,False,"Noz, crua",0.333
-78,Nozes,651.0,18.5,64.0,14.8,2.1,False,,0.0
-78,Nozes pecan sem casca,667.0,18.2,67.6,7.76,4.64,False,"Goiaba, branca, com casca, crua",0.167
-78,Nugget frango- Me Donald's®,257.0,14.6,14.4,16.8,,False,Estrogonofe de frango,0.167
-78,Nutry banana-Nutrimental®,360.0,76.4,4.8,4.4,0.4,False,"Banana, da terra, crua",0.2
-78,Nutry coco-Nutrimental®,444.0,64.4,17.6,6.4,2.8,False,"Coco, água de",0.25
-79,Nutry frutas e castanha do Pará,400.0,77.2,8.4,,,False,"Chocolate, ao leite, com castanha do Pará",0.286
-79,Nutry salada de frutas- Nutrimental®,93.0,20.6,0.6,1.2,0.2,False,Salada,0.25
+78,Nuggets,257.0,14.6,14.4,16.8,,False,Estrogonofe de frango,0.167
+78,Barra de Cereal (Nutry),360.0,76.4,4.8,4.4,0.4,False,"Banana, da terra, crua",0.2
 79,Orégano fresco,66.0,9.7,2.0,2.2,,False,"Atum, fresco, cru",0.25
-79,Orégano seco,306.0,64.4,,11.0,15.0,False,,0.0
-79,Ostm (cozida),137.0,,4.92,14.1,0.0,False,"Berinjela, cozida",0.333
+79,Orégano seco,306.0,64.4,10,11.0,15.0,False,,0.0
+79,Ostra (cozida),137.0,7.8,4.92,14.1,0.0,False,"Berinjela, cozida",0.333
 79,Ostra (crua),68.0,3.92,2.47,7.06,0.0,False,"Acelga, crua",0.333
-80,Nesquik em pó morango -Nestlé®,393.0,96.4,0.1,1.7,,False,"Morango, cru",0.2
-80,Neston aveia -Nestlé®,375.0,76.9,2.2,11.8,,False,Leite de aveia,0.25
-80,"Neston vitamina banana, pêra e melão-",390.0,89.6,0.6,,,False,"Melão, cru",0.167
-80,Nhoque de batatas,185.85,34.0,,4.88,1.72,False,"Nhoque, batata, cozido",0.25
-80,Nhoque de batatas com molho de,115.44,20.17,2.68,,,False,"Cuxá, molho",0.25
-80,Nhoque de frango -Nestlé®,158.0,17.1,6.3,8.3,,False,Estrogonofe de frango,0.25
-80,Novomilk® em pó chocolate,430.0,66.5,12.0,14.0,0.5,False,"Achocolatado, pó",0.25
-80,Novomilk® mamão e banana*,410.0,80.0,6.0,9.0,,False,"Banana, da terra, crua",0.2
-80,Noz moscada,525.0,49.3,36.3,5.84,20.8,False,"Noz, crua",0.333
-80,Nozes 65,1.0,18.5,64.0,14.8,2.1,False,"Margarina, com óleo hidrogenado, com sal (65% de lipídeos)",0.143
-80,Nozes pecan sem casca,667.0,18.2,67.6,7.76,4.64,False,"Goiaba, branca, com casca, crua",0.167
-80,Nugget frango- Me Donald's®,257.0,14.6,14.4,16.8,,False,Estrogonofe de frango,0.167
-80,Nutry banana-Nutrimental®,360.0,76.4,4.8,4.4,0.4,False,"Banana, da terra, crua",0.2
-80,Nutry coco-Nutrimental®,444.0,64.4,17.6,,,False,"Coco, água de",0.25
-81,Nutry frutas e castanha do Pará,400.0,77.2,8.4,,,False,"Chocolate, ao leite, com castanha do Pará",0.286
-81,Nutry salada de frutas- Nutrimental® I,93.0,20.6,0.6,1.2,0.2,False,Salada,0.2
-81,Orégano fresco,66.0,9.7,2.0,2.2,,False,"Atum, fresco, cru",0.25
-81,Orégano seco,306.0,64.4,,11.0,15.0,False,,0.0
-81,Ostra (cozida),137.0,7.83,4.92,14.1,0.0,False,"Berinjela, cozida",0.333
-81,Ostra (crua),68.0,3.92,2.47,7.06,0.0,False,"Acelga, crua",0.333
-82,"Ovo ""poché""",149.0,1.23,9.99,12.4,0.0,False,"Ovo, de codorna, inteiro, cru",0.2
-82,Ovomaltine® chocolate,391.8,77.3,3.8,12.1,,False,"Bolo, pronto, chocolate",0.25
-82,Paçoca-bar,418.0,70.5,14.1,7.4,1.0,False,"Paçoca, amendoim",0.333
-82,Pamonha,157.92,32.08,3.46,2.56,1.76,False,"Pamonha, barra para cozimento, pré-cozida",0.167
-82,Panetone -Bauducco®,360.0,55.0,12.0,8.0,,False,,0.0
-82,Panetone -Village®,373.6,61.2,,7.0,,False,,0.0
-82,Panetone com gotas de chocolate,423.5,54.42,19.05,,,False,"Bolo, pronto, chocolate",0.2
+80,Nesquik,393.0,96.4,0.1,1.7,,False,"Morango, cru",0.2
+80,"Neston",390.0,89.6,0.6,6.1,,False,"Melão, cru",0.167
+82,Ovomaltine,391.8,77.3,3.8,12.1,,False,"Bolo, pronto, chocolate",0.25
+82,Panetone,360.0,55.0,12.0,8.0,,False,,0.0
+82,Chocotone,423.5,54.42,19.05,8.6,,False,"Bolo, pronto, chocolate",0.2
 82,Panqueca de carne moída,162.77,14.65,7.67,8.54,0.91,False,Estrogonofe de carne,0.25
 82,Pão caseiro,392.13,69.73,7.62,9.65,3.15,False,"Pão, de soja",0.333
 82,Pão de batata,241.35,36.57,7.59,1.0,6.79,False,"Pão, de soja",0.333
 83,Pão de centeio,357.36,64.71,6.24,10.29,5.79,False,"Pão, de soja",0.333
-83,"Pão de mel 250, I I",53.4,7.0,2.35,4.83,1.29,False,"Pão, de soja",0.2
-84,l'ão de queijo lanche -Forno de Minas®,286.0,31.86,13.67,8.87,,False,"Queijo, minas, frescal",0.286
-84,l'ão de queijo preparado-Yoki®,345.5,49.37,15.0,5.48,0.32,False,"Queijo, mozarela",0.167
-84,l'ão glúten libras -Wickhold®,233.0,44.4,0.4,12.8,,False,Bolo sem glúten,0.167
-84,Pão hot dog-Pullman®,180.0,33.18,3.19,4.78,,False,"Pão, de soja",0.2
-84,l'ão italiano,271.0,50.0,3.5,8.8,3.1,False,"Chocolate, ao leite",0.2
-84,!'apinha banana com aveia-Nestlé,90.9,20.58,0.32,,,False,Leite de aveia,0.2
-84,!'apinha carne com legumes-Nestlé,92.6,8.2,2.2,,,False,Estrogonofe de carne,0.2
-84,"!'apinha carne, cenoura, batata c",67.3,8.2,2.2,,,False,"Cenoura, cozida",0.167
-84,"!'apinha carne, hortaliças c cercais",72.7,6.6,3.07,,,False,Estrogonofe de carne,0.167
-84,"Papinha carne, legumes e macarrão",76.0,8.27,2.8,,,False,"Macarrão, instantâneo",0.2
-84,"Papinha carne, legumes, arroz e gema",72.7,7.6,3.0,,,False,Arroz carreteiro,0.167
-84,Papinha frutas sortidas -Nestlé Haby®,91.6,21.81,0.32,0.39,,False,Geleia de frutas sem açúcar,0.143
-85,"Papinha frutas sortidas, mel e farinha I",3.2,23.68,0.39,,,False,"Farinha, de rosca",0.143
-85,"Papinha galinha, legumes e hortaliças",92.6,8.2,4.67,,,False,"Seleta de legumes, enlatada",0.167
-85,"Papinha galinha, legumes e macarrão",92.6,9.07,4.4,,,False,"Macarrão, instantâneo",0.2
-85,Papinha maçã -Nestlé Baby®,81.3,19.48,0.32,0.19,,False,"Banana, maçã, crua",0.167
-85,Papinha maçã e banana -Nestlé Baby®,84.5,20.0,13.0,0.59,,False,"Banana, maçã, crua",0.333
-85,Papinha maçã e laranja -Nestlé Baby®,92.2,22.52,0.13,0.19,,False,"Banana, maçã, crua",0.143
-85,"Papinha maçã, cereais e mel -Nestlé",76.7,18.39,0.19,,,False,"Mel, de abelha",0.167
-85,Papinha pedaço banana e aveia -Nestlé,82.3,18.88,0.28,,,False,Leite de aveia,0.167
-85,Papinha pedaço frutas sortidas -Nestlé,90.7,22.09,,,0.6,False,Geleia de frutas sem açúcar,0.143
-85,Papinha pedaço maçã e banana -Nestlé,70.7,17.3,,,,False,"Banana, maçã, crua",0.333
-85,Papinha pêra-Nestlé Baby®,78.7,18.32,0.32,0.58,,False,"Laranja, pêra, crua",0.167
+83,"Pão de mel",250,53,2.3,4.83,1.29,False,"Pão, de soja",0.2
+84,Pão de cachorro quente (hot dog),180.0,33.18,3.19,4.78,,False,"Pão, de soja",0.2
+84,"Papinha (comida de bebê)",76.0,8.27,2.8,,,False,"Macarrão, instantâneo",0.2
 85,Páprica,289.0,55.7,13.0,14.8,20.9,False,,0.0
-85,Pastel de pizza,276.88,33.39,10.56,11.44,1.49,False,"Pastel, de carne, cru",0.25
-86,Pastel tipo especial,267.58,23.03,,15.89,0.97,False,"Arroz, tipo 1, cozido",0.2
-86,Patê de presunto -Sadia®,253.0,2.5,23.0,9.0,0.2,False,"Presunto, com capa de gordura",0.2
-86,Patê de ricota,237.19,2.97,22.41,6.85,0.12,False,"Queijo, ricota",0.333
+86,Patê,253.0,2.5,23.0,9.0,0.2,False,"Presunto, com capa de gordura",0.2
 86,Pato (cru),135.81,0.0,11.45,7.66,0.0,False,"Agrião, cru",0.333
-86,"Pato assado sem pele sem sal 20 I ,00",0.0,,,23.5,0.0,False,"Frango, inteiro, sem pele, assado",0.222
-86,Pato assado sem sal,337.0,0.0,28.4,19.0,0.0,False,"Manteiga, com sal",0.25
-86,Pato no tucupi,303.16,3.1,25.48,14.8,0.44,False,"Tucupi, com pimenta-de-cheiro",0.2
-86,Pavê de amendoim,324.86,24.41,23.33,6.4,1.16,False,"Paçoca, amendoim",0.333
-86,"Pé de moleliUe 45 I ,23",72.65,17.36,4.21,6.15,1.47,False,"Pé-de-moleque, amendoim",0.143
-87,Peito de peru defumado -Califórnia,93.1,,0.61,,,False,"Peru, congelado, assado",0.167
+86,Pato assado,337.0,0.0,28.4,19.0,0.0,False,"Manteiga, com sal",0.25
+86,"Pé de moleque",450,72,17,6.15,1.47,False,"Pé-de-moleque, amendoim",0.143
+87,Peito de peru defumado ,93.1,,0.61,21.7,,False,"Peru, congelado, assado",0.167
 87,Peixe espada (cozido),179.45,0.0,8.66,23.85,0.0,False,Peixe,0.333
 87,Peixe espada (cru),121.0,0.0,4.02,19.8,0.0,False,Peixe,0.333
-87,Pêra,59.0,15.1,,0.39,2.4,False,"Laranja, pêra, crua",0.333
-87,Perna de cordeiro assado sem sal,191.0,0.0,7.75,28.3,0.0,False,"Manteiga, com sal",0.2
-87,Peru -Califórnia Sadia®,130.0,,3.2,19.7,,False,"Peru, congelado, assado",0.2
-87,Pêssego,43.0,11.1,0.09,0.7,1.8,False,"Pêssego, Aurora, cru",0.333
-87,Picadinho de carne com frutas,165.62,13.57,8.35,9.64,1.23,False,Estrogonofe de carne,0.25
+87,Pêra,59.0,15.1,0.4,0.39,2.4,False,"Laranja, pêra, crua",0.333
+87,Pernil de cordeiro assado,191.0,0.0,7.75,28.3,0.0,False,"Manteiga, com sal",0.2
 88,Picles,14.0,3.1,0.2,0.7,0.4,False,,0.0
-88,Pimenta caiena 3 I,8.0,56.6,,12.0,25.0,False,"Tucupi, com pimenta-de-cheiro",0.167
-88,Pimenta do reino em pó,255.0,64.8,3.26,10.9,26.5,False,"Achocolatado, pó",0.25
-88,t>imenta molho,14.1,1.6,0.58,0.59,0.57,False,"Cuxá, molho",0.25
 88,Pinga,231.0,,,,,False,,0.0
-88,Pingo O' ouro-Elma Chips®,497.0,6.0,,8.5,,False,"Banana, ouro, crua",0.167
-88,Pinhão (cru),568.0,,9.3,1.6,10.7,False,"Agrião, cru",0.333
-89,Pipoca,497.22,55.67,28.37,8.57,10.79,False,"Pipoca, com óleo de soja, sem sal",0.25
-89,Pipoca doce industrializada,383.0,85.4,3.5,6.1,,False,"Polvilho, doce",0.25
-89,Pipoca Poll'cts-Elma Chips®,545.5,,,5.64,,False,"Pipoca, com óleo de soja, sem sal",0.125
-89,PiJ>oca salgada com manteiga,449.83,61.12,20.28,9.59,,False,"Manteiga, com sal",0.2
-89,Pistachc,577.0,24.8,48.4,20.6,10.8,False,,0.0
-89,Pistache torrado sem sal,606.0,27.5,52.8,14.9,10.8,False,"Manteiga, com sal",0.25
+88,Pingo D'ouro,497.0,6.0,24,8.5,,False,"Banana, ouro, crua",0.167
+89,Pipoca doce,383.0,85.4,3.5,6.1,,False,"Polvilho, doce",0.25
+89,Pistache,577.0,24.8,48.4,20.6,10.8,False,,0.0
 89,Pizza de calabresa,189.4,25.64,7.1,5.97,2.11,False,,0.0
 89,Pizza de catupiry,191.25,26.74,6.91,5.97,2.12,False,,0.0
-89,Pizza de mussarcla,191.7,17.43,9.85,8.72,1.46,False,,0.0
-89,"Pizza de mussarela de búfala, rúcuht e",183.05,16.7,,,,False,Queijo mussarela sem lactose,0.167
-89,Pizza massa fresca sem i pronta,277.0,55.6,2.7,,,False,"Lasanha, massa fresca, cozida",0.286
-89,Pizza mussarela -Findus Nestlé®,296.0,23.4,17.2,12.0,,False,Queijo mussarela sem lactose,0.167
-89,Polenta,62.88,11.32,1.67,1.02,,False,"Polenta, pré-cozida",0.333
-90,Picles,14.0,3.1,0.2,0.7,0.4,False,,0.0
-90,Pimenta caiena 3,18.0,56.6,17.3,12.0,25.0,False,"Tucupi, com pimenta-de-cheiro",0.2
-90,Pimenta do reino cm pó,255.0,64.8,3.26,10.9,26.5,False,"Achocolatado, pó",0.2
-90,Pimenta molho,14.1,1.6,0.58,0.59,0.57,False,"Cuxá, molho",0.333
-90,Pinga,231.0,,,,,False,,0.0
-90,Pingo O' ouro-Elma Chips®,497.0,61.0,24.3,8.5,,False,"Banana, ouro, crua",0.167
-90,Pinhão (cru),568.0,19.3,61.0,11.6,10.7,False,"Agrião, cru",0.333
-91,Pipoca,497.22,55.67,28.37,8.57,10.79,False,"Pipoca, com óleo de soja, sem sal",0.25
-91,Pipoca doce industrializada,383.0,85.4,3.5,6.1,,False,"Polvilho, doce",0.25
-91,Pipoca Poll'cts -Elma Chips®,545.5,,,5.64,,False,"Pipoca, com óleo de soja, sem sal",0.125
-91,Pipoca salgada com manteiga,449.83,61.12,20.28,9.59,,False,"Manteiga, com sal",0.25
-91,Pistache,577.0,24.8,48.4,20.6,10.8,False,,0.0
-91,Pistache torrado sem sal,606.0,27.5,52.8,14.9,10.8,False,"Manteiga, com sal",0.25
-91,l'izza de calahresa,189.4,25.64,7.1,5.97,2.11,False,,0.0
-91,l>izza de catupiry,191.25,26.74,6.91,5.97,2.12,False,,0.0
-91,Pizza de mussarela,191.7,17.43,9.85,8.72,1.46,False,Queijo mussarela sem lactose,0.25
-91,"Pizza de mussarela de búfala, rúcula c",183.05,16.71,9.48,,,False,"Rúcula, crua",0.167
-91,Pizza massa fresca sem i pronta,277.0,55.6,2.7,,,False,"Lasanha, massa fresca, cozida",0.286
-91,Pizza mussarela -Findus Nestlé®,296.0,23.4,17.2,12.0,,False,Queijo mussarela sem lactose,0.167
-91,Polenta,62.88,,,1.02,,False,"Polenta, pré-cozida",0.333
-92,Polenta com molho de carne,58.73,8.0,,2.33,1.51,False,"Cuxá, molho",0.25
+89,Pizza de mussarela,191.7,17.43,9.85,8.72,1.46,False,,0.0
 92,Polenta frita,89.39,10.96,4.84,0.99,1.91,False,"Mandioca, frita",0.333
-92,Polcntina com sal -Quakcr®,342.0,73.0,2.0,8.0,1.0,False,"Manteiga, com sal",0.25
-92,Polentina temperado -Quaker®,339.0,69.0,2.0,7.0,1.0,False,,0.0
-92,Polpa de fruta natural açaí -Maisa®,182.4,,22.55,2.1,31.4,False,"Açaí, polpa, congelada",0.333
 92,Polvo (cru),82.0,2.21,1.05,14.9,0.0,False,"Agrião, cru",0.333
-92,Ponta de agulha (crua),226.23,0.0,12.51,26.43,0.0,False,"Acelga, crua",0.25
-92,Presunto de frango defumado -Seara® I,15.3,,2.7,18.4,,False,Estrogonofe de frango,0.167
-92,Presunto de peru -Califórnia Sadia®,103.3,,2.49,19.7,,False,"Peru, congelado, assado",0.167
-92,Presunto de peru defumado,117.6,,3.18,,,False,"Peru, congelado, assado",0.2
-92,Presunto de porco,182.0,3.12,10.6,17.6,0.0,False,"Lingüiça, porco, crua",0.25
 92,Proteína texturizada de soja,342.8,30.51,1.24,52.4,,False,"Pão, de soja",0.25
-92,Pudim de baunilha -Royal®* I,2.7,18.0,2.55,3.1,,False,,0.0
-93,Pudim de caramelo -Royal®* I I,3.3,2.0,,2.93,,False,,0.0
-93,Pudim de chocolate -Royal®* I I,2.0,,9.93,3.33,,False,"Bolo, pronto, chocolate",0.167
-93,Pudim de chocolate diet- Royal® (com,76.1,8.92,3.0,,,False,"Bolo, pronto, chocolate",0.167
-93,Pudim de claras I,95.49,43.77,0.0,5.95,0.03,False,,0.0
-93,Pudim de coco -Royal®*,104.1,17.58,,3.1,,False,"Coco, água de",0.25
-93,l'udim de leite Moça -Nestlé®,137.7,21.6,3.87,4.05,,False,Creme de Leite,0.167
-93,Pudim de morango -Royal®* I I,0.0,20.0,2.53,3.0,,False,"Morango, cru",0.2
-93,l'udim diet baunilha-Royal® (com,47.6,8.92,0.08,,,False,,0.0
-93,Pudim diet baunilha -Royal® (com,72.3,8.77,2.85,,,False,,0.0
-93,Pudim diet caramelo-Royal® (com,46.9,8.77,,,,False,,0.0
-93,Pudim diet caramelo-Royal® (com,71.5,8.61,2.85,,,False,,0.0
-93,Pudim diet chocolate-Royal® (com,50.7,9.0,0.3,,,False,"Bolo, pronto, chocolate",0.167
-94,Pu rê de batatas I 08.4S,15.95,4.32,1.19,1.94,0.98,False,,0.0
-94,Pu rê de tomate- J>urecica®,34.0,7.5,1.0,1.0,,False,"Tomate, extrato",0.167
-94,Purity 69A -Lorenal®,400.0,87.0,,,0.25,False,,0.0
-94,Quarteirão com queijo- Me Donald's®,268.0,18.09,15.05,14.69,,False,"Queijo, mozarela",0.167
-94,Quatro cercais -Kcllogg's®,350.0,85.0,,10.0,,False,,0.0
-94,Qucijadinha,344.21,48.4,7.0,10.66,1.17,False,,0.0
-94,"Queijo ""petit suissc"" maçã e banana-",160.0,17.2,7.2,,,False,"Banana, maçã, crua",0.333
-94,"Queijo ""petit suissc"" Chambinho",159.0,20.3,5.8,,,False,"Queijo, petit suisse, morango",0.333
-94,"Queijo ""petit suissc"" mel c aveia",164.0,19.2,6.8,,,False,"Queijo, petit suisse, morango",0.25
-95,"Queijo ""petit suissc"" polpa de fruta",78.9,9.78,2.89,,,False,"Queijo, petit suisse, morango",0.286
-95,Queijo Polenguinho -Polenghi®,359.0,2.04,32.0,13.0,,False,"Queijo, mozarela",0.25
-95,"Queijo tipo ""brie""",334.0,0.45,27.7,20.8,0.0,False,"Queijo, mozarela",0.25
-95,"Queijo tipo ""camembert""",300.0,0.46,24.3,19.8,0.0,False,"Queijo, mozarela",0.25
-95,"Queijo tipo ""chcddar""",403.0,1.29,33.1,24.9,0.0,False,"Queijo, mozarela",0.25
-95,"Queijo tipo ""gouda""",356.0,2.23,27.4,24.9,0.0,False,"Queijo, mozarela",0.25
-95,"Queijo tipo ""gruyere""",413.0,0.36,32.3,29.8,0.0,False,"Queijo, mozarela",0.25
-96,"Queijo tipo ""port salut""",352.0,0.57,28.2,23.8,0.0,False,"Queijo, mozarela",0.2
-96,"Queijo tipo ""roquefort""",369.0,2.01,30.6,21.5,0.0,False,"Queijo, mozarela",0.25
-96,"Queijo tipo ""tilsit com kümmel""",340.0,,0.89,24.4,0.0,False,"Queijo, mozarela",0.2
-96,Queijo tipo ementai -Polenghi,309.0,,22.5,20.5,,False,"Queijo, mozarela",0.2
-96,Queijo tipo fundido,323.0,7.0,,19.8,0.0,False,"Queijo, mozarela",0.25
-96,"Queijo tipo minas fresca! -Danúbio® 23 I ,00",2.9,18.1,,14.2,,False,"Queijo, minas, frescal",0.222
-96,Queijo tipo minas fresca! light,55.0,3.6,9.4,,,False,"Queijo, minas, frescal",0.333
-96,"Queijo tipo mussarela 28 I ,00",2.23,2.0,,19.4,0.0,False,Queijo mussarela sem lactose,0.286
-96,"Queijo tipo provolone 35 I ,00 2, I 5",26.6,0.77,7.39,25.6,0.0,False,"Queijo, mozarela",0.125
-96,Queijo tipo provolone -Polenghi®,309.0,,22.5,20.5,,False,"Queijo, mozarela",0.2
-97,Queijo tipo suíço,376.0,3.39,27.5,28.4,0.0,False,"Queijo, mozarela",0.25
+93,Pudim (Royal),112,20,2.6,3.33,,False,"Bolo, pronto, chocolate",0.167
+93,Pudim Diet (Royal),76.1,8.92,3.0,3.8,,False,"Bolo, pronto, chocolate",0.167
+93,Pudim de claras,195.49,43.77,0.0,5.95,0.03,False,,0.0
+94,Quarteirão (Mc Donald's),268.0,18.09,15.05,14.69,,False,"Queijo, mozarela",0.167
+94,Queijadinha,344.21,48.4,12.6,10.66,1.17,False,,0.0
+94,"Queijo ""petit suisse"" (Danoninho)",160.0,17.2,7.2,6.7,,False,"Banana, maçã, crua",0.333
+95,Queijo Polenguinho,359.0,2.04,32.0,13.0,,False,"Queijo, mozarela",0.25
+95,"Queijo brie",334.0,0.45,27.7,20.8,0.0,False,"Queijo, mozarela",0.25
+95,"Queijo camembert",300.0,0.46,24.3,19.8,0.0,False,"Queijo, mozarela",0.25
+95,"Queijo cheddar",403.0,1.29,33.1,24.9,0.0,False,"Queijo, mozarela",0.25
+95,"Queijo gouda",356.0,2.23,27.4,24.9,0.0,False,"Queijo, mozarela",0.25
+95,"Queijo gruyere",413.0,0.36,32.3,29.8,0.0,False,"Queijo, mozarela",0.25
+96,"Queijo port salut",352.0,0.57,28.2,23.8,0.0,False,"Queijo, mozarela",0.2
+96,"Queijo Roquefort",369.0,2.01,30.6,21.5,0.0,False,"Queijo, mozarela",0.25
+96,Queijo emmental,309.0,,22.5,20.5,,False,"Queijo, mozarela",0.2
+96,Queijo provolone,309.0,,22.5,20.5,,False,"Queijo, mozarela",0.2
+97,Queijo suíço,376.0,3.39,27.5,28.4,0.0,False,"Queijo, mozarela",0.25
 97,Quentão,294.53,33.66,0.92,1.39,2.74,False,,0.0
 97,Quiabo (cozido),32.0,7.22,0.17,1.88,2.5,False,"Brócolis, cozido",0.333
 97,Rã (cozida),105.8,0.0,0.44,23.77,0.0,False,"Berinjela, cozida",0.333
 97,Rã (crua),73.62,0.0,0.3,16.54,,False,"Acelga, crua",0.333
-97,Ravioli de carne -Frescarini®,282.0,51.1,12.3,3.1,,False,Estrogonofe de carne,0.25
-97,Ravioli de ricota e espinafre,288.0,52.0,4.0,,,False,"Queijo, ricota",0.25
-97,Recheio de ameixa -Moça Fiesta,312.0,59.5,6.1,,,False,"Ameixa, crua",0.2
-97,Recheio de chocolate -Moça Fiesta,324.0,56.4,8.0,,,False,"Bolo, pronto, chocolate",0.167
+97,Ravioli de carne,282.0,51.1,12.3,3.1,,False,Estrogonofe de carne,0.25
 97,Repolho (cozido),22.0,4.47,0.43,1.03,2.8,False,"Brócolis, cozido",0.333
-98,"Requeijão-Danúhio® ""Light""",188.0,2.5,14.0,13.0,,False,Requeijão sem lactose,0.25
-98,Requeijão -Ncstlé®,265.0,3.0,70.0,10.6,,False,Requeijão sem lactose,0.333
-98,Requeijão -Poços de Caldas Danone®,288.0,,0.3,12.4,,False,Requeijão sem lactose,0.2
-98,Rc(1ueijão com ervas finas- Danúbio®,184.0,2.5,13.5,13.0,,False,,0.0
+98,"Requeijão Light",188.0,2.5,14.0,13.0,,False,Requeijão sem lactose,0.25
 98,Risoto de frango,178.41,26.17,3.16,10.5,1.33,False,Estrogonofe de frango,0.333
-98,Risoto milanês -Maggi®,117.0,25.67,0.53,2.4,,False,,0.0
-98,Risoto valligiana -Maggi® I,14.3,24.5,0.43,3.13,,False,,0.0
 98,Rissólis de carne,415.56,39.0,24.34,9.67,1.77,False,Estrogonofe de carne,0.333
-98,Rissólis de catupiri,391.63,32.74,23.79,0.51,1.23,False,,0.0
-98,Rissólis de palmito,318.04,34.23,17.62,5.65,1.78,False,"Palmito, juçara, em conserva",0.25
-98,Rocambole recheio cremoso de,368.0,60.65,10.11,,,False,"Queijo, requeijão, cremoso",0.2
-98,Rocambole recheio de creme e,368.0,60.65,10.49,,,False,Creme de Leite,0.25
-99,Rocambole recheio de goiaba,368.0,60.65,10.11,,,False,"Goiaba, doce em pasta",0.2
-99,Rullles-Elma Chips®,530.0,50.6,33.5,6.5,,False,"Batata, frita, tipo chips, industrializada",0.143
-99,Ruftles Ham -Elma Chips®,505.0,46.0,,6.1,,False,"Batata, frita, tipo chips, industrializada",0.125
-99,Ruffles queijo -Elma Chips®,529.0,,,6.25,,False,"Queijo, mozarela",0.2
-99,Ruftles rich cream -Elma Chips®,506.0,46.1,33.0,6.1,,False,"Biscoito, salgado, cream cracker",0.125
+99,Rocambole doce,368.0,60.65,10.11,7,,False,"Goiaba, doce em pasta",0.2
+99,Ruffles,530.0,50.6,33.5,6.5,,False,"Batata, frita, tipo chips, industrializada",0.143
 99,Sagu (cru),352.0,86.4,0.2,0.6,0.1,False,"Agrião, cru",0.333
 99,Sagu com vinho tinto,146.67,31.03,0.04,0.16,0.12,False,,0.0
-99,Sal refinado,0.0,0.0,0.0,0.0,0.0,False,"Manteiga, com sal",0.333
-99,"Salada de frutas completa (laranja,",52.51,12.99,0.29,,,False,Salada,0.25
-99,"maçã, pêra, kiwi)",0.7,1.26,0.43,,,False,"Kiwi, cru",0.25
-99,"Salada de frutas simples (banana,",52.76,13.37,0.21,,,False,Salada,0.25
-100,Salada de repolho com abacaxi e uva,123.66,,0.06,,,False,Salada,0.25
-100,Salgadinho cebola -Fritex®,416.7,,,6.83,,False,"Cebola, crua",0.25
-100,Salgadinho pizza -Fritex®,441.7,,,7.33,,False,,0.0
-100,Salgadinho queijo -Fritex®,433.3,,,5.83,,False,"Queijo, mozarela",0.25
-100,Salgadinho Snackitos -Fritex®,442.0,,,6.0,,False,,0.0
-100,Salmão (cozido),117.0,0.0,4.33,18.3,0.0,False,"Brócolis, cozido",0.333
-100,Salmão defumado,117.0,0.0,4.33,18.3,0.0,False,Salmão grelhado,0.333
+99,Sal,0.0,0.0,0.0,0.0,0.0,False,"Manteiga, com sal",0.333
+99,"Salada de frutas",52.51,13.2,0.3,0.7,1.5,False,Salada,0.25
 100,Salsão,16.0,3.66,0.14,0.75,1.5,False,,0.0
 100,Salsicha,320.0,2.56,27.24,11.3,0.0,False,,0.0
-100,Salsicha de frango,257.0,6.8,19.5,12.9,0.0,False,Estrogonofe de frango,0.333
-100,Salsicha de peru,226.0,1.5,17.7,14.3,0.0,False,"Peru, congelado, assado",0.25
 101,Salsinha,36.0,6.34,0.79,2.98,4.1,False,,0.0
-101,Salsinha seca,276.0,5.0,,22.4,33.0,False,"Carne, bovina, seca, cozida",0.2
+101,Salsinha seca,276.0,51,4.4,22.4,33.0,False,"Carne, bovina, seca, cozida",0.2
 101,Sálvia fresca,119.0,15.6,4.6,3.9,,False,"Lasanha, massa fresca, cozida",0.2
 101,Sálvia seca,315.0,60.7,12.7,10.6,18.0,False,"Carne, bovina, seca, cozida",0.2
-101,Sanduíche americano,193.94,12.74,11.29,10.88,0.73,False,,0.0
-101,Sanduíche de calahresa,252.92,14.88,15.54,12.67,1.06,False,,0.0
-101,Sanduíche de pernil,200.56,13.98,9.05,14.94,1.06,False,"Porco, pernil, assado",0.25
-101,Sanduíche natural de atum,246.55,16.7,16.18,9.55,1.25,False,"Iogurte, natural",0.25
-101,Sanduíche natural de frango,239.96,17.13,15.21,9.69,1.28,False,"Iogurte, natural",0.25
-101,Sardinha enlatada com molho de,178.0,0.6,12.0,,,False,"Sardinha, assada",0.25
-101,Sardinha escabeche,334.59,5.72,30.33,10.46,0.53,False,"Sardinha, assada",0.333
-101,Sardinha filé em molho comestível,124.0,,5.0,,,False,"Pescada, filé, molho escabeche",0.333
-101,Sashimi de atum,144.0,0.0,4.91,23.3,0.0,False,Atum enlatado,0.333
+101,Sanduíche,239.96,17.13,15.21,9.69,1.28,False,"Iogurte, natural",0.25
+101,Sardinha enlatada com molho de tomate,178.0,0.6,12.0,16.4,0.6,False,"Sardinha, assada",0.25
 101,Sashimi de salmão,116.0,0.0,3.46,19.9,0.0,False,Salmão grelhado,0.333
-102,Semente de abóbora com sal,446.0,53.8,19.4,18.6,35.9,False,"Manteiga, com sal",0.25
-102,Semente de abóbora sem sal,446.0,53.8,19.4,18.6,35.9,False,"Manteiga, com sal",0.25
+102,Semente de abóbora,446.0,53.8,19.4,18.6,35.9,False,"Manteiga, com sal",0.25
 102,Semente de girassol,570.0,18.8,49.6,22.8,6.05,False,"Óleo, de girassol",0.333
-102,Sobrccoxa de frango cozida com molho,201.25,1.38,13.49,,,False,"Empada, de frango, pré-cozida",0.333
-102,Sobremesa láctea Galak -Nestlé®,180.0,22.0,8.7,3.4,,False,"Farinha, láctea, de cereais",0.167
-102,Sobremesa láctea Prestígio -Nestlé®,163.0,,4.2,3.2,,False,"Farinha, láctea, de cereais",0.167
-102,Sobremesa láctea pudim morango,140.2,24.05,3.93,,,False,"Morango, cru",0.2
 102,Soja (cozida),173.0,9.93,8.98,16.6,6.27,False,"Pão, de soja",0.333
 102,Soja (crua),416.0,30.2,19.9,36.5,16.5,False,"Pão, de soja",0.333
-102,Soja à grega,85.83,6.71,4.82,5.1,2.38,False,"Pão, de soja",0.333
-102,"Sopa brodo, carne macarrãozinbo",22.5,4.42,0.14,,,False,Estrogonofe de carne,0.2
-103,"Sopa brodo, galinha e macarrãozinho •",24.0,4.41,0.24,,,False,"Caldo de galinha, tablete",0.167
-103,Sopa creme de aspargos · Knorr®,25.0,4.2,0.56,0.72,,False,Creme de Leite,0.2
-103,Sopa creme de cebola • Knorr®,25.0,4.36,0.44,0.72,,False,"Cebola, crua",0.2
-103,Sopa creme de cebola -Maggi®,24.1,3.86,0.62,0.75,,False,"Cebola, crua",0.2
-103,Sopa creme de ervilha,46.86,2.19,1.74,5.41,0.72,False,Creme de Leite,0.25
-103,Sopa creme de ervilha · Maggi®,23.9,3.36,0.7,1.04,,False,Creme de Leite,0.2
-103,Sopa creme de ervilha e bacon •,31.0,4.32,0.72,,,False,Creme de Leite,0.2
-103,Sopa creme de ervilha e bacon,24.2,3.92,0.48,,,False,Creme de Leite,0.2
-103,Sopa creme de espinafre • Knorr®,37.3,4.72,1.28,1.46,,False,Creme de Leite,0.2
-103,Sopa creme de espinafre com biscoito·,53.6,7.73,1.67,,,False,Creme de Leite,0.2
-103,Sopa creme de galinha -Maggi®,22.8,3.49,0.64,0.78,,False,Creme de Leite,0.2
-103,Sopa creme de legumes -Maggi®,23.3,4.01,0.41,0.9,,False,Creme de Leite,0.2
-103,Sopa creme de mandioquinha com,53.6,8.13,,,,False,Creme de Leite,0.25
-103,Sopa creme de queijo -Knorr®,62.0,7.48,2.27,2.49,,False,Creme de Leite,0.2
-103,Sopa creme de tomate,37.72,4.7,1.57,1.55,0.48,False,"Tomate, extrato",0.25
-104,Sopa de carne conchinha -Maggi®,22.4,3.86,0.42,0.8,,False,Estrogonofe de carne,0.2
-104,Sopa de carne espaguetinho -Knorr®,26.0,4.8,0.24,0.96,,False,Estrogonofe de carne,0.2
-104,Sopa de carne cspaguetinho -Maggi®,20.7,3.56,0.4,0.72,,False,Estrogonofe de carne,0.2
-104,"Sopa de carne, macarrão e legumes",34.6,6.92,0.23,,,False,"Macarrão, instantâneo",0.2
-104,"Sopa de carne, macarrão e legumes",36.7,6.39,0.67,,,False,"Macarrão, instantâneo",0.2
-104,"Sopa de cebola -Maggi® I 24,1o",3.86,0.62,,0.75,,False,"Cebola, crua",0.143
-104,Sopa de ervilha macarrão e carne,32.0,5.0,0.53,,,False,"Macarrão, instantâneo",0.2
+103,Sopa ou Creme de leguems,23.3,4.01,0.41,0.9,,False,Creme de Leite,0.2
+104,"Sopa de carne, macarrão e legumes",34.6,6.92,0.23,1.2,,False,"Macarrão, instantâneo",0.2
+104,"Sopa de cebola",24,3.8,0.6,0.75,,False,"Cebola, crua",0.143
 104,Sopa de feijão com macarrão,37.31,4.87,1.39,0.19,1.51,False,"Macarrão, instantâneo",0.25
-104,Sopa de feijão macarrão bacon-Sopão /,37.0,6.56,0.54,,,False,"Macarrão, instantâneo",0.167
-104,Sopa de feijão macarrão e couve,36.0,6.0,0.57,,,False,"Macarrão, instantâneo",0.2
-104,Sopa de galinha com arroz -Maggi®,23.9,4.53,0.34,0.68,,False,Arroz carreteiro,0.2
-104,Sopa de galinha com arroz e legumes,34.0,6.0,0.55,,,False,Arroz carreteiro,0.2
-104,Sopa de galinha com arroz e legumes,36.0,6.07,7.8,,,False,Arroz carreteiro,0.2
-105,Sopa de galinha conchinha -Maggi®,21.7,3.83,0.37,0.76,,False,"Caldo de galinha, tablete",0.167
-105,Sopa de galinha espaguetinho-Knorr®,27.0,4.96,0.24,0.1,,False,"Caldo de galinha, tablete",0.167
-105,Sopa de galinha Fideline -Maggi®,20.5,3.5,0.38,0.76,,False,"Caldo de galinha, tablete",0.167
-105,Sopa de galinha macarrão e legumes,36.9,7.29,0.45,,,False,"Macarrão, instantâneo",0.2
-105,Sopa de galinha macarrão e legumes,36.9,6.16,0.79,,,False,"Macarrão, instantâneo",0.2
-105,Sopa de legumes e macarrão,33.59,5.47,,0.8,0.84,False,"Macarrão, instantâneo",0.25
-105,"Sopa de legumes, carne e macarrão",66.57,4.1,4.03,3.56,0.57,False,"Macarrão, instantâneo",0.2
-105,"Sopa divertida Disney carne, macarrão",28.2,4.92,0.55,,,False,"Macarrão, instantâneo",0.167
-105,"Sopa divertida Disney galinha,",28.4,5.13,0.51,,,False,"Caldo de galinha, tablete",0.167
-105,Sopa divertida Galinha Azul -Maggi®,23.8,4.24,0.33,0.98,,False,"Caldo de galinha, tablete",0.143
-105,Sopa divertida Pintinho azul -Maggi®,24.7,4.23,0.44,0.98,,False,,0.0
-105,Sopinha com pedaços carne e legumes-,76.7,6.19,4.28,,,False,Estrogonofe de carne,0.2
-105,"Sopinha com pedaços carne, legumes e",72.4,6.71,4.28,,,False,Estrogonofe de carne,0.2
-105,Sopinha com pedaços galinha e r,73.3,5.28,4.28,,,False,"Caldo de galinha, tablete",0.167
-106,"Sopinha desidratada carne, legumes e",378.9,57.37,9.21,,,False,Estrogonofe de carne,0.2
-106,"Sopinha desidratada com carne,",380.0,57.5,9.3,,,False,Estrogonofe de carne,0.25
-106,Sopinha desidratada com pedaços,384.0,57.5,9.8,,,False,,0.0
-106,Sopinha desidratada com pedaços,424.0,51.4,,,,False,,0.0
-106,Sopinha desidratada cremosa carne,386.0,55.9,9.9,,,False,Estrogonofe de carne,0.2
-106,"Sopinha desidratada cremosa carne,",394.0,57.3,10.2,,,False,Estrogonofe de carne,0.2
-106,Sopinha desidratada cremosa galinha,419.0,55.9,14.4,,,False,"Caldo de galinha, tablete",0.167
-106,Sopinha desidratada cremosa legumes,386.0,55.8,10.2,,,False,"Seleta de legumes, enlatada",0.167
-106,Sopinha infantil com carne,87.0,6.0,0.3,7.4,0.2,False,Estrogonofe de carne,0.25
-106,Sopinha infantil sem carne,37.0,8.5,3.7,1.6,0.5,False,Estrogonofe de carne,0.25
-106,Sorvete Alfajor -Kibon®,387.7,33.0,,5.3,,False,,0.0
-106,Sorvete Coupe Gourmande chocolate,204.0,30.6,7.1,,,False,"Bolo, pronto, chocolate",0.167
-106,Sorvete Coupe Gourmande crocante- I,195.0,25.2,8.6,,,False,,0.0
-106,Sorvete Coupe Gourmande pêssego,178.0,19.3,7.0,,,False,"Pêssego, Aurora, cru",0.167
-106,Sorvete Coupe Gourmande pistache,221.0,24.1,11.5,,,False,,0.0
-107,Sorvete Coupe Gourmande rum com I,89.0,24.2,7.4,,,False,,0.0
-107,Sorvete de casquinha chocolate,307.3,35.0,16.3,,,False,"Bolo, pronto, chocolate",0.2
-107,Sorvete de casquinha crocante,317.8,39.17,15.89,,,False,,0.0
-107,Sorvete de massa abacaxi -Kibon®,202.0,34.2,6.8,2.7,,False,"Abacaxi, cru",0.2
-107,Sorvete de massa abacaxi -Nestlé®,200.0,33.0,7.0,2.0,0.0,False,"Abacaxi, cru",0.2
-107,Sorvete de massa brigadeiro-Kibon®,227.0,26.7,,3.5,,False,"Pastel, massa, crua",0.167
-107,"Sorvete de massa brigadeiro-Nestlé® 20 I ,00",29.3,,,3.8,,False,"Pastel, massa, crua",0.111
-107,Sorvete de massa chocolate -Kibon®,191.5,26.1,7.9,4.0,,False,"Bolo, pronto, chocolate",0.167
-107,Sorvete de massa chocolate -Nestlé® I,88.0,24.5,8.0,4.7,,False,"Bolo, pronto, chocolate",0.143
-107,Sorvete de massa chocolate branco,239.7,25.7,13.3,,,False,"Bolo, pronto, chocolate",0.167
-107,Sorvete de massa chocolate com I,89.3,29.7,6.4,,,False,"Bolo, pronto, chocolate",0.167
-107,Sorvete de massa coco -Kibon®,204.0,22.3,,3.8,,False,"Coco, água de",0.2
-107,Sorvete de massa coco -Nestlé®,187.0,22.8,8.9,3.9,,False,"Coco, água de",0.2
-107,"Sorvete de massa creme -Kibon® 20 I ,00",23.8,10.1,,3.7,,False,Creme de Leite,0.125
-107,Sorvete de massa creme -Nestlé® I,92.0,24.0,,3.8,,False,Creme de Leite,0.167
-108,Sorvete de massa creme com crocante-,223.9,28.6,10.3,,,False,Creme de Leite,0.2
-108,Sorvete de massa crocante-Ncstlé®,202.0,29.5,7.6,3.9,,False,"Pastel, massa, crua",0.167
-108,Sorvete de massa flocos -Kibon®,200.0,24.0,10.1,4.0,0.0,False,"Aveia, flocos, crua",0.167
-108,Sorvete de massa flocos -Nestlé®,206.0,25.0,,3.9,,False,"Aveia, flocos, crua",0.167
-108,Sorvete de massa lima limão-Kihon®,155.0,31.0,0.0,1.0,,False,"Pastel, massa, crua",0.143
-108,Sorvete de massa manga -Nestlé®,150.0,34.3,1.0,1.0,,False,"Pastel, massa, crua",0.167
-108,Sorvete de massa morango -Kibon®,178.5,24.3,7.7,3.0,,False,"Morango, cru",0.2
-108,Sorvete de massa morango -Nestlé®,182.0,24.3,8.1,3.0,,False,"Morango, cru",0.2
-108,"Sorvete de massa napolitano -Kibon® 191 ,60",24.5,8.8,,3.6,,False,"Pastel, massa, crua",0.125
-108,"Sorvete de massa napolitano -Nestlé® 181, 00",24.6,7.9,,3.8,,False,"Pastel, massa, crua",0.125
-108,Sorvete de massa passas ao rum,203.0,27.2,9.2,,,False,"Pastel, massa, crua",0.143
-108,Sorvete de massa passas ao rum,189.0,26.1,7.7,,,False,"Pastel, massa, crua",0.143
-108,Sorvete de massa Sem Parar,172.1,21.7,6.6,,,False,"Pastel, massa, crua",0.2
-108,Sorvete de massa Sem Parar,209.5,23.6,8.87,,,False,"Pastel, massa, crua",0.2
-108,Sorvete de massa Sem Parar,140.8,26.9,2.95,,,False,"Pastel, massa, crua",0.2
-109,Sorvete de massa Sem Parar T,190.4,29.04,6.69,,,False,"Pastel, massa, crua",0.167
-109,Sorvete de palito brigadeiro-Kibon®,346.4,29.8,19.4,3.3,,False,,0.0
-109,Sorvete de palito Brigadeiro-Nestlé®,374.0,46.3,19.4,3.51,,False,,0.0
-109,Sorvete de palito Chicabon chocolate,165.3,28.9,4.1,,,False,"Bolo, pronto, chocolate",0.167
-109,Sorvete de palito Chocolate -Nestlé®,171.6,29.7,4.32,3.43,,False,"Bolo, pronto, chocolate",0.167
-109,Sorvete de palito Chocroc-Nestlé®,435.1,31.1,32.77,3.88,,False,,0.0
-109,Sorvete de palito Chokito -Nestlé®,303.4,28.6,19.31,3.79,,False,,0.0
-109,Sorvete de palito coco -Kibon®,149.2,24.7,4.2,2.2,,False,"Coco, água de",0.2
-109,Sorvete de palito coco-Nestlé®,149.2,23.2,5.23,2.15,,False,"Coco, água de",0.2
-109,Sorvete de palito Cool Creations,340.2,28.87,23.71,,,False,,0.0
-109,Sorvete de palito creme de papaya com,164.8,29.5,4.4,,,False,Creme de Leite,0.2
-109,Sorvete de palito Dedito-Nestlé®,112.9,25.45,1.17,0.13,,False,,0.0
-109,Sorvete de palito doce de leite -Kibon®,340.0,30.6,21.0,3.1,,False,"Doce, de leite, cremoso",0.333
-109,Sorvete de palito Frutare Kipolpa,116.4,28.9,,,,False,,0.0
-109,Sorvete de palito Frutare kiwi-Kibon®,112.8,27.1,,,,False,"Kiwi, cru",0.167
-110,Sorvete de palito Frutare limão,88.0,22.0,0.0,,,False,"Limão, cravo, suco",0.167
-110,Sorvete de palito Frutare morango,4.2,26.1,,,,False,"Morango, cru",0.2
-110,Sorvete de palito Frutare soft limão,6.3,24.8,0.7,,,False,"Limão, cravo, suco",0.143
-110,Sorvete de palito Frutilly chocolate,280.3,35.7,14.3,,,False,"Bolo, pronto, chocolate",0.167
-110,Sorvete de palito Kid Banana-Nestlé®,175.0,27.67,5.67,3.0,,False,"Banana, da terra, crua",0.143
-110,Sorvete de palito Mega -Nestlé®,360.2,33.9,22.5,5.25,,False,,0.0
-110,Sorvete de palito Mega amêndoas,346.4,31.0,55.0,,,False,Leite de amêndoas,0.2
-110,Sorvete de palito Milka branco,329.3,31.2,18.4,,,False,"Repolho, branco, cru",0.167
-110,Sorvete de palito Milka chocolate ao,347.6,31.7,19.5,,,False,"Chocolate, ao leite",0.333
-110,Sorvete de palito morango com leite,195.2,26.9,8.2,,,False,"Morango, cru",0.2
-110,Sorvete de palito strawberry & white,329.9,24.74,23.71,,,False,,0.0
-110,Sorvete de palito Tablito -Kibon®,407.6,28.4,30.3,3.5,,False,,0.0
-110,Sorvete de palito Uni Duni Te- Yopa I,0.0,25.42,,,,False,,0.0
-110,Sorvete de palito vanilla & almonds,349.0,,,,,False,,0.0
-110,Sorvete de palito vanilla & milk,330.0,24.0,24.0,,,False,,0.0
-111,Sorvete Eskibom -Kibon®,352.0,26.0,23.5,3.8,,False,,0.0
-111,Sorvete Smash -Nestlé®,362.0,39.65,20.34,5.344,,False,,0.0
-111,Sorvete Squizz limão -Nestlé® I,12.0,27.3,0.2,0.3,,False,"Limão, cravo, suco",0.143
-111,Sorvete Squizz maracujá -Nestlé®,107.0,26.5,0.1,0.2,,False,"Maracujá, cru",0.2
-111,Sorvete tijolo creme -Nestlé®,191.0,24.3,8.8,3.7,,False,Creme de Leite,0.2
-111,Sorvete tijolo flocos -Nestlé®,206.0,25.0,,3.9,,False,"Aveia, flocos, crua",0.167
-111,Sorvete tijolo napolitano -Nestlé®,186.0,24.7,,3.8,,False,,0.0
-111,Sorvete tipo pavê -Kibon®,155.0,28.3,3.5,2.7,,False,"Arroz, tipo 1, cozido",0.167
-111,Sorvete Toblerone -Kibon®,346.6,29.0,21.0,4.5,,False,,0.0
-111,Sorvete Zoing baunilha com calda de,192.0,3.0,,,,False,"Ameixa, calda, enlatada",0.167
-111,Sportade® tangerina,29.0,7.0,,,,False,"Tangerina, Poncã, crua",0.25
-111,Sprite-Me Donald's®,30.5,7.5,,,,False,,0.0
-111,Stiksy -Elma Chips®,383.0,80.7,1.7,,,False,"Batata, frita, tipo chips, industrializada",0.143
-111,Suco de manga diluído -Tang®*,42.0,10.5,,,,False,"Cajá-Manga, cru",0.167
-111,Suco de manga em pó -Tang®,350.0,87.5,,,,False,"Achocolatado, pó",0.2
-112,Suco de tomate Heinz-Toma to juice,21.8,4.58,0.11,,,False,"Tomate, extrato",0.143
-112,Suco de abacaxi-Yakult®,65.7,12.43,0.88,1.53,,False,"Abacaxi, cru",0.25
-112,Suco de abacaxi adoçado pronto para,44.0,10.7,0.04,,,False,"Abacaxi, cru",0.167
-112,Suco de abacaxi com hortelã c açúcar,46.61,11.9,0.18,0.18,0.52,False,Suco de laranja sem açúcar,0.333
-112,Suco de abacaxi com hortelã sem,22.07,5.56,0.19,,,False,"Abacaxi, cru",0.25
-112,Suco de abacaxi pronto para beber,37.2,9.0,,,,False,"Abacaxi, cru",0.167
-112,Suco de goiaba light -Dei V alie®,10.0,4.0,,,1.0,False,"Goiaba, doce em pasta",0.125
-113,Suco de laranja pronto para beber,34.0,8.0,,,,False,"Laranja, baía, suco",0.333
-113,Suco de maçã-Yakult®,43.0,9.97,0.01,0.2,,False,"Banana, maçã, crua",0.2
-113,Suco de maçã adoçado pronto para,43.0,10.7,0.02,,,False,"Bolo, mistura para",0.143
-113,Suco de maçã light-Dei V alie®,15.0,5.0,,,1.0,False,"Banana, maçã, crua",0.125
-113,Suco de manga light-Dei V alie®,15.0,5.0,,,,False,"Cajá-Manga, cru",0.125
-113,Suco de maracujá diluído -Tang®*,42.0,10.5,,,,False,"Maracujá, suco concentrado, envasado",0.333
-113,Suco de maracujá em pó -Tang®,350.0,8.0,7.5,,,False,"Maracujá, suco concentrado, envasado",0.333
-113,Suc:u de melancia com açúcar,34.07,7.87,0.37,0.53,0.2,False,"Melancia, crua",0.2
-114,Suco de morango-Yakult®,56.5,,0.27,1.48,,False,"Morango, cru",0.25
-114,Suco de pêssego light-Dei Va lie®,10.0,5.0,,,1.0,False,"Laranja, baía, suco",0.125
-114,Suco de pêssego natural pronto para,46.7,10.95,,,,False,"Iogurte, natural",0.167
-114,Suco de tomate integral -Superbom®,24.0,4.55,,1.0,,False,"Tomate, extrato",0.2
-114,Suco de uva diluído-Tang®*,42.0,10.5,,,,False,"Uva, suco concentrado, envasado",0.333
-114,Suco de uva em pó-Tang®,350.0,87.5,,,,False,"Uva, suco concentrado, envasado",0.333
-114,Suco de uva integral -Superbom®,61.6,15.1,,0.3,,False,"Uva, suco concentrado, envasado",0.333
-114,Suco de uva pronto para beber,73.0,18.0,,,,False,"Uva, suco concentrado, envasado",0.286
-114,Sucrilhos -Kcllogg's®,366.6,93.24,,3.33,3.33,False,Sucrilhos de milho,0.25
-114,Sucrilhos nutriferro- Kellogg's®,375.0,91.0,,4.0,2.0,False,Sucrilhos de milho,0.2
-114,Sullê de aspargos,178.53,8.04,12.05,9.57,0.37,False,,0.0
-114,Sullê de espinafre,60.39,4.99,3.05,4.2,1.56,False,"Espinafre, Nova Zelândia, cru",0.2
+104,Canja de galinha,23.9,4.53,0.34,0.68,,False,Arroz carreteiro,0.2
+107,Sorvete de casquinha chocolate,307.3,35.0,16.3,5.14,,False,"Bolo, pronto, chocolate",0.2
+107,Sorvete,200.0,30,7.5,3,0.0,False,"Abacaxi, cru",0.2
+109,Picolé cremoso com recheio ou cobertura,346.4,29.8,19.4,3.3,,False,,0.0
+109,Picolé cremoso simples,165.3,28.9,4.1,2,,False,"Bolo, pronto, chocolate",0.167
+109,Picole de fruta,116.4,28.9,0.7,0.2,,False,,0.0
+111,Stiksy,383.0,80.7,1.7,,,False,"Batata, frita, tipo chips, industrializada",0.143
+112,Suco de tomate,21.8,4.58,0.11,0.8,,False,"Tomate, extrato",0.143
+112,Suco de fruta sem açúcar,22.07,5.56,0.19,,,False,"Abacaxi, cru",0.25
 115,Suflê de queijo,179.09,5.34,13.27,9.42,0.09,False,"Queijo, mozarela",0.333
 115,Sundae calda de caramelo-Me,195.4,33.56,5.23,,,False,"Ameixa, calda, enlatada",0.167
-115,Sundae calda de chocolate -Me,183.4,29.35,5.56,,,False,"Bolo, pronto, chocolate",0.167
-115,Sundae calda de morango -Me,163.7,28.24,4.27,,,False,"Morango, cru",0.2
-115,Sundac de chocolate -Kibon®,238.6,31.4,9.6,3.6,,False,"Bolo, pronto, chocolate",0.2
-115,Sundac de morango -Kibon®,227.4,33.4,8.0,3.1,,False,"Morango, cru",0.25
-115,Supligcn cm pó -Nestlé®,454.0,50.9,17.8,22.5,,False,"Achocolatado, pó",0.2
-115,Supligcn cm pó longa vida -Ncstlé®,127.0,14.2,5.0,6.3,,False,"Achocolatado, pó",0.143
-115,"Suquinho de frutas tropicais-Nestlé I 54,oo",12.4,0.1,,,,False,Geleia de frutas sem açúcar,0.111
-115,Suquinho de laranja-Nestlé Baby®,47.0,,0.7,0.8,,False,"Laranja, baía, crua",0.167
-115,Suquinho de laranja e cenoura-Nestlé,40.0,9.1,0.1,,,False,"Cenoura, cozida",0.2
-115,Suquinho de maçã-Nestlé Baby®,54.0,13.5,,0.1,,False,"Banana, maçã, crua",0.167
-115,Suquinho de pêra c abacaxi -Ncstlé,54.0,13.1,,,1.0,False,"Abacaxi, cru",0.167
-115,Suquinho de uva -Nestlé Baby®,73.0,18.1,,0.2,0.6,False,"Uva, Itália, crua",0.167
-115,Sushi de atum I,133.17,23.75,1.05,6.14,0.49,False,Atum enlatado,0.25
+115,Sushi de atum,133.17,23.75,1.05,6.14,0.49,False,Atum enlatado,0.25
 116,Sushi de salmão,128.52,23.75,0.81,5.57,0.49,False,Salmão grelhado,0.333
 116,Suspiro,257.72,61.88,0.03,4.17,0.19,False,,0.0
-116,Sustagem® qualquer sabor,390.0,65.0,3.5,23.5,,False,"Iogurte, sabor abacaxi",0.2
-116,Taff Man-E-Yakult® I,65.4,,,,,False,,0.0
-116,Tapioca (com queijo e coco ralado),430.53,62.2,18.94,7.58,4.37,False,"Queijo, mozarela",0.2
-116,"Tapioca seca 341, 00",88.7,,0.01,0.19,0.7,False,"Tapioca, com manteiga",0.2
-116,Tempero cm pasta alho e sal -Tempera I,0.0,1.9,,,,False,Tempero a base de sal,0.25
-116,Tempero cm pasta completo com,26.0,4.9,0.2,,,False,"Goiaba, doce em pasta",0.167
-116,Tempero em pasta completo sem,37.0,5.9,0.6,,,False,"Goiaba, doce em pasta",0.2
-116,Tempero em pó completo com,129.0,13.8,7.3,,,False,"Achocolatado, pó",0.25
-116,Tempero em pó completo sem,105.0,12.4,5.3,,,False,"Achocolatado, pó",0.25
-116,"Tempero em pó sal, alho e salsa",160.0,16.6,10.2,,,False,Tempero a base de sal,0.333
-116,Tempero Fondor -Maggi®,154.0,14.2,3.7,15.9,,False,Tempero a base de sal,0.2
-116,Tempero grill -Maggi®,157.0,16.2,3.2,15.8,,False,Tempero a base de sal,0.2
-117,Tempero refoga tudo alho -Maggi®,263.0,,0.7,4.0,,False,"Alho, cru",0.167
-117,Tempero refoga tudo cebola -Maggi®,298.0,12.8,26.4,2.4,,False,"Cebola, crua",0.167
-117,Tempero refoga tudo cebola e alho,297.0,15.1,25.9,,,False,"Alho, cru",0.167
-117,Tic Tac® menta,408.0,,2.0,,,False,,0.0
-117,Toddy®,395.0,90.0,2.4,4.0,,False,,0.0
-117,Toddynho® I,0.0,15.0,2.5,3.0,,False,,0.0
-117,Tofu,73.0,0.7,4.2,8.1,0.3,False,"Soja, queijo (tofu)",0.333
-117,Tomate cereja,21.0,4.65,0.33,0.85,1.03,False,"Tomate, extrato",0.333
-117,Tomate seco,799.42,84.45,53.38,8.58,10.41,False,"Tomate, extrato",0.333
-117,Tomilho,276.0,63.9,7.43,9.11,18.6,False,,0.0
+116,Sustagem,390.0,65.0,3.5,23.5,,False,"Iogurte, sabor abacaxi",0.2
+117,Tic Tac,408.0,102,0,,,False,,0.0
+117,Toddynho,100.0,15.0,2.5,3.0,,False,,0.0
 117,Tomilho fresco,95.0,15.1,2.5,3.0,,False,"Atum, fresco, cru",0.25
-117,Tonyu maçã-Yakult®,59.7,,0.26,1.49,,False,"Banana, maçã, crua",0.2
-117,Toranja,39.0,9.5,0.3,0.7,0.4,False,,0.0
-117,'l'nt'tiUho tl1• niii'IIN l•'lhr·ntu~t •,350.0,74.4,0.6,,,False,,0.0
-117,1,16.0,,,,,False,,0.0
-118,Torrada glúten light- D'aosta® 3,17.0,56.2,0.8,19.3,,False,Bolo sem glúten,0.143
-118,Torrada levemente salgada -Bi Tost®,388.0,74.2,5.2,11.1,,False,"Amêndoa, torrada, salgada",0.333
-118,Torrada para canapé-Bauducco®,406.4,70.0,8.0,13.6,0.45,False,"Bolo, mistura para",0.167
-118,"Torta de banana -Me Donald's® 224, I 0",8.9,26.36,,0.457,,False,"Banana, da terra, crua",0.1
-118,Torta de camarão -Findus Nestlé®,320.0,26.9,20.0,8.0,,False,Camarão à baiana,0.2
-118,Torta de frango,197.73,15.49,8.61,13.94,,False,Estrogonofe de frango,0.333
-118,Torta de frango -Findus Nestlé®,329.0,25.6,21.0,8.9,,False,Estrogonofe de frango,0.2
-118,"Torta de limão 341, 02 50, 16",13.26,0.68,3.98,6.63,0.68,False,"Limão, cravo, suco",0.125
-118,Torta de maçã-Me Donald's® 3,13.2,36.0,14.0,2.65,,False,"Banana, maçã, crua",0.125
-118,"Torta de morango 2 I I ,38 24, 12",11.27,0.92,3.57,4.36,0.22,False,"Morango, cru",0.143
-118,"Torta de sardinha 217, 12",13.99,14.48,7.11,7.95,1.57,False,"Sardinha, assada",0.2
-118,Torta de sorvete brigadeiro-Kibon®,220.6,27.5,10.4,4.2,,False,,0.0
-118,Trigo para quibe,342.0,75.9,,12.3,18.3,False,"Cereais, mistura para vitamina, trigo, cevada e aveia",0.25
-118,"Trio aveia, banana e mel-Grain Mills®",360.0,75.6,4.0,6.0,2.8,False,"Mel, de abelha",0.143
-119,"Trio cereais, morango e chocolate",352.0,64.0,8.4,,,False,"Morango, cru",0.2
-119,"T.-io chocolate, cereais, avelã e",388.0,64.0,,,,False,"Bolo, pronto, chocolate",0.143
-119,Trufa de chocolate,468.49,5.0,,8.12,2.39,False,"Bolo, pronto, chocolate",0.25
+119,Trufa de chocolate,468.49,51,26,8,2.39,False,"Bolo, pronto, chocolate",0.25
 119,Truta (cozida),150.0,0.0,5.83,22.9,0.0,False,"Berinjela, cozida",0.333
 119,Truta (crua),150.3,0.0,5.84,22.95,0.0,False,"Acelga, crua",0.333
-119,Tuhaína,31.0,8.0,,,,False,,0.0
+119,Tubaína,31.0,8.0,,,,False,,0.0
 119,Tutu à mineira,213.32,34.04,5.28,8.54,5.0,False,,0.0
 119,Uísque,250.0,0.1,0.0,0.0,0.0,False,,0.0
-119,lJva itália,71.0,17.8,0.58,0.66,0.6,False,"Uva, Itália, crua",0.25
-119,Uva passa,300.0,,0.46,3.23,3.47,False,"Uva, Itália, crua",0.25
+119,Uva passa,300.0,79,0.46,3.23,3.47,False,"Uva, Itália, crua",0.25
 119,Vagem (cozida),35.0,7.9,0.28,1.9,3.2,False,"Berinjela, cozida",0.333
-119,Vagem fina enlatada-Bonduelle®,17.0,2.5,0.2,1.3,2.5,False,"Vagem, crua",0.2
-119,V ata pá,126.0,9.4,6.2,8.5,0.5,False,,0.0
+119,Vatapá,126.0,9.4,6.2,8.5,0.5,False,,0.0
 120,Vermouth doce,153.0,11.8,0.0,0.2,0.0,False,"Polvilho, doce",0.333
 120,Vermouth seco,120.0,5.5,0.0,0.1,0.0,False,,0.0
 120,Vinagre,14.0,5.91,0.0,0.0,0.0,False,,0.0
-120,Vinho branco seco,66.4,0.61,0.0,0.1,0.0,False,"Repolho, branco, cru",0.2
+120,Vinho branco,66.4,0.61,0.0,0.1,0.0,False,"Repolho, branco, cru",0.2
 120,Vinho rosé,71.0,,0.4,0.2,0.0,False,,0.0
 120,Vinho tinto,72.0,,0.7,0.2,0.0,False,,0.0
-120,"Vitamina (mamão, maçã, banana, leite",66.78,11.24,1.88,,,False,"Banana, maçã, crua",0.333
 120,Vitela assada,160.0,0.0,4.66,27.7,0.0,False,"Sardinha, assada",0.333
-120,Vitela filé (cm),95.27,0.0,1.43,20.6,0.0,False,"Merluza, filé, assado",0.2
 120,Xinxim de galinha,297.52,20.41,23.73,20.41,0.0,False,"Caldo de galinha, tablete",0.25
-120,Yakult®,75.0,15.48,0.25,2.06,,False,,0.0
+120,Yakult,75.0,15.48,0.25,2.06,,False,,0.0
