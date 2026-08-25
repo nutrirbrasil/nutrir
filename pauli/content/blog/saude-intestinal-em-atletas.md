@@ -3,6 +3,7 @@ title: Saúde Intestinal em Atletas
 slug: saude-intestinal-em-atletas
 description: Intestino e performance
 date: 2026-07-01
+coverImage: /blog/the-fisherman-_-thefishermanm-on-x.jpg
 published: true
 ---
 ## Não é só o treino que limita sua performance
