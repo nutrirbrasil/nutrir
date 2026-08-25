@@ -6,7 +6,7 @@ description: >-
 
   Descubra como a hidratação para corredores melhora o desempenho, acelera a recuperação e ajuda a prevenir lesões com estratégias baseadas em evidências.
 date: 2026-08-04
-coverImage: /blog/fnaa-.jpg
+coverImage: /blog/oraa-visual-journal.jpg
 published: true
 ---
 # O problema silencioso da desidratação em corredores
