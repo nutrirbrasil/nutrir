@@ -114,8 +114,6 @@ Entretanto, é importante diferenciar o papel fisiológico de um nutriente da ev
 
 ## A alimentação na gestação precisa ser perfeita?
 
-Não.
-
 Uma alimentação adequada durante a gravidez não significa acertar todas as escolhas alimentares todos os dias. O objetivo é construir, de forma consistente, um padrão alimentar capaz de atender às necessidades nutricionais da gestante, considerando seu estado nutricional, condições clínicas, sintomas, preferências, cultura alimentar e contexto individual.
 
 A qualidade da alimentação materna deve ser entendida dentro de um contexto mais amplo de cuidado pré-natal. Intervenções nutricionais durante a gestação podem contribuir para alguns desfechos maternos e perinatais, mas seus efeitos dependem da intervenção utilizada, das características da população e do contexto clínico. \[4,12]
@@ -124,7 +122,7 @@ Portanto, cuidar da alimentação durante a gestação não significa buscar uma
 
 Significa construir, ao longo dos meses, **um padrão alimentar capaz de fornecer energia e nutrientes adequados para a saúde materna e para o desenvolvimento fetal.**
 
-## Nutrição na gestação é cuidado com duas vidas
+## Nutrição na gestação é cuidado com duas (ou mais) vidas
 
 A alimentação materna faz parte de um conjunto de fatores que contribuem para o desenvolvimento fetal. Por meio da digestão, absorção, circulação materna e transporte placentário, os nutrientes provenientes da alimentação participam do ambiente no qual o bebê se desenvolve.
 
@@ -132,9 +130,7 @@ A qualidade e a adequação da nutrição materna podem influenciar o cresciment
 
 Por isso, a nutrição durante a gestação merece atenção desde o início do pré-natal, não pela necessidade de uma alimentação perfeita, mas porque **a adequação nutricional é parte importante de uma gestação saudável**.
 
-Nos próximos conteúdos, vamos aprofundar temas específicos da nutrição na gestação, como as necessidades alimentares ao longo da gravidez, nutrientes específicos, segurança alimentar e outras situações comuns desse período.
 
-> **A gestação não exige perfeição alimentar. Exige cuidado, informação e uma estratégia nutricional adequada às necessidades de cada mulher.**
 
 ## Referências científicas
 
