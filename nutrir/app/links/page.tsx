@@ -22,11 +22,13 @@ interface LinkButtonProps {
   icon: IconType;
   title: string;
   subtitle: string;
+  highlighted?: boolean;
 }
 
-function LinkButton({ href, external, icon: Icon, title, subtitle }: LinkButtonProps) {
-  const className =
-    "card flex items-center gap-4 !p-4 transition hover:-translate-y-0.5 hover:shadow-md";
+function LinkButton({ href, external, icon: Icon, title, subtitle, highlighted }: LinkButtonProps) {
+  const className = `card flex items-center gap-4 !p-4 transition hover:-translate-y-0.5 hover:shadow-md ${
+    highlighted ? "border-2 border-nutrir-burgundy" : ""
+  }`;
   const content = (
     <>
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald text-xl text-nutrir-nude">
@@ -72,18 +74,25 @@ export default function LinksPage() {
       <h1 className="mt-4 font-display text-2xl font-bold text-nutrir-emerald">Nutrir Piçarras</h1>
       <p className="mt-1 text-sm text-nutrir-emerald/60">Marmitas saudáveis em Piçarras</p>
 
-      <div className="mt-8 w-full space-y-4">
+      <div className="mt-8 w-full">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-burgundy">
+          Promoções Ativas
+        </p>
         <LinkButton
-          href={INSTAGRAM_URL}
+          href={GOOGLE_REVIEW_URL}
           external
-          icon={FaInstagram}
-          title="Instagram"
-          subtitle="Nos siga e concorra a prêmios mensais."
+          icon={FaGoogle}
+          title="Avalie e ganhe"
+          subtitle="Nos avalie no Google com 5 estrelas e ganhe um suco grátis no seu próximo pedido!"
+          highlighted
         />
+      </div>
+
+      <div className="mt-6 w-full space-y-4">
         <LinkButton
           href="/marmitas"
           icon={FiShoppingBag}
-          title="Site"
+          title="Cardápio"
           subtitle="Ver Cardápio | Faça seu Pedido."
         />
         <LinkButton
@@ -94,11 +103,11 @@ export default function LinksPage() {
           subtitle="Tire suas dúvidas | Envie feedbacks."
         />
         <LinkButton
-          href={GOOGLE_REVIEW_URL}
+          href={INSTAGRAM_URL}
           external
-          icon={FaGoogle}
-          title="Avalie e ganhe"
-          subtitle="Nos avalie no Google com 5 estrelas e ganhe um suco grátis no seu próximo pedido!"
+          icon={FaInstagram}
+          title="Instagram"
+          subtitle="Nos siga e concorra a prêmios mensais."
         />
         <LinkButton
           href={PAULI_URL}
