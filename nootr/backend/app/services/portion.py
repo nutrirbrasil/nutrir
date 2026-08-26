@@ -160,6 +160,92 @@ _UNIT_OVERRIDE_BY_FOOD = {
     # "bola" sozinha (sem alimento) continua sendo sorvete, tratado à parte.
     "almondega": 30,
     "bola de carne": 30,
+    # frutas adicionais (levantamento de cobertura de "unidade")
+    "acerola": 4,
+    "figo": 40,
+    "macauba": 6,
+    "mamao papaia": 230,
+    "avocado": 200,
+    "cereja": 6,
+    "framboesa": 2,
+    "mangaba": 15,
+    "marmelo": 90,
+    # laticínios em porção individual (específico antes do genérico "iogurte")
+    "iogurte grego": 100,
+    "iogurte": 170,
+    "requeijao": 200,
+    "queijo cottage": 200,
+    "queijo camembert": 125,
+    "polenguinho": 15,
+    "chamyto": 80,
+    "yakult": 80,
+    # doces e salgados individuais
+    "cocada": 30,
+    "maria mole": 20,
+    "coco queimado": 20,
+    "quindim": 50,
+    "rapadura": 100,
+    "acaraje": 90,
+    "bolinho de arroz": 40,
+    "charuto de repolho": 60,
+    "tapioca com manteiga": 100,
+    "pupunha": 60,
+    "beijinho": 20,
+    "biscoito aveia e mel": 8,
+    "bolacha maria": 6,
+    "bolacha negresco": 12,
+    "bolinha de queijo": 20,
+    "brigadeiro": 15,
+    "cajuzinho": 15,
+    "canelone": 60,
+    "dadinho doce": 20,
+    "esfirra": 60,
+    "musse de chocolate": 90,
+    "nuggets": 16,
+    "pao de mel": 50,
+    "pudim diet": 76,
+    "pudim": 100,
+    "casquinha": 90,
+    "trufa": 15,
+    # castanha específica (antes de nada genérico, sem conflito)
+    "castanha portuguesa": 10,
+    "macadamia": 2,
+    # balas e chocolates de marca (unidade real embalada, não a barra toda)
+    "bala de caramelo": 6,
+    "bala frumelo": 5,
+    "bala mentex": 3,
+    "bala recheada": 6,
+    "amandita": 5,
+    "chocolate bis": 16,
+    "chocolate charge": 20,
+    "chocolate chockito": 32,
+    "chocolate crunch": 25,
+    "chocolate diamante negro": 33,
+    "chocolate diplomata": 34,
+    "chocolate galak": 20,
+    "chocolate kit kat": 41.5,
+    "chocolate krot": 30,
+    "chocolate laka": 20,
+    "chocolate lancy": 30,
+    "chocolate lococo": 30,
+    "chocolate magic": 20,
+    "chocolate milkybar": 25,
+    "chocolate nescau": 20,
+    "chocolate noblesse": 30,
+    "chocolate prestigio": 33,
+    "chocolate sensacao": 30,
+    "chocolate smarties": 20,
+    "chocolate smash": 20,
+    "gelatina": 120,
+    "flan": 100,
+    # fast food (peso real do sanduíche/item, específico antes de genérico)
+    "big mac": 219,
+    "cheseburguer": 119,
+    "burguer mc donald": 100,
+    "mc chicken": 173,
+    "me fish": 141,
+    "quarteirao": 199,
+    "cachorro quente": 150,
 }
 
 # "Fatia" varia demais por alimento pra ter peso único (fatia de pão ~25g,
@@ -234,6 +320,16 @@ _PRATO_OVERRIDE = {
     "estrogonofe": 250, "feijoada": 350, "frango com acafrao": 250,
     "manicoba": 300, "quibebe": 200, "sarapatel": 250, "vaca atolada": 300,
     "virado a paulista": 350, "yakisoba": 300, "bacalhoada": 300,
+}
+
+# "Sachê", porções individuais bem pequenas (condimento de restaurante/delivery,
+# adoçante de mesa), ordem de grandeza bem menor que "colher" ou "porção".
+_SACHE_OVERRIDE = {
+    "adocante": 1,
+    "acucar": 5,
+    "mostarda": 7,
+    "maionese": 7,
+    "ketchup": 7, "catchup": 7,
 }
 
 
@@ -312,12 +408,15 @@ _UNIT_LABELS: dict[str, tuple[str, str]] = {
     "pote": ("pote", "potes"),
     "punhado": ("punhado", "punhados"),
     "lata": ("lata", "latas"),
+    "barra": ("barra", "barras"),
+    "tablete": ("tablete", "tabletes"),
+    "sache": ("sachê", "sachês"),
 }
 
 # Unidades "de gente": não faz sentido meia unidade (meio ovo, meia fatia),
 # arredonda pra inteiro. As demais (colher, xícara, copo...) toleram meio
 # (1.5 colher, meia xícara), arredonda de 0.5 em 0.5.
-_WHOLE_STEP_UNITS = {"unidade", "fatia", "pedaco", "bola"}
+_WHOLE_STEP_UNITS = {"unidade", "fatia", "pedaco", "bola", "barra", "tablete", "sache"}
 
 # Unidades de peso/volume puro (não são "medida caseira" de verdade, só
 # gramas/ml disfarçados), nesse caso não há o que preservar além do número.
@@ -485,6 +584,17 @@ def _resolve_unit(unit: str, full_norm: str, after_index: int | None, hint_norm:
             return 60.0, "bola"
         g = _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
         return (g, "bola") if g is not None else None
+    if unit in ("barra", "barras"):
+        # Chocolate/cereal em barra é a mesma unidade real de _UNIT_OVERRIDE_BY_FOOD
+        # (ex: "1 barra de Kit Kat" == "1 unidade de Kit Kat"), só muda a palavra.
+        g = _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
+        return (g, "barra") if g is not None else None
+    if unit in ("tablete", "tabletes"):
+        g = _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
+        return (g, "tablete") if g is not None else None
+    if unit in ("sache", "saches"):
+        g = _match_keyword_table(combined, _SACHE_OVERRIDE)
+        return (g, "sache") if g is not None else None
 
     if unit in _WEIGHT_UNIT_KEYS:
         return _UNIT_GRAMS[unit], _WEIGHT_UNIT_KEYS[unit]
