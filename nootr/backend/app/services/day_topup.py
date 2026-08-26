@@ -95,6 +95,19 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
 
     after = diet_engine.day_macros(updated_meals)
     tgt = result["targets"]
+
+    # Rede determinística por baixo do prompt (regra 6 de _DAY_TOPUP_PROMPT):
+    # não aceita uma sugestão que PIORA o desvio de calorias em vez de
+    # melhorar (ex: remover mais caloria de um dia que já está em déficit) E
+    # ainda deixa o dia fora da tolerância, não confia só na instrução do
+    # prompt, o modelo pode não seguir à risca. Uma piora pequena é tolerada
+    # quando o objetivo era corrigir porção irreal (`near_ceiling_foods`) e o
+    # resultado final continua dentro da tolerância, trocar um pouco de
+    # exatidão por uma porção que a pessoa realmente comeria é o combinado.
+    new_remaining_cal = tgt["calories"] - after["calories"]
+    if abs(new_remaining_cal) > abs(remaining_cal) + 1 and abs(new_remaining_cal) > tolerance:
+        return
+
     result["adjusted_meals"] = updated_meals
     result["macros_after"] = after
     result["remaining_calories"] = round(tgt["calories"] - after["calories"])

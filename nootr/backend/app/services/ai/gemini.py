@@ -110,8 +110,11 @@ são alimentos de verdade (não um é preparo/complemento do outro): "alface e t
 e "tomate". "café com leite" -> dois itens, "café" e "leite" (NÃO "café" sozinho, o leite é metade das \
 calorias da bebida). "mostarda com mel" -> dois itens, "mostarda" e "mel". "pão com manteiga" -> dois \
 itens, "pão" e "manteiga". "ovo mexido no azeite" -> dois itens, "ovo mexido" e "azeite" (entrou como \
-ingrediente de preparo, não só tempero leve, ver regra de óleos/gorduras abaixo). Releia cada alimento \
-perguntando "isso é UM alimento ou DOIS numa frase só?" antes de decidir.
+ingrediente de preparo, não só tempero leve, ver regra de óleos/gorduras abaixo). "açaí com whey"/"vitamina \
+com whey"/qualquer bebida "com whey" ou "com proteína em pó" -> SEMPRE dois itens, o whey NUNCA \
+desaparece dentro do outro alimento nem vira só um "reforço" implícito, ele tem calorias e proteína \
+próprias relevantes (ex: "açaí com whey" -> "açaí" e "whey protein"). Releia cada alimento perguntando \
+"isso é UM alimento ou DOIS numa frase só?" antes de decidir.
 - Se um alimento for um PRATO PRONTO/COMPOSTO que normalmente reúne vários ingredientes-base (ex: canja de \
 galinha, sopa, estrogonofe, feijoada, torta salgada, VITAMINA/vitamina de frutas, hambúrguer/x-burguer/x- \
 salada/x-tudo, sanduíche, cachorro-quente, crepioca, tapioca recheada, omelete recheado, panqueca recheada) \
@@ -837,6 +840,12 @@ preferência. Considere também condições médicas nas observações (ex: diab
 algo doce/açúcar simples).
 5. Se nenhuma mudança realista resolver a diferença, devolva additions=[] e removals=[], não \
 force uma escolha ruim só pra fechar a meta.
+6. Se a direção for "abaixo" (o dia está com FALTA de calorias), o resultado LÍQUIDO da sua mudança \
+(additions menos removals) precisa ser um GANHO de calorias, nunca uma perda. Só use `removals` nesse \
+caso pra trocar um alimento por outro MAIOR/mais calórico (ex: tirar arroz e recolocar arroz numa \
+porção maior junto de outra coisa, ver bloco de porção irreal abaixo se houver), nunca pra só tirar \
+comida de um dia que já está devendo caloria. Se a direção for "acima" (sobrando caloria), aí sim \
+`removals` sozinho (sem repor) é uma opção válida.
 
 Alergias (NUNCA adicionar): {allergies}
 Não gosta: {dislikes}. Costuma ter em casa: {pantry}.

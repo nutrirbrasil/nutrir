@@ -149,10 +149,16 @@ def test_substitution_applies_day_topup_when_gap_is_big(client, fake_day_plan, m
         },
     )
 
-    skipped = fake_day_plan["meals"][1]["foods"][0]["name"]
+    # Pula os DOIS alimentos do almoço (não só um), pra deixar um déficit
+    # maior do que o jantar sozinho consegue fechar dentro do próprio teto de
+    # crescimento (2x): sobra um resíduo de verdade pro top-up ajudar a
+    # fechar, em vez de um gap que o rebalanceamento normal já zerava sozinho
+    # (nesse caso a rede de "não aceita sugestão que piora" rejeitaria a
+    # adição, corretamente, por não haver mais o que melhorar).
+    skipped = [f["name"] for f in fake_day_plan["meals"][1]["foods"]]
     resp = client.post(
         "/nootr/substitutions",
-        json={"action": "ate_different", "meal_id": "meal-2", "skipped_food_names": [skipped], "foods": []},
+        json={"action": "ate_different", "meal_id": "meal-2", "skipped_food_names": skipped, "foods": []},
     )
     assert resp.status_code == 200
     body = resp.json()

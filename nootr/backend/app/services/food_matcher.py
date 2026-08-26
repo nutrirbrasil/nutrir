@@ -75,7 +75,6 @@ _COMMON_FOODS: dict[str, tuple[float, float, float, float, float]] = {
     "cerveja": (150, 1, 12, 0, 350),           # lata 350ml
     "salgadinho": (150, 2, 16, 9, 50),
     "pipoca": (120, 2, 15, 6, 30),
-    "acai": (400, 3, 60, 16, 500),             # tigela média com acompanhamentos
 }
 
 # Preparações preferidas / evitadas ao desempatar resultados da TACO quando a
