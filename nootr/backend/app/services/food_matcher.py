@@ -88,6 +88,24 @@ _PREP_DISFAVORED = {
     "frito", "frita", "fritas", "conserva", "salgada", "salgado",
     "torrada", "torrado", "defumado", "defumada",
 }
+# A TACO (e agora a Tucunduva) não é consistente na concordância de gênero do
+# particípio ("Alcatra, grelhado" vs "Linguiça, grelhada", cada fonte/prato
+# concorda como achou melhor). Sem isso, "alcatra grelhada" não bate como
+# match exato/parcial contra um candidato "grelhado" (ou vice-versa), e pior:
+# o desempate de preparo (_rank_key) neutraliza a preferência quando a query
+# especifica um preparo, contando com o match de token pra já ter escolhido
+# certo, o que falha silenciosamente pra esse par. "Torrada" fica de fora
+# (também é substantivo, "uma torrada" o alimento, canonizar sem contexto
+# quebraria essa busca).
+_PREP_GENDER_CANON = {
+    "grelhada": "grelhado", "assada": "assado", "cozida": "cozido",
+    "crua": "cru", "refogada": "refogado", "frita": "frito", "fritas": "frito",
+    "salgada": "salgado", "defumada": "defumado",
+}
+
+
+def _canon_prep(token: str) -> str:
+    return _PREP_GENDER_CANON.get(token, token)
 # Miúdos/vísceras: raramente o que a pessoa quer dizer com o nome genérico do
 # animal (ex: "frango" != "coração de frango"). Só penaliza se a query não citar.
 _OFFAL = {
@@ -159,7 +177,7 @@ _STOPWORDS = {"com", "para", "por", "uma", "um", "dos", "das"}
 
 
 def tokens(text: str) -> set[str]:
-    toks = {_singular(t) for t in normalize(text).split() if len(t) > 2}
+    toks = {_canon_prep(_singular(t)) for t in normalize(text).split() if len(t) > 2}
     toks -= _STOPWORDS
     if len(toks) > 1:
         without_seasoning = toks - _SEASONING_WORDS
@@ -173,7 +191,7 @@ _MIN_PARTIAL_LEN = 4  # abaixo disso, "cha" vira substring de "charque" à toa
 
 def score_match(query_tokens: set[str], candidate_norm: str) -> int:
     """Pontuação simples (usada também pelo diet_engine): contagem de tokens que batem."""
-    candidate_tokens = set(candidate_norm.split())
+    candidate_tokens = {_canon_prep(t) for t in candidate_norm.split()}
     return sum(
         1 for t in query_tokens
         if t in candidate_tokens or (len(t) >= _MIN_PARTIAL_LEN and any(t in c for c in candidate_tokens))
@@ -199,7 +217,7 @@ def _rank_key(query_tokens: set[str], food: TacoFood, preferred: set[int] = froz
     preferred_match = 1 if food.id in preferred else 0
     name_words = normalize(food.name).split()
     display_words = normalize(food.display_name).split()
-    cand_tokens = set(name_words) | set(display_words)
+    cand_tokens = {_canon_prep(w) for w in name_words} | {_canon_prep(w) for w in display_words}
     exact = sum(1 for t in query_tokens if t in cand_tokens)
     partial = sum(
         1 for t in query_tokens
