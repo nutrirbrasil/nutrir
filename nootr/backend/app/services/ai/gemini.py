@@ -814,16 +814,23 @@ faltam/sobram aproximadamente {gap_calories} kcal, {gap_protein}g de proteína e
 pra bater a meta diária, e só escalar as porções já presentes não foi suficiente (ou deixaria de ser \
 realista). Se a lacuna for principalmente de GORDURA (proteína/calorias já perto da meta), prefira um \
 alimento gorduroso pra cobrir isso (ex: azeite, queijo, abacate, oleaginosas), em vez de só mais \
-carboidrato/proteína.
-
+carboidrato/proteína. Se a lacuna cobrir MAIS DE UM macro ao mesmo tempo (ex: proteína E gordura), \
+prefira UM alimento só que cubra os dois junto (ex: ovo cobre proteína e gordura de uma vez) em vez de \
+dois alimentos separados, um pra cada macro.
+{near_ceiling_block}
 Refeições ainda ajustáveis hoje (nome: alimentos atuais com quantidade):
 {meals_desc}
 
 Escolha UMA dessas refeições pra fazer um pequeno ajuste ADICIONAL (além da escala já feita): \
 adicionar um alimento novo, remover um que já está lá, ou os dois. Regras:
-1. Mantenha quantidades realistas, nunca porções absurdas (ex: não adicione 500g de arroz).
-2. O alimento adicionado precisa combinar com os outros da mesma refeição (mesmo contexto: não \
-sugira algo doce numa refeição salgada, nem embutido num café da tarde se não fizer sentido).
+1. Mantenha quantidades realistas, nunca porções absurdas (ex: não adicione 500g de arroz, nem 700ml \
+de leite numa vez, pense em quanto uma pessoa realmente consumiria numa refeição só).
+2. O alimento adicionado precisa ser algo que se come de verdade, sozinho ou como parte natural do \
+prato, e combinar com o resto da refeição (mesmo contexto: não sugira algo doce numa refeição salgada, \
+nem embutido num café da tarde se não fizer sentido). NUNCA sugira um ingrediente de cozinha cru que \
+ninguém come puro (margarina, manteiga pura, óleo puro, maisena, fermento): se a intenção é cobrir \
+gordura, prefira algo que a pessoa comeria como alimento (queijo, abacate, oleaginosa, azeite USADO \
+numa salada/prato, não a colher de margarina sozinha).
 3. Prefira alimentos comuns no Brasil; considere o que a pessoa tem em casa quando ajudar.
 4. NUNCA, em hipótese nenhuma, adicione algo da lista de alergias, é restrição de segurança, não \
 preferência. Considere também condições médicas nas observações (ex: diabetes -> nunca adicione \
@@ -837,9 +844,19 @@ Observações/condições médicas: {notes}
 
 Responda estritamente no formato do schema."""
 
+_NEAR_CEILING_BLOCK = """
+ATENÇÃO: pra fechar a meta só com quantidade, {foods} teria(m) que crescer pra uma porção pouco \
+realista (ex: dobrar ou mais o tamanho normal, tipo 750ml de leite numa vez só). Isso é PIOR que uma \
+meta um pouco imprecisa. Prefira: coloque esse alimento na lista de remoções (`removals`) e adicione \
+de volta (em `additions`) numa quantidade normal, junto de outro alimento que cubra o resto da \
+diferença, em vez de aceitar essa porção exagerada. Não precisa fechar a meta com exatidão perfeita \
+se o preço for uma quantidade que ninguém comeria de verdade.
+"""
+
 
 def suggest_day_topup(
-    pending_meals: list[dict], gap_calories: float, gap_protein: float, gap_fat: float, preferences: dict,
+    pending_meals: list[dict], gap_calories: float, gap_protein: float, gap_fat: float,
+    near_ceiling_foods: list[str], preferences: dict,
 ) -> dict | None:
     if not pending_meals:
         return None
@@ -847,11 +864,15 @@ def suggest_day_topup(
         f"- {m['name']}: " + (", ".join(f'{f["name"]} ({f["quantity"]})' for f in m["foods"]) or "vazia")
         for m in pending_meals
     )
+    near_ceiling_block = (
+        _NEAR_CEILING_BLOCK.format(foods=", ".join(near_ceiling_foods)) if near_ceiling_foods else ""
+    )
     prompt = _DAY_TOPUP_PROMPT.format(
         direction="abaixo" if gap_calories >= 0 else "acima",
         gap_calories=abs(round(gap_calories)),
         gap_protein=abs(round(gap_protein)),
         gap_fat=abs(round(gap_fat)),
+        near_ceiling_block=near_ceiling_block,
         meals_desc=meals_desc,
         allergies=", ".join(preferences.get("allergies") or []) or "nenhuma informada",
         dislikes=", ".join(preferences.get("dislikes") or []) or "nenhuma informada",

@@ -61,7 +61,7 @@ def client(monkeypatch, fake_day_plan):
     # Não tocar a rede: a explicação da IA e o "top-up" do dia são mockados.
     from backend.app.services import ai
     monkeypatch.setattr(ai, "explain_change", lambda ctx: "")
-    monkeypatch.setattr(ai, "suggest_day_topup", lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, preferences=None: None)
+    monkeypatch.setattr(ai, "suggest_day_topup", lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, near_ceiling_foods=None, preferences=None: None)
 
     app.dependency_overrides[get_current_user] = lambda: CurrentUser(id="u1", email="t@t.com", token="tok")
     yield TestClient(app)
@@ -144,7 +144,7 @@ def test_substitution_applies_day_topup_when_gap_is_big(client, fake_day_plan, m
     monkeypatch.setattr(day_topup, "_TOPUP_PROTEIN_THRESHOLD", 0.0)
     monkeypatch.setattr(
         substitutions_route.ai, "suggest_day_topup",
-        lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, preferences=None: {
+        lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, near_ceiling_foods=None, preferences=None: {
             "meal_name": "Jantar", "additions": [{"name": "batata doce", "quantity": "150g"}], "removals": [],
         },
     )
@@ -173,7 +173,7 @@ def test_day_topup_blocked_by_allergy(client, fake_day_plan, monkeypatch):
     })
     monkeypatch.setattr(
         substitutions_route.ai, "suggest_day_topup",
-        lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, preferences=None: {
+        lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, near_ceiling_foods=None, preferences=None: {
             "meal_name": "Jantar", "additions": [{"name": "amendoim torrado", "quantity": "50g"}], "removals": [],
         },
     )

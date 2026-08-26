@@ -384,11 +384,22 @@ def _apply_floor_pass(
     return changed
 
 
-def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> None:
+# Um alimento que precisou crescer perto do próprio teto pra fechar a meta
+# quase sempre virou uma porção pouco realista (ex: 300ml de leite virando
+# 750ml), mesmo estando matematicamente "certo". É informativo demais pra só
+# aceitar calado, ver `_rebalance`/`day_topup.try_day_topup`: quando isso
+# acontece, vale perguntar pra IA se existe uma escolha mais sensata (outro
+# alimento, ou o mesmo em quantidade menor) em vez de aceitar a porção extrema.
+_NEAR_CEILING_FACTOR = _MAX_FACTOR - 0.2
+
+
+def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> list[str]:
     """
     Limita o crescimento ACUMULADO de cada alimento a `_MAX_FACTOR` sobre
     `baseline` (a porção ORIGINAL do dia, antes de qualquer ajuste, ver
-    `original_meals` em `_rebalance`). Muda `adjusted_by_id` in-place.
+    `original_meals` em `_rebalance`). Muda `adjusted_by_id` in-place e
+    devolve os nomes dos alimentos que chegaram perto do teto (ver
+    `_NEAR_CEILING_FACTOR`), úteis pra sinalizar que vale revisão da IA.
 
     Cada passada respeita o próprio teto, mas os tetos se compõem: três
     passadas de 2,5x davam até 15x, e um arroz de 150g virava 915g pra
@@ -402,6 +413,7 @@ def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> 
     é o mesmo caminho de quando não há refeição ajustável.
     """
     original_by_id = {m["id"]: {f["name"]: f for f in m["foods"]} for m in baseline}
+    near_ceiling: list[str] = []
     for meal_id, meal in adjusted_by_id.items():
         originals = original_by_id.get(meal_id, {})
         capped = []
@@ -411,9 +423,13 @@ def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> 
             grams_now = food.get("grams") or 0
             if grams_before and grams_now > grams_before * _MAX_FACTOR:
                 capped.append(_scale_food(before, _MAX_FACTOR))
+                near_ceiling.append(food["name"])
             else:
                 capped.append(food)
+                if grams_before and grams_now >= grams_before * _NEAR_CEILING_FACTOR:
+                    near_ceiling.append(food["name"])
         adjusted_by_id[meal_id] = {**meal, "foods": capped}
+    return near_ceiling
 
 
 _CALORIE_TOLERANCE_PCT = 0.02  # o dia nunca pode fechar mais de 2% longe da meta
@@ -497,7 +513,7 @@ def _enforce_calorie_tolerance(
 
 def _rebalance(
     meals: list[dict], adjustable_ids: set[str], targets: dict, original_meals: list[dict] | None = None,
-) -> tuple[list[dict], bool, bool]:
+) -> tuple[list[dict], bool, bool, list[str]]:
     """
     Ajusta as porções das refeições em `adjustable_ids` para o dia bater as
     CALORIAS e a PROTEÍNA do alvo ao mesmo tempo (grupos proteico/energético).
@@ -524,7 +540,7 @@ def _rebalance(
     remaining = [m for m in meals if m["id"] in adjustable_ids]
     had_adjustable = bool(remaining)
     if not remaining:
-        return meals, False, False
+        return meals, False, False, []
 
     consumed = {"calories": 0.0, "protein_g": 0.0, "fat_g": 0.0}
     for m in meals:
@@ -611,7 +627,7 @@ def _rebalance(
 
     cap_source = original_meals if original_meals is not None else meals
     cap_baseline = [m for m in cap_source if m["id"] in adjustable_ids]
-    _cap_total_growth(cap_baseline, adjusted_by_id)
+    near_ceiling = _cap_total_growth(cap_baseline, adjusted_by_id)
 
     # O teto de crescimento acima pode ter deixado o dia longe da meta de
     # calorias de novo; fecha essa diferença (dentro do que os alimentos
@@ -621,10 +637,10 @@ def _rebalance(
         changed = True
 
     if not changed:
-        return meals, False, had_adjustable
+        return meals, False, had_adjustable, []
 
     adjusted = [adjusted_by_id.get(m["id"], m) if m["id"] in adjustable_ids else m for m in meals]
-    return adjusted, True, had_adjustable
+    return adjusted, True, had_adjustable, near_ceiling
 
 
 def day_macros(meals: list[dict]) -> dict:
@@ -806,6 +822,7 @@ def build_day_view(before: list[dict], after: list[dict]) -> dict:
 def _build_result(
     diet: dict, adjusted_meals: list[dict], targets: dict, headline: str,
     rebalanced: bool, had_adjustable: bool = False, adjustable_meal_ids: set[str] | None = None,
+    near_ceiling_foods: list[str] | None = None,
 ) -> dict:
     before = _day_macros(diet["meals"])
     after = _day_macros(adjusted_meals)
@@ -838,6 +855,11 @@ def _build_result(
         "remaining_calories": remaining_calories,
         "remaining_protein_g": remaining_protein,
         "remaining_fat_g": remaining_fat,
+        # Alimentos que precisaram crescer perto do próprio teto de porção
+        # pra fechar a meta (ver _cap_total_growth): sinal de que a quantidade
+        # pode ter ficado pouco realista mesmo com a meta numérica batida,
+        # usado por day_topup pra decidir se vale perguntar uma alternativa à IA.
+        "near_ceiling_foods": sorted(set(near_ceiling_foods or [])),
         "rebalanced": rebalanced,
         # se há refeição ajustável e a rota decidir que a diferença que sobrou
         # ainda é grande, ela pode pedir um "top-up" (adicionar/remover
@@ -873,7 +895,9 @@ def _apply_deviation(
 
     replaced_meal = {**meal, "foods": updated_foods}
     meals = [replaced_meal if m["id"] == meal["id"] else m for m in diet["meals"]]
-    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt, diet.get("original_meals"))
+    adjusted_meals, rebalanced, had_adjustable, near_ceiling = _rebalance(
+        meals, adjustable_ids, tgt, diet.get("original_meals"),
+    )
 
     skipped_label = ", ".join(f["name"] for f in skipped_foods)
     new_label = ", ".join(f["name"] for f in new_foods)
@@ -889,7 +913,7 @@ def _apply_deviation(
     else:
         headline = f"Nenhuma mudança registrada em {meal['name']}."
 
-    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids)
+    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling)
     result["matched_food"] = new_label or skipped_label
     result["match_confidence"] = "alta"
     result["delta_calories"] = round(delta_kcal, 1)
@@ -943,12 +967,12 @@ def apply_changes(
         m["id"] for m in diet["meals"]
         if m["id"] not in touched_ids and m["id"] not in already_eaten
     }
-    adjusted_meals, rebalanced, had_adjustable = _rebalance(
+    adjusted_meals, rebalanced, had_adjustable, near_ceiling = _rebalance(
         meals, adjustable_ids, tgt, diet.get("original_meals"),
     )
 
     headline = f"Registramos: {'; '.join(labels)}." if labels else "Nenhuma mudança registrada."
-    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids)
+    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling)
     result["matched_food"] = None
     result["match_confidence"] = "alta"
     result["delta_calories"] = round(total_delta, 1)
@@ -1000,14 +1024,16 @@ def log_missing_food(diet: dict, missing_food_name: str, meal_id: str, substitut
     updated_meal = {**meal, "foods": new_foods}
     meals = [updated_meal if m["id"] == meal["id"] else m for m in diet["meals"]]
     adjustable_ids = _meals_after(meals, meal["id"])
-    adjusted_meals, rebalanced, had_adjustable = _rebalance(meals, adjustable_ids, tgt, diet.get("original_meals"))
+    adjusted_meals, rebalanced, had_adjustable, near_ceiling = _rebalance(
+        meals, adjustable_ids, tgt, diet.get("original_meals"),
+    )
 
     names = ", ".join(f["name"] for f in substitutes)
     headline = (
         f"Trocamos {missing_food['name']} por {names} em {meal['name']} "
         f"(diferença de {abs(round(delta_kcal))} kcal)."
     )
-    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids)
+    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling)
     result["matched_food"] = names
     result["match_confidence"] = "alta"
     result["delta_calories"] = round(delta_kcal, 1)

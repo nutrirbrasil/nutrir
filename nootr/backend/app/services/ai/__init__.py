@@ -139,20 +139,23 @@ def suggest_wildcard(
 
 def suggest_day_topup(
     pending_meals: list[dict], gap_calories: float, gap_protein: float, gap_fat: float = 0.0,
-    preferences: dict | None = None,
+    near_ceiling_foods: list[str] | None = None, preferences: dict | None = None,
 ) -> dict | None:
     """
     Quando só escalar as quantidades das refeições seguintes não é (ou não
-    seria de forma realista) suficiente pra bater a meta do dia depois de um
-    desvio, pergunta pra IA se dá pra fechar mais a diferença adicionando
-    e/ou removendo um alimento de UMA das refeições ainda ajustáveis, sempre
-    com quantidades realistas e alimentos que combinem entre si. Devolve
+    seria de forma realista, ver `near_ceiling_foods`) suficiente pra bater a
+    meta do dia depois de um desvio, pergunta pra IA se dá pra fechar mais a
+    diferença adicionando e/ou removendo um alimento de UMA das refeições
+    ainda ajustáveis, sempre com quantidades realistas e alimentos que
+    combinem entre si. Devolve
     {"meal_name": str, "additions": [{"name","quantity"}], "removals": [str]}
     ou None (se a IA achar que nada realista resolve, ou se falhar, não
     bloqueia o resultado principal do ajuste).
     """
     try:
-        return _provider().suggest_day_topup(pending_meals, gap_calories, gap_protein, gap_fat, preferences or {})
+        return _provider().suggest_day_topup(
+            pending_meals, gap_calories, gap_protein, gap_fat, near_ceiling_foods or [], preferences or {},
+        )
     except AIError:
         return None
 

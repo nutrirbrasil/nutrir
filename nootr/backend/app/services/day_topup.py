@@ -35,17 +35,27 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     é gorduroso o bastante pra cobrir a lacuna só escalando porção (ex: o
     alimento gorduroso do dia foi justamente o que a pessoa não comeu), só um
     alimento novo resolve.
+
+    Também dispara quando a meta numérica bateu mas à custa de uma porção
+    pouco realista (`near_ceiling_foods`, ex: leite virando 750ml pra fechar
+    calorias sozinho): matematicamente certo, mas ninguém bebe isso de uma
+    vez. Aqui o pedido pra IA muda de "cobrir uma lacuna" pra "existe uma
+    composição mais sensata pra essa mesma contribuição de calorias/macros",
+    ela pode inclusive reduzir o alimento que cresceu demais E compensar com
+    outra coisa, ver `additions`/`removals` no schema.
     """
     if not result.get("can_top_up"):
         return
     remaining_cal = result["remaining_calories"]
     remaining_prot = result["remaining_protein_g"]
     remaining_fat = result.get("remaining_fat_g", 0)
+    near_ceiling = result.get("near_ceiling_foods") or []
     tolerance = diet_engine.calorie_tolerance(result["targets"]["calories"])
     if (
         abs(remaining_cal) <= tolerance
         and abs(remaining_prot) < _TOPUP_PROTEIN_THRESHOLD
         and abs(remaining_fat) < _TOPUP_FAT_THRESHOLD
+        and not near_ceiling
     ):
         return
 
@@ -54,7 +64,7 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     prefs = repository.get_preferences(user) or {}
     preferred_ids = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
     tie_resolver = ai.build_country_tie_resolver((repository.get_profile(user) or {}).get("country") or "BR")
-    topup = ai.suggest_day_topup(pending_meals, remaining_cal, remaining_prot, remaining_fat, prefs)
+    topup = ai.suggest_day_topup(pending_meals, remaining_cal, remaining_prot, remaining_fat, near_ceiling, prefs)
     if not topup:
         return
 
