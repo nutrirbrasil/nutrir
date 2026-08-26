@@ -384,23 +384,22 @@ def _apply_floor_pass(
     return changed
 
 
-# Quanto uma refeição pode concentrar de proteína acima da própria fatia-alvo
-# (role_weights) antes de ser considerada desbalanceada demais (ex: jantar
-# com 106g de proteína enquanto o lanche fica com 15g). Só entra em jogo
-# quando a refeição já tinha uma base rica em proteína (ex: frango) e a
-# escala por quantidade amplificou essa concentração em vez de corrigir.
-_PROTEIN_CEILING_MULTIPLIER = 1.6
+# Nenhuma refeição pode concentrar mais que essa fração da proteína do DIA
+# INTEIRO (ex: jantar com 101g de proteína num dia de meta 159g é 63%, acima
+# do teto), teto absoluto, não relativo ao peso de papel da própria refeição
+# (um teto relativo ao peso de papel deixava passar esse exato caso: o peso
+# de papel do jantar já é alto por design, "fatia justa" dele já era grande
+# o bastante pra disfarçar a concentração).
+_PROTEIN_MAX_MEAL_SHARE = 0.5
 
 
 def _apply_protein_ceiling_pass(
-    remaining: list[dict], adjusted_by_id: dict[str, dict], solvable_ids: list[str],
-    weights: list[float], targets: dict,
+    remaining: list[dict], adjusted_by_id: dict[str, dict], solvable_ids: list[str], targets: dict,
 ) -> bool:
     """
-    4ª passada: se uma refeição ficou com MUITO mais proteína do que sua
-    fatia-alvo (mais que `_PROTEIN_CEILING_MULTIPLIER` vezes o que
-    `role_weights` reservou pra ela), mas outra refeição ajustável ainda tem
-    espaço abaixo do próprio teto, move o excedente de uma pra outra: cresce
+    4ª passada: se uma refeição ficou com mais de `_PROTEIN_MAX_MEAL_SHARE`
+    (50%) da proteína do DIA inteiro, mas outra refeição ajustável ainda tem
+    espaço abaixo desse mesmo teto, move o excedente de uma pra outra: cresce
     o grupo proteico de quem está abaixo, encolhe o de quem está acima,
     compensando com o grupo carboidrato/outros de cada uma pra manter as
     CALORIAS de cada refeição intactas (só redistribui a PROTEÍNA entre elas,
@@ -411,15 +410,10 @@ def _apply_protein_ceiling_pass(
     if len(solvable_ids) < 2:
         return False
 
-    weight_by_id = {m["id"]: w for m, w in zip(remaining, weights)}
-    prot_by_id: dict[str, float] = {}
-    ceiling_by_id: dict[str, float] = {}
-    for mid in solvable_ids:
-        prot_by_id[mid] = _meal_macros(adjusted_by_id[mid])["protein_g"]
-        ceiling_by_id[mid] = weight_by_id[mid] * targets["protein_g"] * _PROTEIN_CEILING_MULTIPLIER
-
-    surpluses = {mid: max(0.0, prot_by_id[mid] - ceiling_by_id[mid]) for mid in solvable_ids}
-    room = {mid: max(0.0, ceiling_by_id[mid] - prot_by_id[mid]) for mid in solvable_ids}
+    cap = _PROTEIN_MAX_MEAL_SHARE * targets["protein_g"]
+    prot_by_id = {mid: _meal_macros(adjusted_by_id[mid])["protein_g"] for mid in solvable_ids}
+    surpluses = {mid: max(0.0, prot_by_id[mid] - cap) for mid in solvable_ids}
+    room = {mid: max(0.0, cap - prot_by_id[mid]) for mid in solvable_ids}
     total_surplus = sum(surpluses.values())
     total_room = sum(room.values())
     if total_surplus <= 1e-6 or total_room <= 1e-6:
@@ -693,9 +687,6 @@ def _rebalance(
     if _apply_floor_pass(remaining, adjusted_by_id, solvable_ids, targets):
         changed = True
 
-    if _apply_protein_ceiling_pass(remaining, adjusted_by_id, solvable_ids, weights, targets):
-        changed = True
-
     cap_source = original_meals if original_meals is not None else meals
     cap_baseline = [m for m in cap_source if m["id"] in adjustable_ids]
     near_ceiling = _cap_total_growth(cap_baseline, adjusted_by_id)
@@ -705,6 +696,15 @@ def _rebalance(
     # ainda suportam) antes de aceitar o resultado. Sempre depois do teto,
     # nunca antes, senão essa passada é que estouraria o teto.
     if _enforce_calorie_tolerance(cap_baseline, adjusted_by_id, consumed["calories"], targets["calories"]):
+        changed = True
+
+    # Proteína por último: as passadas acima mexem em calorias sem saber de
+    # proteína (ex: _enforce_calorie_tolerance pode ter jogado calorias de
+    # volta pro alimento proteico pra fechar a meta), então essa concentração
+    # só pode ser corrigida depois de tudo. Preserva as CALORIAS de cada
+    # refeição (só troca o "recheio" proteína/carboidrato dentro dela), por
+    # isso rodar por último não desfaz o fechamento de calorias acima.
+    if _apply_protein_ceiling_pass(remaining, adjusted_by_id, solvable_ids, targets):
         changed = True
 
     # Refeição cuja proteína ficou bem abaixo da própria fatia-alvo mesmo
