@@ -801,20 +801,20 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
               </div>
             )}
 
-            {result.topup_applied && (
+            {result.topup_applied && result.topup_applied.length > 0 && (
               <div className="rounded-xl border border-nootr-bordo/30 bg-nootr-wine/40 p-4">
                 <p className="mb-1 text-[11px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
-                  Ajuste extra em {result.topup_applied.meal_name}
+                  Ajuste extra
                 </p>
-                <p className="text-sm leading-relaxed text-nootr-cream">
-                  {result.topup_applied.additions.length > 0 && (
-                    <>Adicionamos <strong>{result.topup_applied.additions.join(", ")}</strong>. </>
-                  )}
-                  {result.topup_applied.removals.length > 0 && (
-                    <>Removemos <strong>{result.topup_applied.removals.join(", ")}</strong>. </>
-                  )}
-                  Só escalar as quantidades não seria suficiente pra chegar perto da meta do dia.
-                </p>
+                <div className="space-y-1 text-sm leading-relaxed text-nootr-cream">
+                  {result.topup_applied.map((change, i) => (
+                    <p key={i}>
+                      <strong>{change.meal_name}</strong>: adicionamos{" "}
+                      <strong>{change.additions.join(", ")}</strong>.
+                    </p>
+                  ))}
+                  <p>Só escalar as quantidades não seria suficiente pra chegar perto da meta do dia.</p>
+                </div>
               </div>
             )}
 

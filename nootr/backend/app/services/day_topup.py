@@ -24,11 +24,11 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     """
     Depois de escalar as quantidades das refeições ajustáveis, se o dia ainda
     ficar fora da tolerância de calorias (ou longe na proteína/gordura), pede
-    pra IA um ajuste extra, adicionar e/ou remover um alimento de UMA
-    refeição ajustável, e aplica se ela sugerir algo. Muda `result` in-place.
-    Não bloqueia: se não houver refeição ajustável, a diferença já estiver
-    dentro da tolerância, ou a IA não sugerir nada bom, o resultado do
-    escalonamento normal é mantido.
+    pra IA um ajuste extra: ADICIONAR alimento (nunca remover, ver
+    _DAY_TOPUP_PROMPT) em uma ou mais refeições ajustáveis, e aplica se ela
+    sugerir algo. Muda `result` in-place. Não bloqueia: se não houver
+    refeição ajustável, a diferença já estiver dentro da tolerância, ou a IA
+    não sugerir nada bom, o resultado do escalonamento normal é mantido.
 
     Gordura entra aqui (e não só no rebalanceamento por quantidade,
     diet_engine._rebalance) porque às vezes NENHUM alimento ajustável do dia
@@ -39,10 +39,9 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     Também dispara quando a meta numérica bateu mas à custa de uma porção
     pouco realista (`near_ceiling_foods`, ex: leite virando 750ml pra fechar
     calorias sozinho): matematicamente certo, mas ninguém bebe isso de uma
-    vez. Aqui o pedido pra IA muda de "cobrir uma lacuna" pra "existe uma
-    composição mais sensata pra essa mesma contribuição de calorias/macros",
-    ela pode inclusive reduzir o alimento que cresceu demais E compensar com
-    outra coisa, ver `additions`/`removals` no schema.
+    vez. Como esse mecanismo só adiciona, ele não "conserta" a porção
+    grande, só evita piorar (não sugere mais do mesmo alimento) e cobre o
+    resto com algo diferente, ver `_NEAR_CEILING_BLOCK`.
     """
     if not result.get("can_top_up"):
         return
@@ -69,52 +68,55 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
         return
 
     allergies = prefs.get("allergies") or []
-    resolved_additions = []
-    for item in topup["additions"]:
-        match = food_matcher.find_food(
-            f'{item["quantity"]} {item["name"]}'.strip(), preferred=preferred_ids, tie_resolver=tie_resolver,
-        )
-        # Última barreira determinística: mesmo com a instrução no prompt,
-        # nunca confia só na IA pra alergia (ver food_matcher.matches_allergen).
-        if food_matcher.matches_allergen(match.name, allergies):
+    meals = result["adjusted_meals"]
+    applied: list[dict] = []
+    for change in topup["changes"]:
+        resolved_additions = []
+        for item in change["additions"]:
+            match = food_matcher.find_food(
+                f'{item["quantity"]} {item["name"]}'.strip(), preferred=preferred_ids, tie_resolver=tie_resolver,
+            )
+            # Última barreira determinística: mesmo com a instrução no prompt,
+            # nunca confia só na IA pra alergia (ver food_matcher.matches_allergen).
+            if food_matcher.matches_allergen(match.name, allergies):
+                continue
+            grams = match.grams or 100.0
+            resolved_additions.append({
+                "name": match.name, "calories": match.calories, "protein_g": match.protein_g,
+                "carbs_g": match.carbs_g, "fat_g": match.fat_g,
+                "grams": grams, "quantity": f"{round(grams)}g" if match.grams else "1 porção",
+            })
+        if not resolved_additions:
             continue
-        grams = match.grams or 100.0
-        resolved_additions.append({
-            "name": match.name, "calories": match.calories, "protein_g": match.protein_g,
-            "carbs_g": match.carbs_g, "fat_g": match.fat_g,
-            "grams": grams, "quantity": f"{round(grams)}g" if match.grams else "1 porção",
+        updated_meals = diet_engine.apply_meal_changes(
+            meals, change["meal_name"], resolved_additions, [],
+        )
+        if updated_meals is None:
+            continue
+        meals = updated_meals
+        applied.append({
+            "meal_name": change["meal_name"],
+            "additions": [a["name"] for a in resolved_additions],
         })
-    if not resolved_additions and not topup["removals"]:
+
+    if not applied:
         return
 
-    updated_meals = diet_engine.apply_meal_changes(
-        result["adjusted_meals"], topup["meal_name"], resolved_additions, topup["removals"],
-    )
-    if updated_meals is None:
-        return
-
-    after = diet_engine.day_macros(updated_meals)
+    after = diet_engine.day_macros(meals)
     tgt = result["targets"]
 
-    # Rede determinística por baixo do prompt (regra 6 de _DAY_TOPUP_PROMPT):
-    # não aceita uma sugestão que PIORA o desvio de calorias em vez de
-    # melhorar (ex: remover mais caloria de um dia que já está em déficit) E
-    # ainda deixa o dia fora da tolerância, não confia só na instrução do
-    # prompt, o modelo pode não seguir à risca. Uma piora pequena é tolerada
-    # quando o objetivo era corrigir porção irreal (`near_ceiling_foods`) e o
-    # resultado final continua dentro da tolerância, trocar um pouco de
-    # exatidão por uma porção que a pessoa realmente comeria é o combinado.
+    # Rede determinística: como isso só adiciona alimento, o desvio de
+    # calorias quase sempre melhora sozinho, mas não confia cegamente (ex: a
+    # IA pode ter adicionado mais do que o necessário e estourado pro lado
+    # oposto). Rejeita só se o desvio piorou de verdade E ainda ficou fora da
+    # tolerância, não bloqueia por uma piora pequena e sem consequência.
     new_remaining_cal = tgt["calories"] - after["calories"]
     if abs(new_remaining_cal) > abs(remaining_cal) + 1 and abs(new_remaining_cal) > tolerance:
         return
 
-    result["adjusted_meals"] = updated_meals
+    result["adjusted_meals"] = meals
     result["macros_after"] = after
     result["remaining_calories"] = round(tgt["calories"] - after["calories"])
     result["remaining_protein_g"] = round(tgt["protein_g"] - after["protein_g"])
     result["remaining_fat_g"] = round(tgt["fat_g"] - after["fat_g"])
-    result["topup_applied"] = {
-        "meal_name": topup["meal_name"],
-        "additions": [a["name"] for a in resolved_additions],
-        "removals": topup["removals"],
-    }
+    result["topup_applied"] = applied

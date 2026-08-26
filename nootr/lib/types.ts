@@ -316,8 +316,10 @@ export interface SubstitutionResult {
   // ajuda a cobrir uma lacuna de macro deixada pelo substituto escolhido.
   wildcard_added?: string;
   // Quando só escalar as quantidades não bastou pra bater a meta do dia: a
-  // IA sugeriu adicionar/remover algo de uma refeição ajustável e foi aplicado.
-  topup_applied?: { meal_name: string; additions: string[]; removals: string[] };
+  // IA sugeriu adicionar algo (nunca remove) em uma ou mais refeições
+  // ajustáveis e foi aplicado (pode ser mais de uma refeição, se a lacuna
+  // era grande).
+  topup_applied?: { meal_name: string; additions: string[] }[];
   // Tudo que mudou em relação ao plano original do dia, por refeição (ver
   // diet_engine.diff_meals). É o que o app entrega, então a tela mostra item
   // a item em vez de só os totais.

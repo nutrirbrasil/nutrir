@@ -798,54 +798,65 @@ def suggest_wildcard(meal_name: str, current_foods: list[str], gap_macro: str, p
 _DAY_TOPUP_SCHEMA = {
     "type": "OBJECT",
     "properties": {
-        "meal_name": {"type": "STRING"},
-        "additions": {
+        "changes": {
             "type": "ARRAY",
             "items": {
                 "type": "OBJECT",
-                "properties": {"name": {"type": "STRING"}, "quantity": {"type": "STRING"}},
-                "required": ["name", "quantity"],
+                "properties": {
+                    "meal_name": {"type": "STRING"},
+                    "additions": {
+                        "type": "ARRAY",
+                        "items": {
+                            "type": "OBJECT",
+                            "properties": {"name": {"type": "STRING"}, "quantity": {"type": "STRING"}},
+                            "required": ["name", "quantity"],
+                        },
+                    },
+                },
+                "required": ["meal_name", "additions"],
             },
         },
-        "removals": {"type": "ARRAY", "items": {"type": "STRING"}},
     },
-    "required": ["meal_name", "additions", "removals"],
+    "required": ["changes"],
 }
 
 _DAY_TOPUP_PROMPT = """A dieta do dia ficou {direction} da meta depois de um ajuste de quantidades: \
 faltam/sobram aproximadamente {gap_calories} kcal, {gap_protein}g de proteína e {gap_fat}g de gordura \
 pra bater a meta diária, e só escalar as porções já presentes não foi suficiente (ou deixaria de ser \
-realista). Se a lacuna for principalmente de GORDURA (proteína/calorias já perto da meta), prefira um \
-alimento gorduroso pra cobrir isso (ex: azeite, queijo, abacate, oleaginosas), em vez de só mais \
-carboidrato/proteína. Se a lacuna cobrir MAIS DE UM macro ao mesmo tempo (ex: proteína E gordura), \
+realista, ver abaixo). Se a lacuna for principalmente de GORDURA (proteína/calorias já perto da meta), \
+prefira um alimento gorduroso pra cobrir isso (ex: azeite, queijo, abacate, oleaginosas), em vez de só \
+mais carboidrato/proteína. Se a lacuna cobrir MAIS DE UM macro ao mesmo tempo (ex: proteína E gordura), \
 prefira UM alimento só que cubra os dois junto (ex: ovo cobre proteína e gordura de uma vez) em vez de \
 dois alimentos separados, um pra cada macro.
+
+Você só pode ADICIONAR alimento aqui, nunca remover nem diminuir o que já está na refeição (isso é \
+tratado em outra etapa). Se a direção for "acima" (o dia já está com SOBRA de calorias), não há nada \
+útil que adicionar resolva, devolva `changes` vazio nesse caso.
 {near_ceiling_block}
 Refeições ainda ajustáveis hoje (nome: alimentos atuais com quantidade):
 {meals_desc}
 
-Escolha UMA dessas refeições pra fazer um pequeno ajuste ADICIONAL (além da escala já feita): \
-adicionar um alimento novo, remover um que já está lá, ou os dois. Regras:
-1. Mantenha quantidades realistas, nunca porções absurdas (ex: não adicione 500g de arroz, nem 700ml \
-de leite numa vez, pense em quanto uma pessoa realmente consumiria numa refeição só).
+Seu objetivo é FECHAR a lacuna de verdade, não fazer só um gesto simbólico. Se a lacuna for grande, \
+adicione quantos alimentos forem necessários pra cobrir de verdade, em UMA OU MAIS dessas refeições (uma \
+pessoa pode perfeitamente comer alguns itens a mais espalhados no dia, isso é normal). O limite não é \
+"um alimento só", é cada alimento individualmente ter uma porção que uma pessoa realmente comeria. \
+`changes`: uma entrada por refeição que você decidir mexer (pode ser mais de uma). Regras:
+1. Cada QUANTIDADE precisa ser realista pra aquele alimento específico (ex: não é uma porção plausível \
+adicionar 500g de arroz nem 700ml de leite de uma vez, pense em quanto uma pessoa realmente consumiria \
+daquele alimento numa refeição só). Isso não significa limitar QUANTOS alimentos você adiciona no total, \
+só que cada um precisa ser plausível sozinho.
 2. O alimento adicionado precisa ser algo que se come de verdade, sozinho ou como parte natural do \
-prato, e combinar com o resto da refeição (mesmo contexto: não sugira algo doce numa refeição salgada, \
-nem embutido num café da tarde se não fizer sentido). NUNCA sugira um ingrediente de cozinha cru que \
-ninguém come puro (margarina, manteiga pura, óleo puro, maisena, fermento): se a intenção é cobrir \
-gordura, prefira algo que a pessoa comeria como alimento (queijo, abacate, oleaginosa, azeite USADO \
-numa salada/prato, não a colher de margarina sozinha).
+prato, e combinar com o resto da refeição em que entrar (mesmo contexto: não sugira algo doce numa \
+refeição salgada, nem embutido num café da tarde se não fizer sentido). NUNCA sugira um ingrediente de \
+cozinha cru que ninguém come puro (margarina, manteiga pura, óleo puro, maisena, fermento): se a intenção \
+é cobrir gordura, prefira algo que a pessoa comeria como alimento (queijo, abacate, oleaginosa, azeite \
+USADO numa salada/prato, não a colher de margarina sozinha).
 3. Prefira alimentos comuns no Brasil; considere o que a pessoa tem em casa quando ajudar.
 4. NUNCA, em hipótese nenhuma, adicione algo da lista de alergias, é restrição de segurança, não \
 preferência. Considere também condições médicas nas observações (ex: diabetes -> nunca adicione \
 algo doce/açúcar simples).
-5. Se nenhuma mudança realista resolver a diferença, devolva additions=[] e removals=[], não \
-force uma escolha ruim só pra fechar a meta.
-6. Se a direção for "abaixo" (o dia está com FALTA de calorias), o resultado LÍQUIDO da sua mudança \
-(additions menos removals) precisa ser um GANHO de calorias, nunca uma perda. Só use `removals` nesse \
-caso pra trocar um alimento por outro MAIOR/mais calórico (ex: tirar arroz e recolocar arroz numa \
-porção maior junto de outra coisa, ver bloco de porção irreal abaixo se houver), nunca pra só tirar \
-comida de um dia que já está devendo caloria. Se a direção for "acima" (sobrando caloria), aí sim \
-`removals` sozinho (sem repor) é uma opção válida.
+5. Se nenhuma mudança realista resolver a diferença, devolva `changes` vazio, não force uma escolha \
+ruim só pra fechar a meta.
 
 Alergias (NUNCA adicionar): {allergies}
 Não gosta: {dislikes}. Costuma ter em casa: {pantry}.
@@ -854,12 +865,9 @@ Observações/condições médicas: {notes}
 Responda estritamente no formato do schema."""
 
 _NEAR_CEILING_BLOCK = """
-ATENÇÃO: pra fechar a meta só com quantidade, {foods} teria(m) que crescer pra uma porção pouco \
-realista (ex: dobrar ou mais o tamanho normal, tipo 750ml de leite numa vez só). Isso é PIOR que uma \
-meta um pouco imprecisa. Prefira: coloque esse alimento na lista de remoções (`removals`) e adicione \
-de volta (em `additions`) numa quantidade normal, junto de outro alimento que cubra o resto da \
-diferença, em vez de aceitar essa porção exagerada. Não precisa fechar a meta com exatidão perfeita \
-se o preço for uma quantidade que ninguém comeria de verdade.
+ATENÇÃO: {foods} já cresceu(ram) bastante tentando fechar a meta só com quantidade (perto do tamanho \
+máximo realista de porção). NÃO adicione mais desse(s) mesmo(s) alimento(s), prefira algo DIFERENTE pra \
+cobrir o que ainda falta.
 """
 
 
@@ -894,15 +902,18 @@ def suggest_day_topup(
     except json.JSONDecodeError as exc:
         raise AIError(f"JSON inválido do Gemini: {exc}") from exc
 
-    meal_name = str(data.get("meal_name", "")).strip()
-    additions = [
-        {"name": str(a.get("name", "")).strip(), "quantity": str(a.get("quantity", "")).strip() or "1 porção"}
-        for a in (data.get("additions") or []) if str(a.get("name", "")).strip()
-    ]
-    removals = [str(r).strip() for r in (data.get("removals") or []) if str(r).strip()]
-    if not meal_name or (not additions and not removals):
+    changes = []
+    for c in (data.get("changes") or []):
+        meal_name = str(c.get("meal_name", "")).strip()
+        additions = [
+            {"name": str(a.get("name", "")).strip(), "quantity": str(a.get("quantity", "")).strip() or "1 porção"}
+            for a in (c.get("additions") or []) if str(a.get("name", "")).strip()
+        ]
+        if meal_name and additions:
+            changes.append({"meal_name": meal_name, "additions": additions})
+    if not changes:
         return None
-    return {"meal_name": meal_name, "additions": additions, "removals": removals}
+    return {"changes": changes}
 
 
 _COMMON_VARIANT_SCHEMA = {

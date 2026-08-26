@@ -145,7 +145,9 @@ def test_substitution_applies_day_topup_when_gap_is_big(client, fake_day_plan, m
     monkeypatch.setattr(
         substitutions_route.ai, "suggest_day_topup",
         lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, near_ceiling_foods=None, preferences=None: {
-            "meal_name": "Jantar", "additions": [{"name": "batata doce", "quantity": "150g"}], "removals": [],
+            "changes": [
+                {"meal_name": "Jantar", "additions": [{"name": "batata doce", "quantity": "150g"}]},
+            ],
         },
     )
 
@@ -162,7 +164,7 @@ def test_substitution_applies_day_topup_when_gap_is_big(client, fake_day_plan, m
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["topup_applied"]["meal_name"] == "Jantar"
+    assert body["topup_applied"][0]["meal_name"] == "Jantar"
     jantar = next(m for m in body["adjusted_meals"] if m["name"] == "Jantar")
     names = [f["name"] for f in jantar["foods"]]
     assert any("batata doce" in n.lower() for n in names)
@@ -180,7 +182,9 @@ def test_day_topup_blocked_by_allergy(client, fake_day_plan, monkeypatch):
     monkeypatch.setattr(
         substitutions_route.ai, "suggest_day_topup",
         lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, near_ceiling_foods=None, preferences=None: {
-            "meal_name": "Jantar", "additions": [{"name": "amendoim torrado", "quantity": "50g"}], "removals": [],
+            "changes": [
+                {"meal_name": "Jantar", "additions": [{"name": "amendoim torrado", "quantity": "50g"}]},
+            ],
         },
     )
 

@@ -183,7 +183,9 @@ def test_topup_kicks_in_when_normal_rebalance_cant_close_the_gap(client, monkeyp
     monkeypatch.setattr(diet_engine, "calorie_tolerance", lambda calories: 0.0)
     monkeypatch.setattr(day_topup, "_TOPUP_PROTEIN_THRESHOLD", 0.0)
     monkeypatch.setattr(ai, "suggest_day_topup", lambda pending_meals, gap_calories, gap_protein, gap_fat=0.0, near_ceiling_foods=None, preferences=None: {
-        "meal_name": "Jantar", "additions": [{"name": "batata doce", "quantity": "150g"}], "removals": [],
+        "changes": [
+            {"meal_name": "Jantar", "additions": [{"name": "batata doce", "quantity": "150g"}]},
+        ],
     })
     monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
         "reply": "Ajustei o dia.",
