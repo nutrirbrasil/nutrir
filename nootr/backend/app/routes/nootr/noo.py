@@ -54,8 +54,15 @@ def _resolve_added(items: list[dict], prefs: dict, country: str, text_norm: str)
     out: list[dict] = []
     for item in items:
         match = food_matcher.find_food(item["name"], preferred=preferred, tie_resolver=tie_resolver)
-        item_words = [w for w in food_matcher.normalize(item["name"]).split() if len(w) > 3]
-        user_named_it = any(w in text_norm for w in item_words)
+        # Confere tanto o nome que a IA propôs quanto o nome REAL do alimento
+        # casado: a IA às vezes reformula o que a pessoa disse (ex: pessoa
+        # disse "danoninho", IA propõe "petit suisse", o nome real casado é
+        # "Queijo 'petit suisse' (Danoninho)"), então só olhar pro texto da
+        # IA perdia a menção que a pessoa realmente fez.
+        candidate_words = [
+            w for w in food_matcher.normalize(item["name"] + " " + match.name).split() if len(w) > 3
+        ]
+        user_named_it = any(w in text_norm for w in candidate_words)
         if not user_named_it and food_matcher.matches_allergen(match.name, allergies):
             continue
         grams = parse_portion(item["quantity"], food_hint=item["name"]) or match.grams or 100.0

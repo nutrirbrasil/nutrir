@@ -79,6 +79,10 @@ _SPOON_OVERRIDE = {
 # chaves genéricas que seriam substring delas (ex: "ovo de codorna" contém
 # "ovo"), a primeira que bater no texto vale.
 _UNIT_OVERRIDE_BY_FOOD = {
+    # suplemento em pó: "unidade" não é a medida certa (ninguém mede whey em
+    # unidade), mas serve de rede de segurança se a IA usar assim mesmo, uma
+    # dose/scoop típica é ~30g, bem melhor que cair no genérico de 150g.
+    "whey": 30,
     # ovos (específico antes do genérico)
     "codorna": 9,
     "ovo": 50,
@@ -198,6 +202,7 @@ _PORCAO_OVERRIDE = {
     "feijao": 80, "leguminosa": 80,
     "carne": 100, "frango": 100, "peixe": 100,
     "salada": 100, "legume": 100, "verdura": 80,
+    "whey": 30,
 }
 
 # "Prato", sem fallback. Refeição completa (arroz+feijão+carne) vs prato
