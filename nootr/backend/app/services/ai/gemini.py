@@ -110,16 +110,8 @@ são alimentos de verdade (não um é preparo/complemento do outro): "alface e t
 e "tomate". "café com leite" -> dois itens, "café" e "leite" (NÃO "café" sozinho, o leite é metade das \
 calorias da bebida). "mostarda com mel" -> dois itens, "mostarda" e "mel". "pão com manteiga" -> dois \
 itens, "pão" e "manteiga". "ovo mexido no azeite" -> dois itens, "ovo mexido" e "azeite" (entrou como \
-ingrediente de preparo, não só tempero leve, ver regra de óleos/gorduras abaixo). "açaí com whey"/"vitamina \
-com whey"/qualquer bebida "com whey" ou "com proteína em pó" -> SEMPRE dois itens, o whey NUNCA \
-desaparece dentro do outro alimento nem vira só um "reforço" implícito, ele tem calorias e proteína \
-próprias relevantes (ex: "açaí com whey" -> "açaí" e "whey protein"). O MESMO vale quando a frase já tem \
-outros alimentos antes: "comi um X e um Y com Z de sobremesa" é SEMPRE TRÊS itens (X, Y, Z), Z não \
-desaparece só porque veio depois de dois outros alimentos na mesma frase (ex: "comi um hambúrguer e uma \
-batata frita com um sorvete de sobremesa" -> "hambúrguer", "batata frita" E "sorvete", os três, nunca só \
-os dois primeiros). Releia a frase INTEIRA, conte quantos alimentos ela cita, e confira que sua lista \
-final tem exatamente esse número de itens antes de decidir "isso é UM alimento ou DOIS (ou mais) numa \
-frase só?".
+ingrediente de preparo, não só tempero leve, ver regra de óleos/gorduras abaixo). Releia cada alimento \
+perguntando "isso é UM alimento ou DOIS numa frase só?" antes de decidir.
 - Se um alimento for um PRATO PRONTO/COMPOSTO que normalmente reúne vários ingredientes-base (ex: canja de \
 galinha, sopa, estrogonofe, feijoada, torta salgada, VITAMINA/vitamina de frutas, hambúrguer/x-burguer/x- \
 salada/x-tudo, sanduíche, cachorro-quente, crepioca, tapioca recheada, omelete recheado, panqueca recheada) \
@@ -974,13 +966,7 @@ def resolve_common_variant(query: str, candidates: list[str], country: str) -> s
 _NOO_SCHEMA = {
     "type": "OBJECT",
     "properties": {
-        # ORDEM IMPORTA: um schema estruturado é preenchido campo a campo, na
-        # ordem em que aparece aqui. "changes"/"already_eaten" vêm ANTES de
-        # "reply" de propósito: a decisão estruturada (o que muda de verdade)
-        # precisa estar fechada antes da resposta em texto ser escrita, senão
-        # a IA "resolve" o alimento só na prosa (ex: comenta o açúcar de um
-        # alimento na resposta) sem esse mesmo alimento aparecer em "added",
-        # porque a prosa foi escrita antes da estrutura estar decidida.
+        "reply": {"type": "STRING"},
         "changes": {
             "type": "ARRAY",
             "items": {
@@ -1005,9 +991,8 @@ _NOO_SCHEMA = {
             },
         },
         "already_eaten": {"type": "ARRAY", "items": {"type": "STRING"}},
-        "reply": {"type": "STRING"},
     },
-    "required": ["changes", "already_eaten", "reply"],
+    "required": ["reply", "changes", "already_eaten"],
 }
 
 _NOO_SYSTEM = """Você é o Noo, a IA do Nootr. Você conversa com a pessoa sobre a dieta dela e, quando \
@@ -1028,7 +1013,10 @@ Não gosta: {dislikes}
 Gosta / costuma ter em casa: {pantry}
 Observações/condições médicas: {notes}
 
-O QUE VOCÊ DEVOLVE (decida NESSA ordem, "changes" primeiro, "reply" por último)
+O QUE VOCÊ DEVOLVE
+- `reply`: sua resposta pra pessoa. Quando você mexer no dia, diga O QUE mudou e POR QUÊ, citando \
+alimento e refeição ("aumentei o arroz do jantar pra repor o carboidrato do pão"). Nunca liste \
+números de macro, a pessoa já vê na tela.
 - `changes`: as mudanças a aplicar. Uma entrada por refeição afetada:
   * "meal": SÓ o nome da refeição, como aparece na tabela acima e SEM o horário
 ("Café da manhã", nunca "Café da manhã (07:00)"). Ver regra 8 pra quando é uma refeição NOVA.
@@ -1040,13 +1028,6 @@ nenhum).
 entra.
 - `already_eaten`: nomes das refeições que ela já comeu e por isso NÃO podem ser reajustadas. Só \
 preencha quando ela disser ou der pra deduzir com segurança.
-- `reply`: sua resposta pra pessoa, escrita DEPOIS de `changes` já estar decidido, baseada NELE. Quando \
-você mexer no dia, diga O QUE mudou e POR QUÊ, citando alimento e refeição ("aumentei o arroz do jantar \
-pra repor o carboidrato do pão"). Nunca liste números de macro, a pessoa já vê na tela. REGRA DE \
-CONSISTÊNCIA: nunca mencione, na resposta, um alimento que não esteja em algum "added"/"skipped" de \
-`changes` (ex: se você comentar sobre "o açúcar do danoninho", o danoninho TEM que estar em "added" de \
-alguma entrada de `changes`, senão não fale dele). Se `changes` ficou vazio, a resposta não pode descrever \
-nenhuma mudança de alimento.
 
 REGRAS
 1. Você só registra o que ela comeu/vai comer. Você NÃO escolhe as quantidades do reajuste: o motor \
@@ -1071,14 +1052,7 @@ da última refeição do dia, um lanche fora de todos os horários), crie uma re
 natural ("Ceia", "Sobremesa"), preencha "time" (depois do horário da última refeição do dia), \
 "skipped" vazio (não existe nada pra tirar de uma refeição que não existia) e o que ela quer em \
 "added". Nunca finja que isso pertence a uma refeição já existente só porque é mais simples.
-10. NUNCA finalize deixando de fora um alimento que ela disse que comeu ou vai comer. Se a frase cita \
-vários alimentos numa refeição só ("comi um açaí com whey", "comi X, Y e Z"), TODOS eles têm que \
-aparecer em "added", cada um como item separado (ver regras de decomposição abaixo pra "X com Y"). \
-Antes de devolver a resposta, releia a frase da pessoa e confira, item por item, que cada alimento \
-citado está representado em algum "added" ou "skipped". Esquecer um alimento citado é o pior erro \
-possível aqui, pior que estimar a quantidade errada: a pessoa fica com a refeição faltando parte do \
-que ela realmente comeu.
-11. `changes` SÓ pode conter refeições que a pessoa citou nesta mensagem (pelo nome, ou claramente \
+10. `changes` SÓ pode conter refeições que a pessoa citou nesta mensagem (pelo nome, ou claramente \
 identificável pelo que ela descreveu comendo). NUNCA inclua uma refeição que ela não mencionou "pra \
 ajudar a fechar a meta", mesmo que pareça útil, o motor do Nootr já reajusta a QUANTIDADE das refeições \
 não citadas sozinho (regra 1). Em especial, NUNCA esvazie uma refeição inteira (todo o "skipped" dela, \

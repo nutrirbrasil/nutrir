@@ -37,9 +37,16 @@ def _targets_for(user: CurrentUser, day_plan: dict) -> dict:
     )
 
 
-def _resolve_added(items: list[dict], prefs: dict, country: str) -> list[dict]:
-    """Casa os alimentos que o Noo propôs com a TACO, barrando alergia (o
-    prompt já proíbe, isso é a rede determinística por baixo)."""
+def _resolve_added(items: list[dict], prefs: dict, country: str, text_norm: str) -> list[dict]:
+    """Casa os alimentos que o Noo propôs com a TACO.
+
+    O filtro de alergia (matches_allergen) só é aplicado a um item se a
+    PRÓPRIA PESSOA não citou esse alimento na mensagem atual: nesse caso é o
+    Nootr escolhendo por conta própria (ex: "quero algo a mais no jantar" ->
+    a IA decide o quê), e aí a barreira de segurança vale. Se a pessoa citou
+    o alimento (ex: "comi amendoim"), ela já decidiu por conta própria, não
+    faz sentido bloquear o registro do que ela mesma disse que comeu/vai
+    comer, só porque bate com uma alergia cadastrada."""
     preferred = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
     tie_resolver = ai.build_country_tie_resolver(country)
     allergies = prefs.get("allergies") or []
@@ -47,7 +54,9 @@ def _resolve_added(items: list[dict], prefs: dict, country: str) -> list[dict]:
     out: list[dict] = []
     for item in items:
         match = food_matcher.find_food(item["name"], preferred=preferred, tie_resolver=tie_resolver)
-        if food_matcher.matches_allergen(match.name, allergies):
+        item_words = [w for w in food_matcher.normalize(item["name"]).split() if len(w) > 3]
+        user_named_it = any(w in text_norm for w in item_words)
+        if not user_named_it and food_matcher.matches_allergen(match.name, allergies):
             continue
         grams = parse_portion(item["quantity"], food_hint=item["name"]) or match.grams or 100.0
         label = item["quantity"][:60] or None
@@ -118,19 +127,9 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
     country = (profile or {}).get("country") or "BR"
     targets = _targets_for(user, day_plan)
 
-    # Só as últimas trocas (não o dia inteiro): o estado real da dieta já vem
-    # à parte via `current`/`meals_table` (regra 9 do prompt, é a ÚNICA fonte
-    # de verdade sobre o que já foi aplicado), o histórico serve só pra
-    # continuidade conversacional recente ("prefiro uma opção doce" referindo
-    # a resposta anterior, regra 4). Um dia de conversa longo (a pessoa pode
-    # ter até 25 mensagens) mandando TUDO pra IA a cada turno só aumenta o
-    # risco dela puxar algo de uma troca antiga e sem relação, ver o caso do
-    # "doce de leite" citado do nada numa resposta.
-    _NOO_HISTORY_WINDOW = 8  # ~4 trocas usuário/IA
-    recent_history = repository.list_noo_messages_today(user)[-_NOO_HISTORY_WINDOW:]
     history = [
         {"role": m["role"], "text": m["text"]}
-        for m in recent_history
+        for m in repository.list_noo_messages_today(user)
     ] + [{"role": "user", "text": body.text}]
 
     try:
@@ -195,7 +194,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         changes.append({
             "meal_id": meal["id"],
             "skipped_names": skipped_names,
-            "new_foods": _resolve_added(change["added"], prefs, country),
+            "new_foods": _resolve_added(change["added"], prefs, country, text_norm),
         })
 
     result = None
