@@ -42,7 +42,7 @@ from datetime import datetime, time as dt_time
 from backend.app.services import meal_planning, portion
 
 _MIN_FACTOR = 0.3
-_MAX_FACTOR = 2.0
+_MAX_FACTOR = 1.5
 _PROTEIN_GROUP_RATIO = 0.25  # alimento é "proteico" se >=25% das kcal vêm de proteína
 _FAT_GROUP_RATIO = 0.35  # dentre os NÃO proteicos, "gorduroso" se >=35% das kcal vêm de gordura
 # Abaixo disso (ex: folha, salada, pepino), o alimento fica de fora do ajuste de

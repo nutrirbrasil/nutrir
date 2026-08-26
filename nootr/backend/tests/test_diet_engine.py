@@ -131,8 +131,8 @@ def test_rebalance_favors_meal_furthest_below_its_own_target(diet):
 def test_rebalance_floor_pass_raises_meal_far_below_role_floor():
     # Jantar (papel "dinner", piso de 25% do dia) começa artificialmente
     # pequeno (50 kcal) num dia de 2000 kcal, o piso é 500 kcal. As passadas 1
-    # e 2 sozinhas (fator 0.3x-2x relativo ao que a refeição JÁ tinha) não
-    # conseguem levá-lo além de ~2x seu tamanho original em cada rodada, bem
+    # e 2 sozinhas (fator 0.3x-1.5x relativo ao que a refeição JÁ tinha) não
+    # conseguem levá-lo além de ~1.5x seu tamanho original em cada rodada, bem
     # abaixo do piso. A passada 3 (piso) empresta calorias do café da manhã
     # (que sobra bem acima do próprio piso de 10%) pra aproximar o jantar do
     # piso, sem violar a meta do dia.
@@ -158,10 +158,10 @@ def test_rebalance_floor_pass_raises_meal_far_below_role_floor():
 
     # A passada de piso empurra o jantar pra cima emprestando do café da
     # manhã, que sobra bem acima do próprio piso de 200 kcal (10% de 2000).
-    # O quanto ele sobe é limitado por _cap_total_growth (no máximo 2x as
+    # O quanto ele sobe é limitado por _cap_total_growth (no máximo 1.5x as
     # 50 kcal originais): porção irreal seria pior que meta imperfeita.
     assert jantar_kcal > 60           # cresceu de verdade
-    assert jantar_kcal <= 50 * 2.0 + 1  # mas dentro do teto de crescimento
+    assert jantar_kcal <= 50 * 1.5 + 1  # mas dentro do teto de crescimento
     assert cafe_kcal > 200            # o doador continua acima do próprio piso
 
 
@@ -372,14 +372,14 @@ def test_rebalance_never_inflates_a_food_beyond_the_growth_cap():
         {"meal_id": "meal-1", "skipped_names": ["Arroz branco"], "new_foods": []},
     ])
     jantar = next(m for m in r["adjusted_meals"] if m["id"] == "meal-2")
-    assert jantar["foods"][0]["grams"] <= 150 * 2.0 + 1
+    assert jantar["foods"][0]["grams"] <= 150 * 1.5 + 1
     # E o app reporta a diferença que sobrou, em vez de fingir que fechou.
     assert r["remaining_calories"] > 0
 
 
 def test_growth_cap_holds_across_several_messages_in_the_same_day():
     # Cada chamada respeitava o teto sobre o estado da mensagem ANTERIOR, mas
-    # os tetos se compunham conversa a conversa (2x em cima de 2x já
+    # os tetos se compunham conversa a conversa (1.5x em cima de 1.5x já
     # inflado), deixando uma porção bem além do razoável no fim do dia. O
     # teto precisa valer sobre a porção original do dia inteiro.
     arroz = {"name": "Arroz branco", "calories": 128.0, "protein_g": 2.5, "carbs_g": 28.0,
@@ -394,7 +394,7 @@ def test_growth_cap_holds_across_several_messages_in_the_same_day():
         "meals": original_meals,
         "original_meals": original_meals,
     }
-    # 1ª mensagem: desvio grande no almoço, jantar absorve (capado em 2x).
+    # 1ª mensagem: desvio grande no almoço, jantar absorve (capado em 1.5x).
     r1 = diet_engine.apply_changes(diet, [
         {"meal_id": "meal-1", "skipped_names": ["Arroz branco"], "new_foods": []},
     ])
@@ -405,4 +405,4 @@ def test_growth_cap_holds_across_several_messages_in_the_same_day():
         {"meal_id": "meal-1", "skipped_names": [], "new_foods": [dict(arroz)]},
     ])
     jantar = next(m for m in r2["adjusted_meals"] if m["id"] == "meal-2")
-    assert jantar["foods"][0]["grams"] <= 150 * 2.0 + 1
+    assert jantar["foods"][0]["grams"] <= 150 * 1.5 + 1
