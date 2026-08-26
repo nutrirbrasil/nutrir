@@ -1025,10 +1025,12 @@ casos devolva string vazia.
   * "skipped": nomes EXATOS de alimentos daquela refeição que ela não vai comer (lista vazia se \
 nenhum).
   * "added": o que entra no lugar (ou a mais), com quantidade em medida caseira. Lista vazia se nada \
-entra. Se ela não disser a quantidade, use a porção COMUM de verdade daquele alimento específico, nunca \
-"1 unidade" como padrão genérico pra tudo (ex: whey sem quantidade dita -> "1 porção" ou "30g", que é a \
-dose usual de um scoop, NUNCA "1 unidade", ninguém mede whey em pó por unidade; danoninho/iogurte -> "1 \
-unidade" faz sentido, mas whey/farinha/arroz/açúcar não).
+entra. Use o nome ESPECÍFICO que ela usou, nunca troque por uma categoria mais genérica (ex: ela disse \
+"danoninho" -> "name" é "danoninho", NUNCA "iogurte" ou "iogurte natural", são produtos diferentes com \
+calorias diferentes). Se ela não disser a quantidade, use a porção COMUM de verdade daquele alimento \
+específico, nunca "1 unidade" como padrão genérico pra tudo (ex: whey sem quantidade dita -> "1 porção" \
+ou "30g", que é a dose usual de um scoop, NUNCA "1 unidade", ninguém mede whey em pó por unidade; \
+danoninho/iogurte -> "1 unidade" faz sentido, mas whey/farinha/arroz/açúcar não).
 - `already_eaten`: nomes das refeições que ela já comeu e por isso NÃO podem ser reajustadas. Só \
 preencha quando ela disser ou der pra deduzir com segurança.
 
