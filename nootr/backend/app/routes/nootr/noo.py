@@ -156,6 +156,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         day_plan["meals"].append(meal)
         return meal
 
+    text_norm = food_matcher.normalize(body.text)
     changes: list[dict] = []
     for change in answer["changes"]:
         meal = find_meal(change["meal"])
@@ -165,12 +166,25 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
             if not change["added"]:
                 continue
             meal = new_meal(change["meal"], change.get("time") or "")
+        skipped_names = [
+            f["name"] for f in meal["foods"]
+            if any(food_matcher.normalize(s) == food_matcher.normalize(f["name"]) for s in change["skipped"])
+        ]
+        # Rede de segurança determinística: uma refeição sendo esvaziada por
+        # completo (tudo em skipped, nada em added) só faz sentido se a
+        # pessoa mencionou essa refeição na mensagem atual. Já vimos o Noo
+        # "ajudar" esvaziando refeições nunca citadas (ex: lanche e jantar
+        # zerados numa mensagem que só falava de café e almoço), o motor
+        # determinístico reajusta quantidade de refeição não tocada sozinho,
+        # não precisa (e não pode) vir vazia da IA sem menção nenhuma.
+        empties_meal = skipped_names and len(skipped_names) == len(meal["foods"]) and not change["added"]
+        meal_words = [w for w in food_matcher.normalize(meal["name"]).split() if len(w) > 3]
+        meal_mentioned = any(w in text_norm for w in meal_words)
+        if empties_meal and not meal_mentioned:
+            continue
         changes.append({
             "meal_id": meal["id"],
-            "skipped_names": [
-                f["name"] for f in meal["foods"]
-                if any(food_matcher.normalize(s) == food_matcher.normalize(f["name"]) for s in change["skipped"])
-            ],
+            "skipped_names": skipped_names,
             "new_foods": _resolve_added(change["added"], prefs, country),
         })
 

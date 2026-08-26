@@ -1062,6 +1062,11 @@ Antes de devolver a resposta, releia a frase da pessoa e confira, item por item,
 citado está representado em algum "added" ou "skipped". Esquecer um alimento citado é o pior erro \
 possível aqui, pior que estimar a quantidade errada: a pessoa fica com a refeição faltando parte do \
 que ela realmente comeu.
+11. `changes` SÓ pode conter refeições que a pessoa citou nesta mensagem (pelo nome, ou claramente \
+identificável pelo que ela descreveu comendo). NUNCA inclua uma refeição que ela não mencionou "pra \
+ajudar a fechar a meta", mesmo que pareça útil, o motor do Nootr já reajusta a QUANTIDADE das refeições \
+não citadas sozinho (regra 1). Em especial, NUNCA esvazie uma refeição inteira (todo o "skipped" dela, \
+"added" vazio) se a pessoa não disse nada sobre essa refeição especificamente.
 {decomposition_rules}
 """
 
