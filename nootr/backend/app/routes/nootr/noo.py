@@ -53,7 +53,26 @@ def _resolve_added(items: list[dict], prefs: dict, country: str, text_norm: str)
 
     out: list[dict] = []
     for item in items:
+        # Quantidade vazia = o próprio Noo não soube que porção assumir e já
+        # perguntou na `reply` (ver regra 11/quantity vazio do prompt), não
+        # aplica esse item agora, só quando a pessoa responder a quantidade.
+        if not item["quantity"].strip():
+            continue
         match = food_matcher.find_food(item["name"], preferred=preferred, tie_resolver=tie_resolver)
+        # Alimento que a busca determinística não cobre (nem TACO, nem extra,
+        # nem lista de itens comuns): em vez do placeholder genérico ancorado
+        # só na caloria da refeição, pede uma estimativa nutricional real pra
+        # IA (ex: "kingcrab"). Se a IA também não reconhecer, mantém o
+        # placeholder, um alimento desconhecido nunca pode travar o fluxo.
+        if match.source == "estimate":
+            estimated = ai.estimate_unknown_food(item["name"])
+            if estimated:
+                match = food_matcher.MatchResult(
+                    name=item["name"].strip().capitalize(),
+                    calories=estimated["kcal_100g"], protein_g=estimated["protein_100g"],
+                    carbs_g=estimated["carbs_100g"], fat_g=estimated["fat_100g"],
+                    grams=100.0, source="ai_estimate", confidence="media",
+                )
         # Confere tanto o nome que a IA propôs quanto o nome REAL do alimento
         # casado: a IA às vezes reformula o que a pessoa disse (ex: pessoa
         # disse "danoninho", IA propõe "petit suisse", o nome real casado é
@@ -178,8 +197,10 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         meal = find_meal(change["meal"])
         if meal is None:
             # Refeição nova: só vale a pena criar se há algo de fato pra
-            # adicionar, senão não há o que fazer com uma refeição vazia.
-            if not change["added"]:
+            # adicionar com quantidade já definida, senão não há o que fazer
+            # com uma refeição vazia (ex: único item citado ficou esperando
+            # a pessoa responder a quantidade, ver quantity vazio acima).
+            if not any(a["quantity"].strip() for a in change["added"]):
                 continue
             meal = new_meal(change["meal"], change.get("time") or "")
         skipped_names = [
@@ -197,6 +218,14 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         meal_words = [w for w in food_matcher.normalize(meal["name"]).split() if len(w) > 3]
         meal_mentioned = any(w in text_norm for w in meal_words)
         if empties_meal and not meal_mentioned:
+            continue
+        # Nada foi de fato pedido nessa refeição, só um item de "added" com
+        # quantidade vazia esperando a pessoa responder (ver quantity vazio
+        # acima). Diferente de um pedido que existiu mas foi filtrado depois
+        # (ex: bloqueado por alergia): aí sim ainda vale marcar a refeição
+        # como tocada e devolver o dia, só pra confirmar que nada mudou.
+        had_intent = bool(change["skipped"]) or any(a["quantity"].strip() for a in change["added"])
+        if not had_intent:
             continue
         changes.append({
             "meal_id": meal["id"],

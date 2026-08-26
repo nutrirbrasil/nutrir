@@ -242,3 +242,42 @@ def test_allergy_barrier_blocks_what_noo_suggested(client, monkeypatch):
     assert resp.status_code == 200
     jantar = next(m for m in resp.json()["day"]["meals"] if m["id"] == "m3")
     assert not any("mendoim" in f["name"] for f in jantar["foods"])
+
+
+def test_blank_quantity_asks_instead_of_guessing(client, monkeypatch):
+    # O Noo não sabe que quantidade de "kingcrab" a pessoa comeu e deixou
+    # "quantity" vazio (ver regra do prompt): não aplica nada agora, só
+    # devolve a pergunta na reply, sem tocar o dia nem chamar a IA de
+    # estimativa nutricional (não faz sentido buscar macros sem saber gramas).
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Que quantidade de kingcrab você comeu?",
+        "changes": [{"meal": "Jantar", "skipped": [], "added": [{"name": "kingcrab", "quantity": ""}]}],
+        "already_eaten": [],
+    })
+    called = []
+    monkeypatch.setattr(ai, "estimate_unknown_food", lambda name: called.append(name) or None)
+    resp = client.post("/nootr/noo", json={"text": "comi kingcrab no jantar"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is None
+    assert "kingcrab" in body["reply"].lower()
+    assert called == []
+
+
+def test_unknown_food_uses_ai_nutrition_estimate(client, monkeypatch, day_plan):
+    # "kingcrab" não existe na TACO/extra/lista de comuns (cai em
+    # source == "estimate" no food_matcher): a IA de estimativa nutricional é
+    # quem dá os macros reais, não o placeholder genérico de 500kcal.
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Adicionei 150g de kingcrab no jantar.",
+        "changes": [{"meal": "Jantar", "skipped": [], "added": [{"name": "kingcrab", "quantity": "150g"}]}],
+        "already_eaten": [],
+    })
+    monkeypatch.setattr(ai, "estimate_unknown_food", lambda name: {
+        "kcal_100g": 90.0, "protein_100g": 19.0, "carbs_100g": 0.0, "fat_100g": 1.5,
+    })
+    resp = client.post("/nootr/noo", json={"text": "comi 150g de kingcrab no jantar"})
+    assert resp.status_code == 200
+    jantar = next(m for m in resp.json()["day"]["meals"] if m["id"] == "m3")
+    kingcrab = next(f for f in jantar["foods"] if "kingcrab" in f["name"].lower())
+    assert kingcrab["calories"] == pytest.approx(135.0, abs=0.5)  # 90kcal/100g * 150g

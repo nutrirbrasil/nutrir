@@ -1027,10 +1027,14 @@ nenhum).
   * "added": o que entra no lugar (ou a mais), com quantidade em medida caseira. Lista vazia se nada \
 entra. Use o nome ESPECÍFICO que ela usou, nunca troque por uma categoria mais genérica (ex: ela disse \
 "danoninho" -> "name" é "danoninho", NUNCA "iogurte" ou "iogurte natural", são produtos diferentes com \
-calorias diferentes). Se ela não disser a quantidade, use a porção COMUM de verdade daquele alimento \
-específico, nunca "1 unidade" como padrão genérico pra tudo (ex: whey sem quantidade dita -> "1 porção" \
-ou "30g", que é a dose usual de um scoop, NUNCA "1 unidade", ninguém mede whey em pó por unidade; \
-danoninho/iogurte -> "1 unidade" faz sentido, mas whey/farinha/arroz/açúcar não).
+calorias diferentes). Se ela não disser a quantidade MAS existe uma porção COMUM de verdade e óbvia pra aquele alimento \
+específico, use essa (ex: whey sem quantidade dita -> "1 porção" ou "30g", a dose usual de um scoop, \
+NUNCA "1 unidade", ninguém mede whey em pó por unidade; danoninho/iogurte -> "1 unidade" faz sentido, \
+mas whey/farinha/arroz/açúcar não). Se você REALMENTE não souber que quantidade faz sentido (alimento \
+desconhecido/estrangeiro/incomum, ou a porção varia demais pra chutar com segurança), NÃO invente: \
+devolva "quantity" como string VAZIA pra esse item e pergunte na `reply` que quantidade ou medida ela \
+comeu daquele alimento especificamente, citando o nome dele. Um item com "quantity" vazio NÃO é \
+aplicado no dia agora, só quando ela responder com a quantidade numa próxima mensagem.
 - `already_eaten`: nomes das refeições que ela já comeu e por isso NÃO podem ser reajustadas. Só \
 preencha quando ela disser ou der pra deduzir com segurança.
 
@@ -1062,6 +1066,11 @@ identificável pelo que ela descreveu comendo). NUNCA inclua uma refeição que 
 ajudar a fechar a meta", mesmo que pareça útil, o motor do Nootr já reajusta a QUANTIDADE das refeições \
 não citadas sozinho (regra 1). Em especial, NUNCA esvazie uma refeição inteira (todo o "skipped" dela, \
 "added" vazio) se a pessoa não disse nada sobre essa refeição especificamente.
+11. Alimento que a TACO provavelmente não tem (marca estrangeira, prato de outro país, item bem \
+incomum) você AINDA registra normalmente em "added" com o nome que ela usou, o app busca a informação \
+nutricional dele separadamente. Sua única responsabilidade aí é a quantidade: se não for óbvia, pergunte \
+(ver regra do "quantity" vazio acima) em vez de supor um peso/porção pra um alimento que você não \
+conhece de verdade.
 {decomposition_rules}
 """
 
@@ -1114,7 +1123,11 @@ def noo_chat(
             "time": str(c.get("time", "")).strip(),
             "skipped": [str(s).strip() for s in (c.get("skipped") or []) if str(s).strip()],
             "added": [
-                {"name": str(a.get("name", "")).strip(), "quantity": str(a.get("quantity", "")).strip() or "1 porção"}
+                # Quantidade vazia é um sinal válido (ver regra 11 do prompt):
+                # o Noo não sabia que quantidade assumir e já perguntou na
+                # `reply`, NÃO force um "1 porção" aqui, quem chama (noo.py)
+                # decide não aplicar esse item enquanto a pessoa não responder.
+                {"name": str(a.get("name", "")).strip(), "quantity": str(a.get("quantity", "")).strip()}
                 for a in (c.get("added") or []) if str(a.get("name", "")).strip()
             ],
         })
@@ -1122,4 +1135,53 @@ def noo_chat(
         "reply": str(data.get("reply", "")).strip(),
         "changes": changes,
         "already_eaten": [str(m).strip() for m in (data.get("already_eaten") or []) if str(m).strip()],
+    }
+
+
+_UNKNOWN_FOOD_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "found": {"type": "BOOLEAN"},
+        "kcal_100g": {"type": "NUMBER"},
+        "protein_100g": {"type": "NUMBER"},
+        "carbs_100g": {"type": "NUMBER"},
+        "fat_100g": {"type": "NUMBER"},
+    },
+    "required": ["found", "kcal_100g", "protein_100g", "carbs_100g", "fat_100g"],
+}
+
+_UNKNOWN_FOOD_SYSTEM = """Você é uma base de dados nutricional. Devolva a informação nutricional REAL \
+por 100g comestível do alimento informado (o nome pode estar em português, inglês ou outro idioma, ex: \
+"kingcrab" = caranguejo-rei). Considere o preparo se o nome já indicar (ex: "frango grelhado" tem menos \
+gordura que "frango frito"). Se o nome não for um alimento identificável com confiança, devolva \
+"found": false e as demais chaves como 0. Responda estritamente no formato do schema."""
+
+
+def estimate_unknown_food(name: str) -> dict | None:
+    """
+    Estima macros por 100g de um alimento que a busca determinística (TACO +
+    extra + lista de itens comuns, ver food_matcher.find_food) não cobre,
+    source == "estimate" nesse caso. Chamado só depois que a busca já falhou,
+    pra dar uma estimativa nutricional real em vez do placeholder genérico
+    ancorado só na caloria da refeição (500kcal / 15% proteína / 50% carbo /
+    35% gordura, sem relação nenhuma com o alimento de verdade).
+
+    Nunca propaga erro: qualquer falha (rede, parsing, IA não reconhecer o
+    alimento) devolve None e quem chama decide o fallback, um alimento
+    desconhecido não pode travar o fluxo do Noo.
+    """
+    try:
+        raw = _generate_from_contents(
+            [{"parts": [{"text": name}]}], _UNKNOWN_FOOD_SCHEMA, system_instruction=_UNKNOWN_FOOD_SYSTEM,
+        )
+        data = json.loads(raw)
+    except Exception:
+        return None
+    if not data.get("found"):
+        return None
+    return {
+        "kcal_100g": float(data.get("kcal_100g") or 0),
+        "protein_100g": float(data.get("protein_100g") or 0),
+        "carbs_100g": float(data.get("carbs_100g") or 0),
+        "fat_100g": float(data.get("fat_100g") or 0),
     }

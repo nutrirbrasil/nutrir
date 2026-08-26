@@ -176,6 +176,17 @@ def noo_chat(
     return _provider().noo_chat(history, meals, targets, current, preferences or {})
 
 
+def estimate_unknown_food(name: str) -> dict | None:
+    """
+    Estimativa nutricional (kcal/protein/carbs/fat por 100g) via IA pra um
+    alimento que a busca determinística não cobre (ver
+    food_matcher.find_food, source == "estimate"). Devolve None se a IA não
+    reconhecer o alimento ou falhar, nunca propaga erro (ver docstring do
+    adapter), quem chama decide o fallback.
+    """
+    return _provider().estimate_unknown_food(name)
+
+
 # Cache em memória (processo), a mesma pergunta ("esses N alimentos empatados,
 # qual o mais comum nesse país?") não precisa bater na IA de novo toda vez que
 # aparecer o mesmo empate (ex: "azeite" aparece várias vezes numa dieta importada).
