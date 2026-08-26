@@ -113,8 +113,13 @@ itens, "pão" e "manteiga". "ovo mexido no azeite" -> dois itens, "ovo mexido" e
 ingrediente de preparo, não só tempero leve, ver regra de óleos/gorduras abaixo). "açaí com whey"/"vitamina \
 com whey"/qualquer bebida "com whey" ou "com proteína em pó" -> SEMPRE dois itens, o whey NUNCA \
 desaparece dentro do outro alimento nem vira só um "reforço" implícito, ele tem calorias e proteína \
-próprias relevantes (ex: "açaí com whey" -> "açaí" e "whey protein"). Releia cada alimento perguntando \
-"isso é UM alimento ou DOIS numa frase só?" antes de decidir.
+próprias relevantes (ex: "açaí com whey" -> "açaí" e "whey protein"). O MESMO vale quando a frase já tem \
+outros alimentos antes: "comi um X e um Y com Z de sobremesa" é SEMPRE TRÊS itens (X, Y, Z), Z não \
+desaparece só porque veio depois de dois outros alimentos na mesma frase (ex: "comi um hambúrguer e uma \
+batata frita com um sorvete de sobremesa" -> "hambúrguer", "batata frita" E "sorvete", os três, nunca só \
+os dois primeiros). Releia a frase INTEIRA, conte quantos alimentos ela cita, e confira que sua lista \
+final tem exatamente esse número de itens antes de decidir "isso é UM alimento ou DOIS (ou mais) numa \
+frase só?".
 - Se um alimento for um PRATO PRONTO/COMPOSTO que normalmente reúne vários ingredientes-base (ex: canja de \
 galinha, sopa, estrogonofe, feijoada, torta salgada, VITAMINA/vitamina de frutas, hambúrguer/x-burguer/x- \
 salada/x-tudo, sanduíche, cachorro-quente, crepioca, tapioca recheada, omelete recheado, panqueca recheada) \
