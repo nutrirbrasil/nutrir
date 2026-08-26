@@ -281,3 +281,22 @@ def test_unknown_food_uses_ai_nutrition_estimate(client, monkeypatch, day_plan):
     jantar = next(m for m in resp.json()["day"]["meals"] if m["id"] == "m3")
     kingcrab = next(f for f in jantar["foods"] if "kingcrab" in f["name"].lower())
     assert kingcrab["calories"] == pytest.approx(135.0, abs=0.5)  # 90kcal/100g * 150g
+
+
+def test_unknown_food_unrecognized_by_ai_asks_to_register_manually(client, monkeypatch, day_plan):
+    # Nem a busca determinística nem a IA de estimativa reconheceram o
+    # alimento: não aplica um chute generico, avisa pra cadastrar em Meus
+    # Alimentos em vez de silenciar.
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Adicionei o item no jantar.",
+        "changes": [{"meal": "Jantar", "skipped": [], "added": [{"name": "xyzalimento123", "quantity": "100g"}]}],
+        "already_eaten": [],
+    })
+    monkeypatch.setattr(ai, "estimate_unknown_food", lambda name: None)
+    resp = client.post("/nootr/noo", json={"text": "comi 100g de xyzalimento123 no jantar"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "xyzalimento123" in body["reply"]
+    assert "Meus Alimentos" in body["reply"]
+    jantar = next(m for m in (body["day"] or {"meals": day_plan["meals"]})["meals"] if m["id"] == "m3")
+    assert not any("xyzalimento123" in f["name"].lower() for f in jantar["foods"])

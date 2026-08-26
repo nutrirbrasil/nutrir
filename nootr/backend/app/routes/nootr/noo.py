@@ -37,7 +37,9 @@ def _targets_for(user: CurrentUser, day_plan: dict) -> dict:
     )
 
 
-def _resolve_added(items: list[dict], prefs: dict, country: str, text_norm: str) -> list[dict]:
+def _resolve_added(
+    items: list[dict], prefs: dict, country: str, text_norm: str, unresolved: list[str],
+) -> list[dict]:
     """Casa os alimentos que o Noo propôs com a TACO.
 
     O filtro de alergia (matches_allergen) só é aplicado a um item se a
@@ -46,7 +48,13 @@ def _resolve_added(items: list[dict], prefs: dict, country: str, text_norm: str)
     a IA decide o quê), e aí a barreira de segurança vale. Se a pessoa citou
     o alimento (ex: "comi amendoim"), ela já decidiu por conta própria, não
     faz sentido bloquear o registro do que ela mesma disse que comeu/vai
-    comer, só porque bate com uma alergia cadastrada."""
+    comer, só porque bate com uma alergia cadastrada.
+
+    `unresolved`: lista (compartilhada entre chamadas) onde entram os nomes
+    de alimentos que nem a busca determinística nem a IA de estimativa
+    souberam identificar, pra send_message avisar a pessoa a cadastrar em
+    "Meus Alimentos" em vez de aplicar um chute genérico sem relação com o
+    alimento real."""
     preferred = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
     tie_resolver = ai.build_country_tie_resolver(country)
     allergies = prefs.get("allergies") or []
@@ -62,17 +70,20 @@ def _resolve_added(items: list[dict], prefs: dict, country: str, text_norm: str)
         # Alimento que a busca determinística não cobre (nem TACO, nem extra,
         # nem lista de itens comuns): em vez do placeholder genérico ancorado
         # só na caloria da refeição, pede uma estimativa nutricional real pra
-        # IA (ex: "kingcrab"). Se a IA também não reconhecer, mantém o
-        # placeholder, um alimento desconhecido nunca pode travar o fluxo.
+        # IA (ex: "kingcrab"). Se a IA também não reconhecer, não aplica nada
+        # (chutar macros de um alimento que ninguém identificou seria pior
+        # que não registrar), avisa a pessoa a cadastrar em Meus Alimentos.
         if match.source == "estimate":
             estimated = ai.estimate_unknown_food(item["name"])
-            if estimated:
-                match = food_matcher.MatchResult(
-                    name=item["name"].strip().capitalize(),
-                    calories=estimated["kcal_100g"], protein_g=estimated["protein_100g"],
-                    carbs_g=estimated["carbs_100g"], fat_g=estimated["fat_100g"],
-                    grams=100.0, source="ai_estimate", confidence="media",
-                )
+            if not estimated:
+                unresolved.append(item["name"])
+                continue
+            match = food_matcher.MatchResult(
+                name=item["name"].strip().capitalize(),
+                calories=estimated["kcal_100g"], protein_g=estimated["protein_100g"],
+                carbs_g=estimated["carbs_100g"], fat_g=estimated["fat_100g"],
+                grams=100.0, source="ai_estimate", confidence="media",
+            )
         # Confere tanto o nome que a IA propôs quanto o nome REAL do alimento
         # casado: a IA às vezes reformula o que a pessoa disse (ex: pessoa
         # disse "danoninho", IA propõe "petit suisse", o nome real casado é
@@ -193,6 +204,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
 
     text_norm = food_matcher.normalize(body.text)
     changes: list[dict] = []
+    unresolved_foods: list[str] = []
     for change in answer["changes"]:
         meal = find_meal(change["meal"])
         if meal is None:
@@ -230,7 +242,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         changes.append({
             "meal_id": meal["id"],
             "skipped_names": skipped_names,
-            "new_foods": _resolve_added(change["added"], prefs, country, text_norm),
+            "new_foods": _resolve_added(change["added"], prefs, country, text_norm, unresolved_foods),
         })
 
     result = None
@@ -258,13 +270,28 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
             "remaining_protein_g": result.get("remaining_protein_g"),
         })
 
+    # Alimento que nem a TACO/extra nem a IA de estimativa nutricional
+    # reconheceram: não dá pra aplicar (chutar macros seria pior que não
+    # registrar), avisa a pessoa a cadastrar em Meus Alimentos em vez de só
+    # silenciar. A reply da IA já foi gerada assumindo que aplicaria, então
+    # o aviso entra à parte, depois.
+    reply = answer["reply"]
+    if unresolved_foods:
+        names = ", ".join(dict.fromkeys(unresolved_foods))  # sem duplicata, mantém ordem
+        plural = len(set(unresolved_foods)) > 1
+        reply += (
+            f"\n\nNão encontrei {'esses alimentos' if plural else 'esse alimento'} ({names}) na minha "
+            f"base. Cadastra {'eles' if plural else 'ele'} em Meus Alimentos que na próxima eu já uso "
+            "certinho."
+        )
+
     # O snapshot do dia é guardado junto da resposta pra conversa reabrir
     # mostrando exatamente o que a pessoa viu quando o ajuste foi feito.
-    repository.insert_noo_message(user, "assistant", answer["reply"], day_view)
+    repository.insert_noo_message(user, "assistant", reply, day_view)
     new_used = used + 1
     repository.record_noo_message_used(user, day_plan["id"], new_used)
     return {
-        "reply": answer["reply"],
+        "reply": reply,
         "day": day_view,
         "targets": (result or {}).get("targets"),
         "remaining": max(limit - new_used, 0),
