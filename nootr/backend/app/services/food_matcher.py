@@ -31,12 +31,19 @@ _COMMON_FOODS: dict[str, tuple[float, float, float, float, float]] = {
     "x salada": (480, 24, 35, 26, 220),
     "x burguer": (450, 22, 35, 24, 180),
     "hamburguer": (450, 22, 35, 24, 150),
+    "cachorro quente": (300, 11, 32, 14, 150),
+    "hot dog": (300, 11, 32, 14, 150),
+    "hotdog": (300, 11, 32, 14, 150),
+    "misto quente": (300, 14, 28, 15, 120),
     "sanduiche natural": (250, 12, 30, 8, 150),
     "pizza": (280, 12, 33, 11, 100),           # por fatia
     "batata frita": (330, 4, 42, 16, 150),     # porção média
+    "nuggets": (280, 14, 18, 17, 100),         # ~6 unidades
     "lasanha": (400, 20, 35, 20, 350),         # porção
     "macarronada": (400, 12, 60, 12, 350),
+    "macarrao": (400, 12, 60, 12, 350),
     "feijoada": (500, 28, 30, 28, 400),
+    "strogonoff": (400, 25, 18, 25, 300),
     "tapioca": (200, 4, 40, 3, 150),
     "crepe": (350, 12, 30, 18, 150),
     "temaki": (350, 15, 45, 12, 180),
@@ -45,10 +52,16 @@ _COMMON_FOODS: dict[str, tuple[float, float, float, float, float]] = {
     "pao de queijo": (110, 3, 10, 6, 40),      # unidade
     "coxinha": (250, 9, 22, 14, 90),
     "quibe": (200, 9, 12, 12, 70),
+    "esfiha": (180, 8, 20, 7, 60),
+    "esfirra": (180, 8, 20, 7, 60),
     "pastel": (280, 7, 25, 17, 90),
+    "empada": (280, 6, 24, 17, 80),
     "pao frances": (150, 5, 30, 1, 50),
     # doces / sobremesas
+    "sorvete": (220, 4, 28, 10, 120),          # 2 bolas
+    "milkshake": (450, 9, 68, 15, 300),
     "chocolate": (260, 3, 28, 15, 50),         # barra ~50g
+    "brigadeiro": (90, 1, 12, 4, 20),
     "bolo": (300, 4, 45, 12, 80),              # fatia
     "torta": (300, 8, 30, 17, 100),            # fatia
     "brownie": (240, 3, 30, 12, 60),
