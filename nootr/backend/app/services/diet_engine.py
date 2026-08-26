@@ -494,6 +494,29 @@ def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> 
     return near_ceiling
 
 
+def cap_meal_growth(baseline_meals: list[dict], meals: list[dict]) -> list[dict]:
+    """
+    Wrapper público de `_cap_total_growth` pra quem NÃO passa pelo
+    `_rebalance` (ver `day_topup.try_day_topup`): o "coringa" de IA adiciona
+    alimento numa refeição por fora do motor principal, e `apply_meal_changes`
+    FUNDE um alimento novo com um existente de mesmo nome (`merge_foods`),
+    sem qualquer teto. Sem isso, "adicione mais arroz" empilhado em cima de
+    um arroz que o rebalanceamento normal já tinha crescido passava longe do
+    teto de porção realista (ex: 270g virando 675g, 2,5x, mesmo com o teto
+    em 2x). Aplica o MESMO teto sobre a porção ORIGINAL do dia.
+    """
+    baseline_by_id = {m["id"]: m for m in baseline_meals}
+    adjusted_by_id = {m["id"]: m for m in meals}
+    _cap_total_growth(list(baseline_by_id.values()), adjusted_by_id)
+    return [adjusted_by_id.get(m["id"], m) for m in meals]
+
+
+def is_low_density_food(f: dict) -> bool:
+    """Wrapper público de `_is_low_density` pra quem não passa pelo
+    `_rebalance` (ver `day_topup.try_day_topup`)."""
+    return _is_low_density(f)
+
+
 _CALORIE_TOLERANCE_PCT = 0.02  # o dia nunca pode fechar mais de 2% longe da meta
 _CALORIE_TOLERANCE_MIN_KCAL = 10.0  # abaixo de ~10 kcal a diferença é ruído, não vale mexer mais
 
@@ -747,7 +770,11 @@ def apply_meal_changes(
     meal = meals[idx]
     removal_set = {r.lower() for r in removal_names}
     kept = [f for f in meal["foods"] if f["name"].lower() not in removal_set]
-    updated_meal = {**meal, "foods": kept + new_foods}
+    # merge_foods (não só concatenar): "adicione mais arroz" numa refeição
+    # que já tem arroz precisa virar UMA linha maior, não duas linhas de
+    # arroz (duplicata também quebra diff_meals/build_day_view, que indexam
+    # por nome e só enxergariam uma das duas).
+    updated_meal = {**meal, "foods": merge_foods(kept + new_foods)}
     return [updated_meal if i == idx else m for i, m in enumerate(meals)]
 
 

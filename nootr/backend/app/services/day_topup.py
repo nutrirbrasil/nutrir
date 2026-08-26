@@ -20,7 +20,7 @@ _TOPUP_PROTEIN_THRESHOLD = 10.0
 _TOPUP_FAT_THRESHOLD = 6.0
 
 
-def try_day_topup(result: dict, user: CurrentUser) -> None:
+def try_day_topup(result: dict, user: CurrentUser, original_meals: list[dict] | None = None) -> None:
     """
     Depois de escalar as quantidades das refeições ajustáveis, se o dia ainda
     ficar fora da tolerância de calorias (ou longe na proteína/gordura), pede
@@ -82,6 +82,7 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     meals = result["adjusted_meals"]
     applied: list[dict] = []
     for change in topup["changes"]:
+        target_meal = next((m for m in meals if m["name"].lower() == change["meal_name"].lower()), None)
         resolved_additions = []
         for item in change["additions"]:
             match = food_matcher.find_food(
@@ -90,6 +91,16 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
             # Última barreira determinística: mesmo com a instrução no prompt,
             # nunca confia só na IA pra alergia (ver food_matcher.matches_allergen).
             if food_matcher.matches_allergen(match.name, allergies):
+                continue
+            # Se já existe um alimento de mesmo nome na refeição e ele é de
+            # baixa densidade calórica (salada, folha), "adicionar mais" só
+            # funde e infla a porção sem ganho real de caloria (mesma regra
+            # do rebalanceamento normal, ver diet_engine.is_low_density_food),
+            # a IA deveria ter escolhido outro alimento pra cobrir a diferença.
+            existing = next(
+                (f for f in (target_meal or {}).get("foods", []) if f["name"].lower() == match.name.lower()), None,
+            )
+            if existing and diet_engine.is_low_density_food(existing):
                 continue
             grams = match.grams or 100.0
             resolved_additions.append({
@@ -112,6 +123,14 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
 
     if not applied:
         return
+
+    # Mesmo teto de porção do rebalanceamento normal (diet_engine._MAX_FACTOR
+    # sobre a porção ORIGINAL do dia): sem isso, "adicione mais arroz" em cima
+    # de um arroz que o rebalanceamento já tinha crescido passava longe do
+    # teto (ex: 270g -> 675g, 2,5x, mesmo com o teto configurado em 2x), já
+    # que apply_meal_changes/merge_foods funde sem limite nenhum.
+    if original_meals:
+        meals = diet_engine.cap_meal_growth(original_meals, meals)
 
     after = diet_engine.day_macros(meals)
     tgt = result["targets"]

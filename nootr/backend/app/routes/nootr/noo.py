@@ -213,7 +213,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         # (ex: teto de crescimento por alimento sem mais espaço, ver
         # diet_engine.calorie_tolerance), tenta um ajuste extra antes de
         # montar a tela, mesma rede de segurança das 3 funções manuais.
-        day_topup.try_day_topup(result, user)
+        day_topup.try_day_topup(result, user, day_plan.get("original_meals"))
         # Dia inteiro + o que mudou item a item, pronto pra tela (a pessoa
         # precisa ver o plano completo, não só um extrato das alterações).
         day_view = diet_engine.build_day_view(day_plan["meals"], result["adjusted_meals"])

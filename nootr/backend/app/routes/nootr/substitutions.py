@@ -192,12 +192,12 @@ def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentU
 
     if body.action == "ate_different":
         result = diet_engine.log_ate_different(day_plan, body.skipped_food_names, foods, body.meal_id, targets)
-        day_topup.try_day_topup(result, user)
+        day_topup.try_day_topup(result, user, day_plan.get("original_meals"))
     elif body.action == "will_eat_different":
         result = diet_engine.log_will_eat_different(
             day_plan, body.skipped_food_names, foods, body.meal_id, body.already_eaten_meal_ids, targets,
         )
-        day_topup.try_day_topup(result, user)
+        day_topup.try_day_topup(result, user, day_plan.get("original_meals"))
     elif body.action == "missing_food":
         if not body.meal_id or not body.missing_food_name:
             raise HTTPException(status_code=400, detail="Informe a refeição e o alimento em falta")
