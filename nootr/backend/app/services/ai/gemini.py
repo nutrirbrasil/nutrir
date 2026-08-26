@@ -125,7 +125,11 @@ mencionar aveia. "vitamina" aqui NUNCA significa a "Mistura para vitamina" indus
 de trigo/cevada/aveia), é sempre a bebida caseira batida de fruta com leite.
   * "hambúrguer" (o sanduíche, não só a carne) -> pão de hambúrguer, carne de hambúrguer, queijo, salada, \
 óleo/maionese, NÃO duplique a carne como dois itens (nunca "carne moída" E "carne de hambúrguer" juntos: \
-é UM disco de carne só).
+é UM disco de carne só). EXCEÇÃO: se a pessoa citar um item de rede de fast-food por NOME DE MARCA \
+específico (ex: "Big Mac", "Quarteirão", "McChicken", "Cheeseburguer do McDonald's", "Whopper"), NÃO \
+decomponha, mantenha como UM item atômico só com esse nome, esses já existem cadastrados na tabela \
+nutricional como item medido de verdade (decompor destruiria essa precisão). Só decomponha quando for \
+descrição genérica sem marca ("um hambúrguer", "um x-tudo", "um cheeseburguer" sem dizer de qual rede).
   * "sanduíche natural"/sanduíche sem mais detalhe -> "pão de forma" (padrão de sanduíche natural no \
 Brasil, só use outro tipo se o texto nomear um específico, ex: "pão sírio", "pão integral"), o recheio \
 citado (ex: "isca de carne", "atum", "frango desfiado") e CADA complemento/molho citado como item separado \
@@ -870,10 +874,18 @@ máximo realista de porção). NÃO adicione mais desse(s) mesmo(s) alimento(s),
 cobrir o que ainda falta.
 """
 
+_PROTEIN_POOR_BLOCK = """
+ATENÇÃO: {meals} ficou(aram) com proteína bem abaixo do que deveria pra refeição desse tamanho (ela não \
+tinha nenhum alimento proteico pra crescer via quantidade, só carboidrato/fruta). Se fizer sentido, \
+adicione um alimento proteico a ELA especificamente (ovo, queijo, iogurte, frango, whey, oleaginosa, o \
+que combinar com o resto da refeição), mesmo que a lacuna geral de calorias/proteína do dia pareça \
+pequena, essa refeição específica precisa da proteína.
+"""
+
 
 def suggest_day_topup(
     pending_meals: list[dict], gap_calories: float, gap_protein: float, gap_fat: float,
-    near_ceiling_foods: list[str], preferences: dict,
+    near_ceiling_foods: list[str], protein_poor_meals: list[str], preferences: dict,
 ) -> dict | None:
     if not pending_meals:
         return None
@@ -884,12 +896,15 @@ def suggest_day_topup(
     near_ceiling_block = (
         _NEAR_CEILING_BLOCK.format(foods=", ".join(near_ceiling_foods)) if near_ceiling_foods else ""
     )
+    protein_poor_block = (
+        _PROTEIN_POOR_BLOCK.format(meals=", ".join(protein_poor_meals)) if protein_poor_meals else ""
+    )
     prompt = _DAY_TOPUP_PROMPT.format(
         direction="abaixo" if gap_calories >= 0 else "acima",
         gap_calories=abs(round(gap_calories)),
         gap_protein=abs(round(gap_protein)),
         gap_fat=abs(round(gap_fat)),
-        near_ceiling_block=near_ceiling_block,
+        near_ceiling_block=near_ceiling_block + protein_poor_block,
         meals_desc=meals_desc,
         allergies=", ".join(preferences.get("allergies") or []) or "nenhuma informada",
         dislikes=", ".join(preferences.get("dislikes") or []) or "nenhuma informada",
@@ -1040,6 +1055,13 @@ da última refeição do dia, um lanche fora de todos os horários), crie uma re
 natural ("Ceia", "Sobremesa"), preencha "time" (depois do horário da última refeição do dia), \
 "skipped" vazio (não existe nada pra tirar de uma refeição que não existia) e o que ela quer em \
 "added". Nunca finja que isso pertence a uma refeição já existente só porque é mais simples.
+10. NUNCA finalize deixando de fora um alimento que ela disse que comeu ou vai comer. Se a frase cita \
+vários alimentos numa refeição só ("comi um açaí com whey", "comi X, Y e Z"), TODOS eles têm que \
+aparecer em "added", cada um como item separado (ver regras de decomposição abaixo pra "X com Y"). \
+Antes de devolver a resposta, releia a frase da pessoa e confira, item por item, que cada alimento \
+citado está representado em algum "added" ou "skipped". Esquecer um alimento citado é o pior erro \
+possível aqui, pior que estimar a quantidade errada: a pessoa fica com a refeição faltando parte do \
+que ela realmente comeu.
 {decomposition_rules}
 """
 

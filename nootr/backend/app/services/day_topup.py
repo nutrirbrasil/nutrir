@@ -42,6 +42,13 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     vez. Como esse mecanismo só adiciona, ele não "conserta" a porção
     grande, só evita piorar (não sugere mais do mesmo alimento) e cobre o
     resto com algo diferente, ver `_NEAR_CEILING_BLOCK`.
+
+    E dispara quando uma refeição ficou com proteína bem abaixo da própria
+    fatia-alvo (`protein_poor_meals`, ex: jantar com 106g de proteína e
+    lanche com 15g): o rebalanceamento por quantidade só redistribui
+    proteína ENTRE refeições que já têm algum alimento proteico pra trocar,
+    se a refeição pobre não tem nenhum (ex: só pão e fruta), a única saída é
+    adicionar um alimento proteico a ela de verdade.
     """
     if not result.get("can_top_up"):
         return
@@ -49,12 +56,14 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     remaining_prot = result["remaining_protein_g"]
     remaining_fat = result.get("remaining_fat_g", 0)
     near_ceiling = result.get("near_ceiling_foods") or []
+    protein_poor = result.get("protein_poor_meals") or []
     tolerance = diet_engine.calorie_tolerance(result["targets"]["calories"])
     if (
         abs(remaining_cal) <= tolerance
         and abs(remaining_prot) < _TOPUP_PROTEIN_THRESHOLD
         and abs(remaining_fat) < _TOPUP_FAT_THRESHOLD
         and not near_ceiling
+        and not protein_poor
     ):
         return
 
@@ -63,7 +72,9 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     prefs = repository.get_preferences(user) or {}
     preferred_ids = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
     tie_resolver = ai.build_country_tie_resolver((repository.get_profile(user) or {}).get("country") or "BR")
-    topup = ai.suggest_day_topup(pending_meals, remaining_cal, remaining_prot, remaining_fat, near_ceiling, prefs)
+    topup = ai.suggest_day_topup(
+        pending_meals, remaining_cal, remaining_prot, remaining_fat, near_ceiling, protein_poor, prefs,
+    )
     if not topup:
         return
 

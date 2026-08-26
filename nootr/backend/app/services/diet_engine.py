@@ -384,6 +384,74 @@ def _apply_floor_pass(
     return changed
 
 
+# Quanto uma refeição pode concentrar de proteína acima da própria fatia-alvo
+# (role_weights) antes de ser considerada desbalanceada demais (ex: jantar
+# com 106g de proteína enquanto o lanche fica com 15g). Só entra em jogo
+# quando a refeição já tinha uma base rica em proteína (ex: frango) e a
+# escala por quantidade amplificou essa concentração em vez de corrigir.
+_PROTEIN_CEILING_MULTIPLIER = 1.6
+
+
+def _apply_protein_ceiling_pass(
+    remaining: list[dict], adjusted_by_id: dict[str, dict], solvable_ids: list[str],
+    weights: list[float], targets: dict,
+) -> bool:
+    """
+    4ª passada: se uma refeição ficou com MUITO mais proteína do que sua
+    fatia-alvo (mais que `_PROTEIN_CEILING_MULTIPLIER` vezes o que
+    `role_weights` reservou pra ela), mas outra refeição ajustável ainda tem
+    espaço abaixo do próprio teto, move o excedente de uma pra outra: cresce
+    o grupo proteico de quem está abaixo, encolhe o de quem está acima,
+    compensando com o grupo carboidrato/outros de cada uma pra manter as
+    CALORIAS de cada refeição intactas (só redistribui a PROTEÍNA entre elas,
+    não mexe no total do dia). Best-effort, como `_apply_floor_pass`: se não
+    houver folga suficiente, corrige só uma fração e aceita o resultado
+    parcial.
+    """
+    if len(solvable_ids) < 2:
+        return False
+
+    weight_by_id = {m["id"]: w for m, w in zip(remaining, weights)}
+    prot_by_id: dict[str, float] = {}
+    ceiling_by_id: dict[str, float] = {}
+    for mid in solvable_ids:
+        prot_by_id[mid] = _meal_macros(adjusted_by_id[mid])["protein_g"]
+        ceiling_by_id[mid] = weight_by_id[mid] * targets["protein_g"] * _PROTEIN_CEILING_MULTIPLIER
+
+    surpluses = {mid: max(0.0, prot_by_id[mid] - ceiling_by_id[mid]) for mid in solvable_ids}
+    room = {mid: max(0.0, ceiling_by_id[mid] - prot_by_id[mid]) for mid in solvable_ids}
+    total_surplus = sum(surpluses.values())
+    total_room = sum(room.values())
+    if total_surplus <= 1e-6 or total_room <= 1e-6:
+        return False
+    amount = min(total_surplus, total_room)
+    delta_prot = {
+        mid: room[mid] * (amount / total_room) - surpluses[mid] * (amount / total_surplus)
+        for mid in solvable_ids
+    }
+    if all(abs(v) < 1e-6 for v in delta_prot.values()):
+        return False
+
+    changed = False
+    for mid in solvable_ids:
+        if abs(delta_prot[mid]) < 1e-6:
+            continue
+        foods = adjusted_by_id[mid]["foods"]
+        cal_a, prot_a, cal_b, prot_b = _group_totals(foods)
+        current_cal = cal_a + cal_b
+        solution = _solve_two_group(cal_a, prot_a, cal_b, prot_b, current_cal, prot_by_id[mid] + delta_prot[mid])
+        if solution is None:
+            continue
+        a, b = solution
+        if abs(a - 1) >= 0.001 or abs(b - 1) >= 0.001:
+            changed = True
+        adjusted_by_id[mid] = {
+            **adjusted_by_id[mid],
+            "foods": [_scale_food(f, a if _is_protein_food(f) else b) for f in foods],
+        }
+    return changed
+
+
 # Um alimento que precisou crescer perto do próprio teto pra fechar a meta
 # quase sempre virou uma porção pouco realista (ex: 300ml de leite virando
 # 750ml), mesmo estando matematicamente "certo". É informativo demais pra só
@@ -513,7 +581,7 @@ def _enforce_calorie_tolerance(
 
 def _rebalance(
     meals: list[dict], adjustable_ids: set[str], targets: dict, original_meals: list[dict] | None = None,
-) -> tuple[list[dict], bool, bool, list[str]]:
+) -> tuple[list[dict], bool, bool, list[str], list[str]]:
     """
     Ajusta as porções das refeições em `adjustable_ids` para o dia bater as
     CALORIAS e a PROTEÍNA do alvo ao mesmo tempo (grupos proteico/energético).
@@ -540,7 +608,7 @@ def _rebalance(
     remaining = [m for m in meals if m["id"] in adjustable_ids]
     had_adjustable = bool(remaining)
     if not remaining:
-        return meals, False, False, []
+        return meals, False, False, [], []
 
     consumed = {"calories": 0.0, "protein_g": 0.0, "fat_g": 0.0}
     for m in meals:
@@ -625,6 +693,9 @@ def _rebalance(
     if _apply_floor_pass(remaining, adjusted_by_id, solvable_ids, targets):
         changed = True
 
+    if _apply_protein_ceiling_pass(remaining, adjusted_by_id, solvable_ids, weights, targets):
+        changed = True
+
     cap_source = original_meals if original_meals is not None else meals
     cap_baseline = [m for m in cap_source if m["id"] in adjustable_ids]
     near_ceiling = _cap_total_growth(cap_baseline, adjusted_by_id)
@@ -636,11 +707,22 @@ def _rebalance(
     if _enforce_calorie_tolerance(cap_baseline, adjusted_by_id, consumed["calories"], targets["calories"]):
         changed = True
 
+    # Refeição cuja proteína ficou bem abaixo da própria fatia-alvo mesmo
+    # depois de todas as passadas (ver _apply_protein_ceiling_pass): sinal de
+    # que ela não tem alimento proteico NENHUM pra puxar via quantidade (ex:
+    # só pão e banana), só um alimento novo resolve, ver day_topup.
+    protein_poor_meals = []
+    for m, w in zip(remaining, weights):
+        fair_share = w * targets["protein_g"]
+        actual = _meal_macros(adjusted_by_id.get(m["id"], m))["protein_g"]
+        if fair_share > 5 and actual < fair_share * 0.5:
+            protein_poor_meals.append(m["name"])
+
     if not changed:
-        return meals, False, had_adjustable, []
+        return meals, False, had_adjustable, [], protein_poor_meals
 
     adjusted = [adjusted_by_id.get(m["id"], m) if m["id"] in adjustable_ids else m for m in meals]
-    return adjusted, True, had_adjustable, near_ceiling
+    return adjusted, True, had_adjustable, near_ceiling, protein_poor_meals
 
 
 def day_macros(meals: list[dict]) -> dict:
@@ -822,7 +904,7 @@ def build_day_view(before: list[dict], after: list[dict]) -> dict:
 def _build_result(
     diet: dict, adjusted_meals: list[dict], targets: dict, headline: str,
     rebalanced: bool, had_adjustable: bool = False, adjustable_meal_ids: set[str] | None = None,
-    near_ceiling_foods: list[str] | None = None,
+    near_ceiling_foods: list[str] | None = None, protein_poor_meals: list[str] | None = None,
 ) -> dict:
     before = _day_macros(diet["meals"])
     after = _day_macros(adjusted_meals)
@@ -860,6 +942,11 @@ def _build_result(
         # pode ter ficado pouco realista mesmo com a meta numérica batida,
         # usado por day_topup pra decidir se vale perguntar uma alternativa à IA.
         "near_ceiling_foods": sorted(set(near_ceiling_foods or [])),
+        # Refeições cuja proteína ficou bem abaixo da própria fatia-alvo mesmo
+        # depois de tudo (ver _apply_protein_ceiling_pass): geralmente porque
+        # ela não tem NENHUM alimento proteico pra puxar via quantidade (ex:
+        # só pão e fruta), só um alimento novo resolve, ver day_topup.
+        "protein_poor_meals": sorted(set(protein_poor_meals or [])),
         "rebalanced": rebalanced,
         # se há refeição ajustável e a rota decidir que a diferença que sobrou
         # ainda é grande, ela pode pedir um "top-up" (adicionar/remover
@@ -895,7 +982,7 @@ def _apply_deviation(
 
     replaced_meal = {**meal, "foods": updated_foods}
     meals = [replaced_meal if m["id"] == meal["id"] else m for m in diet["meals"]]
-    adjusted_meals, rebalanced, had_adjustable, near_ceiling = _rebalance(
+    adjusted_meals, rebalanced, had_adjustable, near_ceiling, protein_poor = _rebalance(
         meals, adjustable_ids, tgt, diet.get("original_meals"),
     )
 
@@ -913,7 +1000,7 @@ def _apply_deviation(
     else:
         headline = f"Nenhuma mudança registrada em {meal['name']}."
 
-    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling)
+    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling, protein_poor)
     result["matched_food"] = new_label or skipped_label
     result["match_confidence"] = "alta"
     result["delta_calories"] = round(delta_kcal, 1)
@@ -967,12 +1054,12 @@ def apply_changes(
         m["id"] for m in diet["meals"]
         if m["id"] not in touched_ids and m["id"] not in already_eaten
     }
-    adjusted_meals, rebalanced, had_adjustable, near_ceiling = _rebalance(
+    adjusted_meals, rebalanced, had_adjustable, near_ceiling, protein_poor = _rebalance(
         meals, adjustable_ids, tgt, diet.get("original_meals"),
     )
 
     headline = f"Registramos: {'; '.join(labels)}." if labels else "Nenhuma mudança registrada."
-    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling)
+    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling, protein_poor)
     result["matched_food"] = None
     result["match_confidence"] = "alta"
     result["delta_calories"] = round(total_delta, 1)
@@ -1024,7 +1111,7 @@ def log_missing_food(diet: dict, missing_food_name: str, meal_id: str, substitut
     updated_meal = {**meal, "foods": new_foods}
     meals = [updated_meal if m["id"] == meal["id"] else m for m in diet["meals"]]
     adjustable_ids = _meals_after(meals, meal["id"])
-    adjusted_meals, rebalanced, had_adjustable, near_ceiling = _rebalance(
+    adjusted_meals, rebalanced, had_adjustable, near_ceiling, protein_poor = _rebalance(
         meals, adjustable_ids, tgt, diet.get("original_meals"),
     )
 
@@ -1033,7 +1120,7 @@ def log_missing_food(diet: dict, missing_food_name: str, meal_id: str, substitut
         f"Trocamos {missing_food['name']} por {names} em {meal['name']} "
         f"(diferença de {abs(round(delta_kcal))} kcal)."
     )
-    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling)
+    result = _build_result(diet, adjusted_meals, tgt, headline, rebalanced, had_adjustable, adjustable_ids, near_ceiling, protein_poor)
     result["matched_food"] = names
     result["match_confidence"] = "alta"
     result["delta_calories"] = round(delta_kcal, 1)
