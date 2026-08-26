@@ -182,6 +182,11 @@ _FATIA_OVERRIDE = {
     "melao": 100,
     "rosca": 30,
     "baguete": 30,
+    "chocotone": 50,
+    "panetone": 50,
+    "colomba pascal": 50,
+    "rocambole": 60,
+    "empadao": 100,
 }
 
 # "Pedaço", mesma lógica: sem fallback, tabela por alimento.
@@ -211,6 +216,8 @@ _PORCAO_OVERRIDE = {
     "whey": 30,
     "danoninho": 45, "petit suisse": 45,
     "bombom": 20, "sonho de valsa": 20,
+    "tabule": 100, "vatapa": 100, "doce de abobora": 80, "mocoto": 150,
+    "musse": 90, "pudim": 100, "sufle de queijo": 120,
 }
 
 # "Prato", sem fallback. Refeição completa (arroz+feijão+carne) vs prato
@@ -222,6 +229,11 @@ _PRATO_OVERRIDE = {
     "mingau": 250,
     "arroz e feijao": 350, "arroz com feijao": 350,
     "feijao": 200,
+    "arroz carreteiro": 300, "baiao de dois": 300, "barreado": 300,
+    "bife a cavalo": 300, "camarao a baiana": 250, "dobradinha": 300,
+    "estrogonofe": 250, "feijoada": 350, "frango com acafrao": 250,
+    "manicoba": 300, "quibebe": 200, "sarapatel": 250, "vaca atolada": 300,
+    "virado a paulista": 350, "yakisoba": 300, "bacalhoada": 300,
 }
 
 
