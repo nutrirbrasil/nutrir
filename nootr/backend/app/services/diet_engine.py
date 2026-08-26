@@ -893,22 +893,30 @@ def build_day_view(before: list[dict], after: list[dict]) -> dict:
             foods.append({
                 "name": food["name"],
                 "quantity": food.get("quantity", ""),
+                "grams": food.get("grams"),
                 "calories": round(food["calories"], 1),
                 "protein_g": round(food["protein_g"], 1),
                 "carbs_g": round(food["carbs_g"], 1),
                 "fat_g": round(food["fat_g"], 1),
                 "kind": kind,
                 "previous_quantity": (previous or {}).get("quantity", "") if kind in ("increased", "decreased") else "",
+                "previous_grams": (previous or {}).get("grams") if kind in ("increased", "decreased") else None,
             })
 
         # Removidos ficam na lista (marcados) pra pessoa ver o que saiu.
         names_after = {f["name"] for f in meal_after["foods"]}
         for name, food in foods_before.items():
             if name not in names_after:
+                # Mostra o que o alimento representava ANTES de sair (não 0),
+                # senão a linha removida não diz nada pra pessoa sobre o que
+                # de fato saiu do dia.
                 foods.append({
-                    "name": name, "quantity": food.get("quantity", ""),
-                    "calories": 0.0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0,
-                    "kind": "removed", "previous_quantity": "",
+                    "name": name, "quantity": food.get("quantity", ""), "grams": food.get("grams"),
+                    "calories": round(food.get("calories", 0.0), 1),
+                    "protein_g": round(food.get("protein_g", 0.0), 1),
+                    "carbs_g": round(food.get("carbs_g", 0.0), 1),
+                    "fat_g": round(food.get("fat_g", 0.0), 1),
+                    "kind": "removed", "previous_quantity": "", "previous_grams": None,
                 })
 
         meals.append({

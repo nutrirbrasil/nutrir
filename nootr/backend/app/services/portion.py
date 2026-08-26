@@ -83,6 +83,12 @@ _UNIT_OVERRIDE_BY_FOOD = {
     # unidade), mas serve de rede de segurança se a IA usar assim mesmo, uma
     # dose/scoop típica é ~30g, bem melhor que cair no genérico de 150g.
     "whey": 30,
+    # iogurte/sobremesa individual em copinho (ex: Danoninho, petit suisse):
+    # o copo real é ~45g, bem abaixo do genérico de 150g que a TACO/extra usa
+    # como porção de referência.
+    "danoninho": 45, "petit suisse": 45,
+    # doce/bombom industrializado, unidade pequena (~20g), não um prato.
+    "bombom": 20, "sonho de valsa": 20,
     # ovos (específico antes do genérico)
     "codorna": 9,
     "ovo": 50,
@@ -203,6 +209,8 @@ _PORCAO_OVERRIDE = {
     "carne": 100, "frango": 100, "peixe": 100,
     "salada": 100, "legume": 100, "verdura": 80,
     "whey": 30,
+    "danoninho": 45, "petit suisse": 45,
+    "bombom": 20, "sonho de valsa": 20,
 }
 
 # "Prato", sem fallback. Refeição completa (arroz+feijão+carne) vs prato

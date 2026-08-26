@@ -5,6 +5,7 @@ import Link from "next/link";
 import { nootrApi } from "@/lib/api";
 import { Icon } from "@/components/Icon";
 import type { NooDayView, NooMessage, Plan } from "@/lib/types";
+import { formatQuantityWithGrams } from "@/lib/units";
 
 const SUGGESTIONS = [
   "Não comi o pão do café",
@@ -104,14 +105,15 @@ function DayView({ day }: { day: NooDayView }) {
                     {style?.arrow ?? "·"}
                   </span>
                   <span className={style?.name || "text-nootr-cream"}>{food.name}</span>
+                  <span className="shrink-0 tabular-nums text-nootr-faint">{Math.round(food.calories)} kcal</span>
                   <span className="ml-auto shrink-0 tabular-nums text-nootr-faint">
                     {food.previous_quantity && (
                       <>
-                        <span>{food.previous_quantity}</span>
+                        <span>{formatQuantityWithGrams(food.previous_quantity, food.previous_grams)}</span>
                         <span className="mx-1">→</span>
                       </>
                     )}
-                    {food.quantity}
+                    {formatQuantityWithGrams(food.quantity, food.grams)}
                   </span>
                 </li>
               );

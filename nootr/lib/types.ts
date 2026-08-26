@@ -391,12 +391,14 @@ export interface StreakStats {
 export interface NooFood {
   name: string;
   quantity: string;
+  grams: number | null;
   calories: number;
   protein_g: number;
   carbs_g: number;
   fat_g: number;
   kind: MealChangeKind | null;
   previous_quantity: string;
+  previous_grams: number | null;
 }
 
 export interface NooMealTotals {
