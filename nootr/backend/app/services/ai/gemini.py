@@ -810,8 +810,11 @@ _DAY_TOPUP_SCHEMA = {
 }
 
 _DAY_TOPUP_PROMPT = """A dieta do dia ficou {direction} da meta depois de um ajuste de quantidades: \
-faltam/sobram aproximadamente {gap_calories} kcal e {gap_protein}g de proteína pra bater a meta \
-diária, e só escalar as porções já presentes não foi suficiente (ou deixaria de ser realista).
+faltam/sobram aproximadamente {gap_calories} kcal, {gap_protein}g de proteína e {gap_fat}g de gordura \
+pra bater a meta diária, e só escalar as porções já presentes não foi suficiente (ou deixaria de ser \
+realista). Se a lacuna for principalmente de GORDURA (proteína/calorias já perto da meta), prefira um \
+alimento gorduroso pra cobrir isso (ex: azeite, queijo, abacate, oleaginosas), em vez de só mais \
+carboidrato/proteína.
 
 Refeições ainda ajustáveis hoje (nome: alimentos atuais com quantidade):
 {meals_desc}
@@ -836,7 +839,7 @@ Responda estritamente no formato do schema."""
 
 
 def suggest_day_topup(
-    pending_meals: list[dict], gap_calories: float, gap_protein: float, preferences: dict,
+    pending_meals: list[dict], gap_calories: float, gap_protein: float, gap_fat: float, preferences: dict,
 ) -> dict | None:
     if not pending_meals:
         return None
@@ -848,6 +851,7 @@ def suggest_day_topup(
         direction="abaixo" if gap_calories >= 0 else "acima",
         gap_calories=abs(round(gap_calories)),
         gap_protein=abs(round(gap_protein)),
+        gap_fat=abs(round(gap_fat)),
         meals_desc=meals_desc,
         allergies=", ".join(preferences.get("allergies") or []) or "nenhuma informada",
         dislikes=", ".join(preferences.get("dislikes") or []) or "nenhuma informada",

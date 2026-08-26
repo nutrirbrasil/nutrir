@@ -138,7 +138,8 @@ def suggest_wildcard(
 
 
 def suggest_day_topup(
-    pending_meals: list[dict], gap_calories: float, gap_protein: float, preferences: dict | None = None,
+    pending_meals: list[dict], gap_calories: float, gap_protein: float, gap_fat: float = 0.0,
+    preferences: dict | None = None,
 ) -> dict | None:
     """
     Quando só escalar as quantidades das refeições seguintes não é (ou não
@@ -151,7 +152,7 @@ def suggest_day_topup(
     bloqueia o resultado principal do ajuste).
     """
     try:
-        return _provider().suggest_day_topup(pending_meals, gap_calories, gap_protein, preferences or {})
+        return _provider().suggest_day_topup(pending_meals, gap_calories, gap_protein, gap_fat, preferences or {})
     except AIError:
         return None
 

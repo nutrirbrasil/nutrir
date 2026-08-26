@@ -11,28 +11,42 @@ pra que os dois caminhos garantam a mesma tolerância de calorias.
 from backend.app.auth import CurrentUser
 from backend.app.services import ai, diet_engine, food_matcher, repository
 
-# Lacuna mínima de proteína pra valer a pena pedir um ajuste extra (adicionar
-# ou remover alimento) pra IA. A de calorias usa diet_engine.calorie_tolerance
-# (2%, ou 10 kcal): o dia não pode fechar fora disso.
+# Lacuna mínima de proteína/gordura pra valer a pena pedir um ajuste extra
+# (adicionar ou remover alimento) pra IA. A de calorias usa
+# diet_engine.calorie_tolerance (2%, ou 10 kcal): o dia não pode fechar fora
+# disso. Gordura usa um limiar menor que proteína porque a meta de gordura em
+# gramas já é bem menor (tipicamente 40-70g vs 100-150g de proteína).
 _TOPUP_PROTEIN_THRESHOLD = 10.0
+_TOPUP_FAT_THRESHOLD = 6.0
 
 
 def try_day_topup(result: dict, user: CurrentUser) -> None:
     """
     Depois de escalar as quantidades das refeições ajustáveis, se o dia ainda
-    ficar fora da tolerância de calorias (ou longe na proteína), pede pra IA
-    um ajuste extra, adicionar e/ou remover um alimento de UMA refeição
-    ajustável, e aplica se ela sugerir algo. Muda `result` in-place. Não
-    bloqueia: se não houver refeição ajustável, a diferença já estiver dentro
-    da tolerância, ou a IA não sugerir nada bom, o resultado do escalonamento
-    normal é mantido.
+    ficar fora da tolerância de calorias (ou longe na proteína/gordura), pede
+    pra IA um ajuste extra, adicionar e/ou remover um alimento de UMA
+    refeição ajustável, e aplica se ela sugerir algo. Muda `result` in-place.
+    Não bloqueia: se não houver refeição ajustável, a diferença já estiver
+    dentro da tolerância, ou a IA não sugerir nada bom, o resultado do
+    escalonamento normal é mantido.
+
+    Gordura entra aqui (e não só no rebalanceamento por quantidade,
+    diet_engine._rebalance) porque às vezes NENHUM alimento ajustável do dia
+    é gorduroso o bastante pra cobrir a lacuna só escalando porção (ex: o
+    alimento gorduroso do dia foi justamente o que a pessoa não comeu), só um
+    alimento novo resolve.
     """
     if not result.get("can_top_up"):
         return
     remaining_cal = result["remaining_calories"]
     remaining_prot = result["remaining_protein_g"]
+    remaining_fat = result.get("remaining_fat_g", 0)
     tolerance = diet_engine.calorie_tolerance(result["targets"]["calories"])
-    if abs(remaining_cal) <= tolerance and abs(remaining_prot) < _TOPUP_PROTEIN_THRESHOLD:
+    if (
+        abs(remaining_cal) <= tolerance
+        and abs(remaining_prot) < _TOPUP_PROTEIN_THRESHOLD
+        and abs(remaining_fat) < _TOPUP_FAT_THRESHOLD
+    ):
         return
 
     adjustable_ids = set(result.get("adjustable_meal_ids") or [])
@@ -40,7 +54,7 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     prefs = repository.get_preferences(user) or {}
     preferred_ids = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
     tie_resolver = ai.build_country_tie_resolver((repository.get_profile(user) or {}).get("country") or "BR")
-    topup = ai.suggest_day_topup(pending_meals, remaining_cal, remaining_prot, prefs)
+    topup = ai.suggest_day_topup(pending_meals, remaining_cal, remaining_prot, remaining_fat, prefs)
     if not topup:
         return
 
@@ -75,6 +89,7 @@ def try_day_topup(result: dict, user: CurrentUser) -> None:
     result["macros_after"] = after
     result["remaining_calories"] = round(tgt["calories"] - after["calories"])
     result["remaining_protein_g"] = round(tgt["protein_g"] - after["protein_g"])
+    result["remaining_fat_g"] = round(tgt["fat_g"] - after["fat_g"])
     result["topup_applied"] = {
         "meal_name": topup["meal_name"],
         "additions": [a["name"] for a in resolved_additions],

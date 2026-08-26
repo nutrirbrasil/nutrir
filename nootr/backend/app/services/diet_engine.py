@@ -10,9 +10,15 @@ redescrever a refeição inteira, só o que mudou. Depois reajustamos as
 PORÇÕES das refeições seguintes do dia buscando DOIS alvos ao mesmo tempo: as
 CALORIAS e a PROTEÍNA do dia.
 
-Como um único fator por alimento não permite acertar dois alvos independentes,
-separamos os alimentos restantes em dois grupos, proteicos e energéticos, e
-resolvemos um sistema linear 2x2 para o fator de cada grupo. As quantidades
+Como um único fator por alimento não permite acertar vários alvos
+independentes, separamos os alimentos em grupos (proteico, gorduroso,
+carboidrato/outros) e resolvemos, em cascata, sistemas lineares 2x2 pro fator
+de cada grupo (ver `_solve_three_group`): calorias e proteína primeiro
+(estrutura original), depois, dentro do que sobra, gordura (carboidrato
+absorve a folga, é o macro mais elástico numa troca). Alimentos de baixa
+densidade calórica (salada, folha) ficam de fora do ajuste de quantidade
+(`_is_low_density`), multiplicar a porção deles por 2x quase não muda
+calorias e só deixa o prato com quantidade sem sentido. As quantidades
 (gramas + rótulo) são atualizadas de verdade, porque a mudança principal é
 justamente na quantidade de cada alimento.
 
@@ -38,6 +44,12 @@ from backend.app.services import meal_planning, portion
 _MIN_FACTOR = 0.3
 _MAX_FACTOR = 2.5
 _PROTEIN_GROUP_RATIO = 0.25  # alimento é "proteico" se >=25% das kcal vêm de proteína
+_FAT_GROUP_RATIO = 0.35  # dentre os NÃO proteicos, "gorduroso" se >=35% das kcal vêm de gordura
+# Abaixo disso (ex: folha, salada, pepino), o alimento fica de fora do ajuste de
+# QUANTIDADE: dobrar uma salada quase não muda calorias e só deixa a porção sem
+# sentido (ver _solve_group_factors). O déficit que sobraria pra ela recai sobre
+# os alimentos de verdade ajustáveis da mesma refeição.
+_LOW_DENSITY_KCAL_PER_100G = 40.0
 
 
 def _clamp(x: float, lo: float, hi: float) -> float:
@@ -184,6 +196,103 @@ def _solve_two_group(cal_a: float, prot_a: float, cal_b: float, prot_b: float,
     # igual, priorizando bater as calorias o quanto der (fallback honesto).
     f = _clamp(need_cal / (cal_a + cal_b), _MIN_FACTOR, _MAX_FACTOR)
     return f, f
+
+
+def _is_fat_food(f: dict) -> bool:
+    """Dentre os alimentos NÃO proteicos, esse é o "gorduroso" (ex: azeite,
+    manteiga, queijo mais gordo). Quem já é proteico (ovo, carne) fica no
+    grupo proteico mesmo tendo bastante gordura, ver _solve_three_group."""
+    cal = f["calories"]
+    return cal > 0 and not _is_protein_food(f) and (f["fat_g"] * 9 / cal) >= _FAT_GROUP_RATIO
+
+
+def _is_low_density(f: dict) -> bool:
+    grams = f.get("grams")
+    if not grams:
+        return False
+    return (f["calories"] / grams * 100) < _LOW_DENSITY_KCAL_PER_100G
+
+
+def _solve_three_group(
+    foods: list[dict], need_cal: float, need_prot: float, need_fat: float,
+) -> list[float] | None:
+    """
+    Como `_solve_two_group`, mas mira GORDURA também, não só calorias e
+    proteína (ver limitação descrita no docstring do módulo). Resolve em dois
+    níveis, reaproveitando `_solve_two_group` duas vezes:
+    1) separa proteico vs resto mirando (calorias, proteína), exatamente como
+       antes, protegendo proteína sem regressão;
+    2) dentro do "resto", separa gorduroso vs carboidrato/outros mirando as
+       MESMAS calorias que o nível 1 já decidiu pro grupo (não pode mudar,
+       senão quebra a meta de calorias do nível 1) e a gordura que falta.
+       Carboidrato absorve a folga, é o macro mais elástico numa troca.
+
+    Devolve um fator por alimento (mesma ordem de `foods`), ou None se não
+    houver nenhum grupo com calorias > 0 pra ajustar.
+    """
+    cal_a, prot_a, cal_b, prot_b = _group_totals(foods)
+    solution = _solve_two_group(cal_a, prot_a, cal_b, prot_b, need_cal, need_prot)
+    if solution is None:
+        return None
+    a, b = solution
+
+    cal_f = fat_f = cal_c = fat_c = fat_a = 0.0
+    for f in foods:
+        if _is_protein_food(f):
+            fat_a += f["fat_g"]
+        elif _is_fat_food(f):
+            cal_f += f["calories"]
+            fat_f += f["fat_g"]
+        else:
+            cal_c += f["calories"]
+            fat_c += f["fat_g"]
+
+    need_fat_b = need_fat - a * fat_a
+    fat_fix = _solve_two_group(cal_f, fat_f, cal_c, fat_c, b * cal_b, need_fat_b)
+    f_factor, c_factor = fat_fix if fat_fix is not None else (b, b)
+
+    factors = []
+    for food in foods:
+        if _is_protein_food(food):
+            factors.append(a)
+        elif _is_fat_food(food):
+            factors.append(f_factor)
+        else:
+            factors.append(c_factor)
+    return factors
+
+
+def _solve_group_factors(
+    foods: list[dict], need_cal: float, need_prot: float, need_fat: float,
+) -> list[float] | None:
+    """
+    Fator de escala por alimento (mesma ordem de `foods`) que faz o grupo
+    bater `need_cal` (rígido) e ficar o mais perto possível de `need_prot` E
+    `need_fat` ao mesmo tempo (ver `_solve_three_group`). Alimentos de baixa
+    densidade calórica (`_is_low_density`) ficam de fora do ajuste, sempre
+    fator 1.0, o déficit recai sobre os demais alimentos do grupo.
+    """
+    scalable_idx = [i for i, f in enumerate(foods) if not _is_low_density(f)]
+    if not scalable_idx:
+        # Sem NENHUMA alternativa de densidade normal no grupo (ex: refeição
+        # é só sopa rala), mexer no que tem é melhor que travar o ajuste.
+        scalable_idx = list(range(len(foods)))
+    scalable = [foods[i] for i in scalable_idx]
+    fixed_idx = set(range(len(foods))) - set(scalable_idx)
+    fixed_cal = sum(foods[i]["calories"] for i in fixed_idx)
+    fixed_prot = sum(foods[i]["protein_g"] for i in fixed_idx)
+    fixed_fat = sum(foods[i]["fat_g"] for i in fixed_idx)
+
+    sub_factors = _solve_three_group(
+        scalable, need_cal - fixed_cal, need_prot - fixed_prot, need_fat - fixed_fat,
+    )
+    if sub_factors is None:
+        return None
+
+    factors = [1.0] * len(foods)
+    for pos, idx in enumerate(scalable_idx):
+        factors[idx] = sub_factors[pos]
+    return factors
 
 
 def _meals_after(meals: list[dict], meal_id: str) -> set[str]:
@@ -355,6 +464,8 @@ def _enforce_calorie_tolerance(
         for mid, meal in adjusted_by_id.items():
             originals = baseline_by_id.get(mid, {})
             for i, food in enumerate(meal["foods"]):
+                if _is_low_density(food):
+                    continue
                 grams = food.get("grams")
                 kcal_per_g = food["calories"] / grams if grams else 0
                 if not grams or kcal_per_g <= 0:
@@ -415,15 +526,17 @@ def _rebalance(
     if not remaining:
         return meals, False, False
 
-    consumed = {"calories": 0.0, "protein_g": 0.0}
+    consumed = {"calories": 0.0, "protein_g": 0.0, "fat_g": 0.0}
     for m in meals:
         if m["id"] not in adjustable_ids:
             mm = _meal_macros(m)
             consumed["calories"] += mm["calories"]
             consumed["protein_g"] += mm["protein_g"]
+            consumed["fat_g"] += mm["fat_g"]
 
     need_cal = targets["calories"] - consumed["calories"]
     need_prot = targets["protein_g"] - consumed["protein_g"]
+    need_fat = targets["fat_g"] - consumed["fat_g"]
 
     weights = meal_planning.role_weights(
         [m["name"] for m in remaining], all_meal_names=[m["name"] for m in meals],
@@ -438,20 +551,19 @@ def _rebalance(
     for m, w in zip(remaining, weights):
         target_cal_m = need_cal * w
         target_prot_m = need_prot * w
-        cal_a, prot_a, cal_b, prot_b = _group_totals(m["foods"])
-        solution = _solve_two_group(cal_a, prot_a, cal_b, prot_b, target_cal_m, target_prot_m)
-        if solution is None:
-            # Refeição vazia ou sem grupo utilizável, sua fatia sobra pra a
-            # 2ª passada redistribuir entre as demais.
+        target_fat_m = need_fat * w
+        factors = _solve_group_factors(m["foods"], target_cal_m, target_prot_m, target_fat_m)
+        if factors is None:
+            # Refeição vazia ou só com alimentos de baixa densidade, sua
+            # fatia sobra pra a 2ª passada redistribuir entre as demais.
             adjusted_by_id[m["id"]] = m
             continue
-        a, b = solution
-        if abs(a - 1) >= 0.02 or abs(b - 1) >= 0.02:
+        if any(abs(fac - 1) >= 0.02 for fac in factors):
             changed = True
         solvable_ids.append(m["id"])
         adjusted_by_id[m["id"]] = {
             **m,
-            "foods": [_scale_food(f, a if _is_protein_food(f) else b) for f in m["foods"]],
+            "foods": [_scale_food(f, fac) for f, fac in zip(m["foods"], factors)],
         }
 
     # 2ª passada: ajuste fino global só nas refeições que sobraram com
@@ -459,36 +571,40 @@ def _rebalance(
     # a distribuição por papel não fecha sozinha.
     achieved_cal = consumed["calories"]
     achieved_prot = consumed["protein_g"]
+    achieved_fat = consumed["fat_g"]
     for m in remaining:
         mm = _meal_macros(adjusted_by_id[m["id"]])
         achieved_cal += mm["calories"]
         achieved_prot += mm["protein_g"]
+        achieved_fat += mm["fat_g"]
     residual_cal = targets["calories"] - achieved_cal
     residual_prot = targets["protein_g"] - achieved_prot
+    residual_fat = targets["fat_g"] - achieved_fat
 
     if solvable_ids and (abs(residual_cal) > 3 or abs(residual_prot) > 1):
-        cur_cal = cur_prot = 0.0
-        cal_a = prot_a = cal_b = prot_b = 0.0
+        cur_cal = cur_prot = cur_fat = 0.0
+        all_foods: list[dict] = []
+        positions: list[tuple[str, int]] = []
         for mid in solvable_ids:
             foods = adjusted_by_id[mid]["foods"]
-            ga, pa, gb, pb = _group_totals(foods)
-            cal_a += ga
-            prot_a += pa
-            cal_b += gb
-            prot_b += pb
-            cur_cal += ga + gb
-            cur_prot += pa + pb
-        fix = _solve_two_group(cal_a, prot_a, cal_b, prot_b, cur_cal + residual_cal, cur_prot + residual_prot)
-        if fix is not None:
-            fa, fb = fix
-            if abs(fa - 1) >= 0.001 or abs(fb - 1) >= 0.001:
+            mm = _meal_macros(adjusted_by_id[mid])
+            cur_cal += mm["calories"]
+            cur_prot += mm["protein_g"]
+            cur_fat += mm["fat_g"]
+            for idx in range(len(foods)):
+                positions.append((mid, idx))
+            all_foods.extend(foods)
+        fix_factors = _solve_group_factors(
+            all_foods, cur_cal + residual_cal, cur_prot + residual_prot, cur_fat + residual_fat,
+        )
+        if fix_factors is not None:
+            if any(abs(fac - 1) >= 0.001 for fac in fix_factors):
                 changed = True
+            new_foods_by_mid = {mid: list(adjusted_by_id[mid]["foods"]) for mid in solvable_ids}
+            for flat_idx, (mid, idx) in enumerate(positions):
+                new_foods_by_mid[mid][idx] = _scale_food(all_foods[flat_idx], fix_factors[flat_idx])
             for mid in solvable_ids:
-                m2 = adjusted_by_id[mid]
-                adjusted_by_id[mid] = {
-                    **m2,
-                    "foods": [_scale_food(f, fa if _is_protein_food(f) else fb) for f in m2["foods"]],
-                }
+                adjusted_by_id[mid] = {**adjusted_by_id[mid], "foods": new_foods_by_mid[mid]}
 
     if _apply_floor_pass(remaining, adjusted_by_id, solvable_ids, targets):
         changed = True
@@ -701,6 +817,7 @@ def _build_result(
     }
     remaining_calories = round(tgt["calories"] - after["calories"])
     remaining_protein = round(tgt["protein_g"] - after["protein_g"])
+    remaining_fat = round(tgt["fat_g"] - after["fat_g"])
 
     if rebalanced:
         adj = (
@@ -720,6 +837,7 @@ def _build_result(
         "targets": tgt,
         "remaining_calories": remaining_calories,
         "remaining_protein_g": remaining_protein,
+        "remaining_fat_g": remaining_fat,
         "rebalanced": rebalanced,
         # se há refeição ajustável e a rota decidir que a diferença que sobrou
         # ainda é grande, ela pode pedir um "top-up" (adicionar/remover
