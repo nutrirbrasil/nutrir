@@ -118,9 +118,19 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
     country = (profile or {}).get("country") or "BR"
     targets = _targets_for(user, day_plan)
 
+    # Só as últimas trocas (não o dia inteiro): o estado real da dieta já vem
+    # à parte via `current`/`meals_table` (regra 9 do prompt, é a ÚNICA fonte
+    # de verdade sobre o que já foi aplicado), o histórico serve só pra
+    # continuidade conversacional recente ("prefiro uma opção doce" referindo
+    # a resposta anterior, regra 4). Um dia de conversa longo (a pessoa pode
+    # ter até 25 mensagens) mandando TUDO pra IA a cada turno só aumenta o
+    # risco dela puxar algo de uma troca antiga e sem relação, ver o caso do
+    # "doce de leite" citado do nada numa resposta.
+    _NOO_HISTORY_WINDOW = 8  # ~4 trocas usuário/IA
+    recent_history = repository.list_noo_messages_today(user)[-_NOO_HISTORY_WINDOW:]
     history = [
         {"role": m["role"], "text": m["text"]}
-        for m in repository.list_noo_messages_today(user)
+        for m in recent_history
     ] + [{"role": "user", "text": body.text}]
 
     try:
