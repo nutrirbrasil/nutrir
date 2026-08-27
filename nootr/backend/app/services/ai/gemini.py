@@ -64,13 +64,18 @@ _DIET_SCHEMA = {
 
 def _generate_from_contents(
     contents: list[dict], schema: dict | None, system_instruction: str | None = None,
-    timeout: float = 30.0,
+    timeout: float = 30.0, allow_empty: bool = False,
 ) -> str:
     """Chamada base ao Gemini (multi-turno); devolve o texto do candidato.
 
     `timeout` é parametrizável porque nem toda chamada é um prompt de texto
     curto: mandar um áudio inteiro (ver transcribe_audio) sobe alguns MB e
-    demora mais que os 30s que bastam pro resto."""
+    demora mais que os 30s que bastam pro resto.
+
+    `allow_empty`: quando a resposta vem sem `parts`, devolve "" em vez de
+    levantar erro. É o que acontece quando o modelo não tem NADA a dizer, o
+    caso normal de um áudio mudo/inaudível (ver transcribe_audio), que é uma
+    resposta legítima, não uma falha de infraestrutura."""
     settings = get_settings()
     if not settings.gemini_api_key:
         raise AIError("Gemini não configurado: defina GEMINI_API_KEY em nootr/.env")
@@ -94,6 +99,8 @@ def _generate_from_contents(
     try:
         return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError) as exc:
+        if allow_empty:
+            return ""
         raise AIError(f"Resposta inesperada do Gemini: {exc}") from exc
 
 
@@ -1199,12 +1206,21 @@ def estimate_unknown_food(name: str) -> dict | None:
     }
 
 
-_TRANSCRIBE_SYSTEM = """Transcreva EXATAMENTE o que a pessoa falou neste áudio, em português do Brasil. \
-Ela está contando o que comeu, o que vai comer ou o que está faltando na dieta dela, então nomes de \
-alimentos e QUANTIDADES ("duas fatias", "meio prato", "uns 200 gramas") são a parte mais importante, \
-transcreva com cuidado redobrado. Devolva SÓ a transcrição, sem aspas, sem comentários seus, sem \
-resumir e sem corrigir o jeito de falar dela. Se o áudio estiver inaudível ou não tiver fala nenhuma, \
-devolva uma string vazia."""
+_TRANSCRIBE_SYSTEM = """Transcreva EXATAMENTE o que a pessoa falou neste áudio, em português do Brasil.
+
+REGRA MAIS IMPORTANTE: transcreva SOMENTE o que você realmente ouviu. NUNCA invente, complete ou \
+imagine uma frase plausível. Se o áudio estiver inaudível, mudo, com ruído só, ou se você não \
+conseguir distinguir a fala com clareza, devolva UMA STRING VAZIA. Uma string vazia é a resposta \
+certa nesse caso, e é infinitamente melhor que uma frase inventada: o que você transcrever vai ser \
+usado pra alterar a dieta de verdade da pessoa, então uma frase que ela não falou causa dano real.
+
+O contexto costuma ser alimentação (o que ela comeu, vai comer ou está faltando), então nomes de \
+alimentos e QUANTIDADES ("duas fatias", "meio prato", "uns 200 gramas") merecem cuidado redobrado na \
+hora de transcrever. Mas esse contexto serve só pra você ouvir melhor, NUNCA pra adivinhar o conteúdo: \
+não presuma que ela falou de comida, e jamais produza uma frase sobre alimentos que você não ouviu.
+
+Devolva SÓ a transcrição, sem aspas, sem comentários seus, sem resumir e sem corrigir o jeito de \
+falar dela."""
 
 
 def transcribe_audio(audio: bytes, mime_type: str) -> str:
@@ -1217,5 +1233,9 @@ def transcribe_audio(audio: bytes, mime_type: str) -> str:
     part = {"inline_data": {"mime_type": mime_type, "data": base64.b64encode(audio).decode("ascii")}}
     raw = _generate_from_contents(
         [{"parts": [part]}], schema=None, system_instruction=_TRANSCRIBE_SYSTEM, timeout=90.0,
+        # Áudio mudo/inaudível volta sem `parts` nenhuma: isso é "não ouvi
+        # nada", que quem chama trata como "não entendi o áudio, tenta de
+        # novo?", não como erro de infraestrutura.
+        allow_empty=True,
     )
     return raw.strip()

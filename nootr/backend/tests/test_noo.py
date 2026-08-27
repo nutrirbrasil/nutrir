@@ -338,6 +338,44 @@ def test_audio_transcript_follows_the_same_path_as_typed_text(client, monkeypatc
     assert day_plan["noo_messages_used"] == 1
 
 
+def test_audio_is_saved_with_the_message_so_it_can_be_replayed(client, monkeypatch):
+    # A pessoa precisa conseguir reouvir o próprio áudio na conversa (e
+    # conferir contra a transcrição), então ele é gravado junto da mensagem.
+    monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
+    monkeypatch.setattr(ai, "transcribe_audio", lambda audio, mime: "comi uma banana")
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Anotado.", "changes": [], "already_eaten": [],
+    })
+    saved = []
+    monkeypatch.setattr(
+        repository, "insert_noo_message",
+        lambda user, role, text, changes=None, audio=None: saved.append((role, text, audio)) or {"id": "n1"},
+    )
+    resp = _audio_post(client, data=b"bytes-do-audio")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["audio"].startswith("data:audio/webm;base64,")
+    # A mensagem da pessoa guarda o áudio; a resposta do Noo não tem áudio.
+    user_msg = next(s for s in saved if s[0] == "user")
+    assert user_msg[1] == "comi uma banana"
+    assert user_msg[2] == body["audio"]
+    assert all(s[2] is None for s in saved if s[0] == "assistant")
+
+
+def test_typed_message_has_no_audio(client, monkeypatch):
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Anotado.", "changes": [], "already_eaten": [],
+    })
+    saved = []
+    monkeypatch.setattr(
+        repository, "insert_noo_message",
+        lambda user, role, text, changes=None, audio=None: saved.append(audio) or {"id": "n1"},
+    )
+    resp = client.post("/nootr/noo", json={"text": "comi uma banana"})
+    assert resp.status_code == 200
+    assert saved and all(a is None for a in saved)
+
+
 def test_audio_rejects_unsupported_format(client, monkeypatch):
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
     resp = _audio_post(client, content_type="application/pdf")

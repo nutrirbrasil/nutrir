@@ -618,7 +618,7 @@ def insert_substitution_log(user: CurrentUser, day_plan_id: str, plan_date: str,
 
 # ---------- Noo (chat) ----------
 
-_NOO_FIELDS = "id,role,text,changes,created_at"
+_NOO_FIELDS = "id,role,text,changes,audio,created_at"
 
 
 def record_noo_message_used(user: CurrentUser, day_plan_id: str, messages_used: int) -> dict:
@@ -664,11 +664,18 @@ def list_noo_messages_today(user: CurrentUser) -> list[dict]:
     )
 
 
-def insert_noo_message(user: CurrentUser, role: str, text: str, changes: list | None = None) -> dict:
+def insert_noo_message(
+    user: CurrentUser, role: str, text: str, changes: list | None = None,
+    audio: str | None = None,
+) -> dict:
+    """`audio`: data URL base64 do audio falado, so nas mensagens que vieram
+    por voz (ver POST /nootr/noo/audio), pra pessoa reouvir na conversa. Some
+    junto com a conversa no fim do dia, nao acumula."""
     return supabase_client.insert(
         "noo_messages",
         user.token,
-        {"user_id": user.id, "msg_date": today_iso(), "role": role, "text": text, "changes": changes},
+        {"user_id": user.id, "msg_date": today_iso(), "role": role, "text": text,
+         "changes": changes, "audio": audio},
     )
 
 

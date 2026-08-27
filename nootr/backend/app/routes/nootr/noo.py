@@ -10,6 +10,8 @@ e ele aplica tudo junto (ver diet_engine.apply_changes), explicando o que fez.
 Limite diário por plano (ver services/plan_limits.NOO_DAILY_MESSAGES): cada
 mensagem é uma chamada de IA, então nem o Pro é ilimitado aqui.
 """
+import base64
+
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
@@ -197,7 +199,12 @@ async def send_audio(file: UploadFile = File(...), user: CurrentUser = CurrentUs
     if not transcript:
         raise HTTPException(status_code=422, detail="Não consegui entender o áudio. Tenta de novo?")
 
-    return {**_run_turn(transcript, user, profile=profile), "transcript": transcript}
+    # O áudio vai junto da mensagem pra pessoa conseguir reouvir o que ela
+    # mesma falou (estilo WhatsApp) e conferir contra a transcrição. Some com
+    # a conversa no fim do dia, ver repository.insert_noo_message.
+    audio_url = f"data:{mime};base64,{base64.b64encode(raw).decode('ascii')}"
+    result = _run_turn(transcript, user, profile=profile, audio=audio_url)
+    return {**result, "transcript": transcript, "audio": audio_url}
 
 
 def _check_daily_limit(profile: dict | None, day_plan: dict) -> tuple[int, int]:
@@ -217,7 +224,9 @@ def _check_daily_limit(profile: dict | None, day_plan: dict) -> tuple[int, int]:
     return used, limit
 
 
-def _run_turn(text: str, user: CurrentUser, profile: dict | None = None) -> dict:
+def _run_turn(
+    text: str, user: CurrentUser, profile: dict | None = None, audio: str | None = None,
+) -> dict:
     """
     O turno de conversa em si, compartilhado pelo texto digitado e pelo áudio
     transcrito (ver send_message/send_audio): a partir daqui os dois são
@@ -250,7 +259,7 @@ def _run_turn(text: str, user: CurrentUser, profile: dict | None = None) -> dict
 
     # A mensagem do usuário só é gravada depois da IA responder: se a chamada
     # falhar, ela não consome uma das mensagens do dia.
-    repository.insert_noo_message(user, "user", text)
+    repository.insert_noo_message(user, "user", text, audio=audio)
 
     # Casa os nomes de refeição que o Noo citou com as refeições reais.
     def find_meal(label: str) -> dict | None:

@@ -209,9 +209,14 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
     try {
       const r = await call();
       setMessages((prev) => [
-        // Áudio: troca o placeholder pela transcrição real, que é o texto
-        // que o backend de fato usou como mensagem da pessoa.
-        ...prev.map((m) => (m.id === optimisticId && r.transcript ? { ...m, text: r.transcript } : m)),
+        // Áudio: troca o placeholder pela transcrição real (o texto que o
+        // backend de fato usou como mensagem) e anexa o áudio, pra pessoa
+        // poder reouvir e conferir se foi entendido direito.
+        ...prev.map((m) =>
+          m.id === optimisticId && r.transcript
+            ? { ...m, text: r.transcript, audio: r.audio ?? null }
+            : m
+        ),
         {
           id: `${optimisticId}-a`, role: "assistant" as const, text: r.reply,
           changes: r.day, created_at: new Date().toISOString(),
@@ -234,7 +239,10 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
     setError("");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      // Bitrate baixo de propósito: é voz falada, não música, e o áudio fica
+      // guardado junto da mensagem pra reouvir (ver noo_messages.audio). A
+      // 24kbps um recado de 1 minuto dá ~180KB, contra ~1MB no padrão.
+      const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 24000 });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
       recorder.onstop = () => {
@@ -391,9 +399,20 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
         {messages.map((m) =>
           m.role === "user" ? (
             <div key={m.id} className="flex justify-end">
-              <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-nootr-bordo/90 px-3.5 py-2 text-sm text-nootr-cream">
-                {m.text}
-              </p>
+              <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-nootr-bordo/90 px-3.5 py-2">
+                {m.audio && (
+                  // Áudio que a pessoa mandou: dá pra reouvir o que ela falou
+                  // e conferir contra a transcrição logo abaixo.
+                  <audio
+                    controls
+                    preload="none"
+                    src={m.audio}
+                    aria-label="Seu áudio"
+                    className="mb-1.5 h-9 w-56 max-w-full"
+                  />
+                )}
+                <p className="text-sm text-nootr-cream">{m.text}</p>
+              </div>
             </div>
           ) : (
             <div key={m.id} className="max-w-[92%] rounded-2xl rounded-bl-sm border border-nootr-line bg-nootr-black px-3.5 py-2.5">

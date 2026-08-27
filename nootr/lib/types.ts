@@ -431,6 +431,9 @@ export interface NooMessage {
   // Snapshot do dia no momento do ajuste (null quando a mensagem não mudou
   // nada, ex: uma pergunta).
   changes: NooDayView | null;
+  // Data URL do áudio, só nas mensagens que a pessoa mandou falando (Pro).
+  // Some junto com a conversa no fim do dia.
+  audio?: string | null;
   created_at: string;
 }
 
@@ -449,6 +452,8 @@ export interface NooReply {
   remaining: number;
   limit: number;
   // Só em POST /nootr/noo/audio: o que a IA entendeu do áudio, que é o texto
-  // que de fato virou a mensagem da pessoa na conversa.
+  // que de fato virou a mensagem da pessoa na conversa, e o próprio áudio
+  // (data URL) pra ela poder reouvir e conferir.
   transcript?: string;
+  audio?: string;
 }
