@@ -6,6 +6,7 @@ import { nootrApi } from "@/lib/api";
 import { Icon } from "@/components/Icon";
 import type { NooDayView, NooMessage, NooReply, Plan } from "@/lib/types";
 import { formatQuantityWithGrams } from "@/lib/units";
+import fixWebmDuration from "fix-webm-duration";
 
 const SUGGESTIONS = [
   "Não comi o pão do café",
@@ -153,6 +154,10 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
   const [canRecord, setCanRecord] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  // Timestamp de quando a gravação começou, pra calcular a duração real e
+  // corrigir o cabeçalho do webm (ver onstop, o MediaRecorder não grava
+  // duração nenhuma no arquivo, deixando o player do navegador quebrado).
+  const recordingStartRef = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -245,15 +250,27 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
       const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 24000 });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         // Solta o microfone assim que para, senão o indicador de gravação do
         // navegador fica aceso mesmo com o chat já parado.
         stream.getTracks().forEach((t) => t.stop());
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        const raw = new Blob(chunksRef.current, { type: recorder.mimeType });
         chunksRef.current = [];
-        if (blob.size > 0) sendAudio(blob);
+        if (raw.size === 0) return;
+        // O MediaRecorder grava webm sem duração no cabeçalho, o que deixa o
+        // player nativo do navegador com a barra de progresso travada e sem
+        // tocar nada (o Chrome não sabe onde fica o "fim" do áudio). Corrige
+        // isso reescrevendo o cabeçalho com a duração real, calculada aqui
+        // (não vem do MediaRecorder). Só se aplica a webm: outros formatos
+        // (ex: mp4 do Safari) já saem com duração correta.
+        const durationMs = Date.now() - recordingStartRef.current;
+        const blob = recorder.mimeType.includes("webm")
+          ? await fixWebmDuration(raw, durationMs).catch(() => raw)
+          : raw;
+        sendAudio(blob);
       };
       recorderRef.current = recorder;
+      recordingStartRef.current = Date.now();
       recorder.start();
       setRecording(true);
     } catch {
@@ -405,7 +422,7 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
                   // e conferir contra a transcrição logo abaixo.
                   <audio
                     controls
-                    preload="none"
+                    preload="metadata"
                     src={m.audio}
                     aria-label="Seu áudio"
                     className="mb-1.5 h-9 w-56 max-w-full"
