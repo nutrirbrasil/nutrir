@@ -344,6 +344,18 @@ def test_audio_rejects_unsupported_format(client, monkeypatch):
     assert resp.status_code == 400
 
 
+def test_audio_over_the_daily_limit_does_not_pay_for_a_transcription(client, monkeypatch, day_plan):
+    # Transcrever é uma chamada de IA à parte: se o turno vai ser recusado
+    # por limite de qualquer jeito, ela não pode nem acontecer.
+    monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
+    day_plan["noo_messages_used"] = 20
+    called = []
+    monkeypatch.setattr(ai, "transcribe_audio", lambda audio, mime: called.append(mime) or "oi")
+    resp = _audio_post(client)
+    assert resp.status_code == 403
+    assert called == []
+
+
 def test_audio_that_could_not_be_understood_does_not_consume_a_message(client, monkeypatch, day_plan):
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
     monkeypatch.setattr(ai, "transcribe_audio", lambda audio, mime: "   ")

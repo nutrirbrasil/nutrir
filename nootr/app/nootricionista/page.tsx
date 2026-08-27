@@ -6,6 +6,10 @@ import { Icon } from "@/components/Icon";
 import { SkeletonPage } from "@/components/Skeleton";
 import { nootrApi } from "@/lib/api";
 import type { Profile } from "@/lib/types";
+import {
+  NUTRITIONIST_DISCOUNT_PCT_ANNUAL as PCT_ANNUAL,
+  NUTRITIONIST_DISCOUNT_PCT_MONTHLY as PCT_MONTHLY,
+} from "@/lib/plan";
 import { useEffect, useState } from "react";
 
 function NootricionistaContent({ token }: { token: string }) {
@@ -143,24 +147,24 @@ function NootricionistaContent({ token }: { token: string }) {
         </p>
 
         <div className="mt-6 space-y-4">
-          {/* 10% Mensal */}
+          {/* Desconto do Pro Mensal */}
           <div className="rounded-lg border border-nootr-line/40 bg-nootr-line/5 p-4">
             <div className="flex items-baseline gap-2">
-              <span className="font-display text-3xl text-nootr-cream">10%</span>
+              <span className="font-display text-3xl text-nootr-cream">{PCT_MONTHLY}%</span>
               <span className="text-xs text-nootr-muted">de desconto</span>
             </div>
             <p className="mt-2 text-xs font-semibold text-nootr-cream">Plano Pro Mensal</p>
             <p className="mt-2 text-xs text-nootr-muted">
               Você está testando a jornada mês a mês. Para incentivar você a continuar motivado, a
-              primeira consulta ou plano sai <strong>10% mais barato</strong> pra você experimentar o
+              primeira consulta ou plano sai <strong>{PCT_MONTHLY}% mais barato</strong> pra você experimentar o
               acompanhamento profissional junto com o Nootr.
             </p>
           </div>
 
-          {/* 20% Anual */}
+          {/* Desconto do Pro Anual */}
           <div className="rounded-lg border border-nootr-bordoSoft/40 bg-nootr-bordoSoft/5 p-4">
             <div className="flex items-baseline gap-2">
-              <span className="font-display text-3xl text-nootr-cream">20%</span>
+              <span className="font-display text-3xl text-nootr-cream">{PCT_ANNUAL}%</span>
               <span className="text-xs text-nootr-muted">de desconto</span>
             </div>
             <p className="mt-2 text-xs font-semibold text-nootr-bordoSoft">Plano Pro Anual</p>
@@ -184,7 +188,7 @@ function NootricionistaContent({ token }: { token: string }) {
                 Você tá no Plano Basic. Pra acessar desconto com o nutricionista, migre pro Plano Pro.
               </p>
               <p className="mt-2 text-sm text-nootr-muted">
-                Assine o Plano Pro Anual e garanta 20% de desconto na mensalidade do Nootr e no
+                Assine o Plano Pro Anual e garanta {PCT_ANNUAL}% de desconto na mensalidade do Nootr e no
                 acompanhamento nutricional.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
@@ -192,7 +196,7 @@ function NootricionistaContent({ token }: { token: string }) {
                   Migrar para Plano Pro
                 </Link>
                 <Link href="/plano" className="btn-secondary inline-flex">
-                  Assinar Plano Pro Anual (20% off)
+                  Assinar Plano Pro Anual ({PCT_ANNUAL}% off)
                 </Link>
               </div>
             </>
@@ -204,15 +208,15 @@ function NootricionistaContent({ token }: { token: string }) {
                 Você tá no Plano Pro Mensal.
               </p>
               <p className="mt-2 text-sm text-nootr-muted">
-                Assine o Plano Pro Anual e garanta 20% de desconto na mensalidade do Nootr e no
+                Assine o Plano Pro Anual e garanta {PCT_ANNUAL}% de desconto na mensalidade do Nootr e no
                 acompanhamento nutricional.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <a href={pauliNootrMonthlyUrl} className="btn-primary inline-flex">
-                  Conhecer Nutricionista (10% off)
+                  Conhecer Nutricionista ({PCT_MONTHLY}% off)
                 </a>
                 <Link href="/plano" className="btn-secondary inline-flex">
-                  Assinar Plano Pro Anual (20% off)
+                  Assinar Plano Pro Anual ({PCT_ANNUAL}% off)
                 </Link>
               </div>
             </>
@@ -227,7 +231,7 @@ function NootricionistaContent({ token }: { token: string }) {
                 href={pauliNootrAnnualUrl}
                 className="btn-primary mt-5 inline-flex"
               >
-                Conhecer Nutricionista (20% off) →
+                Conhecer Nutricionista ({PCT_ANNUAL}% off) →
               </a>
             </>
           )}

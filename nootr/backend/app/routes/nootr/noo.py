@@ -37,9 +37,9 @@ class NooMessageIn(BaseModel):
     text: str = Field(min_length=1, max_length=1000)
 
 
-def _targets_for(user: CurrentUser, day_plan: dict) -> dict:
+def _targets_for(profile: dict | None, day_plan: dict) -> dict:
     """Metas do dia (mesma fonte das substituições manuais, ver energy.day_targets)."""
-    profile = repository.get_profile(user) or {}
+    profile = profile or {}
     return energy.day_targets(
         profile, day_plan["daily_calories"], day_plan["daily_protein_g"],
         day_plan["daily_carbs_g"], day_plan["daily_fat_g"],
@@ -181,6 +181,14 @@ async def send_audio(file: UploadFile = File(...), user: CurrentUser = CurrentUs
     if len(raw) > _MAX_AUDIO_BYTES:
         raise HTTPException(status_code=400, detail="Áudio muito longo (máximo 2 minutos).")
 
+    # Limite do dia conferido ANTES de transcrever: a transcrição é uma
+    # chamada de IA à parte, não faz sentido gastá-la num turno que o
+    # _run_turn vai recusar logo depois de qualquer jeito.
+    day_plan = repository.get_or_create_day_plan(user)
+    if day_plan is None:
+        raise HTTPException(status_code=409, detail="Monte sua dieta primeiro em /dieta.")
+    _check_daily_limit(profile, day_plan)
+
     try:
         transcript = ai.transcribe_audio(raw, mime)
     except ai.AIError as exc:
@@ -190,6 +198,23 @@ async def send_audio(file: UploadFile = File(...), user: CurrentUser = CurrentUs
         raise HTTPException(status_code=422, detail="Não consegui entender o áudio. Tenta de novo?")
 
     return {**_run_turn(transcript, user, profile=profile), "transcript": transcript}
+
+
+def _check_daily_limit(profile: dict | None, day_plan: dict) -> tuple[int, int]:
+    """(usadas, limite) do dia, levantando 403 se a pessoa já bateu o teto."""
+    used = day_plan.get("noo_messages_used") or 0
+    limit = plan_limits.noo_daily_limit(profile, day_plan.get("noo_reset_count") or 0)
+    if used >= limit:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"Você usou suas {limit} mensagens do Noo hoje. "
+                + ("O limite renova amanhã, ou reinicie o Noo pra ganhar mais uma (até o teto do dia)."
+                   if plan_limits.is_pro(profile)
+                   else "No Pro são 20 por dia (+5 reiniciando), com um modelo de IA mais avançado.")
+            ),
+        )
+    return used, limit
 
 
 def _run_turn(text: str, user: CurrentUser, profile: dict | None = None) -> dict:
@@ -204,22 +229,11 @@ def _run_turn(text: str, user: CurrentUser, profile: dict | None = None) -> dict
     if day_plan is None:
         raise HTTPException(status_code=409, detail="Monte sua dieta primeiro em /dieta.")
 
-    used = day_plan.get("noo_messages_used") or 0
-    limit = plan_limits.noo_daily_limit(profile, day_plan.get("noo_reset_count") or 0)
-    if used >= limit:
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                f"Você usou suas {limit} mensagens do Noo hoje. "
-                + ("O limite renova amanhã, ou reinicie o Noo pra ganhar mais uma (até o teto do dia)."
-                   if plan_limits.is_pro(profile)
-                   else "No Pro são 20 por dia (+5 reiniciando), com um modelo de IA mais avançado.")
-            ),
-        )
+    used, limit = _check_daily_limit(profile, day_plan)
 
     prefs = repository.get_preferences(user) or {}
     country = (profile or {}).get("country") or "BR"
-    targets = _targets_for(user, day_plan)
+    targets = _targets_for(profile, day_plan)
 
     history = [
         {"role": m["role"], "text": m["text"]}

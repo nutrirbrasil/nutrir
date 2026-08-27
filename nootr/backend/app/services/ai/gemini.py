@@ -62,8 +62,15 @@ _DIET_SCHEMA = {
 }
 
 
-def _generate_from_contents(contents: list[dict], schema: dict | None, system_instruction: str | None = None) -> str:
-    """Chamada base ao Gemini (multi-turno); devolve o texto do candidato."""
+def _generate_from_contents(
+    contents: list[dict], schema: dict | None, system_instruction: str | None = None,
+    timeout: float = 30.0,
+) -> str:
+    """Chamada base ao Gemini (multi-turno); devolve o texto do candidato.
+
+    `timeout` é parametrizável porque nem toda chamada é um prompt de texto
+    curto: mandar um áudio inteiro (ver transcribe_audio) sobe alguns MB e
+    demora mais que os 30s que bastam pro resto."""
     settings = get_settings()
     if not settings.gemini_api_key:
         raise AIError("Gemini não configurado: defina GEMINI_API_KEY em nootr/.env")
@@ -79,7 +86,7 @@ def _generate_from_contents(contents: list[dict], schema: dict | None, system_in
 
     url = _ENDPOINT.format(model=settings.gemini_model)
     try:
-        resp = httpx.post(url, params={"key": settings.gemini_api_key}, json=body, timeout=30.0)
+        resp = httpx.post(url, params={"key": settings.gemini_api_key}, json=body, timeout=timeout)
     except httpx.HTTPError as exc:
         raise AIError(f"Falha de rede ao chamar o Gemini: {exc}") from exc
     if resp.status_code >= 300:
@@ -1209,6 +1216,6 @@ def transcribe_audio(audio: bytes, mime_type: str) -> str:
     """
     part = {"inline_data": {"mime_type": mime_type, "data": base64.b64encode(audio).decode("ascii")}}
     raw = _generate_from_contents(
-        [{"parts": [part]}], schema=None, system_instruction=_TRANSCRIBE_SYSTEM,
+        [{"parts": [part]}], schema=None, system_instruction=_TRANSCRIBE_SYSTEM, timeout=90.0,
     )
     return raw.strip()
