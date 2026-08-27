@@ -64,7 +64,7 @@ _DIET_SCHEMA = {
 
 def _generate_from_contents(
     contents: list[dict], schema: dict | None, system_instruction: str | None = None,
-    timeout: float = 30.0, allow_empty: bool = False,
+    timeout: float = 30.0, allow_empty: bool = False, temperature: float = 0.2,
 ) -> str:
     """Chamada base ao Gemini (multi-turno); devolve o texto do candidato.
 
@@ -75,12 +75,17 @@ def _generate_from_contents(
     `allow_empty`: quando a resposta vem sem `parts`, devolve "" em vez de
     levantar erro. É o que acontece quando o modelo não tem NADA a dizer, o
     caso normal de um áudio mudo/inaudível (ver transcribe_audio), que é uma
-    resposta legítima, não uma falha de infraestrutura."""
+    resposta legítima, não uma falha de infraestrutura.
+
+    `temperature`: 0.2 é o padrão (alguma variação é aceitável pra tarefas de
+    julgamento/criação, ex: sugerir um alimento). Transcrição é o oposto,
+    tem UMA resposta certa (o que a pessoa falou), então usa 0.0: qualquer
+    grau de "criatividade" aí é a própria definição de alucinar."""
     settings = get_settings()
     if not settings.gemini_api_key:
         raise AIError("Gemini não configurado: defina GEMINI_API_KEY em nootr/.env")
 
-    gen_config = {"temperature": 0.2}
+    gen_config = {"temperature": temperature}
     if schema is not None:
         gen_config["responseMimeType"] = "application/json"
         gen_config["responseSchema"] = schema
@@ -1237,5 +1242,6 @@ def transcribe_audio(audio: bytes, mime_type: str) -> str:
         # nada", que quem chama trata como "não entendi o áudio, tenta de
         # novo?", não como erro de infraestrutura.
         allow_empty=True,
+        temperature=0.0,
     )
     return raw.strip()

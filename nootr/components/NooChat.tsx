@@ -244,10 +244,12 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
     setError("");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Bitrate baixo de propósito: é voz falada, não música, e o áudio fica
-      // guardado junto da mensagem pra reouvir (ver noo_messages.audio). A
-      // 24kbps um recado de 1 minuto dá ~180KB, contra ~1MB no padrão.
-      const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 24000 });
+      // Bitrate reduzido de propósito: é voz falada, não música, e o áudio
+      // fica guardado junto da mensagem pra reouvir (ver noo_messages.audio).
+      // 32kbps é o mínimo recomendado pro Opus manter voz clara (abaixo
+      // disso arrisca prejudicar a própria transcrição), um recado de 1
+      // minuto ainda fica em ~240KB, bem abaixo do ~1MB do padrão do Chrome.
+      const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 32000 });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
       recorder.onstop = async () => {
