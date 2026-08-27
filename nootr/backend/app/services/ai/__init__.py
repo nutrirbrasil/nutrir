@@ -176,6 +176,15 @@ def noo_chat(
     return _provider().noo_chat(history, meals, targets, current, preferences or {})
 
 
+def transcribe_audio(audio: bytes, mime_type: str) -> str:
+    """
+    Transcreve um áudio do Noo (recurso do Pro, ver
+    plan_limits.NOO_AUDIO_PLANS). O texto resultante segue exatamente o mesmo
+    caminho de uma mensagem digitada, o áudio não é guardado em lugar nenhum.
+    """
+    return _provider().transcribe_audio(audio, mime_type)
+
+
 def estimate_unknown_food(name: str) -> dict | None:
     """
     Estimativa nutricional (kcal/protein/carbs/fat por 100g) via IA pra um

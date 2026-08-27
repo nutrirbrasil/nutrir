@@ -22,9 +22,19 @@ NOO_DAILY_MESSAGES = {"basic": 3, "pro": 20}
 # Basic: 3 + até 1 = 4.
 NOO_RESET_BONUS_CAP = {"basic": 1, "pro": 5}
 
+# Mandar áudio pro Noo (em vez de digitar) é exclusivo do Pro: é uma chamada
+# de IA a mais por mensagem (transcrição + a conversa em si), então não cabe
+# no limite já apertado do Basic. Consome uma mensagem do dia igual a uma
+# digitada, ver POST /nootr/noo/audio.
+NOO_AUDIO_PLANS = {"pro"}
+
 
 def is_pro(profile: dict | None) -> bool:
     return (profile or {}).get("plan") == "pro"
+
+
+def can_use_noo_audio(profile: dict | None) -> bool:
+    return ((profile or {}).get("plan") or "basic") in NOO_AUDIO_PLANS
 
 
 def noo_daily_limit(profile: dict | None, reset_count: int = 0) -> int:

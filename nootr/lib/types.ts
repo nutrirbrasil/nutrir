@@ -448,4 +448,7 @@ export interface NooReply {
   targets: { calories: number; protein_g: number; carbs_g: number; fat_g: number } | null;
   remaining: number;
   limit: number;
+  // Só em POST /nootr/noo/audio: o que a IA entendeu do áudio, que é o texto
+  // que de fato virou a mensagem da pessoa na conversa.
+  transcript?: string;
 }

@@ -5,6 +5,7 @@ Usa a API REST via httpx (já é dependência), sem SDK pesado, e força saída
 em JSON estruturado com `responseSchema`. Faz só o parsing de linguagem; nada
 de macros ou TACO aqui.
 """
+import base64
 import json
 
 import httpx
@@ -1027,14 +1028,15 @@ nenhum).
   * "added": o que entra no lugar (ou a mais), com quantidade em medida caseira. Lista vazia se nada \
 entra. Use o nome ESPECÍFICO que ela usou, nunca troque por uma categoria mais genérica (ex: ela disse \
 "danoninho" -> "name" é "danoninho", NUNCA "iogurte" ou "iogurte natural", são produtos diferentes com \
-calorias diferentes). Se ela não disser a quantidade MAS existe uma porção COMUM de verdade e óbvia pra aquele alimento \
-específico, use essa (ex: whey sem quantidade dita -> "1 porção" ou "30g", a dose usual de um scoop, \
-NUNCA "1 unidade", ninguém mede whey em pó por unidade; danoninho/iogurte -> "1 unidade" faz sentido, \
-mas whey/farinha/arroz/açúcar não). Se você REALMENTE não souber que quantidade faz sentido (alimento \
-desconhecido/estrangeiro/incomum, ou a porção varia demais pra chutar com segurança), NÃO invente: \
-devolva "quantity" como string VAZIA pra esse item e pergunte na `reply` que quantidade ou medida ela \
-comeu daquele alimento especificamente, citando o nome dele. Um item com "quantity" vazio NÃO é \
-aplicado no dia agora, só quando ela responder com a quantidade numa próxima mensagem.
+calorias diferentes). A quantidade tem que VIR DELA, você NUNCA inventa: se ela não disse nada sobre a quantidade daquele \
+alimento ("comi pizza", "tomei whey"), devolva "quantity" como string VAZIA pra esse item e PERGUNTE na \
+`reply` quanto ela comeu, citando o nome do alimento ("quantas fatias de pizza?"). Não vale supor a \
+"porção comum", nem "1 unidade", nem "1 porção": chutar errado desregula o dia inteiro dela. Só preencha \
+"quantity" com o que ela EFETIVAMENTE disse ou dá pra deduzir da própria fala dela (ex: "comi um ovo" -> \
+"1 unidade"; "duas fatias de pizza" -> "2 fatias"; "um copo de leite" -> "1 copo"; "meio prato de arroz" \
+-> "meio prato"). Um item com "quantity" vazio NÃO é aplicado no dia agora, só quando ela responder a \
+quantidade numa próxima mensagem. Se vários itens estiverem sem quantidade, pergunte de todos de uma vez \
+numa frase só, não uma pergunta por mensagem.
 - `already_eaten`: nomes das refeições que ela já comeu e por isso NÃO podem ser reajustadas. Só \
 preencha quando ela disser ou der pra deduzir com segurança.
 
@@ -1068,9 +1070,12 @@ não citadas sozinho (regra 1). Em especial, NUNCA esvazie uma refeição inteir
 "added" vazio) se a pessoa não disse nada sobre essa refeição especificamente.
 11. Alimento que a TACO provavelmente não tem (marca estrangeira, prato de outro país, item bem \
 incomum) você AINDA registra normalmente em "added" com o nome que ela usou, o app busca a informação \
-nutricional dele separadamente. Sua única responsabilidade aí é a quantidade: se não for óbvia, pergunte \
-(ver regra do "quantity" vazio acima) em vez de supor um peso/porção pra um alimento que você não \
-conhece de verdade.
+nutricional dele separadamente. Sua única responsabilidade aí continua sendo a quantidade: só preencha \
+se ela disse, senão "quantity" vazio e pergunte (ver acima).
+12. Perguntar a quantidade é uma resposta COMPLETA e útil, não uma falha sua. Prefira SEMPRE perguntar a \
+chutar: se ela não deu a quantidade, devolva o item com "quantity" vazio e a pergunta na `reply`, e \
+pronto, o dia dela não muda nessa mensagem. Na mensagem seguinte, quando ela responder ("duas fatias", \
+"uns 200g"), aí sim devolva o `changes` completo com a quantidade preenchida.
 {decomposition_rules}
 """
 
@@ -1185,3 +1190,25 @@ def estimate_unknown_food(name: str) -> dict | None:
         "carbs_100g": float(data.get("carbs_100g") or 0),
         "fat_100g": float(data.get("fat_100g") or 0),
     }
+
+
+_TRANSCRIBE_SYSTEM = """Transcreva EXATAMENTE o que a pessoa falou neste áudio, em português do Brasil. \
+Ela está contando o que comeu, o que vai comer ou o que está faltando na dieta dela, então nomes de \
+alimentos e QUANTIDADES ("duas fatias", "meio prato", "uns 200 gramas") são a parte mais importante, \
+transcreva com cuidado redobrado. Devolva SÓ a transcrição, sem aspas, sem comentários seus, sem \
+resumir e sem corrigir o jeito de falar dela. Se o áudio estiver inaudível ou não tiver fala nenhuma, \
+devolva uma string vazia."""
+
+
+def transcribe_audio(audio: bytes, mime_type: str) -> str:
+    """
+    Transcreve um áudio curto (a pessoa contando o que comeu) pra texto, que
+    então segue o MESMO caminho de uma mensagem digitada no Noo (ver
+    routes/nootr/noo.py). Só transcrição, nenhuma interpretação de dieta
+    acontece aqui.
+    """
+    part = {"inline_data": {"mime_type": mime_type, "data": base64.b64encode(audio).decode("ascii")}}
+    raw = _generate_from_contents(
+        [{"parts": [part]}], schema=None, system_instruction=_TRANSCRIBE_SYSTEM,
+    )
+    return raw.strip()

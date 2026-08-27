@@ -66,6 +66,7 @@ export const PRO_FEATURES = [
   "Importe suas dietas: a IA lê o arquivo e monta tudo",
   "Substituições ilimitadas",
   "Receitas personalizadas ilimitadas",
+  "Fale com o Noo por áudio, sem precisar digitar",
 ];
 
 // Bônus de destaque do plano Pro, exibidos em separado da lista de features

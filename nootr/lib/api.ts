@@ -125,6 +125,29 @@ export const nootrApi = {
     getConversation: (token: string) => api<NooConversation>("/nootr/noo", token),
     send: (token: string, text: string) =>
       api<NooReply>("/nootr/noo", token, { method: "POST", body: JSON.stringify({ text }) }),
+    // Pro: mesma conversa, falada. O áudio é transcrito no backend e o texto
+    // segue o mesmo caminho de uma mensagem digitada (consome uma mensagem do
+    // dia igual). multipart/form-data, não usa o helper `api()`.
+    sendAudio: async (token: string, audio: Blob) => {
+      const form = new FormData();
+      form.append("file", audio, "audio.webm");
+      const res = await fetch(`${API_URL}/nootr/noo/audio`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      if (!res.ok) {
+        let detail = "";
+        try {
+          const body = await res.json();
+          detail = typeof body?.detail === "string" ? body.detail : "";
+        } catch {
+          detail = await res.text();
+        }
+        throw new Error(detail || `Erro ${res.status}`);
+      }
+      return res.json() as Promise<NooReply>;
+    },
     // Limpa a conversa E desfaz os ajustes do dia (volta a dieta pro
     // original), rende +1 mensagem no limite até um teto por plano.
     reset: (token: string) =>

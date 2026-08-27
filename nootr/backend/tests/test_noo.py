@@ -300,3 +300,53 @@ def test_unknown_food_unrecognized_by_ai_asks_to_register_manually(client, monke
     assert "Meus Alimentos" in body["reply"]
     jantar = next(m for m in (body["day"] or {"meals": day_plan["meals"]})["meals"] if m["id"] == "m3")
     assert not any("xyzalimento123" in f["name"].lower() for f in jantar["foods"])
+
+
+def _audio_post(client, content_type="audio/webm;codecs=opus", data=b"fake-audio-bytes"):
+    return client.post("/nootr/noo/audio", files={"file": ("audio.webm", data, content_type)})
+
+
+def test_audio_is_pro_only(client, monkeypatch):
+    monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "basic"})
+    resp = _audio_post(client)
+    assert resp.status_code == 403
+    assert "Pro" in resp.json()["detail"]
+
+
+def test_audio_transcript_follows_the_same_path_as_typed_text(client, monkeypatch, day_plan):
+    monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
+    monkeypatch.setattr(ai, "transcribe_audio", lambda audio, mime: "não comi o pão do café")
+    seen = {}
+
+    def fake_chat(history, *a, **k):
+        seen["last"] = history[-1]["text"]
+        return {
+            "reply": "Beleza, tirei o pão.",
+            "changes": [{"meal": "Café da manhã", "skipped": ["Pão francês"], "added": []}],
+            "already_eaten": [],
+        }
+
+    monkeypatch.setattr(ai, "noo_chat", fake_chat)
+    resp = _audio_post(client)
+    assert resp.status_code == 200
+    body = resp.json()
+    # A transcrição é o que vira a mensagem da pessoa, e volta pro chat mostrar.
+    assert body["transcript"] == "não comi o pão do café"
+    assert seen["last"] == "não comi o pão do café"
+    assert body["day"] is not None
+    # Consome uma mensagem do dia igual a uma digitada.
+    assert day_plan["noo_messages_used"] == 1
+
+
+def test_audio_rejects_unsupported_format(client, monkeypatch):
+    monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
+    resp = _audio_post(client, content_type="application/pdf")
+    assert resp.status_code == 400
+
+
+def test_audio_that_could_not_be_understood_does_not_consume_a_message(client, monkeypatch, day_plan):
+    monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
+    monkeypatch.setattr(ai, "transcribe_audio", lambda audio, mime: "   ")
+    resp = _audio_post(client)
+    assert resp.status_code == 422
+    assert day_plan["noo_messages_used"] == 0

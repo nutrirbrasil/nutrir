@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { nootrApi } from "@/lib/api";
 import { Icon } from "@/components/Icon";
-import type { NooDayView, NooMessage, Plan } from "@/lib/types";
+import type { NooDayView, NooMessage, NooReply, Plan } from "@/lib/types";
 import { formatQuantityWithGrams } from "@/lib/units";
 
 const SUGGESTIONS = [
@@ -146,6 +146,13 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
   // Ação destrutiva (desfaz o dia inteiro), então pede confirmação inline
   // antes de executar, em vez de agir no primeiro clique.
   const [confirmingReset, setConfirmingReset] = useState(false);
+  // Áudio (Pro): grava pelo MediaRecorder e manda pro backend transcrever.
+  const [recording, setRecording] = useState(false);
+  // Detectado só depois de montar: no SSR não existe navigator, e navegador
+  // sem MediaRecorder (ou página sem HTTPS) não deve mostrar o botão.
+  const [canRecord, setCanRecord] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -173,32 +180,116 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
   async function send(content: string) {
     const trimmed = content.trim();
     if (!trimmed || sending || remaining <= 0) return;
-    setError("");
-    setSending(true);
     setText("");
     // Otimista: a mensagem da pessoa aparece na hora, a resposta vem depois.
-    const optimistic: NooMessage = {
-      id: `local-${Date.now()}`, role: "user", text: trimmed, changes: null,
+    const optimisticId = `local-${Date.now()}`;
+    setMessages((prev) => [...prev, {
+      id: optimisticId, role: "user", text: trimmed, changes: null,
       created_at: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, optimistic]);
+    }]);
+    await runTurn(
+      () => nootrApi.noo.send(token, trimmed),
+      optimisticId,
+      () => setText(trimmed),
+    );
+  }
+
+  /**
+   * A parte comum de mandar uma mensagem (digitada ou falada): dispara a
+   * chamada, cola a resposta do Noo na conversa e, se der erro, remove a
+   * mensagem otimista da pessoa e devolve o que ela tinha (`onFailure`).
+   */
+  async function runTurn(
+    call: () => Promise<NooReply>,
+    optimisticId: string,
+    onFailure: () => void,
+  ) {
+    setError("");
+    setSending(true);
     try {
-      const r = await nootrApi.noo.send(token, trimmed);
-      setMessages((prev) => [...prev, {
-        id: `local-${Date.now()}-a`, role: "assistant", text: r.reply,
-        changes: r.day, created_at: new Date().toISOString(),
-      }]);
+      const r = await call();
+      setMessages((prev) => [
+        // Áudio: troca o placeholder pela transcrição real, que é o texto
+        // que o backend de fato usou como mensagem da pessoa.
+        ...prev.map((m) => (m.id === optimisticId && r.transcript ? { ...m, text: r.transcript } : m)),
+        {
+          id: `${optimisticId}-a`, role: "assistant" as const, text: r.reply,
+          changes: r.day, created_at: new Date().toISOString(),
+        },
+      ]);
       setRemaining(r.remaining);
       // O dia mudou: quem embute o chat recarrega a dieta.
       if (r.day && onApplied) onApplied();
     } catch (err) {
-      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-      setText(trimmed);
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      onFailure();
       setError(err instanceof Error ? err.message : "Não consegui falar com o Noo agora.");
     } finally {
       setSending(false);
     }
   }
+
+  async function startRecording() {
+    if (sending || recording || remaining <= 0) return;
+    setError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
+      recorder.onstop = () => {
+        // Solta o microfone assim que para, senão o indicador de gravação do
+        // navegador fica aceso mesmo com o chat já parado.
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        chunksRef.current = [];
+        if (blob.size > 0) sendAudio(blob);
+      };
+      recorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setError("Não consegui acessar o microfone. Confira a permissão do navegador.");
+    }
+  }
+
+  function stopRecording() {
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+    setRecording(false);
+  }
+
+  async function sendAudio(blob: Blob) {
+    const optimisticId = `local-${Date.now()}`;
+    setMessages((prev) => [...prev, {
+      id: optimisticId, role: "user", text: "🎙️ …", changes: null,
+      created_at: new Date().toISOString(),
+    }]);
+    await runTurn(() => nootrApi.noo.sendAudio(token, blob), optimisticId, () => {});
+  }
+
+  useEffect(() => {
+    setCanRecord(
+      typeof window !== "undefined" &&
+        typeof window.MediaRecorder !== "undefined" &&
+        !!navigator.mediaDevices?.getUserMedia
+    );
+  }, []);
+
+  // Se o componente sair da tela no meio de uma gravação, o microfone
+  // continuaria aberto: solta as tracks e para o recorder. O `onstop` é
+  // desligado antes pra um chat desmontado não disparar um envio (e o gasto
+  // de uma mensagem) por um áudio que ninguém vai ver.
+  useEffect(() => {
+    return () => {
+      const recorder = recorderRef.current;
+      if (!recorder) return;
+      recorder.onstop = null;
+      if (recorder.state !== "inactive") recorder.stop();
+      recorder.stream.getTracks().forEach((t) => t.stop());
+      recorderRef.current = null;
+    };
+  }, []);
 
   async function handleReset() {
     if (resetting) return;
@@ -369,15 +460,38 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
                 }
               }}
             />
+            {plan === "pro" && canRecord && (
+              <button
+                type="button"
+                onClick={recording ? stopRecording : startRecording}
+                disabled={sending}
+                aria-label={recording ? "Parar gravação e enviar" : "Gravar áudio para o Noo"}
+                title={recording ? "Parar e enviar" : "Falar em vez de digitar"}
+                className={`shrink-0 rounded-lg border px-3 py-2.5 transition-colors disabled:opacity-50 ${
+                  recording
+                    ? "animate-pulse border-nootr-bordo bg-nootr-bordo/90 text-nootr-cream"
+                    : "border-nootr-line text-nootr-muted hover:border-nootr-bordo/50 hover:text-nootr-bordoSoft"
+                }`}
+              >
+                <Icon name="mic" size={18} />
+              </button>
+            )}
             <button type="submit" disabled={sending || !text.trim()} className="btn-primary shrink-0 px-4 py-2.5">
               {sending ? "…" : "Enviar"}
             </button>
           </form>
         )}
 
+        {recording && (
+          <p className="mt-2 text-center text-[11px] text-nootr-bordoSoft">
+            Gravando… conte o que comeu e toque no microfone de novo pra enviar.
+          </p>
+        )}
+
         {plan !== "pro" && !outOfMessages && (
           <p className="mt-2 text-center text-[11px] text-nootr-faint">
-            O Noo do Pro tem 20 mensagens por dia (+5 reiniciando) e um modelo de IA mais avançado.{" "}
+            O Noo do Pro tem 20 mensagens por dia (+5 reiniciando), aceita áudio e usa um modelo de IA
+            mais avançado.{" "}
             <Link href="/plano" className="underline-offset-4 hover:text-nootr-bordoSoft hover:underline">
               Saiba mais
             </Link>

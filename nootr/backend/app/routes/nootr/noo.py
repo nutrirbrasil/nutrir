@@ -10,7 +10,7 @@ e ele aplica tudo junto (ver diet_engine.apply_changes), explicando o que fez.
 Limite diário por plano (ver services/plan_limits.NOO_DAILY_MESSAGES): cada
 mensagem é uma chamada de IA, então nem o Pro é ilimitado aqui.
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from backend.app.auth import CurrentUser, CurrentUserDep
@@ -22,6 +22,15 @@ from backend.app.services.nutrition import resolve_food
 from backend.app.services.portion import parse_portion
 
 router = APIRouter(prefix="/nootr/noo", tags=["Nootr - Noo"])
+
+# Formatos que os navegadores de fato gravam com MediaRecorder (webm/ogg no
+# Chrome/Firefox, mp4/aac no Safari) e que o Gemini aceita como inline_data.
+_AUDIO_MIME_TYPES = {
+    "audio/webm", "audio/ogg", "audio/mp4", "audio/mpeg", "audio/aac", "audio/wav",
+}
+# ~2 minutos de voz comprimida com folga. É um recado curto ("comi X e Y no
+# almoço"), não um áudio longo, e o limite protege o custo da transcrição.
+_MAX_AUDIO_BYTES = 4 * 1024 * 1024
 
 
 class NooMessageIn(BaseModel):
@@ -142,7 +151,55 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
     template, igual às substituições manuais) e a resposta já volta com o dia
     ajustado e o diff do que mudou.
     """
+    return _run_turn(body.text, user)
+
+
+@router.post("/audio")
+async def send_audio(file: UploadFile = File(...), user: CurrentUser = CurrentUserDep):
+    """
+    Mesmo turno de conversa, só que falado (recurso do Pro, ver
+    plan_limits.NOO_AUDIO_PLANS): o áudio é transcrito e o texto segue
+    EXATAMENTE o mesmo caminho de uma mensagem digitada, inclusive
+    consumindo uma mensagem do limite do dia.
+
+    O áudio em si não é guardado em lugar nenhum: só a transcrição vira
+    mensagem da conversa. A resposta devolve `transcript` pro chat mostrar
+    o que foi entendido (a pessoa precisa poder conferir e corrigir).
+    """
     profile = repository.get_profile(user)
+    if not plan_limits.can_use_noo_audio(profile):
+        raise HTTPException(status_code=403, detail="Mandar áudio pro Noo é um recurso do plano Pro.")
+    # O MediaRecorder do navegador manda o codec junto ("audio/webm;codecs=opus"),
+    # o tipo base é o que interessa aqui e é o que o Gemini espera.
+    mime = (file.content_type or "").split(";")[0].strip().lower()
+    if mime not in _AUDIO_MIME_TYPES:
+        raise HTTPException(status_code=400, detail="Formato de áudio não suportado.")
+
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Áudio vazio.")
+    if len(raw) > _MAX_AUDIO_BYTES:
+        raise HTTPException(status_code=400, detail="Áudio muito longo (máximo 2 minutos).")
+
+    try:
+        transcript = ai.transcribe_audio(raw, mime)
+    except ai.AIError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    transcript = transcript.strip()[:1000]
+    if not transcript:
+        raise HTTPException(status_code=422, detail="Não consegui entender o áudio. Tenta de novo?")
+
+    return {**_run_turn(transcript, user, profile=profile), "transcript": transcript}
+
+
+def _run_turn(text: str, user: CurrentUser, profile: dict | None = None) -> dict:
+    """
+    O turno de conversa em si, compartilhado pelo texto digitado e pelo áudio
+    transcrito (ver send_message/send_audio): a partir daqui os dois são
+    exatamente a mesma coisa, uma mensagem de texto da pessoa.
+    """
+    if profile is None:
+        profile = repository.get_profile(user)
     day_plan = repository.get_or_create_day_plan(user)
     if day_plan is None:
         raise HTTPException(status_code=409, detail="Monte sua dieta primeiro em /dieta.")
@@ -167,7 +224,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
     history = [
         {"role": m["role"], "text": m["text"]}
         for m in repository.list_noo_messages_today(user)
-    ] + [{"role": "user", "text": body.text}]
+    ] + [{"role": "user", "text": text}]
 
     try:
         answer = ai.noo_chat(
@@ -179,7 +236,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
 
     # A mensagem do usuário só é gravada depois da IA responder: se a chamada
     # falhar, ela não consome uma das mensagens do dia.
-    repository.insert_noo_message(user, "user", body.text)
+    repository.insert_noo_message(user, "user", text)
 
     # Casa os nomes de refeição que o Noo citou com as refeições reais.
     def find_meal(label: str) -> dict | None:
@@ -202,7 +259,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         day_plan["meals"].append(meal)
         return meal
 
-    text_norm = food_matcher.normalize(body.text)
+    text_norm = food_matcher.normalize(text)
     changes: list[dict] = []
     unresolved_foods: list[str] = []
     for change in answer["changes"]:
@@ -261,7 +318,7 @@ def send_message(body: NooMessageIn, user: CurrentUser = CurrentUserDep):
         repository.update_day_plan_meals(user, day_plan["id"], result["adjusted_meals"])
         repository.insert_substitution_log(user, day_plan["id"], day_plan["plan_date"], {
             "action": "noo_chat",
-            "description": body.text[:500],
+            "description": text[:500],
             "meal_id": None,
             "matched_food": None,
             "match_confidence": None,
