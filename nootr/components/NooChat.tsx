@@ -239,6 +239,34 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
     }
   }
 
+  /**
+   * Decodifica o áudio gravado e mede o pico de amplitude, pra pegar dois
+   * jeitos de gravação ruim ANTES de mandar pro Gemini: (1) corrompida (o
+   * decode falha) e (2) sem som de verdade (pico bem abaixo de qualquer fala
+   * audível, mesmo baixinho). -50dB de pico é a régua: fala captada de
+   * qualquer jeito minimamente razoável passa disso, silêncio/ruído de fundo
+   * puro não passa.
+   */
+  async function analyzeRecording(blob: Blob): Promise<{ ok: true } | { ok: false; reason: "corrupted" | "silent" }> {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const buffer = await ctx.decodeAudioData(await blob.arrayBuffer());
+      ctx.close();
+      let peak = 0;
+      for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+        const data = buffer.getChannelData(ch);
+        for (let i = 0; i < data.length; i++) {
+          const abs = Math.abs(data[i]);
+          if (abs > peak) peak = abs;
+        }
+      }
+      return peak > 0.003 ? { ok: true } : { ok: false, reason: "silent" };
+    } catch {
+      return { ok: false, reason: "corrupted" };
+    }
+  }
+
   async function startRecording() {
     if (sending || recording || remaining <= 0) return;
     setError("");
@@ -259,16 +287,29 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
         const raw = new Blob(chunksRef.current, { type: recorder.mimeType });
         chunksRef.current = [];
         if (raw.size === 0) return;
-        // O MediaRecorder grava webm sem duração no cabeçalho, o que deixa o
-        // player nativo do navegador com a barra de progresso travada e sem
-        // tocar nada (o Chrome não sabe onde fica o "fim" do áudio). Corrige
-        // isso reescrevendo o cabeçalho com a duração real, calculada aqui
-        // (não vem do MediaRecorder). Só se aplica a webm: outros formatos
-        // (ex: mp4 do Safari) já saem com duração correta.
+        // Alguns navegadores gravam webm sem duração no cabeçalho, o que
+        // deixa o player travado. Reescreve o cabeçalho quando é o caso (é
+        // um no-op inofensivo quando a duração já veio certa, o que já é o
+        // normal no Chrome atual).
         const durationMs = Date.now() - recordingStartRef.current;
         const blob = recorder.mimeType.includes("webm")
           ? await fixWebmDuration(raw, durationMs).catch(() => raw)
           : raw;
+        // Confere se deu pra gravar som de verdade ANTES de gastar uma
+        // mensagem: às vezes a captura do microfone sai corrompida ou
+        // silenciosa (falha de hardware/driver, não é bug do app), e nesses
+        // casos o Gemini pode "alucinar" uma frase que ninguém falou em vez
+        // de admitir que não ouviu nada. Barra isso aqui, com uma mensagem
+        // que a pessoa consegue agir (ela sabe se o mic dela está ok).
+        const check = await analyzeRecording(blob);
+        if (!check.ok) {
+          setError(
+            check.reason === "corrupted"
+              ? "Não consegui processar esse áudio, tenta gravar de novo."
+              : "Não captei nenhum som nesse áudio. Verifique se o microfone está funcionando e tente de novo, falando mais perto dele."
+          );
+          return;
+        }
         sendAudio(blob);
       };
       recorderRef.current = recorder;
