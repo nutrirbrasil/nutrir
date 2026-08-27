@@ -13,6 +13,16 @@ def test_units():
     assert parse_portion("1 prato de feijao") == 200.0
 
 
+def test_scoop_is_the_real_measure_for_powder_supplements():
+    # "Scoop" é a medida de verdade pra suplemento em pó, não "unidade"
+    # (ninguém mede whey/albumina/creatina por unidade), mesma tabela de
+    # _UNIT_OVERRIDE_BY_FOOD. Creatina tem dose bem menor que whey/albumina.
+    assert parse_portion("1 scoop de whey") == 30.0
+    assert parse_portion("1 scoop", food_hint="Whey protein isolado (pó)") == 30.0
+    assert parse_portion("2 scoops de albumina") == 60.0
+    assert parse_portion("1 scoop de creatina") == 5.0
+
+
 def test_units_with_no_generic_fallback():
     # "Unidade", "fatia", "pedaço", "porção" e "prato" variam demais por
     # alimento pra ter peso único (castanha vs manga, fatia de pão vs fatia

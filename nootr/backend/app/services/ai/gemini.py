@@ -1180,8 +1180,18 @@ _UNKNOWN_FOOD_SCHEMA = {
 _UNKNOWN_FOOD_SYSTEM = """Você é uma base de dados nutricional. Devolva a informação nutricional REAL \
 por 100g comestível do alimento informado (o nome pode estar em português, inglês ou outro idioma, ex: \
 "kingcrab" = caranguejo-rei). Considere o preparo se o nome já indicar (ex: "frango grelhado" tem menos \
-gordura que "frango frito"). Se o nome não for um alimento identificável com confiança, devolva \
-"found": false e as demais chaves como 0. Responda estritamente no formato do schema."""
+gordura que "frango frito").
+
+O texto SEMPRE veio de alguém contando o que comeu, então SEMPRE é um alimento, mesmo que o nome sozinho \
+pareça outra coisa. Muitos pratos e doces brasileiros usam nome de gente, lugar ou título (ex: "Rei \
+Alberto" é uma sobremesa clássica de Porto Alegre com gelatina, abacaxi, ovos moles e suspiro, não é uma \
+pessoa; "Romeu e Julieta" é queijo com goiabada; "Maria mole" é um docinho). NUNCA conclua "não é um \
+alimento" só porque o nome soa como nome próprio, marca ou lugar, use seu conhecimento de culinária \
+brasileira e regional pra tentar identificar antes de desistir.
+
+Só devolva "found": false (e as demais chaves como 0) se, mesmo tentando de verdade, você não tiver \
+NENHUMA ideia plausível do que seria (nome truncado, erro de digitação sem solução óbvia, ou algo \
+genuinamente não-alimentício). Responda estritamente no formato do schema."""
 
 
 def estimate_unknown_food(name: str) -> dict | None:

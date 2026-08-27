@@ -285,6 +285,7 @@ def _run_turn(
     text_norm = food_matcher.normalize(text)
     changes: list[dict] = []
     unresolved_foods: list[str] = []
+    unresolved_meal_names: list[str] = []
     for change in answer["changes"]:
         # Se algum item de "added" ainda não tem quantidade definida, a troca
         # INTEIRA dessa refeição fica pendente: nem tira o que ela disse que
@@ -295,7 +296,8 @@ def _run_turn(
         if any(not a["quantity"].strip() for a in change["added"]):
             continue
         meal = find_meal(change["meal"])
-        if meal is None:
+        newly_created_meal = meal is None
+        if newly_created_meal:
             # Refeição nova: só vale a pena criar se há algo de fato pra
             # adicionar (a checagem acima já garante que, se houver, tem
             # quantidade certa).
@@ -323,10 +325,23 @@ def _run_turn(
         had_intent = bool(change["skipped"]) or bool(change["added"])
         if not had_intent:
             continue
+        before_unresolved = len(unresolved_foods)
+        new_foods = _resolve_added(change["added"], prefs, country, text_norm, unresolved_foods)
+        if len(unresolved_foods) > before_unresolved:
+            # Mesma lógica atômica da quantidade vazia: um alimento que nem a
+            # TACO nem a IA de estimativa reconheceram trava a troca INTEIRA
+            # dessa refeição (nem o "skipped" aplica), até a pessoa cadastrar
+            # o alimento em Meus Alimentos. Aplicar só a metade "tira X" e
+            # avisar que falta cadastrar Y seria a mesma distorção do dia que
+            # a regra da quantidade pendente já evita.
+            if newly_created_meal:
+                day_plan["meals"].remove(meal)
+            unresolved_meal_names.append(meal["name"])
+            continue
         changes.append({
             "meal_id": meal["id"],
             "skipped_names": skipped_names,
-            "new_foods": _resolve_added(change["added"], prefs, country, text_norm, unresolved_foods),
+            "new_foods": new_foods,
         })
 
     result = None
@@ -356,17 +371,21 @@ def _run_turn(
 
     # Alimento que nem a TACO/extra nem a IA de estimativa nutricional
     # reconheceram: não dá pra aplicar (chutar macros seria pior que não
-    # registrar), avisa a pessoa a cadastrar em Meus Alimentos em vez de só
-    # silenciar. A reply da IA já foi gerada assumindo que aplicaria, então
-    # o aviso entra à parte, depois.
+    # registrar), e a troca INTEIRA daquela refeição ficou pendente (ver
+    # lógica atômica acima, mesma coisa da quantidade vazia). A reply da IA
+    # já foi gerada assumindo que aplicaria tudo, então o aviso deixa
+    # explícito que essa parte específica NÃO aconteceu ainda, pra não soar
+    # como um lembrete secundário enquanto o resto já mudou.
     reply = answer["reply"]
     if unresolved_foods:
-        names = ", ".join(dict.fromkeys(unresolved_foods))  # sem duplicata, mantém ordem
-        plural = len(set(unresolved_foods)) > 1
+        food_names = ", ".join(dict.fromkeys(unresolved_foods))  # sem duplicata, mantém ordem
+        meal_names = ", ".join(dict.fromkeys(unresolved_meal_names))
+        foods_plural = len(set(unresolved_foods)) > 1
+        meals_plural = len(set(unresolved_meal_names)) > 1
         reply += (
-            f"\n\nNão encontrei {'esses alimentos' if plural else 'esse alimento'} ({names}) na minha "
-            f"base. Cadastra {'eles' if plural else 'ele'} em Meus Alimentos que na próxima eu já uso "
-            "certinho."
+            f"\n\nAinda não mudei {'as refeições' if meals_plural else 'a refeição'} de {meal_names} "
+            f"porque não conheço {'esses alimentos' if foods_plural else 'esse alimento'} ({food_names}). "
+            f"Cadastra {'eles' if foods_plural else 'ele'} em Meus Alimentos que aí sim eu aplico certinho."
         )
 
     # O snapshot do dia é guardado junto da resposta pra conversa reabrir

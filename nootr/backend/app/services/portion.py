@@ -80,9 +80,13 @@ _SPOON_OVERRIDE = {
 # "ovo"), a primeira que bater no texto vale.
 _UNIT_OVERRIDE_BY_FOOD = {
     # suplemento em pó: "unidade" não é a medida certa (ninguém mede whey em
-    # unidade), mas serve de rede de segurança se a IA usar assim mesmo, uma
-    # dose/scoop típica é ~30g, bem melhor que cair no genérico de 150g.
+    # unidade), mas serve de rede de segurança se a IA usar assim mesmo, e é
+    # a tabela de verdade pra "scoop" (ver _WHOLE_STEP_UNITS/_resolve_unit),
+    # a medida real usada pra pó. Whey/albumina: dose típica ~30g. Creatina é
+    # bem menor, dose padrão ~5g, nada a ver com proteína em pó.
     "whey": 30,
+    "albumina": 30,
+    "creatina": 5,
     # iogurte/sobremesa individual em copinho (ex: Danoninho, petit suisse):
     # o copo real é ~45g, bem abaixo do genérico de 150g que a TACO/extra usa
     # como porção de referência.
@@ -411,12 +415,13 @@ _UNIT_LABELS: dict[str, tuple[str, str]] = {
     "barra": ("barra", "barras"),
     "tablete": ("tablete", "tabletes"),
     "sache": ("sachê", "sachês"),
+    "scoop": ("scoop", "scoops"),
 }
 
 # Unidades "de gente": não faz sentido meia unidade (meio ovo, meia fatia),
 # arredonda pra inteiro. As demais (colher, xícara, copo...) toleram meio
 # (1.5 colher, meia xícara), arredonda de 0.5 em 0.5.
-_WHOLE_STEP_UNITS = {"unidade", "fatia", "pedaco", "bola", "barra", "tablete", "sache"}
+_WHOLE_STEP_UNITS = {"unidade", "fatia", "pedaco", "bola", "barra", "tablete", "sache", "scoop"}
 
 # Unidades de peso/volume puro (não são "medida caseira" de verdade, só
 # gramas/ml disfarçados), nesse caso não há o que preservar além do número.
@@ -592,6 +597,11 @@ def _resolve_unit(unit: str, full_norm: str, after_index: int | None, hint_norm:
     if unit in ("tablete", "tabletes"):
         g = _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
         return (g, "tablete") if g is not None else None
+    if unit in ("scoop", "scoops"):
+        # "Scoop" é a medida de verdade pra suplemento em pó (whey, albumina,
+        # creatina), mesma tabela de unidade: "1 scoop de whey" == "1 unidade".
+        g = _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
+        return (g, "scoop") if g is not None else None
     if unit in ("sache", "saches"):
         g = _match_keyword_table(combined, _SACHE_OVERRIDE)
         return (g, "sache") if g is not None else None

@@ -306,6 +306,48 @@ def _audio_post(client, content_type="audio/webm;codecs=opus", data=b"fake-audio
     return client.post("/nootr/noo/audio", files={"file": ("audio.webm", data, content_type)})
 
 
+def test_unresolved_food_blocks_only_its_own_meal_not_others(client, monkeypatch, day_plan):
+    # Café da manhã (troca com quantidades certas) deve aplicar normal; o
+    # Almoço (item não reconhecido) fica intocado até cadastrar, mas isso não
+    # pode contaminar a refeição do café, que não tem nada a ver com o item
+    # desconhecido.
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Ajustei seu dia e adicionei o Rei Alberto no almoço.",
+        "changes": [
+            {
+                "meal": "Café da manhã",
+                "skipped": ["Pão de forma integral", "Ovo de galinha"],
+                "added": [{"name": "leite", "quantity": "1 copo"}],
+            },
+            {
+                "meal": "Almoço",
+                "skipped": [],
+                "added": [{"name": "Rei Alberto", "quantity": "1 porção"}],
+            },
+        ],
+        "already_eaten": [],
+    })
+    monkeypatch.setattr(ai, "estimate_unknown_food", lambda name: None)
+    resp = client.post("/nootr/noo", json={"text": "café da manhã tomei leite, almoço comi Rei Alberto de sobremesa"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "Almoço" in body["reply"]
+    assert "Rei Alberto" in body["reply"]
+    assert "Meus Alimentos" in body["reply"]
+
+    cafe = next(m for m in body["day"]["meals"] if m["id"] == "m1")
+    by_name = {f["name"].lower(): f["kind"] for f in cafe["foods"]}
+    assert by_name["ovo de galinha"] == "removed"
+    assert any(kind == "added" and "leite" in name for name, kind in by_name.items())
+
+    # O dia pode reajustar Almoço por tabela (ex: day_topup cobrindo a
+    # proteína/caloria que sumiu do café), isso é esperado. O que não pode
+    # acontecer de jeito nenhum é "Rei Alberto" ser aplicado de qualquer
+    # forma, mesmo indiretamente.
+    almoco = next(m for m in body["day"]["meals"] if m["id"] == "m2")
+    assert not any("rei alberto" in f["name"].lower() for f in almoco["foods"])
+
+
 def test_audio_is_pro_only(client, monkeypatch):
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "basic"})
     resp = _audio_post(client)
