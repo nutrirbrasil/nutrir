@@ -400,3 +400,56 @@ def test_audio_that_could_not_be_understood_does_not_consume_a_message(client, m
     resp = _audio_post(client)
     assert resp.status_code == 422
     assert day_plan["noo_messages_used"] == 0
+
+
+def test_pending_quantity_does_not_remove_the_old_food_yet(client, monkeypatch, day_plan):
+    # "Café da manhã comi só um pão com geleia": é uma troca (tira o cardápio
+    # original, poe pão+geleia no lugar), mas a quantidade não veio. Nada
+    # pode acontecer ainda, nem tirar o que ja estava la, senao o dia fica
+    # desregulado duas vezes (uma agora, outra quando a quantidade chegar).
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Quantas fatias de pão e quanto de geleia você comeu?",
+        "changes": [{
+            "meal": "Café da manhã",
+            "skipped": ["Pão de forma integral", "Ovo de galinha"],
+            "added": [{"name": "pão com geleia", "quantity": ""}],
+        }],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "café da manhã comi só um pão com geleia"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is None
+    assert "quant" in body["reply"].lower()
+    # A refeição continua intacta, nada foi removido.
+    cafe = next(m for m in day_plan["meals"] if m["id"] == "m1")
+    assert len(cafe["foods"]) == 2
+
+
+def test_answering_the_quantity_applies_the_full_swap_at_once(client, monkeypatch, day_plan):
+    # Quando a IA devolve o skipped de novo JUNTO com o added já com
+    # quantidade (regra 12 do prompt), a troca completa é aplicada numa
+    # tacada só.
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Beleza, troquei o café da manhã pelo pão com geleia.",
+        "changes": [{
+            "meal": "Café da manhã",
+            "skipped": ["Pão de forma integral", "Ovo de galinha"],
+            "added": [
+                {"name": "pão de forma", "quantity": "2 fatias"},
+                {"name": "geleia", "quantity": "1 colher de sopa"},
+            ],
+        }],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "2 fatias de pão e 1 colher de geleia"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is not None
+    cafe = next(m for m in body["day"]["meals"] if m["id"] == "m1")
+    # build_day_view mostra o antes/depois: o alimento antigo aparece marcado
+    # "removed" (é assim que a tela risca em vermelho), não some da lista.
+    by_name = {f["name"].lower(): f["kind"] for f in cafe["foods"]}
+    assert by_name["ovo de galinha"] == "removed"
+    assert by_name["pão de forma integral"] == "removed"
+    assert any(kind == "added" and "pão" in name for name, kind in by_name.items())

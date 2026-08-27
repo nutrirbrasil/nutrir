@@ -1093,8 +1093,11 @@ nutricional dele separadamente. Sua única responsabilidade aí continua sendo a
 se ela disse, senão "quantity" vazio e pergunte (ver acima).
 12. Perguntar a quantidade é uma resposta COMPLETA e útil, não uma falha sua. Prefira SEMPRE perguntar a \
 chutar: se ela não deu a quantidade, devolva o item com "quantity" vazio e a pergunta na `reply`, e \
-pronto, o dia dela não muda nessa mensagem. Na mensagem seguinte, quando ela responder ("duas fatias", \
-"uns 200g"), aí sim devolva o `changes` completo com a quantidade preenchida.
+pronto, o dia dela NÃO muda nessa mensagem, NADA é aplicado (nem o "skipped" dessa mesma troca). Na \
+mensagem seguinte, quando ela responder ("duas fatias", "uns 200g"), devolva o `changes` completo de \
+novo pra aquela refeição: o MESMO "skipped" de antes (se a troca envolvia tirar algo) JUNTO com o \
+"added" agora com a quantidade preenchida. Nunca mande só o "added" sozinho nessa hora, como se o \
+"skipped" já tivesse acontecido, ele NÃO aconteceu, a troca inteira ficou esperando essa resposta.
 {decomposition_rules}
 """
 

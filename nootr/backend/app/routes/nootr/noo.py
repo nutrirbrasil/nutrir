@@ -286,13 +286,20 @@ def _run_turn(
     changes: list[dict] = []
     unresolved_foods: list[str] = []
     for change in answer["changes"]:
+        # Se algum item de "added" ainda não tem quantidade definida, a troca
+        # INTEIRA dessa refeição fica pendente: nem tira o que ela disse que
+        # não comeu (skipped), nem adiciona o que já tinha quantidade certa.
+        # É uma troca só ("pão no lugar do X"), tirar o X antes de saber
+        # quanto entra no lugar desregula o dia duas vezes, uma agora e outra
+        # quando a quantidade enfim chegar (ver quantity vazio no prompt).
+        if any(not a["quantity"].strip() for a in change["added"]):
+            continue
         meal = find_meal(change["meal"])
         if meal is None:
             # Refeição nova: só vale a pena criar se há algo de fato pra
-            # adicionar com quantidade já definida, senão não há o que fazer
-            # com uma refeição vazia (ex: único item citado ficou esperando
-            # a pessoa responder a quantidade, ver quantity vazio acima).
-            if not any(a["quantity"].strip() for a in change["added"]):
+            # adicionar (a checagem acima já garante que, se houver, tem
+            # quantidade certa).
+            if not change["added"]:
                 continue
             meal = new_meal(change["meal"], change.get("time") or "")
         skipped_names = [
@@ -311,12 +318,9 @@ def _run_turn(
         meal_mentioned = any(w in text_norm for w in meal_words)
         if empties_meal and not meal_mentioned:
             continue
-        # Nada foi de fato pedido nessa refeição, só um item de "added" com
-        # quantidade vazia esperando a pessoa responder (ver quantity vazio
-        # acima). Diferente de um pedido que existiu mas foi filtrado depois
-        # (ex: bloqueado por alergia): aí sim ainda vale marcar a refeição
-        # como tocada e devolver o dia, só pra confirmar que nada mudou.
-        had_intent = bool(change["skipped"]) or any(a["quantity"].strip() for a in change["added"])
+        # Defesa: um change sem skipped nem added não pede nada de verdade
+        # (não deve vir da IA assim, mas não custa não tocar a refeição à toa).
+        had_intent = bool(change["skipped"]) or bool(change["added"])
         if not had_intent:
             continue
         changes.append({

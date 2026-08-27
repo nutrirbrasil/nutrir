@@ -6,7 +6,6 @@ import { nootrApi } from "@/lib/api";
 import { Icon } from "@/components/Icon";
 import type { NooDayView, NooMessage, NooReply, Plan } from "@/lib/types";
 import { formatQuantityWithGrams } from "@/lib/units";
-import fixWebmDuration from "fix-webm-duration";
 
 const SUGGESTIONS = [
   "Não comi o pão do café",
@@ -154,10 +153,6 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
   const [canRecord, setCanRecord] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  // Timestamp de quando a gravação começou, pra calcular a duração real e
-  // corrigir o cabeçalho do webm (ver onstop, o MediaRecorder não grava
-  // duração nenhuma no arquivo, deixando o player do navegador quebrado).
-  const recordingStartRef = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -284,17 +279,9 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
         // Solta o microfone assim que para, senão o indicador de gravação do
         // navegador fica aceso mesmo com o chat já parado.
         stream.getTracks().forEach((t) => t.stop());
-        const raw = new Blob(chunksRef.current, { type: recorder.mimeType });
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
         chunksRef.current = [];
-        if (raw.size === 0) return;
-        // Alguns navegadores gravam webm sem duração no cabeçalho, o que
-        // deixa o player travado. Reescreve o cabeçalho quando é o caso (é
-        // um no-op inofensivo quando a duração já veio certa, o que já é o
-        // normal no Chrome atual).
-        const durationMs = Date.now() - recordingStartRef.current;
-        const blob = recorder.mimeType.includes("webm")
-          ? await fixWebmDuration(raw, durationMs).catch(() => raw)
-          : raw;
+        if (blob.size === 0) return;
         // Confere se deu pra gravar som de verdade ANTES de gastar uma
         // mensagem: às vezes a captura do microfone sai corrompida ou
         // silenciosa (falha de hardware/driver, não é bug do app), e nesses
@@ -313,7 +300,6 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
         sendAudio(blob);
       };
       recorderRef.current = recorder;
-      recordingStartRef.current = Date.now();
       recorder.start();
       setRecording(true);
     } catch {
