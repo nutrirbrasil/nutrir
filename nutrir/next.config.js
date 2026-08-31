@@ -8,6 +8,11 @@ const nextConfig = {
       { source: "/checkout/sucesso", destination: "/checkout/obrigado", permanent: false },
       { source: "/checkout/pendente", destination: "/checkout/obrigado", permanent: false },
       { source: "/checkout/pix/obrigado", destination: "/checkout/obrigado", permanent: false },
+      {
+        source: "/review",
+        destination: "https://g.page/r/CXJ5WKkcHYgMEAI/review",
+        permanent: false,
+      },
     ];
   },
 };

@@ -23,7 +23,7 @@ import {
 import { isPixConfigured } from "@/lib/pix-brcode";
 import { generateUniqueOrderId } from "@/lib/order-id";
 import { saveOrder } from "@/lib/order-store";
-import { findPacienteByCpf, hasPriorOrdersByPhone } from "@/lib/supabase-db";
+import { findPacienteByCpf, hasPriorOrdersByPhone, hasUsedCouponByPhone } from "@/lib/supabase-db";
 import { sendOrderTelegramNotification } from "@/lib/order-telegram";
 import type { CreateOrderPayload, FulfillmentType, Order } from "@/lib/types";
 
@@ -111,13 +111,17 @@ export async function POST(request: Request) {
       if (!coupon) {
         return NextResponse.json({ error: "Cupom inválido." }, { status: 400 });
       }
-      const [paciente, priorOrders] = await Promise.all([
+      const [paciente, priorOrders, alreadyUsedByCustomer] = await Promise.all([
         body.customer_cpf ? findPacienteByCpf(body.customer_cpf) : Promise.resolve(null),
         body.customer_phone ? hasPriorOrdersByPhone(body.customer_phone) : Promise.resolve(false),
+        body.customer_phone && coupon.oncePerCustomer
+          ? hasUsedCouponByPhone(body.customer_phone, body.coupon_code)
+          : Promise.resolve(false),
       ]);
       const restrictionError = validateCouponRestrictions(coupon, {
         isPatient: !!paciente,
         isFirstPurchase: !priorOrders,
+        alreadyUsedByCustomer,
       });
       if (restrictionError) {
         return NextResponse.json({ error: restrictionError }, { status: 400 });

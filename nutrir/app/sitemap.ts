@@ -3,6 +3,7 @@ import { legal } from "@/lib/legal";
 
 const PUBLIC_ROUTES = [
   { path: "", priority: 1, changeFrequency: "weekly" as const },
+  { path: "/combos", priority: 0.9, changeFrequency: "weekly" as const },
   { path: "/marmitas", priority: 0.9, changeFrequency: "weekly" as const },
   { path: "/beneficios", priority: 0.6, changeFrequency: "monthly" as const },
   { path: "/nutrir/sobre", priority: 0.6, changeFrequency: "monthly" as const },

@@ -13,6 +13,7 @@ function couponRestrictions(coupon: ReturnType<typeof listCoupons>[number]): str
   const items: string[] = [];
   if (coupon.firstPurchaseOnly) items.push("Só na primeira compra (por telefone)");
   if (coupon.patientOnly) items.push("Só para pacientes VIP");
+  if (coupon.oncePerCustomer) items.push("Só uma vez por conta (por telefone)");
   if (coupon.expiresAt) {
     const [y, m, d] = coupon.expiresAt.split("-");
     items.push(`Expira em ${d}/${m}/${y}`);
@@ -57,7 +58,11 @@ export default function AdminCuponsPage() {
                   {coupon.code}
                 </span>
                 <span className="rounded-full bg-nutrir-burgundy/10 px-3 py-1 text-sm font-bold text-nutrir-burgundy">
-                  {coupon.percent}% de desconto
+                  {coupon.freeDelivery
+                    ? "Frete grátis"
+                    : coupon.progressiveDayDish
+                    ? "5% a 25% progressivo (prato do dia)"
+                    : `${coupon.percent}% de desconto`}
                 </span>
               </div>
               {restrictions.length > 0 ? (

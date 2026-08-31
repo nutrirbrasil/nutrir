@@ -1,5 +1,5 @@
-import { CardapioPage } from "@/components/CardapioPage";
+import { HomePage } from "@/components/HomePage";
 
 export default function Home() {
-  return <CardapioPage />;
+  return <HomePage />;
 }

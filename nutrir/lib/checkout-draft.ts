@@ -20,6 +20,10 @@ export interface CheckoutDraft {
   /** Resolvidos ao aplicar o cupom (estático ou de parceiro) — só pra exibir o preview de preço. */
   coupon_percent?: number;
   coupon_label?: string;
+  /** Cupons tipo FRETEGRATIS — zera a taxa de entrega no preview do cliente. */
+  coupon_free_delivery?: boolean;
+  /** Cupons tipo PRATODODIA — desconto progressivo por unidade no preview do cliente (ver lib/pratododia.ts). */
+  coupon_progressive_day_dish?: boolean;
   order_id?: string;
   /** Pontos de parceiro a usar como desconto (centavos) — só pra exibição; servidor recalcula/valida. */
   points_redeemed_cents?: number;

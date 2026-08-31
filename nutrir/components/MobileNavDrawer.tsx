@@ -112,7 +112,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
           >
             <li>
               <Link
-                href="/"
+                href="/combos"
                 onClick={onClose}
                 className="block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-nutrir-emerald/85 transition hover:bg-nutrir-nude"
               >

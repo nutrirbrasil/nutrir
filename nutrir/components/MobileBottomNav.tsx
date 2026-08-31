@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiLayers, FiUser, FiBox } from "react-icons/fi";
+import { FiHome, FiLayers, FiUser, FiBox } from "react-icons/fi";
 
 const tabs = [
-  { href: "/", label: "Combos", icon: FiLayers, match: (path: string) => path === "/" },
+  { href: "/", label: "Início", icon: FiHome, match: (path: string) => path === "/" },
+  {
+    href: "/combos",
+    label: "Combos",
+    icon: FiLayers,
+    match: (path: string) => path === "/combos",
+  },
   {
     href: "/marmitas",
     label: "Marmitas",

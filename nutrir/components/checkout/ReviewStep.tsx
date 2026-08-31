@@ -42,7 +42,14 @@ function canReusePendingOrder(
     method,
     draft.coupon_code,
     draft.delivery_fee_cents ?? 0,
-    draft.coupon_percent ? { percent: draft.coupon_percent, label: draft.coupon_label } : null,
+    draft.coupon_code
+      ? {
+          percent: draft.coupon_percent ?? 0,
+          label: draft.coupon_label,
+          freeDelivery: draft.coupon_free_delivery,
+          progressiveDayDish: draft.coupon_progressive_day_dish,
+        }
+      : null,
     draft.points_redeemed_cents ?? 0
   );
   if (existing.total_cents !== pricing.total_cents) return false;
@@ -75,7 +82,14 @@ export function ReviewStep() {
   const d = draft;
   const method = normalizePaymentMethod(d.payment_method);
   const isDelivery = d.fulfillment_type === "delivery";
-  const couponOverride = d.coupon_percent ? { percent: d.coupon_percent, label: d.coupon_label } : null;
+  const couponOverride = d.coupon_code
+    ? {
+        percent: d.coupon_percent ?? 0,
+        label: d.coupon_label,
+        freeDelivery: d.coupon_free_delivery,
+        progressiveDayDish: d.coupon_progressive_day_dish,
+      }
+    : null;
   const pointsRedeemed = d.points_redeemed_cents ?? 0;
   const totalBeforePoints = computeOrderPricing(
     d.items,
@@ -262,7 +276,13 @@ export function ReviewStep() {
                 phone={d.customer_phone}
                 applied={
                   d.coupon_code
-                    ? { code: d.coupon_code, percent: d.coupon_percent ?? 0, label: d.coupon_label }
+                    ? {
+                        code: d.coupon_code,
+                        percent: d.coupon_percent ?? 0,
+                        label: d.coupon_label,
+                        freeDelivery: d.coupon_free_delivery,
+                        progressiveDayDish: d.coupon_progressive_day_dish,
+                      }
                     : null
                 }
                 onApply={(coupon) =>
@@ -270,6 +290,8 @@ export function ReviewStep() {
                     coupon_code: coupon.code,
                     coupon_percent: coupon.percent,
                     coupon_label: coupon.label,
+                    coupon_free_delivery: coupon.freeDelivery,
+                    coupon_progressive_day_dish: coupon.progressiveDayDish,
                     order_id: undefined,
                   })
                 }
@@ -278,6 +300,8 @@ export function ReviewStep() {
                     coupon_code: undefined,
                     coupon_percent: undefined,
                     coupon_label: undefined,
+                    coupon_free_delivery: undefined,
+                    coupon_progressive_day_dish: undefined,
                     order_id: undefined,
                   })
                 }

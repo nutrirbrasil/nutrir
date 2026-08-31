@@ -19,7 +19,14 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
     method,
     draft.coupon_code,
     draft.delivery_fee_cents ?? 0,
-    couponPercent ? { percent: couponPercent, label: draft.coupon_label } : null,
+    draft.coupon_code
+      ? {
+          percent: couponPercent,
+          label: draft.coupon_label,
+          freeDelivery: draft.coupon_free_delivery,
+          progressiveDayDish: draft.coupon_progressive_day_dish,
+        }
+      : null,
     draft.points_redeemed_cents ?? 0
   );
 

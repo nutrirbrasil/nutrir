@@ -1,8 +1,10 @@
 import { computeCouponDiscountCents, getCoupon, normalizeCouponCode, type CouponDefinition } from "./coupons";
 import { getComboCardTotalCents } from "./combo-builder-data";
+import { getKitContentLines } from "./kit-contents-data";
 import { KIT_PRODUCTS, MENU_SECTIONS, type MarmitaSize } from "./menu-data";
 import { getJuiceCatalogPricing, type JuiceSize } from "./juice-data";
 import { isCardPayment, isCashDiscountPayment, normalizePaymentMethod } from "./payment-utils";
+import { getPratoDoDia, pratoDoDiaPercentForRank } from "./pratododia";
 import type { OrderItem, PaymentMethod } from "./types";
 
 /** Marmita avulsa: cartão = +R$ 2,00 acima do pix/dinheiro (ex.: 22,99 → 24,99). */
@@ -32,12 +34,13 @@ function isSingleMarmitaItem(item: OrderItem): boolean {
 function parseKitMenuId(menuId: string | null | undefined) {
   if (!menuId) return null;
   const base = menuId.split("-addons-")[0] ?? menuId;
-  const match = base.match(/^kit-(frango|carne|misto|veg)-(\d+)-(P|G)(?:-veg)?$/);
+  const match = base.match(/^kit-(frango|carne|misto|veg)-(\d+)-(P|G)(-veg)?$/);
   if (!match) return null;
   return {
     kitId: match[1] as "frango" | "carne" | "misto" | "veg",
     meals: Number(match[2]),
     size: match[3] as MarmitaSize,
+    includeVeg: !!match[4],
   };
 }
 
@@ -72,6 +75,95 @@ export function getItemListPriceCents(item: OrderItem): number {
 export function getItemChargeCents(item: OrderItem, method?: PaymentMethod): number {
   if (isCardPayment(method)) return getItemListPriceCents(item);
   return getItemCashTotalCents(item);
+}
+
+function getComboBuildMealCount(name: string): number {
+  const match = name.match(/^Combo,\s*(\d+)\s*marmitas/);
+  return match ? Number(match[1]) : 0;
+}
+
+/** "Combo, 5 marmitas (Frango da Casa P ×2, Carne da Casa G ×3)" -> soma as unidades cujo nome (sem tamanho) está em dishNames. */
+function countComboBuildDishUnits(name: string, dishNames: Set<string>): number {
+  const inner = name.match(/\(([^)]*)\)$/)?.[1];
+  if (!inner) return 0;
+  let total = 0;
+  for (const part of inner.split(",")) {
+    const match = part.trim().match(/^(.*)\s+(P|G)\s*×(\d+)$/);
+    if (!match) continue;
+    if (dishNames.has(match[1].trim())) total += Number(match[3]);
+  }
+  return total;
+}
+
+/**
+ * Preço (em centavos) de cada unidade do "prato do dia" presente no pedido, uma
+ * entrada por unidade, na ordem em que aparecem nos itens — usado só para
+ * distribuir o desconto progressivo do cupom PRATODODIA (ver lib/pratododia.ts).
+ * Cobre marmita avulsa (exata), kit pronto (composição fixa por tier/tamanho) e
+ * "monte seu combo" (composição só existe no texto do nome do item, ver
+ * countComboBuildDishUnits — mesmo nível de "melhor esforço" já aceito para o
+ * preço dos combos, que também não é reconferido linha a linha no servidor).
+ */
+function getPratoDoDiaUnitPricesCents(
+  items: OrderItem[],
+  method: PaymentMethod | undefined,
+  date: Date
+): number[] {
+  const today = getPratoDoDia(date);
+  const dishItemIds = new Set(today.dishes.map((d) => d.itemId));
+  const dishNames = new Set(today.dishes.map((d) => d.name));
+  const card = isCardPayment(method);
+  const prices: number[] = [];
+
+  for (const item of items) {
+    if (isSingleMarmitaItem(item) && item.item_id && dishItemIds.has(item.item_id)) {
+      const unitPrice = getItemChargeCents(item, method);
+      for (let i = 0; i < item.quantity; i++) prices.push(unitPrice);
+      continue;
+    }
+
+    const kit = parseKitMenuId(item.menu_id ?? undefined);
+    if (kit) {
+      const product = KIT_PRODUCTS.find((p) => p.id === kit.kitId);
+      const tier = product?.tiers.find((t) => t.meals === kit.meals);
+      const pricing = tier?.prices[kit.size];
+      if (!pricing) continue;
+      const unitsPerKit = getKitContentLines(kit.kitId, kit.meals, { includeVeg: kit.includeVeg })
+        .filter((line) => dishNames.has(line.label))
+        .reduce((sum, line) => sum + line.count, 0);
+      if (unitsPerKit <= 0) continue;
+      const perMealCents = card ? pricing.card_per_meal_cents : pricing.cash_per_meal_cents;
+      for (let box = 0; box < item.quantity; box++) {
+        for (let i = 0; i < unitsPerKit; i++) prices.push(perMealCents);
+      }
+      continue;
+    }
+
+    if (item.section_id === "combo" || item.item_id === "combo-build") {
+      const totalMeals = getComboBuildMealCount(item.name);
+      const dishUnits = countComboBuildDishUnits(item.name, dishNames);
+      if (totalMeals <= 0 || dishUnits <= 0) continue;
+      const avgUnitCents = Math.round(getItemChargeCents(item, method) / totalMeals);
+      for (let box = 0; box < item.quantity; box++) {
+        for (let i = 0; i < dishUnits; i++) prices.push(avgUnitCents);
+      }
+    }
+  }
+
+  return prices;
+}
+
+export function computePratoDoDiaDiscountCents(
+  items: OrderItem[],
+  method?: PaymentMethod,
+  date: Date = new Date()
+): number {
+  const prices = getPratoDoDiaUnitPricesCents(items, method, date);
+  const total = prices.reduce(
+    (sum, priceCents, index) => sum + (priceCents * pratoDoDiaPercentForRank(index + 1)) / 100,
+    0
+  );
+  return Math.round(total);
 }
 
 export interface OrderPricing {
@@ -109,12 +201,19 @@ export function computeOrderPricing(
 
   const coupon = couponOverride ?? getCoupon(couponCode);
   const appliedCouponCode = coupon && couponCode ? normalizeCouponCode(couponCode) : undefined;
+  /** FRETEGRATIS e cupons parecidos abatem a taxa de entrega — não conta pro cálculo de pontos, que é só sobre os itens. */
+  const deliveryDiscount = coupon?.freeDelivery ? deliveryFeeCents : 0;
 
   if (isCardPayment(method)) {
-    const couponDiscount = coupon ? computeCouponDiscountCents(listTotal, coupon) : 0;
-    const beforePoints = Math.max(0, listTotal - couponDiscount);
+    const itemCouponDiscount = coupon
+      ? coupon.progressiveDayDish
+        ? computePratoDoDiaDiscountCents(items, method)
+        : computeCouponDiscountCents(listTotal, coupon)
+      : 0;
+    const couponDiscount = itemCouponDiscount + deliveryDiscount;
+    const beforePoints = Math.max(0, listTotal - itemCouponDiscount);
     const pointsDiscount = Math.max(0, Math.min(pointsDiscountCents, beforePoints));
-    const total = Math.max(0, beforePoints - pointsDiscount) + deliveryFeeCents;
+    const total = Math.max(0, beforePoints - pointsDiscount) + deliveryFeeCents - deliveryDiscount;
     return {
       subtotal_cents: listTotal,
       pix_discount_cents: 0,
@@ -131,10 +230,15 @@ export function computeOrderPricing(
   }
 
   const pixDiscount = Math.max(0, listTotal - cashTotal);
-  const couponDiscount = coupon ? computeCouponDiscountCents(cashTotal, coupon) : 0;
-  const beforePoints = Math.max(0, cashTotal - couponDiscount);
+  const itemCouponDiscount = coupon
+    ? coupon.progressiveDayDish
+      ? computePratoDoDiaDiscountCents(items, method)
+      : computeCouponDiscountCents(cashTotal, coupon)
+    : 0;
+  const couponDiscount = itemCouponDiscount + deliveryDiscount;
+  const beforePoints = Math.max(0, cashTotal - itemCouponDiscount);
   const pointsDiscount = Math.max(0, Math.min(pointsDiscountCents, beforePoints));
-  const total = Math.max(0, beforePoints - pointsDiscount) + deliveryFeeCents;
+  const total = Math.max(0, beforePoints - pointsDiscount) + deliveryFeeCents - deliveryDiscount;
 
   return {
     subtotal_cents: listTotal,

@@ -54,6 +54,29 @@ export async function hasPriorOrdersByPhone(phone: string): Promise<boolean> {
   return (data ?? []).length > 0;
 }
 
+/** Esse telefone já usou esse cupom em algum pedido salvo (qualquer status)? Usado por cupons "uma vez por conta" (ex: OBRIGADO10). */
+export async function hasUsedCouponByPhone(phone: string, couponCode: string): Promise<boolean> {
+  const db = getSupabaseAdmin();
+  if (!db) return false;
+
+  const normalized = normalizePhone(phone);
+  if (!normalized) return false;
+
+  const { data, error } = await db
+    .from("nutrir_orders")
+    .select("order_nsu")
+    .eq("customer_phone", normalized)
+    .eq("coupon_code", couponCode.trim().toUpperCase())
+    .limit(1);
+
+  if (error) {
+    console.error("[Supabase] hasUsedCouponByPhone:", error.message);
+    return false;
+  }
+
+  return (data ?? []).length > 0;
+}
+
 export async function findPacienteByCpf(cpf: string): Promise<PacienteRecord | null> {
   const db = getSupabaseAdmin();
   if (!db) return null;

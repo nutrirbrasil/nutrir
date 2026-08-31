@@ -7,6 +7,8 @@ export interface AppliedCoupon {
   code: string;
   percent: number;
   label?: string;
+  freeDelivery?: boolean;
+  progressiveDayDish?: boolean;
 }
 
 interface Props {
@@ -43,15 +45,23 @@ export function CouponField({ applied, onApply, onRemove, cpf, phone }: Props) {
         valid: boolean;
         percent?: number;
         label?: string;
+        freeDelivery?: boolean;
+        progressiveDayDish?: boolean;
         error?: string;
       };
 
-      if (!data.valid || !data.percent) {
+      if (!data.valid || data.percent === undefined) {
         setError(data.error || "Cupom inválido.");
         return;
       }
 
-      onApply({ code, percent: data.percent, label: data.label });
+      onApply({
+        code,
+        percent: data.percent,
+        label: data.label,
+        freeDelivery: data.freeDelivery,
+        progressiveDayDish: data.progressiveDayDish,
+      });
     } catch {
       setError("Não foi possível conferir o cupom agora. Tente de novo.");
     } finally {

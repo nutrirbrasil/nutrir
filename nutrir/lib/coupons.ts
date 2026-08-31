@@ -8,6 +8,12 @@ export interface CouponDefinition {
   patientOnly?: boolean;
   /** Data limite (yyyy-mm-dd, fuso do servidor) até quando o cupom pode ser usado, inclusive. */
   expiresAt?: string;
+  /** Zera a taxa de entrega do pedido (não mexe no desconto sobre os itens). */
+  freeDelivery?: boolean;
+  /** Desconto progressivo por unidade do "prato do dia" (ver lib/pratododia.ts e computePratoDoDiaDiscountCents) — percent aqui fica 0, o valor real vem do cálculo por unidade. */
+  progressiveDayDish?: boolean;
+  /** Só pode ser usado uma vez por conta (telefone) — ver hasUsedCouponByPhone em lib/supabase-db.ts. */
+  oncePerCustomer?: boolean;
 }
 
 // NUTRIPAULA não entra aqui: é um cupom de parceiro de verdade (nutrir_partners,
@@ -16,7 +22,9 @@ export interface CouponDefinition {
 const COUPONS: Record<string, CouponDefinition> = {
   PRIMEIRACOMPRA: { percent: 15, label: "15% DE DESCONTO", firstPurchaseOnly: true },
   PACIENTEVIP: { percent: 10, label: "10% DE DESCONTO", patientOnly: true },
-  DIADOSPAIS: { percent: 9, label: "9% DE DESCONTO", expiresAt: "2026-08-10" },
+  FRETEGRATIS: { percent: 0, label: "FRETE GRÁTIS", freeDelivery: true },
+  PRATODODIA: { percent: 0, label: "PRATO DO DIA", progressiveDayDish: true },
+  OBRIGADO10: { percent: 10, label: "10% DE DESCONTO", oncePerCustomer: true },
 };
 
 /** Lista os cupons fixos (não inclui os de parceiro, que vêm do banco — ver lib/partners.ts). */
@@ -45,9 +53,11 @@ export function computeCouponDiscountCents(baseCents: number, coupon: CouponDefi
 export interface CouponValidationContext {
   isFirstPurchase?: boolean;
   isPatient?: boolean;
+  /** Só relevante quando coupon.oncePerCustomer — telefone já usou esse cupom antes? */
+  alreadyUsedByCustomer?: boolean;
 }
 
-/** Confere as restrições de um cupom (primeira compra, paciente, validade). Retorna null se estiver ok, ou a mensagem de erro. */
+/** Confere as restrições de um cupom (primeira compra, paciente, validade, uso único). Retorna null se estiver ok, ou a mensagem de erro. */
 export function validateCouponRestrictions(
   coupon: CouponDefinition,
   ctx: CouponValidationContext
@@ -61,6 +71,9 @@ export function validateCouponRestrictions(
   }
   if (coupon.patientOnly && !ctx.isPatient) {
     return "Este cupom é exclusivo para pacientes VIP.";
+  }
+  if (coupon.oncePerCustomer && ctx.alreadyUsedByCustomer) {
+    return "Este cupom já foi usado nessa conta.";
   }
   return null;
 }
