@@ -62,6 +62,8 @@ export default function AdminCuponsPage() {
                     ? "Frete grátis"
                     : coupon.progressiveDayDish
                     ? "5% a 25% progressivo (prato do dia)"
+                    : coupon.flatPerComboCents
+                    ? `${formatPrice(coupon.flatPerComboCents)} de desconto por combo`
                     : `${coupon.percent}% de desconto`}
                 </span>
               </div>

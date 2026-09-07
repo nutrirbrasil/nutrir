@@ -97,11 +97,11 @@ function countComboBuildDishUnits(name: string, dishNames: Set<string>): number 
 
 /**
  * Preço (em centavos) de cada unidade do "prato do dia" presente no pedido, uma
- * entrada por unidade, na ordem em que aparecem nos itens — usado só para
+ * entrada por unidade, na ordem em que aparecem nos itens. Usado só para
  * distribuir o desconto progressivo do cupom PRATODODIA (ver lib/pratododia.ts).
  * Cobre marmita avulsa (exata), kit pronto (composição fixa por tier/tamanho) e
  * "monte seu combo" (composição só existe no texto do nome do item, ver
- * countComboBuildDishUnits — mesmo nível de "melhor esforço" já aceito para o
+ * countComboBuildDishUnits, mesmo nível de "melhor esforço" já aceito para o
  * preço dos combos, que também não é reconferido linha a linha no servidor).
  */
 function getPratoDoDiaUnitPricesCents(
@@ -166,6 +166,16 @@ export function computePratoDoDiaDiscountCents(
   return Math.round(total);
 }
 
+/** Desconto fixo por combo (kit pronto ou monte seu combo) no pedido, não por marmita nem percentual. Cada combo = uma unidade de item.quantity nas linhas com section_id "kit" ou "combo". */
+export function computeFlatPerComboDiscountCents(items: OrderItem[], perComboCents: number): number {
+  return items.reduce((sum, item) => {
+    if (item.section_id === "kit" || item.section_id === "combo") {
+      return sum + perComboCents * item.quantity;
+    }
+    return sum;
+  }, 0);
+}
+
 export interface OrderPricing {
   subtotal_cents: number;
   pix_discount_cents: number;
@@ -201,13 +211,15 @@ export function computeOrderPricing(
 
   const coupon = couponOverride ?? getCoupon(couponCode);
   const appliedCouponCode = coupon && couponCode ? normalizeCouponCode(couponCode) : undefined;
-  /** FRETEGRATIS e cupons parecidos abatem a taxa de entrega — não conta pro cálculo de pontos, que é só sobre os itens. */
+  /** FRETEGRATIS e cupons parecidos abatem a taxa de entrega, isso não conta pro cálculo de pontos, que é só sobre os itens. */
   const deliveryDiscount = coupon?.freeDelivery ? deliveryFeeCents : 0;
 
   if (isCardPayment(method)) {
     const itemCouponDiscount = coupon
       ? coupon.progressiveDayDish
         ? computePratoDoDiaDiscountCents(items, method)
+        : coupon.flatPerComboCents
+        ? Math.min(computeFlatPerComboDiscountCents(items, coupon.flatPerComboCents), listTotal)
         : computeCouponDiscountCents(listTotal, coupon)
       : 0;
     const couponDiscount = itemCouponDiscount + deliveryDiscount;
@@ -233,6 +245,8 @@ export function computeOrderPricing(
   const itemCouponDiscount = coupon
     ? coupon.progressiveDayDish
       ? computePratoDoDiaDiscountCents(items, method)
+      : coupon.flatPerComboCents
+      ? Math.min(computeFlatPerComboDiscountCents(items, coupon.flatPerComboCents), cashTotal)
       : computeCouponDiscountCents(cashTotal, coupon)
     : 0;
   const couponDiscount = itemCouponDiscount + deliveryDiscount;

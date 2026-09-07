@@ -51,7 +51,7 @@ export const PRATO_DO_DIA_SCHEDULE: PratoDoDiaDay[] = [
   },
 ];
 
-/** Dia da semana em Brasília, não no fuso do servidor — troca à meia-noite local, não em outro horário. */
+/** Dia da semana em Brasília, não no fuso do servidor. Troca à meia-noite local, não em outro horário. */
 function getBrazilWeekday(date: Date): number {
   const WEEKDAY_INDEX: Record<string, number> = {
     Sun: 0,

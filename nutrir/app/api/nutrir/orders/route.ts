@@ -122,6 +122,7 @@ export async function POST(request: Request) {
         isPatient: !!paciente,
         isFirstPurchase: !priorOrders,
         alreadyUsedByCustomer,
+        deliveryBairroId: fulfillment_type === "delivery" ? body.delivery_bairro_id : undefined,
       });
       if (restrictionError) {
         return NextResponse.json({ error: restrictionError }, { status: 400 });

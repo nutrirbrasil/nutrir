@@ -48,6 +48,7 @@ function canReusePendingOrder(
           label: draft.coupon_label,
           freeDelivery: draft.coupon_free_delivery,
           progressiveDayDish: draft.coupon_progressive_day_dish,
+          flatPerComboCents: draft.coupon_flat_per_combo_cents,
         }
       : null,
     draft.points_redeemed_cents ?? 0
@@ -88,6 +89,7 @@ export function ReviewStep() {
         label: d.coupon_label,
         freeDelivery: d.coupon_free_delivery,
         progressiveDayDish: d.coupon_progressive_day_dish,
+        flatPerComboCents: d.coupon_flat_per_combo_cents,
       }
     : null;
   const pointsRedeemed = d.points_redeemed_cents ?? 0;
@@ -274,6 +276,7 @@ export function ReviewStep() {
               <CouponField
                 cpf={d.customer_cpf}
                 phone={d.customer_phone}
+                bairroId={isDelivery ? d.delivery_bairro_id : undefined}
                 applied={
                   d.coupon_code
                     ? {
@@ -282,6 +285,7 @@ export function ReviewStep() {
                         label: d.coupon_label,
                         freeDelivery: d.coupon_free_delivery,
                         progressiveDayDish: d.coupon_progressive_day_dish,
+                        flatPerComboCents: d.coupon_flat_per_combo_cents,
                       }
                     : null
                 }
@@ -292,6 +296,7 @@ export function ReviewStep() {
                     coupon_label: coupon.label,
                     coupon_free_delivery: coupon.freeDelivery,
                     coupon_progressive_day_dish: coupon.progressiveDayDish,
+                    coupon_flat_per_combo_cents: coupon.flatPerComboCents,
                     order_id: undefined,
                   })
                 }
@@ -302,6 +307,7 @@ export function ReviewStep() {
                     coupon_label: undefined,
                     coupon_free_delivery: undefined,
                     coupon_progressive_day_dish: undefined,
+                    coupon_flat_per_combo_cents: undefined,
                     order_id: undefined,
                   })
                 }

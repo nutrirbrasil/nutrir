@@ -1,3 +1,5 @@
+import { CENTRO_PICARRAS_BAIRRO_ID } from "./delivery-fees";
+
 export interface CouponDefinition {
   /** Percentual de desconto (0–100) sobre a base informada no checkout. */
   percent: number;
@@ -10,10 +12,14 @@ export interface CouponDefinition {
   expiresAt?: string;
   /** Zera a taxa de entrega do pedido (não mexe no desconto sobre os itens). */
   freeDelivery?: boolean;
-  /** Desconto progressivo por unidade do "prato do dia" (ver lib/pratododia.ts e computePratoDoDiaDiscountCents) — percent aqui fica 0, o valor real vem do cálculo por unidade. */
+  /** Desconto progressivo por unidade do "prato do dia" (ver lib/pratododia.ts e computePratoDoDiaDiscountCents). Percent aqui fica 0, o valor real vem do cálculo por unidade. */
   progressiveDayDish?: boolean;
-  /** Só pode ser usado uma vez por conta (telefone) — ver hasUsedCouponByPhone em lib/supabase-db.ts. */
+  /** Só pode ser usado uma vez por conta (telefone). Ver hasUsedCouponByPhone em lib/supabase-db.ts. */
   oncePerCustomer?: boolean;
+  /** Desconto fixo em centavos por combo (kit pronto ou monte seu combo) no pedido, não por marmita nem percentual. */
+  flatPerComboCents?: number;
+  /** Só vale pra entrega no Centro de Balneário Piçarras (ver CENTRO_PICARRAS_BAIRRO_ID em lib/delivery-fees.ts). */
+  centroPicarrasOnly?: boolean;
 }
 
 // NUTRIPAULA não entra aqui: é um cupom de parceiro de verdade (nutrir_partners,
@@ -22,9 +28,10 @@ export interface CouponDefinition {
 const COUPONS: Record<string, CouponDefinition> = {
   PRIMEIRACOMPRA: { percent: 15, label: "15% DE DESCONTO", firstPurchaseOnly: true },
   PACIENTEVIP: { percent: 10, label: "10% DE DESCONTO", patientOnly: true },
-  FRETEGRATIS: { percent: 0, label: "FRETE GRÁTIS", freeDelivery: true },
+  FRETEGRATIS: { percent: 0, label: "FRETE GRÁTIS", freeDelivery: true, centroPicarrasOnly: true },
   PRATODODIA: { percent: 0, label: "PRATO DO DIA", progressiveDayDish: true },
   OBRIGADO10: { percent: 10, label: "10% DE DESCONTO", oncePerCustomer: true },
+  SETE: { percent: 0, label: "R$7 POR COMBO", flatPerComboCents: 700 },
 };
 
 /** Lista os cupons fixos (não inclui os de parceiro, que vêm do banco — ver lib/partners.ts). */
@@ -53,8 +60,10 @@ export function computeCouponDiscountCents(baseCents: number, coupon: CouponDefi
 export interface CouponValidationContext {
   isFirstPurchase?: boolean;
   isPatient?: boolean;
-  /** Só relevante quando coupon.oncePerCustomer — telefone já usou esse cupom antes? */
+  /** Só relevante quando coupon.oncePerCustomer. Telefone já usou esse cupom antes? */
   alreadyUsedByCustomer?: boolean;
+  /** bairroId da entrega (undefined pra retirada) — só relevante quando coupon.centroPicarrasOnly. */
+  deliveryBairroId?: string;
 }
 
 /** Confere as restrições de um cupom (primeira compra, paciente, validade, uso único). Retorna null se estiver ok, ou a mensagem de erro. */
@@ -74,6 +83,9 @@ export function validateCouponRestrictions(
   }
   if (coupon.oncePerCustomer && ctx.alreadyUsedByCustomer) {
     return "Este cupom já foi usado nessa conta.";
+  }
+  if (coupon.centroPicarrasOnly && ctx.deliveryBairroId !== CENTRO_PICARRAS_BAIRRO_ID) {
+    return "Este cupom vale só pra entregas no Centro de Balneário Piçarras.";
   }
   return null;
 }

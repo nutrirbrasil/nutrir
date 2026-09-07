@@ -82,6 +82,9 @@ const ALL_OPTIONS: DeliveryBairroOption[] = [
 
 const OPTIONS_BY_ID = new Map(ALL_OPTIONS.map((o) => [o.bairroId, o]));
 
+/** bairroId do Centro de Balneário Piçarras, usado por cupons restritos a esse bairro (ex: FRETEGRATIS). */
+export const CENTRO_PICARRAS_BAIRRO_ID = bairroId("balnearioPicarras", "Centro");
+
 /** Única fonte de verdade da taxa — sempre recalculada a partir do bairroId, nunca do cliente. */
 export function getDeliveryFeeCents(bairroId: string): number | null {
   const option = OPTIONS_BY_ID.get(bairroId);

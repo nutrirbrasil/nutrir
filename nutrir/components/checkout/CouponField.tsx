@@ -9,6 +9,7 @@ export interface AppliedCoupon {
   label?: string;
   freeDelivery?: boolean;
   progressiveDayDish?: boolean;
+  flatPerComboCents?: number;
 }
 
 interface Props {
@@ -18,9 +19,11 @@ interface Props {
   /** CPF e telefone já preenchidos no checkout — conferidos contra restrições do cupom (ex: só paciente, só 1ª compra). */
   cpf?: string;
   phone?: string;
+  /** bairroId da entrega (undefined pra retirada) — conferido contra cupons restritos a um bairro (ex: FRETEGRATIS). */
+  bairroId?: string;
 }
 
-export function CouponField({ applied, onApply, onRemove, cpf, phone }: Props) {
+export function CouponField({ applied, onApply, onRemove, cpf, phone, bairroId }: Props) {
   const [input, setInput] = useState(applied?.code ?? "");
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
@@ -40,6 +43,7 @@ export function CouponField({ applied, onApply, onRemove, cpf, phone }: Props) {
       const params = new URLSearchParams({ code });
       if (cpf?.trim()) params.set("cpf", cpf.trim());
       if (phone?.trim()) params.set("phone", phone.trim());
+      if (bairroId) params.set("bairro", bairroId);
       const res = await fetch(`/api/nutrir/coupons/check?${params.toString()}`);
       const data = (await res.json()) as {
         valid: boolean;
@@ -47,6 +51,7 @@ export function CouponField({ applied, onApply, onRemove, cpf, phone }: Props) {
         label?: string;
         freeDelivery?: boolean;
         progressiveDayDish?: boolean;
+        flatPerComboCents?: number;
         error?: string;
       };
 
@@ -61,6 +66,7 @@ export function CouponField({ applied, onApply, onRemove, cpf, phone }: Props) {
         label: data.label,
         freeDelivery: data.freeDelivery,
         progressiveDayDish: data.progressiveDayDish,
+        flatPerComboCents: data.flatPerComboCents,
       });
     } catch {
       setError("Não foi possível conferir o cupom agora. Tente de novo.");

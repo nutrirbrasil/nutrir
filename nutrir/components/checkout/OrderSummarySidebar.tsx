@@ -25,6 +25,7 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
           label: draft.coupon_label,
           freeDelivery: draft.coupon_free_delivery,
           progressiveDayDish: draft.coupon_progressive_day_dish,
+          flatPerComboCents: draft.coupon_flat_per_combo_cents,
         }
       : null,
     draft.points_redeemed_cents ?? 0
