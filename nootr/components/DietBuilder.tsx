@@ -66,7 +66,7 @@ const ICON_MANUAL = (
 );
 
 const WELCOME_OPTION_CLASS =
-  "group block w-full rounded-xl border border-nootr-line bg-nootr-black/30 p-4 text-left transition-all duration-200 hover:border-nootr-bordo/60 hover:bg-nootr-wine/15";
+  "group block w-full rounded-xl bg-nootr-black/30 p-4 text-left transition-all duration-200 hover:bg-nootr-wine/20";
 
 /** Linha de opção da tela inicial de montagem (ícone + título + descrição +
  * seta, ou selo "Pro" com cadeado quando bloqueada no plano Basic). */
@@ -83,7 +83,7 @@ function WelcomeOption({
 }) {
   return (
     <span className="flex w-full items-center gap-4">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-nootr-line bg-nootr-wine/20 text-nootr-bordoSoft transition-colors group-hover:border-nootr-bordo/60 group-hover:text-nootr-cream">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-nootr-wine/30 text-nootr-bordoSoft transition-colors group-hover:text-nootr-cream">
         {icon}
       </span>
       <span className="min-w-0 flex-1">
@@ -91,7 +91,7 @@ function WelcomeOption({
         <span className="mt-0.5 block text-xs leading-relaxed text-nootr-muted">{subtitle}</span>
       </span>
       {locked ? (
-        <span className="flex shrink-0 items-center gap-1 rounded-full border border-nootr-bordo/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-caps text-nootr-bordoSoft">
+        <span className="flex shrink-0 items-center gap-1 rounded-full bg-nootr-wine/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-caps text-nootr-bordoSoft">
           <svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden>
             <rect x="2" y="5.5" width="8" height="5" rx="1" stroke="currentColor" strokeWidth="1.1" />
             <path d="M3.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
@@ -330,7 +330,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
         await finishImport(preview, [], []);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao importar");
+      setError(err instanceof Error ? err.message : "Não deu para importar o arquivo. Tente de novo.");
       setImporting(false);
     }
   }
@@ -377,7 +377,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
       setImportNote(notes.join(" · "));
       onSaved?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao importar");
+      setError(err instanceof Error ? err.message : "Não deu para importar o arquivo. Tente de novo.");
     } finally {
       setImporting(false);
     }
@@ -403,7 +403,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
       setGenerateMsg("Pedido enviado, sua dieta chega em até 24h, após revisão de um nutricionista parceiro.");
       onSaved?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao gerar dieta");
+      setError(err instanceof Error ? err.message : "Não deu para gerar sua dieta agora. Tente de novo.");
     } finally {
       setGenerating(false);
     }
@@ -441,7 +441,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
       setSavedMsg("Dieta salva.");
       onSaved?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar");
+      setError(err instanceof Error ? err.message : "Não deu para salvar sua dieta. Tente de novo.");
     } finally {
       setSaving(false);
     }
@@ -556,9 +556,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
             </p>
           ) : (
             <>
-              <p className="mt-2 text-xs text-nootr-bordoSoft">
-                <strong>{GENERATE_DIET_WARNING.split("! ")[0]}!</strong> {GENERATE_DIET_WARNING.split("! ")[1]}
-              </p>
+              <p className="mt-2 text-xs text-nootr-bordoSoft">{GENERATE_DIET_WARNING}</p>
 
               <ol className="mt-4 space-y-2 text-xs text-nootr-muted">
                 {GENERATE_DIET_STEPS.map((step, i) => (
@@ -586,7 +584,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
                   Defina sua meta calórica em Perfil antes de gerar.
                 </p>
               )}
-              {generateMsg && <p className="mt-3 text-xs text-emerald-400/90">{generateMsg}</p>}
+              {generateMsg && <p className="mt-3 text-xs text-nootr-gold">{generateMsg}</p>}
               <button
                 onClick={handleGenerate}
                 disabled={generating || !profile?.target_calories}
@@ -688,7 +686,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
           )}
         </>
       ) : (
-        <p className="mt-8 rounded-xl border border-nootr-line bg-nootr-wine/30 px-4 py-3 text-xs text-nootr-muted">
+        <p className="mt-8 rounded-xl bg-nootr-wine/30 px-4 py-3 text-xs text-nootr-muted">
           Plano <strong className="text-nootr-cream">Basic</strong>, 1 dieta base para todos os dias. No{" "}
           <strong className="text-nootr-bordoSoft">Pro</strong>: uma dieta por dia da semana (ou um plano único,
           se preferir) e importação por IA.
@@ -833,7 +831,7 @@ export function DietBuilder({ token, onSaved }: { token: string; onSaved?: () =>
             )}
 
             {error && <p className="mt-4 text-sm text-nootr-bordoSoft">{error}</p>}
-            {savedMsg && <p className="mt-4 text-sm text-emerald-400/90">{savedMsg}</p>}
+            {savedMsg && <p className="mt-4 text-sm text-nootr-gold">{savedMsg}</p>}
 
             <button onClick={handleSave} disabled={saving} className="btn-primary mt-5 w-full">
               {saving ? "Salvando…" : "Salvar dieta"}

@@ -47,7 +47,7 @@ export function ProLockButton({
         )}
       </button>
       {locked && showMsg && (
-        <div className="absolute left-1/2 z-20 mt-2 w-64 -translate-x-1/2 rounded-lg border border-nootr-bordo/40 bg-nootr-black p-3 text-center text-[11px] text-nootr-muted shadow-xl">
+        <div className="absolute left-1/2 z-20 mt-2 w-64 -translate-x-1/2 rounded-lg bg-nootr-coal p-3 text-center text-[11px] text-nootr-muted shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)]">
           {UPGRADE_MSG}
         </div>
       )}

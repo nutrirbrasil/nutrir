@@ -27,7 +27,7 @@ function PantryMatchCard({ match, onAdd }: { match: PantryMatch; onAdd: () => vo
     <button
       type="button"
       onClick={onAdd}
-      className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5 text-left transition-colors hover:border-nootr-bordo/60 hover:bg-nootr-wine/30"
+      className="rounded-lg bg-nootr-black px-3 py-2.5 text-left transition-colors hover:bg-nootr-wine/30"
     >
       <p className="text-sm text-nootr-cream">{match.name}</p>
       <p className="mt-0.5 text-xs text-nootr-faint">
@@ -49,10 +49,10 @@ const ACTION_HINTS: Record<SubstitutionAction, string> = {
   missing_food: "Escolha o alimento que falta e adicione o que você tem no lugar.",
 };
 
-const ACTION_CARDS: { id: SubstitutionAction; numeral: string; desc: string }[] = [
-  { id: "ate_different", numeral: "01", desc: "Registre o que comeu e ajustamos o resto do dia." },
-  { id: "will_eat_different", numeral: "02", desc: "Planeje uma refeição fora do plano antes de comer." },
-  { id: "missing_food", numeral: "03", desc: "Troque um alimento que não tem por outro equivalente." },
+const ACTION_CARDS: { id: SubstitutionAction; tag: string; symbol: string; desc: string }[] = [
+  { id: "ate_different", tag: "Past", symbol: "←", desc: "Registre o que comeu e ajustamos o resto do dia." },
+  { id: "will_eat_different", tag: "Future", symbol: "→", desc: "Planeje uma refeição fora do plano antes de comer." },
+  { id: "missing_food", tag: "Help", symbol: "?", desc: "Troque um alimento que não tem por outro equivalente." },
 ];
 
 /** "A, B e C" (e não "A, B, C"), pro resumo soar como frase escrita. */
@@ -65,17 +65,17 @@ function joinNames(names: string[]): string {
 // O símbolo carrega o mesmo significado da cor: quem não distingue bordô de
 // cinza (ou lê em preto e branco) continua sabendo o que subiu e o que desceu.
 const CHANGE_TAGS: Record<MealChangeKind, { label: string; symbol: string; className: string }> = {
-  increased: { label: "aumentou", symbol: "↑", className: "border-nootr-bordo/40 text-nootr-bordoSoft" },
-  decreased: { label: "diminuiu", symbol: "↓", className: "border-nootr-line text-nootr-muted" },
-  added: { label: "novo", symbol: "+", className: "border-nootr-bordo/40 text-nootr-bordoSoft" },
-  removed: { label: "removido", symbol: "−", className: "border-nootr-line text-nootr-faint" },
+  increased: { label: "aumentou", symbol: "↑", className: "text-nootr-bordoSoft" },
+  decreased: { label: "diminuiu", symbol: "↓", className: "text-nootr-muted" },
+  added: { label: "novo", symbol: "+", className: "text-nootr-bordoSoft" },
+  removed: { label: "removido", symbol: "−", className: "text-nootr-faint" },
 };
 
 /** Selo do que aconteceu com o alimento no reajuste (ver diet_engine.diff_meals). */
 function ChangeTag({ kind }: { kind: MealChangeKind }) {
   const tag = CHANGE_TAGS[kind];
   return (
-    <span className={`ml-1.5 rounded-full border px-1.5 py-px text-[9px] uppercase tracking-caps ${tag.className}`}>
+    <span className={`ml-1.5 text-[10px] font-semibold uppercase tracking-caps ${tag.className}`}>
       <span aria-hidden>{tag.symbol}</span> {tag.label}
     </span>
   );
@@ -217,7 +217,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
       setAlternatives(data.suggestions);
       setAlternativesFetched(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao buscar alternativas");
+      setError(err instanceof Error ? err.message : "Não deu para buscar alternativas. Tente de novo.");
     } finally {
       setLoadingAlternatives(false);
     }
@@ -278,7 +278,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
       // antes de adaptar o dia.
       if (data.skipped_names.length || parsed.length) setManualMode(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao interpretar com IA");
+      setError(err instanceof Error ? err.message : "A IA não conseguiu interpretar isso agora. Tente de novo ou descreva de outro jeito.");
     } finally {
       setAiLoading(false);
     }
@@ -303,7 +303,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
       });
       setAiNote((prev) => `${prev} · "${pendingRecipeSave.name}" salva nas suas receitas.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar receita");
+      setError(err instanceof Error ? err.message : "Não deu para salvar a receita. Tente de novo.");
     } finally {
       setSavingRecipe(false);
       setPendingRecipeSave(null);
@@ -389,7 +389,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
       setFoods([]);
       setSkippedNames([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao processar");
+      setError(err instanceof Error ? err.message : "Não deu para processar seu pedido agora. Tente de novo.");
     } finally {
       setLoading(false);
     }
@@ -419,10 +419,13 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
             onClick={() => switchAction(c.id)}
             className="group card card-hover relative overflow-hidden text-left"
           >
-            <span className="font-display text-3xl text-nootr-bordo/70 transition-colors group-hover:text-nootr-bordoSoft">
-              {c.numeral}
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-nootr-wine/30 font-display text-2xl text-nootr-bordoSoft transition-colors group-hover:text-nootr-cream">
+              {c.symbol}
             </span>
-            <h3 className="mt-4 text-[15px] font-semibold text-nootr-cream">{ACTION_LABELS[c.id]}</h3>
+            <p className="mt-4 text-[10px] font-semibold uppercase tracking-caps text-nootr-bordo">
+              {c.tag}
+            </p>
+            <h3 className="mt-1 text-[15px] font-semibold text-nootr-cream">{ACTION_LABELS[c.id]}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-nootr-muted">{c.desc}</p>
             <span className="mt-4 inline-block text-xs font-medium text-nootr-bordoSoft opacity-0 transition-opacity group-hover:opacity-100">
               Começar →
@@ -527,7 +530,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                     </div>
                   )}
 
-                  <div className="rounded-xl border border-dashed border-nootr-line px-3 py-3 text-center">
+                  <div className="border-t border-nootr-line/40 pt-3 text-center">
                     <p className="text-xs text-nootr-muted">
                       Esses itens não estão disponíveis também ou não gostou de nenhuma opção?
                     </p>
@@ -562,7 +565,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                   )}
 
                   {showAddNew && (
-                    <div className="rounded-xl border border-nootr-line bg-nootr-black/40 p-3">
+                    <div className="rounded-xl bg-nootr-black/40 p-3">
                       <p className="mb-2 text-[11px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
                         Adicionar à despensa
                       </p>
@@ -597,7 +600,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                       return (
                         <label
                           key={f.name}
-                          className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-nootr-line bg-nootr-black px-3 py-2 text-sm"
+                          className="flex cursor-pointer items-center gap-2.5 rounded-lg bg-nootr-black px-3 py-2 text-sm"
                         >
                           <input
                             type="checkbox"
@@ -621,7 +624,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
 
               {/* Interpretação por IA (conversa, ela pode perguntar de volta) */}
               {selectedMeal && (
-                <div className="rounded-xl border border-nootr-line bg-nootr-black/40 p-3">
+                <div className="rounded-xl bg-nootr-black/40 p-3">
                   <div className="mb-1.5 flex items-center justify-between">
                     <label className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
                       Descrever com IA
@@ -661,7 +664,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                   )}
 
                   {proposedIngredients.length > 0 && (
-                    <div className="mb-3 rounded-lg border border-nootr-bordo/30 bg-nootr-wine/30 p-2.5">
+                    <div className="mb-3 rounded-lg bg-nootr-wine/30 p-2.5">
                       <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
                         Ingredientes propostos{proposedDishName ? `, ${proposedDishName}` : ""}
                       </p>
@@ -709,7 +712,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                   </div>
 
                   {pendingRecipeSave && (
-                    <div className="mt-3 rounded-lg border border-nootr-line bg-nootr-black p-2.5">
+                    <div className="mt-3 rounded-lg bg-nootr-black p-2.5">
                       <p className="text-xs text-nootr-cream">
                         Deseja salvar &ldquo;{pendingRecipeSave.name}&rdquo; nas suas receitas?
                       </p>
@@ -738,7 +741,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
               {/* O que a IA entendeu, em linguagem natural: é a confirmação
                   principal pra quem usou o caminho conversacional. */}
               {swapSummary && (
-                <p className="rounded-xl border border-nootr-bordo/30 bg-nootr-wine/20 px-3.5 py-3 text-sm leading-relaxed text-nootr-cream">
+                <p className="rounded-xl bg-nootr-wine/20 px-3.5 py-3 text-sm leading-relaxed text-nootr-cream">
                   {swapSummary}
                 </p>
               )}
@@ -790,7 +793,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
         ) : (
           <div className="rise-in mt-4 space-y-5">
             {result.wildcard_added && (
-              <div className="rounded-xl border border-nootr-bordo/30 bg-nootr-wine/40 p-4">
+              <div className="rounded-xl bg-nootr-wine/40 p-4">
                 <p className="mb-1 text-[11px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
                   Coringa da despensa
                 </p>
@@ -802,7 +805,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
             )}
 
             {result.topup_applied && result.topup_applied.length > 0 && (
-              <div className="rounded-xl border border-nootr-bordo/30 bg-nootr-wine/40 p-4">
+              <div className="rounded-xl bg-nootr-wine/40 p-4">
                 <p className="mb-1 text-[11px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
                   Ajuste extra
                 </p>
@@ -820,7 +823,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
 
             {/* Explicação da IA */}
             {result.ai_explanation ? (
-              <div className="rounded-xl border border-nootr-bordo/30 bg-nootr-wine/40 p-4">
+              <div className="rounded-xl bg-nootr-wine/40 p-4">
                 <p className="mb-1 text-[11px] font-semibold uppercase tracking-caps text-nootr-bordoSoft">
                   Explicação
                 </p>
@@ -844,7 +847,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
               </button>
             )}
             {undone && (
-              <p className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5 text-center text-xs text-nootr-muted">
+              <p className="rounded-lg bg-nootr-black px-3 py-2.5 text-center text-xs text-nootr-muted">
                 Ajuste desfeito. Seu dia voltou como estava antes.
               </p>
             )}
@@ -852,7 +855,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
             {/* Macros antes -> depois + meta */}
             <div>
               <p className="label-caps">Macros do dia</p>
-              <div className="mt-2 overflow-hidden rounded-xl border border-nootr-line">
+              <div className="mt-2 overflow-hidden rounded-xl bg-nootr-black/30">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-nootr-line text-[11px] uppercase tracking-caps text-nootr-faint">
@@ -882,7 +885,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                   const changeOf = (name: string) => mealChanges.find((c) => c.name === name);
                   const removed = mealChanges.filter((c) => c.kind === "removed");
                   return (
-                    <div key={meal.id} className="rounded-lg border border-nootr-line px-3.5 py-2.5">
+                    <div key={meal.id} className="rounded-lg bg-nootr-black/30 px-3.5 py-2.5">
                       <div className="flex justify-between text-sm">
                         <p className="font-medium text-nootr-cream">{meal.name}</p>
                         <p className="text-nootr-faint">{meal.time}</p>

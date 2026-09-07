@@ -24,10 +24,10 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-nootr-line bg-nootr-black/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
         <Link href="/" className="group flex items-baseline gap-0.5">
-          <span className="font-display text-2xl font-semibold tracking-wide text-nootr-cream">
+          <span className="font-display text-2xl font-semibold italic tracking-wide text-nootr-cream">
             Nootr
           </span>
-          <span className="text-2xl leading-none text-nootr-bordo transition-colors group-hover:text-nootr-bordoSoft">
+          <span className="text-2xl not-italic leading-none text-nootr-bordo transition-colors group-hover:text-nootr-bordoSoft">
             .
           </span>
         </Link>

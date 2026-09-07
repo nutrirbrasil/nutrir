@@ -4,13 +4,9 @@ export const BASIC_DAILY_SUBSTITUTIONS = 3;
 export const BASIC_MAX_RECIPES = 5;
 
 // Recursos planejados para o plano Pro (ainda não implementados), cada um com
-// um título e uma descrição curta.
+// um título e uma descrição curta. O Noo já existe (Basic e Pro, ver
+// plan_limits.NOO_DAILY_MESSAGES), não entra aqui.
 export const PRO_SOON: { title: string; description: string }[] = [
-  {
-    title: "Noo",
-    description:
-      "Seu companheiro de dieta.",
-  },
   {
     title: "NooTravel",
     description: "Vai viajar? Adapte sua dieta por país.",
@@ -52,29 +48,37 @@ export const PRO_ANNUAL_BILLING_NOTE = `cobrado ${formatCurrency(PRO_ANNUAL_TOTA
 // pra não divergirem entre as duas telas (ver rotas/limites que de fato
 // restringem por plano: diets.py save_diet/import exigem "pro";
 // plan_limits.py limita substituições/receitas no Basic).
-export const BASIC_FEATURES = [
+// Item comum (string) sai com o check de sempre; { text, icon: "noo" } sai
+// com a carinha do Noo no lugar do check e o texto em bordô, pra destacar o
+// limite de mensagens do Noo (plan_limits.NOO_DAILY_MESSAGES), que é um
+// contador separado das substituições e não aparece em nenhuma outra linha.
+export type PlanFeature = string | { text: string; icon: "noo" };
+
+export const BASIC_FEATURES: PlanFeature[] = [
   "Uma dieta base para todos os dias da semana",
   `Até ${BASIC_DAILY_SUBSTITUTIONS} substituições de alimentos com IA por dia`,
   `Crie até ${BASIC_MAX_RECIPES} receitas personalizadas`,
   "Preferências alimentares individualizadas",
   "Cálculo calórico automático",
+  { text: "Acesso limitado ao Noo", icon: "noo" },
 ];
 
-export const PRO_FEATURES = [
+export const PRO_FEATURES: PlanFeature[] = [
   "Tudo do Basic",
   "Até 7 dietas personalizadas",
   "Importe suas dietas: a IA lê o arquivo e monta tudo",
   "Substituições ilimitadas",
   "Receitas personalizadas ilimitadas",
-  "Fale com o Noo por áudio, sem precisar digitar",
+  { text: "Limite do Noo quase 10x maior", icon: "noo" },
+  { text: "Chat por áudio com o Noo, sem mais tempo perdido digitando", icon: "noo" },
 ];
 
 // Bônus de destaque do plano Pro, exibidos em separado da lista de features
 // no PlanCard ("Bônus: ..."), ver POST /nootr/diets/generate e
 // app/nootricionista/page.tsx (desconto com a nutricionista cofundadora).
 export const PRO_BONUS = [
-  "Não tem dieta? Sem problema! Assine o Pro e receba um Plano Alimentar revisado por um nutricionista",
-  "Descontos Exclusivos em consultas com a Nutricionista Cofundadora do Nootr",
+  "Não tem dieta? Sem problema, assine o Pro e receba um plano alimentar revisado por um nutricionista",
+  "Descontos exclusivos em consultas com a nutricionista cofundadora do Nootr",
 ];
 
 // Aviso legal de responsabilidade da dieta gerada automaticamente, exibido
@@ -86,7 +90,7 @@ export const PRO_DIET_DISCLAIMER = "Essa é uma dieta básica e não substitui u
 // profiles.ai_diet_generated_at / POST /nootr/diets/generate), então reforça
 // revisar perfil e preferências antes de prosseguir.
 export const GENERATE_DIET_WARNING =
-  "Cada usuário só tem direito a uma dieta! Garanta que você preencheu seus dados e preferências alimentares corretamente antes de prosseguir. A criação da dieta é baseada 100% nas suas preferências e observações, para trazer maior aderência ao plano alimentar.";
+  "Você só tem direito a uma dieta gerada pelo Nootr. Confira se seus dados e preferências estão certos antes de continuar: a dieta é montada 100% a partir deles, então quanto mais completo seu perfil, melhor o resultado.";
 
 // Passo a passo exibido na tela de gerar dieta (components/DietBuilder.tsx).
 export const GENERATE_DIET_STEPS = [

@@ -122,18 +122,9 @@ function DietTargetsPanel({ ctx, current }: { ctx?: AdminUserContext; current: T
   ].filter(Boolean) as string[];
 
   return (
-    <div className="mt-3 rounded-lg border border-nootr-line bg-nootr-card/60 p-3">
+    <div className="mt-3 rounded-lg bg-nootr-black/40 p-3">
       {corpo.length > 0 && (
-        <div className="mb-2.5 flex flex-wrap gap-1.5">
-          {corpo.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-nootr-line bg-nootr-black px-2 py-0.5 text-[11px] text-nootr-muted"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
+        <p className="mb-2.5 text-[11px] text-nootr-muted">{corpo.join(" · ")}</p>
       )}
 
       <table className="w-full text-xs">
@@ -223,7 +214,7 @@ function AprovarContent({ token }: { token: string }) {
     try {
       await (decision === "approve" ? nootrApi.admin.approveRecipe(token, id) : nootrApi.admin.rejectRecipe(token, id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao decidir receita");
+      setError(err instanceof Error ? err.message : "Não deu para registrar a decisão da receita. Tente de novo.");
       load();
     }
   }
@@ -233,7 +224,7 @@ function AprovarContent({ token }: { token: string }) {
     try {
       await (decision === "approve" ? nootrApi.admin.approveCustomFood(token, id) : nootrApi.admin.rejectCustomFood(token, id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao decidir alimento");
+      setError(err instanceof Error ? err.message : "Não deu para registrar a decisão do alimento. Tente de novo.");
       load();
     }
   }
@@ -255,7 +246,7 @@ function AprovarContent({ token }: { token: string }) {
       const updated = await nootrApi.admin.updateDiet(token, dietId, mealsPayload);
       setDiets((prev) => prev.map((d) => (d.id === dietId ? { ...d, ...updated } : d)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar alterações da dieta");
+      setError(err instanceof Error ? err.message : "Não deu para salvar as alterações da dieta. Tente de novo.");
     } finally {
       setSavingDiet(false);
     }
@@ -273,7 +264,7 @@ function AprovarContent({ token }: { token: string }) {
         setEditMeals(updated.meals.map((m) => ({ id: m.id, name: m.name, time: m.time, foods: m.foods.map(mealFoodToAdded) })));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao refazer a dieta");
+      setError(err instanceof Error ? err.message : "Não deu para regenerar a dieta. Tente de novo.");
     } finally {
       setRegeneratingDietId(null);
     }
@@ -285,7 +276,7 @@ function AprovarContent({ token }: { token: string }) {
     try {
       await (decision === "approve" ? nootrApi.admin.approveDiet(token, id) : nootrApi.admin.rejectDiet(token, id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao decidir dieta");
+      setError(err instanceof Error ? err.message : "Não deu para registrar a decisão da dieta. Tente de novo.");
       load();
     }
   }
@@ -318,7 +309,7 @@ function AprovarContent({ token }: { token: string }) {
         ) : (
           <ul className="space-y-3">
             {diets.map((d) => (
-              <li key={d.id} className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-3">
+              <li key={d.id} className="rounded-lg bg-nootr-black/40 px-3.5 py-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-nootr-cream">{d.name}</p>
@@ -423,7 +414,7 @@ function AprovarContent({ token }: { token: string }) {
         ) : (
           <ul className="space-y-2">
             {recipes.map((r) => (
-              <li key={r.id} className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-3">
+              <li key={r.id} className="rounded-lg bg-nootr-black/40 px-3.5 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-nootr-cream">{r.name}</p>
@@ -454,7 +445,7 @@ function AprovarContent({ token }: { token: string }) {
         ) : (
           <ul className="space-y-2">
             {foods.map((f) => (
-              <li key={f.id} className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-3">
+              <li key={f.id} className="rounded-lg bg-nootr-black/40 px-3.5 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-nootr-cream">{f.name}</p>

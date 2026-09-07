@@ -133,7 +133,7 @@ export function TacoTagListInput({
         placeholder="Buscar alimento"
       />
       {open && (
-        <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-nootr-line bg-nootr-black shadow-lg">
+        <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl bg-nootr-coal shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)]">
           {searching && <p className="px-3 py-2 text-xs text-nootr-faint">Buscando…</p>}
           {!searching && results.length === 0 && (
             <p className="px-3 py-2 text-xs text-nootr-faint">Nenhum alimento encontrado.</p>
@@ -158,7 +158,7 @@ export function TacoTagListInput({
           {selected.map((item, i) => (
             <span
               key={`${item.full_name}-${i}`}
-              className="flex items-center gap-1.5 rounded-full border border-nootr-line bg-nootr-black px-3 py-1 text-xs text-nootr-cream"
+              className="flex items-center gap-1.5 rounded-full bg-nootr-black px-3 py-1 text-xs text-nootr-cream"
             >
               {item.display_name}
               <button

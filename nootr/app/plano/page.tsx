@@ -43,7 +43,7 @@ function PlanoContent({ token }: { token: string }) {
       const updated = await nootrApi.updateProfile(token, { plan, billing_cycle: billingCycle });
       setProfile(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao trocar de plano");
+      setError(err instanceof Error ? err.message : "Não deu para trocar de plano. Tente de novo.");
     } finally {
       setSaving(null);
     }
@@ -71,7 +71,7 @@ function PlanoContent({ token }: { token: string }) {
           features={BASIC_FEATURES}
           cta={
             currentPlan === "basic" ? (
-              <p className="rounded-lg border border-nootr-line py-2.5 text-center text-xs text-nootr-faint">
+              <p className="py-2.5 text-center text-xs text-nootr-faint">
                 Seu plano atual
               </p>
             ) : (
@@ -99,7 +99,7 @@ function PlanoContent({ token }: { token: string }) {
           bonus={PRO_BONUS}
           cta={
             isCurrentPro ? (
-              <p className="rounded-lg border border-nootr-bordo/40 py-2.5 text-center text-xs text-nootr-bordoSoft">
+              <p className="py-2.5 text-center text-xs text-nootr-bordoSoft">
                 Seu plano atual
               </p>
             ) : (

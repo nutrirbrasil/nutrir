@@ -64,13 +64,16 @@ _DIET_SCHEMA = {
 
 def _generate_from_contents(
     contents: list[dict], schema: dict | None, system_instruction: str | None = None,
-    timeout: float = 30.0, allow_empty: bool = False, temperature: float = 0.2,
+    timeout: float = 60.0, allow_empty: bool = False, temperature: float = 0.2,
 ) -> str:
     """Chamada base ao Gemini (multi-turno); devolve o texto do candidato.
 
     `timeout` é parametrizável porque nem toda chamada é um prompt de texto
     curto: mandar um áudio inteiro (ver transcribe_audio) sobe alguns MB e
-    demora mais que os 30s que bastam pro resto.
+    demora mais que o padrão. 60s de padrão (era 30s) porque o prompt do Noo
+    sozinho (tabela de refeições + regras) já é grande o bastante pra às
+    vezes passar de 30s numa resposta mais lenta do Gemini, sem isso ser uma
+    falha de rede de verdade.
 
     `allow_empty`: quando a resposta vem sem `parts`, devolve "" em vez de
     levantar erro. É o que acontece quando o modelo não tem NADA a dizer, o
@@ -95,8 +98,17 @@ def _generate_from_contents(
         body["systemInstruction"] = {"parts": [{"text": system_instruction}]}
 
     url = _ENDPOINT.format(model=settings.gemini_model)
+    # Um timeout de leitura costuma ser uma resposta lenta do Gemini, não uma
+    # rede de fato fora do ar, então vale UMA tentativa extra antes de
+    # desistir e mostrar erro pra pessoa (ela já esperou o timeout inteiro
+    # uma vez, uma segunda chamada que funciona é bem melhor que um erro).
     try:
         resp = httpx.post(url, params={"key": settings.gemini_api_key}, json=body, timeout=timeout)
+    except httpx.TimeoutException:
+        try:
+            resp = httpx.post(url, params={"key": settings.gemini_api_key}, json=body, timeout=timeout)
+        except httpx.HTTPError as exc:
+            raise AIError(f"Falha de rede ao chamar o Gemini: {exc}") from exc
     except httpx.HTTPError as exc:
         raise AIError(f"Falha de rede ao chamar o Gemini: {exc}") from exc
     if resp.status_code >= 300:
@@ -1053,7 +1065,10 @@ alimento ("comi pizza", "tomei whey"), devolva "quantity" como string VAZIA pra 
 "porção comum", nem "1 unidade", nem "1 porção": chutar errado desregula o dia inteiro dela. Só preencha \
 "quantity" com o que ela EFETIVAMENTE disse ou dá pra deduzir da própria fala dela (ex: "comi um ovo" -> \
 "1 unidade"; "duas fatias de pizza" -> "2 fatias"; "um copo de leite" -> "1 copo"; "meio prato de arroz" \
--> "meio prato"). Um item com "quantity" vazio NÃO é aplicado no dia agora, só quando ela responder a \
+-> "meio prato"). CUIDADO com "substituí X por Y"/"troquei X por Y" sem quantidade de Y: NÃO assuma que \
+Y veio na mesma quantidade que X tinha, isso também é chute, a pessoa pode ter comido mais ou menos. Só \
+preencha a quantidade de Y se ela disse a quantidade DELE especificamente. Um item com "quantity" vazio \
+NÃO é aplicado no dia agora, só quando ela responder a \
 quantidade numa próxima mensagem. Se vários itens estiverem sem quantidade, pergunte de todos de uma vez \
 numa frase só, não uma pergunta por mensagem.
 - `already_eaten`: nomes das refeições que ela já comeu e por isso NÃO podem ser reajustadas. Só \
@@ -1098,6 +1113,21 @@ mensagem seguinte, quando ela responder ("duas fatias", "uns 200g"), devolva o `
 novo pra aquela refeição: o MESMO "skipped" de antes (se a troca envolvia tirar algo) JUNTO com o \
 "added" agora com a quantidade preenchida. Nunca mande só o "added" sozinho nessa hora, como se o \
 "skipped" já tivesse acontecido, ele NÃO aconteceu, a troca inteira ficou esperando essa resposta.
+13. Quando você deixa "quantity" vazio (regra acima), a `reply` NUNCA pode ter verbo no passado pro que \
+ainda não aconteceu ("troquei", "adicionei", "registrei", "já ajustei", "ajustei"), isso é falso, nada \
+mudou no dia dela ainda. Use futuro/condicional ("vou trocar", "assim que você me disser eu ajusto", \
+"aí eu já registro"), ou simplesmente pergunte direto sem narrar uma ação ("Quanto de batata você comeu \
+no lugar do arroz?", "Que tamanho tinha esse pastel?"). Exemplos:
+  - Errado: "Troquei o arroz pela batata, só me diz a quantidade." Certo: "Quanto de batata você comeu \
+no lugar do arroz?"
+  - Errado: "Já adicionei o whey no seu lanche, quantos gramas foram?" Certo: "Quantos gramas de whey \
+você tomou, pra eu adicionar certinho?"
+  - Errado: "Entendi, troquei o espaguete pela coxinha. Qual o tamanho dela?" Certo: "Qual o tamanho \
+dessa coxinha? Assim eu já troco o espaguete por ela e ajusto o resto do dia."
+A pessoa precisa entender, só pela `reply`, que ela ainda precisa responder ANTES de qualquer coisa \
+mudar, nunca que já aconteceu e falta só um detalhe. Isso vale mesmo se ELA falou no passado ("substituí \
+o arroz pela batata"): o fato dela já ter comido não significa que o Nootr já aplicou a troca no APP, \
+não copie o tempo verbal dela pra sua reply, o critério é sempre "quantity vazio = nada mudou ainda".
 {decomposition_rules}
 """
 

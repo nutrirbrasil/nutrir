@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { nootrApi } from "@/lib/api";
 import { Icon } from "@/components/Icon";
 import type { NooDayView, NooMessage, NooReply, Plan } from "@/lib/types";
@@ -13,20 +14,23 @@ const SUGGESTIONS = [
   "Estou sem frango pro almoço",
 ];
 
-// Verde = ganhou (mais quantidade ou alimento novo). Vermelho = perdeu
-// (menos quantidade ou alimento retirado). Nome colorido quando o alimento
-// entrou/saiu; só a seta colorida quando foi a quantidade que mudou.
+// Dourado = ganhou (mais quantidade ou alimento novo), mesmo tom de
+// confirmação usado no resto do app (ver .num/nootr-gold). Removido/diminuído
+// usa o tom apagado (não vermelho: vermelho é o acento da marca, usá-lo pra
+// "erro"/perda criaria ambiguidade, e sair de algo na troca não é uma falha).
+// Nome colorido quando o alimento entrou/saiu, com risco no que saiu; só a
+// seta colorida quando foi a quantidade que mudou.
 const FOOD_STYLE: Record<string, { arrow: string; name: string; label: string }> = {
-  added: { arrow: "+", name: "text-emerald-400", label: "adicionado" },
-  removed: { arrow: "−", name: "text-red-400", label: "removido" },
+  added: { arrow: "+", name: "text-nootr-gold", label: "adicionado" },
+  removed: { arrow: "−", name: "text-nootr-faint line-through decoration-nootr-faint/50", label: "removido" },
   increased: { arrow: "↑", name: "", label: "aumentou" },
   decreased: { arrow: "↓", name: "", label: "diminuiu" },
 };
 const ARROW_COLOR: Record<string, string> = {
-  added: "text-emerald-400",
-  increased: "text-emerald-400",
-  removed: "text-red-400",
-  decreased: "text-red-400",
+  added: "text-nootr-gold",
+  increased: "text-nootr-gold",
+  removed: "text-nootr-faint",
+  decreased: "text-nootr-faint",
 };
 
 /** "512 kcal · P 30g · C 60g · G 12g" */
@@ -55,7 +59,7 @@ function DayView({ day }: { day: NooDayView }) {
   return (
     <div className="mt-3 space-y-3 border-t border-nootr-bordo/20 pt-3">
       {/* Totais do dia */}
-      <div className="rounded-lg border border-nootr-line bg-nootr-card/70 px-3 py-2.5">
+      <div className="rounded-lg bg-nootr-black/40 px-3 py-2.5">
         <p className="text-[10px] uppercase tracking-caps text-nootr-faint">Dia</p>
         <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-sm">
           <span className="tabular-nums text-nootr-muted">{Math.round(day.macros_before.calories)}</span>
@@ -64,7 +68,7 @@ function DayView({ day }: { day: NooDayView }) {
             {Math.round(day.macros_after.calories)} kcal
           </span>
           {Math.abs(deltaKcal) >= 1 && (
-            <span className={`text-xs tabular-nums ${deltaKcal > 0 ? "text-emerald-400" : "text-red-400"}`}>
+            <span className={`num text-xs ${deltaKcal > 0 ? "text-nootr-gold" : "text-nootr-faint"}`}>
               ({deltaKcal > 0 ? "+" : ""}{Math.round(deltaKcal)})
             </span>
           )}
@@ -148,12 +152,24 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
   const [confirmingReset, setConfirmingReset] = useState(false);
   // Áudio (Pro): grava pelo MediaRecorder e manda pro backend transcrever.
   const [recording, setRecording] = useState(false);
+  // Segundos gravados, só pra mostrar o cronômetro na barra de gravação.
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
   // Detectado só depois de montar: no SSR não existe navigator, e navegador
   // sem MediaRecorder (ou página sem HTTPS) não deve mostrar o botão.
   const [canRecord, setCanRecord] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  // true entre clicar em "cancelar" e o MediaRecorder de fato parar: o
+  // onstop precisa saber que é pra descartar o áudio em vez de mandar.
+  const cancelledRef = useRef(false);
   const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!recording) return;
+    setRecordingSeconds(0);
+    const interval = setInterval(() => setRecordingSeconds((s) => s + 1), 1000);
+    return () => clearInterval(interval);
+  }, [recording]);
 
   useEffect(() => {
     let active = true;
@@ -279,6 +295,11 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
         // Solta o microfone assim que para, senão o indicador de gravação do
         // navegador fica aceso mesmo com o chat já parado.
         stream.getTracks().forEach((t) => t.stop());
+        if (cancelledRef.current) {
+          cancelledRef.current = false;
+          chunksRef.current = [];
+          return;
+        }
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
         chunksRef.current = [];
         if (blob.size === 0) return;
@@ -311,6 +332,21 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
     recorderRef.current?.stop();
     recorderRef.current = null;
     setRecording(false);
+  }
+
+  // Descarta a gravação em andamento, sem transcrever nem gastar mensagem
+  // do limite diário, pro caso da pessoa mudar de ideia no meio da fala.
+  function cancelRecording() {
+    cancelledRef.current = true;
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+    setRecording(false);
+  }
+
+  function formatRecordingTime(totalSeconds: number): string {
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
   }
 
   async function sendAudio(blob: Blob) {
@@ -370,14 +406,12 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
   return (
     <div className="card flex h-[min(70vh,640px)] flex-col p-0">
       <header className="flex items-center gap-3 border-b border-nootr-line px-5 py-3.5">
-        <span className="icon-badge h-9 w-9">
-          <Icon name="sparkle" size={18} />
-        </span>
+        <Image src="/noo-icon.png" alt="Noo" width={36} height={36} className="shrink-0" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-nootr-cream">
             Noo
             {plan === "pro" && (
-              <span className="ml-2 rounded-full border border-nootr-bordo/40 px-1.5 py-px text-[9px] font-bold uppercase tracking-caps text-nootr-bordoSoft">
+              <span className="ml-2 rounded-full bg-nootr-wine/40 px-1.5 py-px text-[9px] font-bold uppercase tracking-caps text-nootr-bordoSoft">
                 Pro
               </span>
             )}
@@ -427,7 +461,8 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
 
         {!loading && isEmpty && (
           <div className="py-6 text-center">
-            <p className="font-display text-xl text-nootr-cream">Oi, eu sou o Noo.</p>
+            <Image src="/noo-icon.png" alt="Noo" width={64} height={64} className="mx-auto" priority />
+            <p className="mt-2 font-display text-xl text-nootr-cream">Oi, eu sou o Noo.</p>
             <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-nootr-muted">
               Comeu algo fora do plano? Vai comer? Está sem um ingrediente? Me conta numa frase, do
               seu jeito, e eu reajusto o resto do dia pra suas metas continuarem batendo.
@@ -444,7 +479,7 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
 
         {messages.map((m) =>
           m.role === "user" ? (
-            <div key={m.id} className="flex justify-end">
+            <div key={m.id} className="flex items-end justify-end gap-2">
               <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-nootr-bordo/90 px-3.5 py-2">
                 {m.audio && (
                   // Áudio que a pessoa mandou: dá pra reouvir o que ela falou
@@ -459,24 +494,33 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
                 )}
                 <p className="text-sm text-nootr-cream">{m.text}</p>
               </div>
+              <span className="mb-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nootr-wine/40 text-nootr-bordoSoft">
+                <Icon name="user" size={14} />
+              </span>
             </div>
           ) : (
-            <div key={m.id} className="max-w-[92%] rounded-2xl rounded-bl-sm border border-nootr-line bg-nootr-black px-3.5 py-2.5">
-              <p className="text-sm leading-relaxed text-nootr-cream">{m.text}</p>
-              {isDayView(m.changes) && <DayView day={m.changes} />}
+            <div key={m.id} className="flex items-end gap-2">
+              <Image src="/noo-icon.png" alt="" width={24} height={24} className="mb-1 shrink-0" />
+              <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-nootr-black px-3.5 py-2.5">
+                <p className="text-sm leading-relaxed text-nootr-cream">{m.text}</p>
+                {isDayView(m.changes) && <DayView day={m.changes} />}
+              </div>
             </div>
           )
         )}
 
         {sending && (
-          <div className="flex items-center gap-1.5 px-1 text-nootr-faint" aria-label="Noo está pensando">
-            {[0, 150, 300].map((delay) => (
-              <span
-                key={delay}
-                className="h-1.5 w-1.5 animate-pulse rounded-full bg-current"
-                style={{ animationDelay: `${delay}ms` }}
-              />
-            ))}
+          <div className="flex items-center gap-2" aria-label="Noo está pensando">
+            <Image src="/noo-icon.png" alt="" width={24} height={24} className="shrink-0" />
+            <div className="flex items-center gap-1.5 text-nootr-faint">
+              {[0, 150, 300].map((delay) => (
+                <span
+                  key={delay}
+                  className="h-1.5 w-1.5 animate-pulse rounded-full bg-current"
+                  style={{ animationDelay: `${delay}ms` }}
+                />
+              ))}
+            </div>
           </div>
         )}
         <div ref={endRef} />
@@ -486,7 +530,7 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
         {error && <p className="mb-2 text-xs text-nootr-bordoSoft">{error}</p>}
 
         {outOfMessages ? (
-          <div className="rounded-lg border border-nootr-bordo/30 bg-nootr-wine/25 px-3.5 py-3 text-center">
+          <div className="rounded-lg bg-nootr-wine/25 px-3.5 py-3 text-center">
             <p className="text-sm text-nootr-cream">Você usou suas mensagens de hoje.</p>
             <p className="mt-1 text-xs text-nootr-muted">
               O limite renova amanhã, ou reinicie o Noo pra ganhar mais uma (só rende bônus algumas
@@ -500,6 +544,32 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
                 </Link>
               </p>
             )}
+          </div>
+        ) : recording ? (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={cancelRecording}
+              aria-label="Cancelar gravação"
+              title="Cancelar gravação"
+              className="shrink-0 rounded-lg border border-nootr-line px-3 py-2.5 text-nootr-muted transition-colors hover:border-nootr-bordo/50 hover:text-nootr-bordoSoft"
+            >
+              <Icon name="trash" size={18} />
+            </button>
+            <div className="input-field flex flex-1 items-center gap-2.5">
+              <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-nootr-bordo" />
+              <span className="text-sm text-nootr-cream">Gravando áudio…</span>
+              <span className="num ml-auto text-sm text-nootr-faint">{formatRecordingTime(recordingSeconds)}</span>
+            </div>
+            <button
+              type="button"
+              onClick={stopRecording}
+              aria-label="Parar gravação e enviar"
+              title="Parar e enviar"
+              className="shrink-0 rounded-lg bg-nootr-bordo px-3 py-2.5 text-nootr-cream transition-colors hover:bg-nootr-bordoDeep"
+            >
+              <Icon name="mic" size={18} />
+            </button>
           </div>
         ) : (
           <form
@@ -528,15 +598,11 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
             {plan === "pro" && canRecord && (
               <button
                 type="button"
-                onClick={recording ? stopRecording : startRecording}
+                onClick={startRecording}
                 disabled={sending}
-                aria-label={recording ? "Parar gravação e enviar" : "Gravar áudio para o Noo"}
-                title={recording ? "Parar e enviar" : "Falar em vez de digitar"}
-                className={`shrink-0 rounded-lg border px-3 py-2.5 transition-colors disabled:opacity-50 ${
-                  recording
-                    ? "animate-pulse border-nootr-bordo bg-nootr-bordo/90 text-nootr-cream"
-                    : "border-nootr-line text-nootr-muted hover:border-nootr-bordo/50 hover:text-nootr-bordoSoft"
-                }`}
+                aria-label="Gravar áudio para o Noo"
+                title="Falar em vez de digitar"
+                className="shrink-0 rounded-lg border border-nootr-line px-3 py-2.5 text-nootr-muted transition-colors hover:border-nootr-bordo/50 hover:text-nootr-bordoSoft disabled:opacity-50"
               >
                 <Icon name="mic" size={18} />
               </button>
@@ -545,12 +611,6 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
               {sending ? "…" : "Enviar"}
             </button>
           </form>
-        )}
-
-        {recording && (
-          <p className="mt-2 text-center text-[11px] text-nootr-bordoSoft">
-            Gravando… conte o que comeu e toque no microfone de novo pra enviar.
-          </p>
         )}
 
         {plan !== "pro" && !outOfMessages && (

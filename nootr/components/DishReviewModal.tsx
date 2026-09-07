@@ -219,9 +219,9 @@ export function DishReviewModal({
           </div>
         ) : (
           <>
-            <ul className="space-y-1.5">
+            <ul className="divide-y divide-nootr-line/40">
               {dish.foods.map((f, i) => (
-                <li key={i} className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-2.5">
+                <li key={i} className="px-1 py-3">
                   <p className="text-sm text-nootr-cream">{f.name}</p>
                   <p className="text-xs text-nootr-faint">{f.quantity}{gramsSuffix(f.quantity, f.grams)} · {Math.round(f.calories)} kcal</p>
                 </li>

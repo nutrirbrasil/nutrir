@@ -45,7 +45,7 @@ export default function LoginPage() {
         router.push("/dieta");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro na autenticação");
+      setError(err instanceof Error ? err.message : "Não foi possível entrar. Confira o e-mail e a senha.");
     } finally {
       setLoading(false);
     }
@@ -111,7 +111,7 @@ export default function LoginPage() {
         </div>
 
         {error && <p className="text-sm text-nootr-bordoSoft">{error}</p>}
-        {info && <p className="text-sm text-emerald-400/90">{info}</p>}
+        {info && <p className="text-sm text-nootr-gold">{info}</p>}
 
         <button type="submit" disabled={loading} className="btn-primary w-full py-3">
           {loading ? "Processando…" : mode === "signin" ? "Entrar" : "Criar conta"}

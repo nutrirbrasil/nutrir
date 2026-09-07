@@ -8,24 +8,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Paleta Nootr: preto profundo + bordô. Minimalista, alto contraste.
+        // Paleta Nootr: preto quente + bordô (oxblood), minimalista, alto
+        // contraste. "gold" é o único outro acento com peso semântico
+        // (confirmação/sucesso), pra nunca competir com o bordô como cor de
+        // marca nem depender de verde genérico de dashboard.
         nootr: {
-          black: "#0A0A0B",   // fundo base
-          coal: "#111113",    // superfícies elevadas (navbar, footer)
-          card: "#161618",    // cartões
-          line: "#232326",    // bordas hairline
-          bordo: "#8A1E32",   // bordô primário (ações)
-          bordoDeep: "#5C1422", // bordô escuro (hover, gradientes)
-          bordoSoft: "#B04A5C", // bordô claro (acentos, links)
-          wine: "#2A0E15",    // fundo bordô sutil (chips, faixas)
-          cream: "#EDE8E2",   // texto principal
-          muted: "#8E8B87",   // texto secundário
-          faint: "#5A5854",   // texto terciário / placeholders
+          black: "#0B0A08",   // fundo base
+          coal: "#141210",    // superfícies elevadas (navbar, footer)
+          card: "#19160F",    // cartões
+          line: "#28241C",    // bordas hairline
+          bordo: "#7D2233",   // bordô primário (ações)
+          bordoDeep: "#4A1420", // bordô escuro (hover, gradientes)
+          bordoSoft: "#C08569", // bordô claro/terracota (acentos, links)
+          wine: "#28110F",    // fundo bordô sutil (chips, faixas)
+          gold: "#C9A24B",    // confirmação/sucesso, único acento fora do bordô
+          cream: "#EFE9DF",   // texto principal
+          muted: "#948D80",   // texto secundário
+          faint: "#5C564A",   // texto terciário / placeholders
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         display: ["var(--font-display)", "Georgia", "serif"],
+        // Registro de dados (kcal, gramas, preços): ver globals.css .num.
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       letterSpacing: {
         caps: "0.14em",

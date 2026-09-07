@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Image from "next/image";
+import type { PlanFeature } from "@/lib/plan";
 
 /**
  * Card de plano (Basic/Pro), usado no onboarding (dois lado a lado,
@@ -31,7 +33,7 @@ export function PlanCard({
     onChange: (cycle: "mensal" | "anual") => void;
   };
   badge?: string;
-  features: string[];
+  features: PlanFeature[];
   soon?: { title: string; description: string }[];
   highlighted?: boolean;
   // Bônus de destaque do plano (ex: dieta pronta revisada por nutricionista)
@@ -41,8 +43,8 @@ export function PlanCard({
 }) {
   return (
     <div
-      className={`card card-sheen flex h-full flex-col p-4 transition-all duration-300 hover:-translate-y-1 hover:border-nootr-bordo/50 hover:shadow-[0_18px_40px_rgba(0,0,0,0.4)] sm:p-6 ${
-        highlighted ? "border-nootr-bordo/60 shadow-[0_0_0_1px_rgba(138,30,50,0.25)]" : ""
+      className={`card card-sheen flex h-full flex-col p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.4)] sm:p-6 ${
+        highlighted ? "bg-nootr-wine/20" : ""
       }`}
     >
       <div className="flex items-center justify-between gap-2">
@@ -77,18 +79,26 @@ export function PlanCard({
         </div>
       )}
 
-      <p className="mt-2 text-xs font-semibold text-nootr-bordoSoft sm:text-sm">{price}</p>
+      <p className="num mt-2 text-xs font-semibold text-nootr-bordoSoft sm:text-sm">{price}</p>
       {billingNote && <p className="text-[10px] text-nootr-faint sm:text-[11px]">{billingNote}</p>}
 
       <ul className="mt-4 space-y-2 text-xs text-nootr-cream/90 sm:mt-5 sm:space-y-2.5 sm:text-sm">
-        {features.map((item) => (
-          <li key={item} className="flex gap-2 sm:gap-2.5">
-            <span className="mt-0.5 shrink-0 text-nootr-bordoSoft" aria-hidden>
-              ✓
-            </span>
-            <span>{item}</span>
-          </li>
-        ))}
+        {features.map((item) => {
+          const isNoo = typeof item === "object";
+          const text = isNoo ? item.text : item;
+          return (
+            <li key={text} className={`flex gap-2 sm:gap-2.5 ${isNoo ? "items-center" : ""}`}>
+              {isNoo ? (
+                <Image src="/noo-icon.png" alt="" width={20} height={20} className="shrink-0" />
+              ) : (
+                <span className="mt-0.5 shrink-0 text-nootr-bordoSoft" aria-hidden>
+                  ✓
+                </span>
+              )}
+              <span className={isNoo ? "font-semibold text-nootr-bordo" : undefined}>{text}</span>
+            </li>
+          );
+        })}
       </ul>
 
       {bonus && bonus.length > 0 && (

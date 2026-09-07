@@ -4,12 +4,9 @@
 
 body {
   @apply bg-nootr-black text-nootr-cream antialiased;
-  background-image: radial-gradient(
-    ellipse 80% 50% at 50% -10%,
-    rgba(138, 30, 50, 0.13),
-    transparent
-  );
-  background-repeat: no-repeat;
+  /* Grão sutil no lugar de um glow radial genérico: dá densidade material
+     ao preto sem o clichê de "brilho respirando atrás do herói". */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
 }
 
 ::selection {
@@ -68,22 +65,22 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-nootr-bordo px-5 py-2.5 text-sm font-semibold text-nootr-cream transition-all duration-200 hover:bg-nootr-bordoDeep hover:shadow-[0_0_24px_rgba(138,30,50,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-nootr-bordoSoft focus-visible:ring-offset-2 focus-visible:ring-offset-nootr-black disabled:opacity-40 disabled:hover:shadow-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-nootr-bordo px-5 py-2.5 text-sm font-semibold text-nootr-cream transition-colors duration-150 hover:bg-nootr-bordoDeep focus:outline-none focus-visible:ring-2 focus-visible:ring-nootr-bordoSoft focus-visible:ring-offset-2 focus-visible:ring-offset-nootr-black disabled:opacity-40;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-nootr-line bg-transparent px-5 py-2.5 text-sm font-semibold text-nootr-cream transition-colors duration-200 hover:border-nootr-bordo hover:text-nootr-bordoSoft focus:outline-none focus-visible:ring-2 focus-visible:ring-nootr-bordoSoft;
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-nootr-line bg-transparent px-5 py-2.5 text-sm font-semibold text-nootr-cream transition-colors duration-150 hover:border-nootr-bordo hover:text-nootr-bordoSoft focus:outline-none focus-visible:ring-2 focus-visible:ring-nootr-bordoSoft;
   }
   .btn-ghost {
     @apply inline-flex items-center gap-1.5 text-sm font-medium text-nootr-bordoSoft transition-colors hover:text-nootr-cream;
   }
   .card {
-    @apply rounded-2xl border border-nootr-line bg-nootr-card p-6;
+    @apply rounded-md bg-nootr-card p-6 shadow-[0_1px_0_rgba(239,233,223,0.03)_inset,0_14px_36px_-16px_rgba(0,0,0,0.7)];
   }
   .card-hover {
-    @apply transition-all duration-300 hover:-translate-y-0.5 hover:border-nootr-bordo/50;
+    @apply transition-all duration-200 hover:bg-nootr-line/10;
   }
   .input-field {
-    @apply block w-full rounded-lg border border-nootr-line bg-nootr-black px-4 py-2.5 text-sm text-nootr-cream placeholder-nootr-faint transition-colors focus:border-nootr-bordo focus:outline-none focus:ring-1 focus:ring-nootr-bordo;
+    @apply block w-full rounded-md border border-nootr-line bg-nootr-black px-4 py-2.5 text-sm text-nootr-cream placeholder-nootr-faint transition-colors focus:border-nootr-bordo focus:outline-none focus:ring-1 focus:ring-nootr-bordo;
   }
   .label-caps {
     @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-caps text-nootr-muted;
@@ -92,7 +89,7 @@ body {
     @apply h-px w-12 bg-gradient-to-r from-nootr-bordo to-transparent;
   }
   .chip {
-    @apply rounded-full border border-nootr-line px-3.5 py-1.5 text-xs font-medium text-nootr-muted transition-all duration-200 hover:border-nootr-bordo/60 hover:text-nootr-cream;
+    @apply rounded-full border border-nootr-line px-3.5 py-1.5 text-xs font-medium text-nootr-muted transition-colors duration-150 hover:border-nootr-bordo/60 hover:text-nootr-cream;
   }
   .chip-active {
     @apply border-nootr-bordo bg-nootr-wine text-nootr-cream;
@@ -116,10 +113,10 @@ body {
     animation: skeleton-sweep 1.4s ease-in-out infinite;
   }
   .icon-badge {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-nootr-line bg-nootr-wine/25 text-nootr-bordoSoft transition-colors duration-200;
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-nootr-wine/40 text-nootr-bordoSoft transition-colors duration-200;
   }
   .icon-badge-lg {
-    @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-nootr-line bg-nootr-wine/25 text-nootr-bordoSoft transition-colors duration-200;
+    @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-nootr-wine/40 text-nootr-bordoSoft transition-colors duration-200;
   }
   /* Filete de brilho que surge no topo do cartão ao passar o mouse, detalhe
      premium sem precisar de overflow-hidden (não recorta dropdowns internos). */
@@ -145,14 +142,37 @@ body {
     @apply space-y-4 text-sm leading-relaxed text-nootr-muted;
   }
   .prose-legal h2 {
-    @apply pt-4 font-display text-xl text-nootr-cream;
+    @apply pt-4 font-display text-xl italic text-nootr-cream;
+  }
+
+  /* Registro numérico: kcal, gramas, preços, percentuais. Separado da prosa
+     de propósito (ver layout.tsx), é a assinatura tipográfica do Nootr, o
+     produto inteiro existe pra transformar "comi diferente" em números
+     exatos. Sempre tabular, nunca itálico. */
+  .num {
+    @apply font-mono font-medium tabular-nums tracking-tight text-nootr-cream;
+  }
+
+  /* "Razão": o motivo de uma refeição (o que saiu, o que entrou, o total
+     recalculado), linguagem visual de etiqueta de laboratório/farmácia, não
+     de card de app. Usado no herói da landing (Ledger.tsx) e ecoado dentro
+     do produto de verdade (DietView). Ver nota de restraint: nenhuma
+     animação em loop aqui, só a entrada única do herói. */
+  .ledger {
+    @apply border-y border-nootr-line;
+  }
+  .ledger-row {
+    @apply flex items-baseline justify-between gap-4 border-b border-nootr-line/70 px-4 py-2.5 text-sm last:border-b-0;
+  }
+  .ledger-tag {
+    @apply inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-nootr-line/50 font-mono text-[10px] text-nootr-faint;
   }
 }
 
 /* select escuro coerente entre navegadores */
 select.input-field option {
-  background-color: #161618;
-  color: #ede8e2;
+  background-color: #19160f;
+  color: #efe9df;
 }
 
 /* animação sutil de entrada para cartões de resultado */
@@ -195,45 +215,9 @@ select.input-field option {
   transform: translateY(0);
 }
 
-/* brilho bordô "respirando" nos fundos radiais */
-@keyframes lp-breathe {
-  0%,
-  100% {
-    opacity: 0.75;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
-}
-.lp-glow {
-  animation: lp-breathe 9s ease-in-out infinite;
-  transform-origin: 80% 0%;
-}
-.lp-glow-bottom {
-  animation: lp-breathe 11s ease-in-out infinite;
-  transform-origin: 50% 120%;
-}
-
-/* flutuação suave dos cards de demonstração */
-@keyframes lp-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-.lp-float {
-  animation: lp-float 7s ease-in-out infinite;
-}
-.lp-float-delayed {
-  animation: lp-float 7s ease-in-out 1.6s infinite;
-}
-
-/* entrada do hero (uma vez, no load) */
+/* Entrada do hero, uma vez, no load. É o ÚNICO momento orquestrado da
+   página (ver nota de restraint no topo do arquivo): nada respira, nada
+   flutua, nada pulsa em loop depois disso. */
 @keyframes lp-hero-in {
   from {
     opacity: 0;
@@ -254,70 +238,13 @@ select.input-field option {
   animation: lp-hero-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
 }
 
-/* linha de brilho que percorre a borda superior de um cartão */
-@keyframes lp-sheen {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(350%);
-  }
-}
-.lp-sheen {
-  position: relative;
-  overflow: hidden;
-}
-.lp-sheen::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 1px;
-  width: 40%;
-  background: linear-gradient(90deg, transparent, rgba(176, 74, 92, 0.8), transparent);
-  animation: lp-sheen 6s ease-in-out infinite;
-}
-
-/* pulso de brilho no CTA principal */
-@keyframes lp-cta-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 rgba(138, 30, 50, 0);
-  }
-  50% {
-    box-shadow: 0 0 32px rgba(138, 30, 50, 0.45);
-  }
-}
-.lp-cta-pulse {
-  animation: lp-cta-pulse 3.5s ease-in-out infinite;
-}
-
-/* lift mais pronunciado no hover dos cards da landing */
-.lp-card-lift {
-  transition:
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.4s,
-    box-shadow 0.4s;
-}
-.lp-card-lift:hover {
-  transform: translateY(-6px);
-  border-color: rgba(138, 30, 50, 0.55);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .lp-glow,
-  .lp-glow-bottom,
-  .lp-float,
-  .lp-float-delayed,
   .lp-hero-in,
   .lp-hero-in-2,
   .lp-hero-in-3,
-  .lp-cta-pulse,
   .rise-in {
     animation: none;
   }
-  .lp-sheen::after,
   .card-sheen::before,
   .skeleton::after {
     display: none;

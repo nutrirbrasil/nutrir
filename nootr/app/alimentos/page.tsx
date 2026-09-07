@@ -16,7 +16,7 @@ const STATUS_LABEL: Record<CustomFood["status"], string> = {
 
 function StatusBadge({ status }: { status: CustomFood["status"] }) {
   const color =
-    status === "approved" ? "text-emerald-400/90" : status === "rejected" ? "text-nootr-bordoSoft" : "text-nootr-faint";
+    status === "approved" ? "text-nootr-gold" : status === "rejected" ? "text-nootr-bordoSoft" : "text-nootr-faint";
   return <span className={`text-xs ${color}`}>{STATUS_LABEL[status]}</span>;
 }
 
@@ -47,7 +47,7 @@ function AlimentosContent({ token }: { token: string }) {
       await nootrApi.deleteCustomFood(token, id);
     } catch (err) {
       setFoods(prev);
-      setError(err instanceof Error ? err.message : "Erro ao remover alimento");
+      setError(err instanceof Error ? err.message : "Não deu para remover o alimento. Tente de novo.");
     }
   }
 
@@ -73,9 +73,9 @@ function AlimentosContent({ token }: { token: string }) {
               action={{ label: "Montar minha dieta", href: "/dieta" }}
             />
           ) : (
-            <ul className="space-y-1.5">
+            <ul className="divide-y divide-nootr-line/40">
               {foods.map((f) => (
-                <li key={f.id} className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-2.5">
+                <li key={f.id} className="px-1 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">

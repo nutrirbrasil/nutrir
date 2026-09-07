@@ -241,7 +241,7 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
       setNewCarbs("");
       setNewFat("");
     } catch (err) {
-      setNewError(err instanceof Error ? err.message : "Erro ao salvar alimento");
+      setNewError(err instanceof Error ? err.message : "Não deu para salvar o alimento. Tente de novo.");
     } finally {
       setNewSaving(false);
     }
@@ -261,7 +261,7 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
 
   if (selected) {
     return (
-      <div className="rounded-xl border border-nootr-bordo/40 bg-nootr-wine/40 p-4">
+      <div className="rounded-xl bg-nootr-wine/40 p-4">
         <div className="flex items-start justify-between gap-3">
           <p className="text-sm font-medium text-nootr-cream">{selected.name}</p>
           <button
@@ -339,11 +339,11 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
             placeholder="Busque um alimento, ex: pão, arroz, doce de leite"
           />
           {open && (
-            <ul className="absolute z-20 mt-2 max-h-64 w-full overflow-auto rounded-xl border border-nootr-line bg-nootr-card shadow-[0_16px_48px_rgba(0,0,0,0.6)]">
+            <ul className="absolute z-20 mt-2 max-h-64 w-full overflow-auto rounded-xl bg-nootr-card shadow-[0_16px_48px_rgba(0,0,0,0.6)]">
               {searching && <li className="px-4 py-3 text-sm text-nootr-faint">Buscando…</li>}
               {!searching && searchError && (
                 <li className="px-4 py-3 text-sm text-nootr-bordoSoft">
-                  Não foi possível buscar, verifique se a API está no ar e tente de novo.
+                  Não foi possível buscar agora. Tente de novo em instantes.
                 </li>
               )}
               {!searching && !searchError && results.length === 0 && (
@@ -407,7 +407,7 @@ export function FoodAdder({ token, onAdd }: { token: string; onAdd: (food: Added
       {mode === "barcode" && barcodeError && <p className="mt-2 text-xs text-nootr-bordoSoft">{barcodeError}</p>}
 
       {mode === "new" && (
-        <div className="space-y-2.5 rounded-xl border border-nootr-line bg-nootr-black p-3.5">
+        <div className="space-y-2.5 rounded-xl bg-nootr-black p-3.5">
           <p className="text-xs text-nootr-faint">
             Fica salvo na sua conta e disponível pra usar de novo. Valores por 100g. Passa por uma revisão antes de entrar na base geral do Nootr.
           </p>
@@ -483,7 +483,7 @@ export function AddedFoodList({
   return (
     <ul className="space-y-1.5">
       {foods.map((food, i) => (
-        <li key={`${food.taco_id ?? "c"}-${i}`} className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-2.5">
+        <li key={`${food.taco_id ?? "c"}-${i}`} className="rounded-lg bg-nootr-black px-3.5 py-2.5">
           {editing === i && onEdit ? (
             <div className="flex flex-wrap items-end gap-2">
               <p className="w-full text-sm text-nootr-cream">{food.name}</p>

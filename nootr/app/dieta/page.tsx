@@ -58,7 +58,7 @@ function DietaContent({ token }: { token: string }) {
         });
       })
       .catch(() => {
-        if (active) setError("Não foi possível carregar a dieta. Verifique se a API está rodando.");
+        if (active) setError("Não foi possível carregar sua dieta agora. Tente de novo em instantes.");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -79,7 +79,7 @@ function DietaContent({ token }: { token: string }) {
       <PageHeader
         icon="calendar"
         title="Dieta"
-        subtitle={mode === "view" ? "Plano do dia, macros e refeições." : "Monte as refeições com alimentos pré existentes, criados por você ou escaneando o código de barras."}
+        subtitle={mode === "view" ? "Plano do dia, macros e refeições." : "Monte as refeições com alimentos já cadastrados, os seus próprios, ou escaneando o código de barras."}
         right={
           <>
             {mode === "view" && diet && (
@@ -109,7 +109,7 @@ function DietaContent({ token }: { token: string }) {
           </div>
         )}
         {error && (
-          <p className="rounded-xl border border-nootr-bordo/40 bg-nootr-wine/40 p-4 text-sm text-nootr-bordoSoft">
+          <p className="rounded-xl bg-nootr-wine/40 p-4 text-sm text-nootr-bordoSoft">
             {error}
           </p>
         )}

@@ -1,20 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+import { Hanken_Grotesk, Fraunces, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { AuthProvider } from "@/components/AuthProvider";
 
-const inter = Inter({
+const sans = Hanken_Grotesk({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
   display: "swap",
 });
 
-const display = Cormorant_Garamond({
+const display = Fraunces({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
   variable: "--font-display",
+  display: "swap",
+});
+
+// Registro numérico do app inteiro (kcal, gramas, preços, deltas de macro):
+// uma fonte técnica separada da prosa, coerente com o "razão" de recálculo
+// que é a assinatura visual do Nootr (ver DietView.MacroBar, app/lp/Ledger).
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -25,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${display.variable}`}>
+    <html lang="pt-BR" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
       <body className="font-sans">
         <AuthProvider>
           <Navbar />
@@ -34,8 +45,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <footer className="border-t border-nootr-line bg-nootr-coal">
             <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-5 py-8 text-xs text-nootr-faint sm:flex-row">
-              <p className="font-display text-base tracking-wide text-nootr-muted">
-                Nootr<span className="text-nootr-bordo">.</span>
+              <p className="font-display text-base italic tracking-wide text-nootr-muted">
+                Nootr<span className="not-italic text-nootr-bordo">.</span>
               </p>
               <nav className="flex items-center gap-6">
                 <Link href="/termos" className="transition-colors hover:text-nootr-cream">

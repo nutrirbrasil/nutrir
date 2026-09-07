@@ -1,7 +1,7 @@
 import pytest
 
 from backend.app.data.taco import load_taco_foods
-from backend.app.services import diet_engine
+from backend.app.services import diet_engine, food_matcher
 from backend.app.services.nutrition import scale_food
 
 
@@ -406,3 +406,40 @@ def test_growth_cap_holds_across_several_messages_in_the_same_day():
     ])
     jantar = next(m for m in r2["adjusted_meals"] if m["id"] == "meal-2")
     assert jantar["foods"][0]["grams"] <= 150 * 1.5 + 1
+
+
+def test_protein_ceiling_pass_does_not_reinflate_food_beyond_growth_cap():
+    # Achado testando cenarios reais de troca (comi diferente no almoço, o
+    # jantar com espaguete + frango absorve o desvio do dia): _cap_total_growth
+    # capava o espaguete certinho em 225g (1.5x de 150g), mas
+    # _apply_protein_ceiling_pass rodava DEPOIS, encolhia o frango (que também
+    # tinha ido pro teto) pra corrigir a concentração de proteína, e jogava a
+    # diferença de calorias de volta pro espaguete pra preservar o total da
+    # refeição, empurrando ele pra 265g, bem além do próprio teto. Porção
+    # irreal é pior que proteína/meta imperfeita, o teto tem que valer por
+    # cima de TODAS as passadas, inclusive a de proteína, que roda por último.
+    cafe = [_scaled(52, 50), _scaled(488, 100), _scaled(182, 100)]
+    almoco = [_scaled(3, 150), _scaled(561, 80), _scaled(410, 150), _scaled(77, 80)]
+    lanche = [_scaled(449, 170)]
+    jantar_foods = [_scaled(9268, 150), _scaled(410, 150)]
+    original_meals = [
+        {"id": "m1", "name": "Café da manhã", "time": "07:00", "foods": cafe},
+        {"id": "m2", "name": "Almoço", "time": "12:00", "foods": almoco},
+        {"id": "m3", "name": "Lanche da tarde", "time": "16:00", "foods": lanche},
+        {"id": "m4", "name": "Jantar", "time": "20:00", "foods": jantar_foods},
+    ]
+    diet = {
+        "id": "d", "user_id": "u", "name": "T",
+        "daily_calories": 2200, "daily_protein_g": 150, "daily_carbs_g": 260, "daily_fat_g": 65,
+        "meals": [dict(m, foods=[dict(f) for f in m["foods"]]) for m in original_meals],
+        "original_meals": original_meals,
+    }
+    batata_doce_id = food_matcher.find_food("batata doce cozida").taco_id
+    batata_doce = _scaled(batata_doce_id, 200)
+    r = diet_engine.apply_changes(diet, [
+        {"meal_id": "m2", "skipped_names": ["Arroz branco"], "new_foods": [batata_doce]},
+    ])
+    jantar = next(m for m in r["adjusted_meals"] if m["id"] == "m4")
+    for food, baseline in zip(jantar["foods"], jantar_foods):
+        cap = baseline["grams"] * 1.5 + 1
+        assert food["grams"] <= cap, f"{food['name']} passou do teto: {food['grams']}g (teto {cap}g)"

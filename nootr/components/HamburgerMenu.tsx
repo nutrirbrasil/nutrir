@@ -35,7 +35,7 @@ export function HamburgerMenu({ onSignOut }: { onSignOut: () => void }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-nootr-line bg-nootr-black shadow-lg">
+        <div className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl bg-nootr-coal shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)]">
           <Link href="/perfil" className={itemClass} onClick={() => setOpen(false)}>
             Perfil
           </Link>

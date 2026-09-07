@@ -58,7 +58,7 @@ export function TagListInput({
           {value.map((item, i) => (
             <span
               key={`${item}-${i}`}
-              className="flex items-center gap-1.5 rounded-full border border-nootr-line bg-nootr-black px-3 py-1 text-xs text-nootr-cream"
+              className="flex items-center gap-1.5 rounded-full bg-nootr-black px-3 py-1 text-xs text-nootr-cream"
             >
               {item}
               <button

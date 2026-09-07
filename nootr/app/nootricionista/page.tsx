@@ -58,7 +58,7 @@ function NootricionistaContent({ token }: { token: string }) {
           </span>
           <div>
             <p className="label-caps text-nootr-bordoSoft">Nutricionista + Nootr</p>
-            <h1 className="mt-1 font-display text-2xl text-nootr-cream sm:text-4xl">A Dupla Que Funciona</h1>
+            <h1 className="mt-1 font-display text-2xl text-nootr-cream sm:text-4xl">A dupla que funciona</h1>
           </div>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-nootr-muted">
@@ -68,9 +68,9 @@ function NootricionistaContent({ token }: { token: string }) {
       </div>
 
       {/* Seção 1: O que é Nootr */}
-      <div className="card card-sheen mt-8 transition-all duration-300 hover:border-nootr-bordo/40">
-        <p className="label-caps text-nootr-bordoSoft">Seu Companheiro</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">O Nootr te Ajuda nos Momentos Críticos</h2>
+      <div className="card card-sheen mt-8 transition-all duration-300">
+        <p className="label-caps text-nootr-bordoSoft">Seu companheiro</p>
+        <h2 className="mt-2 font-display text-2xl text-nootr-cream">O Nootr te ajuda nos momentos críticos</h2>
         <p className="mt-3 text-sm text-nootr-muted">
           Você montou uma dieta. Mas entre um dia e outro, a vida acontece. Você come fora do plano, surge
           um imprevisto, tudo muda. O Nootr tá ali pra isso, não pra substituir profissional, mas pra te
@@ -102,20 +102,20 @@ function NootricionistaContent({ token }: { token: string }) {
       </div>
 
       {/* Seção 2: Por que Nutricionista é Essencial */}
-      <div className="card card-sheen mt-6 transition-all duration-300 hover:border-nootr-bordo/40">
-        <p className="label-caps text-nootr-bordoSoft">O Alicerce</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Por que Você Precisa de um Nutricionista</h2>
+      <div className="card card-sheen mt-6 transition-all duration-300">
+        <p className="label-caps text-nootr-bordoSoft">O alicerce</p>
+        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Por que você precisa de um nutricionista</h2>
         <p className="mt-3 text-sm text-nootr-muted">
-          Nootr é ótimo pra os desvios do dia a dia. Mas a fundação de tudo é uma dieta feita por um
-          profissional que ENTENDE você. Aqui é onde tudo muda de verdade.
+          O Nootr é ótimo pros desvios do dia a dia. Mas a fundação de tudo é uma dieta feita por um
+          profissional que entende você. É aqui que tudo muda de verdade.
         </p>
         <ul className="mt-4 space-y-3 text-sm text-nootr-muted">
           <li className="flex gap-3">
             <span className="shrink-0 text-nootr-bordoSoft">✓</span>
             <span>
-              <strong>Dieta PERSONALIZADA é fundação.</strong> Não é receita do YouTube ou do seu colega
-              de academia. É VOCÊ, seu metabolismo, sua história, seus objetivos. Só um profissional
-              consegue desenhar isso certo.
+              <strong>Uma dieta personalizada é a fundação.</strong> Não é receita do YouTube nem do seu
+              colega de academia, é você: seu metabolismo, sua história, seus objetivos. Só um
+              profissional consegue desenhar isso certo.
             </span>
           </li>
           <li className="flex gap-3">
@@ -136,19 +136,18 @@ function NootricionistaContent({ token }: { token: string }) {
       </div>
 
       {/* Seção 3: Oferta de Desconto */}
-      <div className="card mt-6 border-nootr-bordoSoft/40 shadow-[0_0_0_1px_rgba(138,30,50,0.25)]">
-        <p className="label-caps text-nootr-bordoSoft">Bônus Exclusivo Nootr Pro</p>
-        <h2 className="mt-2 font-display text-2xl text-nootr-cream">Você Ganhou um Desconto Exclusivo!</h2>
+      <div className="card mt-6 bg-nootr-wine/20">
+        <p className="label-caps text-nootr-bordoSoft">Bônus do Nootr Pro</p>
+        <h2 className="mt-2 font-display text-2xl italic text-nootr-cream">Seu desconto com a nutricionista</h2>
         <p className="mt-3 text-sm text-nootr-muted">
-          Como agradecimento por já estar investindo em si mesmo com o Nootr Pro e entendendo que o Nootr
-          NÃO SUBSTITUI um nutricionista, estamos entregando a você uma oportunidade de ter um
-          acompanhamento nutricional com a própria nutricionista cofundadora do Nootr com um desconto
-          único, para você dar o próximo passo.
+          Você já está investindo em si mesmo com o Nootr Pro, e sabe que o Nootr não substitui um
+          nutricionista. Por isso preparamos um desconto exclusivo pra você dar o próximo passo: o
+          acompanhamento com a própria nutricionista cofundadora do Nootr.
         </p>
 
         <div className="mt-6 space-y-4">
           {/* Desconto do Pro Mensal */}
-          <div className="rounded-lg border border-nootr-line/40 bg-nootr-line/5 p-4">
+          <div className="rounded-lg bg-nootr-line/10 p-4">
             <div className="flex items-baseline gap-2">
               <span className="font-display text-3xl text-nootr-cream">{PCT_MONTHLY}%</span>
               <span className="text-xs text-nootr-muted">de desconto</span>
@@ -162,7 +161,7 @@ function NootricionistaContent({ token }: { token: string }) {
           </div>
 
           {/* Desconto do Pro Anual */}
-          <div className="rounded-lg border border-nootr-bordoSoft/40 bg-nootr-bordoSoft/5 p-4">
+          <div className="rounded-lg bg-nootr-bordoSoft/10 p-4">
             <div className="flex items-baseline gap-2">
               <span className="font-display text-3xl text-nootr-cream">{PCT_ANNUAL}%</span>
               <span className="text-xs text-nootr-muted">de desconto</span>
@@ -185,18 +184,18 @@ function NootricionistaContent({ token }: { token: string }) {
           {showBasicCTA && (
             <>
               <p className="text-sm text-nootr-muted">
-                Você tá no Plano Basic. Pra acessar desconto com o nutricionista, migre pro Plano Pro.
+                Você está no plano Basic. Pra ter o desconto com a nutricionista, migre pro plano Pro.
               </p>
               <p className="mt-2 text-sm text-nootr-muted">
-                Assine o Plano Pro Anual e garanta {PCT_ANNUAL}% de desconto na mensalidade do Nootr e no
+                Assine o plano Pro anual e garanta {PCT_ANNUAL}% de desconto na mensalidade do Nootr e no
                 acompanhamento nutricional.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link href="/plano" className="btn-primary inline-flex">
-                  Migrar para Plano Pro
+                  Migrar para o Pro
                 </Link>
                 <Link href="/plano" className="btn-secondary inline-flex">
-                  Assinar Plano Pro Anual ({PCT_ANNUAL}% off)
+                  Assinar o plano Pro anual ({PCT_ANNUAL}% off)
                 </Link>
               </div>
             </>
@@ -205,18 +204,18 @@ function NootricionistaContent({ token }: { token: string }) {
           {showMonthlyCTA && (
             <>
               <p className="text-sm text-nootr-cream">
-                Você tá no Plano Pro Mensal.
+                Você está no plano Pro mensal.
               </p>
               <p className="mt-2 text-sm text-nootr-muted">
-                Assine o Plano Pro Anual e garanta {PCT_ANNUAL}% de desconto na mensalidade do Nootr e no
+                Assine o plano Pro anual e garanta {PCT_ANNUAL}% de desconto na mensalidade do Nootr e no
                 acompanhamento nutricional.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <a href={pauliNootrMonthlyUrl} className="btn-primary inline-flex">
-                  Conhecer Nutricionista ({PCT_MONTHLY}% off)
+                  Conhecer a nutricionista ({PCT_MONTHLY}% off)
                 </a>
                 <Link href="/plano" className="btn-secondary inline-flex">
-                  Assinar Plano Pro Anual ({PCT_ANNUAL}% off)
+                  Assinar o plano Pro anual ({PCT_ANNUAL}% off)
                 </Link>
               </div>
             </>
@@ -225,13 +224,13 @@ function NootricionistaContent({ token }: { token: string }) {
           {showAnnualCTA && (
             <>
               <p className="text-sm text-nootr-cream">
-                Você tá no Plano Pro Anual.
+                Você está no plano Pro anual.
               </p>
               <a
                 href={pauliNootrAnnualUrl}
                 className="btn-primary mt-5 inline-flex"
               >
-                Conhecer Nutricionista ({PCT_ANNUAL}% off) →
+                Conhecer a nutricionista ({PCT_ANNUAL}% off) →
               </a>
             </>
           )}

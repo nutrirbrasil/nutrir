@@ -115,7 +115,7 @@ function OnboardingContent({ token }: { token: string }) {
       });
       router.replace("/dieta");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar seus dados");
+      setError(err instanceof Error ? err.message : "Não deu para salvar seus dados. Tente de novo.");
       setSaving(false);
     }
   }
@@ -128,7 +128,7 @@ function OnboardingContent({ token }: { token: string }) {
         <>
           <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">Antes de começar</h1>
           <p className="mt-2 text-sm text-nootr-muted">
-            Algumas informações básicas pra personalizar sua experiência.
+            Algumas informações rápidas pra deixar sua dieta do seu jeito.
           </p>
           <div className="mt-6">
             <label className="label-caps">Nome completo</label>
@@ -218,10 +218,10 @@ function OnboardingContent({ token }: { token: string }) {
 
       {step === "allergies" && (
         <>
-          <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">Você possui alergia a algum alimento?</h1>
+          <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">Você tem alguma alergia alimentar?</h1>
           <p className="mt-2 text-sm text-nootr-muted">
-            Nunca sugerimos esses alimentos em nenhuma substituição. Caso não tiver nenhuma, apenas
-            clique em Continuar.
+            A gente nunca sugere esses alimentos em nenhuma substituição. Se não tiver nenhuma, é só
+            continuar.
           </p>
           <div className="mt-6">
             <TagListInput
@@ -246,10 +246,10 @@ function OnboardingContent({ token }: { token: string }) {
 
       {step === "medical" && (
         <>
-          <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">Possui alguma condição médica?</h1>
+          <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">Tem alguma condição médica?</h1>
           <p className="mt-2 text-sm text-nootr-muted">
-            Ex: diabetes, hipertensão, algum transtorno alimentar. Ajuda o Nootr a levar isso em conta nas
-            sugestões, pode deixar em branco se não tiver nenhuma.
+            Ex: diabetes, hipertensão, algum transtorno alimentar. Isso ajuda o Nootr a levar em conta
+            nas sugestões. Pode deixar em branco se não for o seu caso.
           </p>
           <div className="mt-6">
             <textarea
@@ -283,7 +283,7 @@ function OnboardingContent({ token }: { token: string }) {
             <TacoTagListInput
               token={token}
               label="Gosto e Costumo ter em casa"
-              hint="Escreva o nome do alimento e aparecerá uma lista de opções semelhantes. Em caso de não aparecer a sua opção, depois você poderá criar seus próprios alimentos, escanear código de barras, criar receitas..."
+              hint="Escreva o nome do alimento e escolha entre as opções que aparecerem. Não achou o que procura? Depois dá pra cadastrar seus próprios alimentos, escanear código de barras ou criar receitas."
               value={likesPantry}
               onChange={setLikesPantry}
             />
@@ -305,8 +305,8 @@ function OnboardingContent({ token }: { token: string }) {
         <>
           <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">Qual sua meta calórica?</h1>
           <p className="mt-2 text-sm text-nootr-muted">
-            Defina manualmente ou deixe o Nootr calcular a partir dos seus dados, isso já deixa seu perfil
-            pronto pra gerar uma dieta completa assim que você entrar.
+            Defina manualmente ou deixe o Nootr calcular a partir dos seus dados. Isso já deixa seu
+            perfil pronto pra gerar uma dieta completa assim que você entrar.
           </p>
           <div className="mt-6">
             <CalorieCalculator state={calState} onChange={patchCal} />

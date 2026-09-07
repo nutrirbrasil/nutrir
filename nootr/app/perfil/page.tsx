@@ -89,7 +89,7 @@ function PerfilContent({ token }: { token: string }) {
       const updated = await nootrApi.updateProfile(token, { country });
       setProfile(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao trocar o país");
+      setError(err instanceof Error ? err.message : "Não deu para trocar o país. Tente de novo.");
     }
   }
 
@@ -119,7 +119,7 @@ function PerfilContent({ token }: { token: string }) {
           : "Salvo."
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar");
+      setError(err instanceof Error ? err.message : "Não deu para salvar. Tente de novo.");
     } finally {
       setSaving(false);
     }
@@ -177,7 +177,7 @@ function PerfilContent({ token }: { token: string }) {
 
       {/* Plano */}
       <section
-        className="card card-sheen rise-in mt-8 flex flex-wrap items-center justify-between gap-4 transition-all duration-300 hover:border-nootr-bordo/40"
+        className="card card-sheen rise-in mt-8 flex flex-wrap items-center justify-between gap-4 transition-all duration-300"
         style={{ animationDelay: "0.05s" }}
       >
         <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ function PerfilContent({ token }: { token: string }) {
           </div>
 
           {macroMode === "per_kg" && profile?.plan === "pro" ? (
-            <div className="mt-5 rounded-xl border border-nootr-line bg-nootr-black/40 p-4">
+            <div className="mt-5 rounded-xl bg-nootr-black/40 p-4">
               {profile?.weight_kg ? (
                 <>
                   <p className="text-sm text-nootr-cream">
@@ -286,7 +286,7 @@ function PerfilContent({ token }: { token: string }) {
             </div>
           </div>
           <p className={`mt-4 flex items-center gap-1.5 text-xs ${macrosOk ? "text-nootr-faint" : "text-nootr-bordoSoft"}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${macrosOk ? "bg-emerald-400/70" : "bg-nootr-bordoSoft"}`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${macrosOk ? "bg-nootr-gold/70" : "bg-nootr-bordoSoft"}`} />
             Soma: {proteinPct + carbsPct + fatPct}%{!macrosOk && ", o ideal é somar 100%"}
           </p>
           </>
@@ -295,8 +295,8 @@ function PerfilContent({ token }: { token: string }) {
 
         {error && <p className="text-sm text-nootr-bordoSoft">{error}</p>}
         {savedMsg && (
-          <p className="flex items-center gap-1.5 text-sm text-emerald-400/90">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
+          <p className="flex items-center gap-1.5 text-sm text-nootr-gold">
+            <span className="h-1.5 w-1.5 rounded-full bg-nootr-gold/80" />
             {savedMsg}
           </p>
         )}
@@ -323,7 +323,7 @@ function PerfilContent({ token }: { token: string }) {
 
       {/* Zona de risco: mesmo padrão de confirmação inline usado no "Reiniciar
           Noo" (ver NooChat.tsx), nunca window.confirm() nativo. */}
-      <section className="card card-sheen mt-6 border-nootr-bordo/30" style={{ animationDelay: "0.15s" }}>
+      <section className="card card-sheen mt-6" style={{ animationDelay: "0.15s" }}>
         <p className="text-sm font-semibold text-nootr-cream">Excluir conta</p>
         <p className="mt-1 text-xs text-nootr-muted">
           Apaga sua dieta, preferências, conversas com o Noo, alimentos e receitas próprias, e o
@@ -331,7 +331,7 @@ function PerfilContent({ token }: { token: string }) {
         </p>
         {deleteError && <p className="mt-2 text-xs text-nootr-bordoSoft">{deleteError}</p>}
         {confirmingDelete ? (
-          <div className="mt-3 rounded-lg border border-nootr-bordo/30 bg-nootr-wine/25 px-3.5 py-3">
+          <div className="mt-3 rounded-lg bg-nootr-wine/25 px-3.5 py-3">
             <p className="text-sm text-nootr-cream">Tem certeza? Isso não pode ser desfeito.</p>
             <div className="mt-2.5 flex gap-2">
               <button
@@ -402,7 +402,7 @@ function PreferencesSection({ token }: { token: string }) {
       });
       setSavedMsg("Preferências salvas.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar");
+      setError(err instanceof Error ? err.message : "Não deu para salvar. Tente de novo.");
     } finally {
       setSaving(false);
     }
@@ -438,7 +438,7 @@ function PreferencesSection({ token }: { token: string }) {
 
           <div>
             <label className="label-caps" htmlFor="perfil-notes">Observações</label>
-            <p className="mb-1.5 text-xs text-nootr-faint">Escreva aqui detalhes para ajudar o Nootr a fazer as melhores escolhas de substituições</p>
+            <p className="mb-1.5 text-xs text-nootr-faint">Escreva aqui detalhes que ajudem o Nootr a escolher melhor as substituições.</p>
             <textarea
               id="perfil-notes"
               className="input-field min-h-[80px]"
@@ -450,8 +450,8 @@ function PreferencesSection({ token }: { token: string }) {
 
           {error && <p className="text-sm text-nootr-bordoSoft">{error}</p>}
           {savedMsg && (
-            <p className="flex items-center gap-1.5 text-sm text-emerald-400/90">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
+            <p className="flex items-center gap-1.5 text-sm text-nootr-gold">
+              <span className="h-1.5 w-1.5 rounded-full bg-nootr-gold/80" />
               {savedMsg}
             </p>
           )}
@@ -593,7 +593,7 @@ function MacroPerKgEditor({
 
   return (
     <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
-      <div className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5">
+      <div className="rounded-lg bg-nootr-black px-3 py-2.5">
         <div className="flex items-center justify-between">
           <p className="text-[10px] uppercase tracking-caps text-nootr-faint">Proteína</p>
           <p className="text-[10px] tabular-nums text-nootr-bordoSoft">{pPct}%</p>
@@ -615,7 +615,7 @@ function MacroPerKgEditor({
         </div>
       </div>
 
-      <div className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5">
+      <div className="rounded-lg bg-nootr-black px-3 py-2.5">
         <div className="flex items-center justify-between">
           <p className="text-[10px] uppercase tracking-caps text-nootr-faint">Carboidrato</p>
           <p className="text-[10px] tabular-nums text-nootr-bordoSoft">{cPct}%</p>
@@ -624,7 +624,7 @@ function MacroPerKgEditor({
         <p className="mt-1.5 text-[10px] text-nootr-faint">o que sobra das calorias</p>
       </div>
 
-      <div className="rounded-lg border border-nootr-line bg-nootr-black px-3 py-2.5">
+      <div className="rounded-lg bg-nootr-black px-3 py-2.5">
         <div className="flex items-center justify-between">
           <p className="text-[10px] uppercase tracking-caps text-nootr-faint">Gordura</p>
           <p className="text-[10px] tabular-nums text-nootr-bordoSoft">{fPct}%</p>

@@ -67,14 +67,14 @@ export function DietView({ diet, date }: Props) {
                       ({food.quantity}{gramsSuffix(food.quantity, food.grams)})
                     </span>
                   </span>
-                  <span className="shrink-0 tabular-nums text-nootr-muted">
+                  <span className="num shrink-0 text-xs text-nootr-muted">
                     {Math.round(food.calories)} kcal
                   </span>
                 </li>
               ))}
             </ul>
             {meal.foods.length > 0 && (
-              <p className="mt-3 border-t border-nootr-line pt-3 text-xs text-nootr-faint">
+              <p className="num mt-3 border-t border-nootr-line pt-3 text-xs text-nootr-faint">
                 {Math.round(mealTotal.calories)} kcal · P {Math.round(mealTotal.protein)}g ·
                 {" "}C {Math.round(mealTotal.carbs)}g · G {Math.round(mealTotal.fat)}g
               </p>
@@ -101,8 +101,8 @@ function MacroBar({
   return (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-caps text-nootr-muted">{label}</p>
-      <p className="mt-1 text-sm tabular-nums text-nootr-cream">
-        <span className="font-display text-2xl">{current}</span>
+      <p className="num mt-1 text-sm">
+        <span className="text-2xl">{current}</span>
         <span className="text-nootr-faint">/{target}{unit}</span>
       </p>
       <div className="mt-2 h-1 overflow-hidden rounded-full bg-nootr-line">

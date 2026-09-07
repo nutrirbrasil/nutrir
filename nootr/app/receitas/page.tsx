@@ -20,7 +20,7 @@ const RECIPE_STATUS_LABEL: Record<Recipe["status"], string> = {
 
 function RecipeStatusBadge({ status }: { status: Recipe["status"] }) {
   const color =
-    status === "approved" ? "text-emerald-400/90" : status === "rejected" ? "text-nootr-bordoSoft" : "text-nootr-faint";
+    status === "approved" ? "text-nootr-gold" : status === "rejected" ? "text-nootr-bordoSoft" : "text-nootr-faint";
   return <span className={`text-xs ${color}`}>{RECIPE_STATUS_LABEL[status]}</span>;
 }
 
@@ -57,7 +57,7 @@ function ReceitasContent({ token }: { token: string }) {
       await nootrApi.deleteRecipe(token, id);
     } catch (err) {
       setRecipes(prev);
-      setError(err instanceof Error ? err.message : "Erro ao remover receita");
+      setError(err instanceof Error ? err.message : "Não deu para remover a receita. Tente de novo.");
     }
   }
 
@@ -82,7 +82,7 @@ function ReceitasContent({ token }: { token: string }) {
       setNewIngredients([]);
       setCreating(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar receita");
+      setError(err instanceof Error ? err.message : "Não deu para salvar a receita. Tente de novo.");
     } finally {
       setSaving(false);
     }
@@ -106,7 +106,7 @@ function ReceitasContent({ token }: { token: string }) {
       ) : (
         <div className="mt-6 space-y-6">
           {creating && (
-            <div className="rounded-xl border border-nootr-line bg-nootr-black/40 p-3.5 space-y-3">
+            <div className="rounded-xl bg-nootr-card p-3.5 space-y-3">
               <div>
                 <label className="label-caps">Nome da receita</label>
                 <input
@@ -143,11 +143,11 @@ function ReceitasContent({ token }: { token: string }) {
               action={{ label: "Ir para Substituir", href: "/substituir" }}
             />
           ) : (
-            <ul className="space-y-1.5">
+            <ul className="divide-y divide-nootr-line/40">
               {recipes.map((r) => (
                 <li
                   key={r.id}
-                  className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-2.5"
+                  className="px-1 py-3"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
@@ -179,9 +179,9 @@ function ReceitasContent({ token }: { token: string }) {
                 Pratos aprovados que outras pessoas já salvaram, o Nootr também reconhece esses nomes no
                 &ldquo;Descrever com IA&rdquo;.
               </p>
-              <ul className="mt-3 space-y-1.5">
+              <ul className="mt-3 divide-y divide-nootr-line/40">
                 {globalRecipes.map((r) => (
-                  <li key={r.id} className="rounded-lg border border-nootr-line bg-nootr-black px-3.5 py-2.5">
+                  <li key={r.id} className="px-1 py-3">
                     <p className="text-sm text-nootr-cream">{r.name}</p>
                     <p className="truncate text-xs text-nootr-faint">
                       {r.ingredients.map((i) => i.name).join(", ")}

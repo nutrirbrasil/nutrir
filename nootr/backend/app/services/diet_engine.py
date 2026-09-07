@@ -729,6 +729,16 @@ def _rebalance(
     # isso rodar por último não desfaz o fechamento de calorias acima.
     if _apply_protein_ceiling_pass(remaining, adjusted_by_id, solvable_ids, targets):
         changed = True
+        # _apply_protein_ceiling_pass troca calorias entre o grupo proteico e
+        # o resto DENTRO da mesma refeição pra preservar o total dela, mas
+        # isso pode jogar o alimento que recebeu a sobra além do próprio teto
+        # de crescimento (ex: encolhe o frango que já estava no teto, o
+        # carboidrato que absorve a diferença estoura o dele). Porção irreal
+        # é pior que proteína imperfeita (mesmo critério do docstring de
+        # _cap_total_growth), reaplica o teto e fecha a meta de novo por cima
+        # do resultado da proteína, não o contrário.
+        _cap_total_growth(cap_baseline, adjusted_by_id)
+        _enforce_calorie_tolerance(cap_baseline, adjusted_by_id, consumed["calories"], targets["calories"])
 
     # Refeição cuja proteína ficou bem abaixo da própria fatia-alvo mesmo
     # depois de todas as passadas (ver _apply_protein_ceiling_pass): sinal de
