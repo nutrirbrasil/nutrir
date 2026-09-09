@@ -160,6 +160,11 @@ _UNIT_OVERRIDE_BY_FOOD = {
     "hamburguer": 90,
     "pastel": 50,
     "coxinha": 70,
+    # sushi por peça (~30g, mesmo valor de referência do _COMMON_FOODS em
+    # food_matcher.py): sem entrada aqui, "20 peças de sushi" não resolvia
+    # (nem "peça" era sinônimo de "unidade", ver _resolve_unit) e caía no
+    # peso de UMA peça só, ignorando a contagem que a pessoa disse.
+    "sushi": 30,
     # "bola de carne" (almôndega) é 1 unidade de almôndega, não sorvete,
     # "bola" sozinha (sem alimento) continua sendo sorvete, tratado à parte.
     "almondega": 30,
@@ -324,6 +329,13 @@ _PRATO_OVERRIDE = {
     "estrogonofe": 250, "feijoada": 350, "frango com acafrao": 250,
     "manicoba": 300, "quibebe": 200, "sarapatel": 250, "vaca atolada": 300,
     "virado a paulista": 350, "yakisoba": 300, "bacalhoada": 300,
+    # Chaves compostas de "arroz" (acima) vêm ANTES desta pra não ficarem
+    # sombreadas: "arroz" sozinho é o lado mais comum de citar em "prato" (ex:
+    # "comi meio prato a mais de arroz"), sem entrada aqui esse texto não
+    # resolvia (nem TACO/COMMON reconhece "prato" como unidade genérica) e o
+    # chamador caía num fallback de porção fixa (`match.grams`) sem relação
+    # nenhuma com "meio prato" nem com a quantidade já servida.
+    "arroz": 175,
 }
 
 # "Sachê", porções individuais bem pequenas (condimento de restaurante/delivery,
@@ -567,7 +579,7 @@ def _resolve_unit(unit: str, full_norm: str, after_index: int | None, hint_norm:
     conseguir reconstruir o rótulo certo depois de recalcular a contagem."""
     combined = f"{full_norm} {hint_norm}"
 
-    if unit in ("unidade", "unidades", "un", "und"):
+    if unit in ("unidade", "unidades", "un", "und", "peca", "pecas"):
         g = _match_keyword_table(combined, _UNIT_OVERRIDE_BY_FOOD)
         return (g, "unidade") if g is not None else None
     if unit in ("fatia", "fatias"):

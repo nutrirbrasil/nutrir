@@ -1,11 +1,29 @@
 """Escala valores nutricionais (por 100g) para uma quantidade em gramas."""
+import re
+
 from backend.app.data.taco import TacoFood, load_taco_foods
+
+_PLAIN_GRAMS_LABEL = re.compile(r"^(\d+(?:[.,]\d+)?)\s*g$", re.IGNORECASE)
+
+
+def _clean_quantity_label(quantity_label: str | None, grams: float) -> str | None:
+    """
+    Preserva o rótulo com medida caseira ("1 xícara", "2 fatias") como veio,
+    mas se for só gramas cru (ex: um cálculo de "metade" virando "112.5g"),
+    arredonda pro mesmo padrão inteiro que o resto do app usa (`round(grams)g`
+    no fallback abaixo), senão a fração aparecia crua pra pessoa, que ninguém
+    mede de verdade ("112.5g" de arroz).
+    """
+    if quantity_label and _PLAIN_GRAMS_LABEL.match(quantity_label.strip()):
+        return f"{round(grams)}g"
+    return quantity_label
 
 
 def scale_food(
     food: TacoFood, grams: float, quantity_label: str | None = None, dish_name: str | None = None,
 ) -> dict:
     ratio = grams / 100
+    quantity_label = _clean_quantity_label(quantity_label, grams)
     result = {
         "name": food.display_name,
         "quantity": quantity_label or f"{round(grams)}g",
@@ -28,6 +46,7 @@ def scale_custom(
 ) -> dict:
     """Escala um alimento customizado (ex: código de barras), sem taco_id."""
     ratio = grams / 100
+    quantity_label = _clean_quantity_label(quantity_label, grams)
     result = {
         "name": name,
         "quantity": quantity_label or f"{round(grams)}g",

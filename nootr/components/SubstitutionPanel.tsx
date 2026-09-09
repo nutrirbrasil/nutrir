@@ -182,8 +182,12 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
     if (action !== "missing_food" || !missingFoodName) return;
     let active = true;
     setLoadingMatches(true);
+    // Calorias REAIS do alimento que falta, na quantidade que está de fato
+    // na refeição (ver missingFoodOptions): sem isso o backend não tinha
+    // porção pra ancorar e chutava um padrão genérico bem maior.
+    const missingFoodKcal = selectedMeal?.foods.find((f) => f.name === missingFoodName)?.calories;
     nootrApi
-      .missingFoodOptions(token, missingFoodName)
+      .missingFoodOptions(token, missingFoodName, missingFoodKcal)
       .then((data) => active && setPantryMatches(data.pantry_matches))
       .catch((err) => {
         // Sem isso a lista só ficava vazia e a pessoa não sabia se era falha
@@ -194,7 +198,7 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
     return () => {
       active = false;
     };
-  }, [action, missingFoodName, token]);
+  }, [action, missingFoodName, token, selectedMeal]);
 
   function addMatch(m: PantryMatch) {
     setFoods((prev) => [...prev, pantryMatchToAdded(m)]);
@@ -213,7 +217,8 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
     setLoadingAlternatives(true);
     setError("");
     try {
-      const data = await nootrApi.suggestAlternatives(token, missingFoodName);
+      const missingFoodKcal = selectedMeal?.foods.find((f) => f.name === missingFoodName)?.calories;
+      const data = await nootrApi.suggestAlternatives(token, missingFoodName, missingFoodKcal);
       setAlternatives(data.suggestions);
       setAlternativesFetched(true);
     } catch (err) {
@@ -244,7 +249,9 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
     setError("");
     try {
       const mealFoodNames = selectedMeal.foods.map((f) => f.name);
-      const data = await nootrApi.parseMeal(token, text, conversation, selectedMeal.name, mealFoodNames);
+      const data = await nootrApi.parseMeal(
+        token, text, conversation, selectedMeal.name, mealFoodNames, action === "will_eat_different"
+      );
       if (data.status === "question") {
         setConversation(data.history);
         setAiText("");
@@ -372,7 +379,11 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
       return;
     }
     if (action !== "missing_food" && skippedNames.length === 0 && foods.length === 0) {
-      setError("Sinalize o que não comeu ou o que comeu a mais.");
+      setError(
+        action === "will_eat_different"
+          ? "Sinalize o que não vai comer ou o que vai comer a mais."
+          : "Sinalize o que não comeu ou o que comeu a mais."
+      );
       return;
     }
     setLoading(true);
@@ -591,7 +602,9 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
                 <div>
                   <label className="label-caps">{selectedMeal.name}</label>
                   <p className="mb-1.5 text-xs text-nootr-faint">
-                    Está tudo marcado como comido conforme o plano. Desmarque só o que não comeu ou comeu diferente.
+                    {action === "will_eat_different"
+                      ? "Está tudo marcado como planejado. Desmarque só o que não vai comer ou vai comer diferente."
+                      : "Está tudo marcado como comido conforme o plano. Desmarque só o que não comeu ou comeu diferente."}
                   </p>
                   <div className="space-y-1.5">
                     {selectedMeal.foods.map((f) => {
@@ -761,8 +774,14 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
 
               {selectedMeal && manualMode && (
                 <div>
-                  <label className="label-caps">O que você comeu no lugar (ou a mais)</label>
-                  <p className="mb-1.5 text-xs text-nootr-faint">Deixe vazio se não comeu nada no lugar do que faltou.</p>
+                  <label className="label-caps">
+                    {action === "will_eat_different" ? "O que você vai comer no lugar (ou a mais)" : "O que você comeu no lugar (ou a mais)"}
+                  </label>
+                  <p className="mb-1.5 text-xs text-nootr-faint">
+                    {action === "will_eat_different"
+                      ? "Deixe vazio se não vai comer nada no lugar do que faltou."
+                      : "Deixe vazio se não comeu nada no lugar do que faltou."}
+                  </p>
                   <AddedFoodList
                     foods={foods}
                     onRemove={(i) => setFoods((prev) => prev.filter((_, j) => j !== i))}

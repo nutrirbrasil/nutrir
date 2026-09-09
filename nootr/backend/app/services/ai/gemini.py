@@ -7,6 +7,7 @@ de macros ou TACO aqui.
 """
 import base64
 import json
+import re
 
 import httpx
 
@@ -136,6 +137,12 @@ unidade, concha, copo, gramas). NUNCA misture um adjetivo de preparo dentro dela
 picada": quantity é "1 xícara", NUNCA "1 xícara picada", "picada" não é medida, é forma de cortar). Se o \
 preparo for nutricionalmente relevante (cru vs cozido, por exemplo), ele entra no nome do alimento, nunca \
 na quantidade.
+- "unidade" SÓ pra alimento que realmente existe em unidades discretas (1 ovo, 1 fatia de pão, 1 fruta \
+inteira). NUNCA use "1 unidade" pra um corte de carne/embutido sem tamanho padrão (ex: carne seca, lombo \
+suíno, linguiça, paio dentro de uma feijoada decomposta): sem tabela própria pra converter, "1 unidade" \
+cai num padrão genérico de 150g SEMPRE, mesmo quando o mesmo prato tem 3 carnes diferentes, inflando o \
+prato inteiro (450g de carne só, mais o feijão). Pra esses, estime a quantidade em GRAMAS diretamente, \
+proporcional a uma porção normal do prato (ex: "carne seca (60g)", não "carne seca (1 unidade)").
 - NUNCA junte dois alimentos distintos no mesmo nome de item, cada item é sempre um único alimento, pra \
 casar corretamente com a tabela nutricional. Isso vale tanto pra "e" quanto pra "com" quando os dois lados \
 são alimentos de verdade (não um é preparo/complemento do outro): "alface e tomate" -> dois itens, "alface" \
@@ -539,6 +546,8 @@ _CONVERSE_SYSTEM = """Você ajuda a registrar um DESVIO do que uma pessoa comeu 
 refeição específica que já estava planejada, para depois recalcular calorias e macros usando a \
 tabela TACO. Converse em português, de forma natural e objetiva.
 
+{tense_note}
+
 A refeição planejada é "{meal_name}", com estes alimentos: {meal_foods}.
 
 REGRA CENTRAL, troca, não redescrição: a pessoa só precisa dizer o que MUDOU. Qualquer alimento \
@@ -631,11 +640,27 @@ vazio>, proposed_dish_name=<preenchido só se um prato novo foi decomposto e con
 vazio>, proposed_ingredients=<os mesmos ingredientes de new_items relativos a esse prato, se aplicável>."""
 
 
+# Às vezes o Gemini "vaza" a quantidade pro campo "name" (ex: name="30 gramas
+# paio", quantity="") em vez de separar os dois campos como o schema pede.
+# Sem isso, esse item caía no fallback genérico "1 porção" (100g), MUITO
+# diferente da quantidade real que a própria IA tinha acabado de dizer alguns
+# tokens antes, na frase de confirmação. Recupera a quantidade embutida no
+# nome em vez de descartar o que ela já disse.
+_EMBEDDED_QUANTITY = re.compile(
+    r"^(\d+(?:[.,]\d+)?\s*(?:g|gramas?|ml|kg|unidades?|unidade)s?)\s+(.+)$", re.IGNORECASE,
+)
+
+
 def _parse_food_items(raw_items: list | None) -> list[dict]:
     items = []
     for it in raw_items or []:
         name = str(it.get("name", "")).strip()
-        quantity = str(it.get("quantity", "")).strip() or "1 porção"
+        quantity = str(it.get("quantity", "")).strip()
+        if not quantity:
+            match = _EMBEDDED_QUANTITY.match(name)
+            if match:
+                quantity, name = match.group(1).strip(), match.group(2).strip()
+        quantity = quantity or "1 porção"
         if name:
             items.append({"name": name, "quantity": quantity})
     return items
@@ -655,9 +680,21 @@ def _format_saved_recipes(recipes: list[dict] | None) -> str:
 
 def converse_meal(
     history: list[dict], meal_name: str, meal_foods: list[str], preferences: dict,
-    force_finalize: bool = False, recipes: list[dict] | None = None,
+    force_finalize: bool = False, recipes: list[dict] | None = None, forward_looking: bool = False,
 ) -> dict:
+    # Sem isso, toda pergunta/confirmação saía no passado ("que você comeu?")
+    # mesmo quando a pessoa está no fluxo "Vou comer algo diferente"
+    # (planejando ANTES de comer), confundindo quem só está avisando o que
+    # PRETENDE comer, não o que já comeu.
+    tense_note = (
+        "IMPORTANTE: essa pessoa está PLANEJANDO com antecedência, ela ainda NÃO comeu isso. "
+        "Fale sempre no futuro (\"o que você vai comer\", \"vai usar massa comum ou sem glúten?\"), "
+        "NUNCA no passado (\"o que você comeu\")."
+        if forward_looking else
+        "Essa pessoa está relatando o que já comeu. Fale no passado (\"o que você comeu\")."
+    )
     system = _CONVERSE_SYSTEM.format(
+        tense_note=tense_note,
         meal_name=meal_name or "refeição",
         meal_foods=", ".join(meal_foods) or "nenhum alimento cadastrado",
         allergies=", ".join(preferences.get("allergies") or []) or "nenhuma informada",
@@ -1065,14 +1102,30 @@ alimento ("comi pizza", "tomei whey"), devolva "quantity" como string VAZIA pra 
 "porção comum", nem "1 unidade", nem "1 porção": chutar errado desregula o dia inteiro dela. Só preencha \
 "quantity" com o que ela EFETIVAMENTE disse ou dá pra deduzir da própria fala dela (ex: "comi um ovo" -> \
 "1 unidade"; "duas fatias de pizza" -> "2 fatias"; "um copo de leite" -> "1 copo"; "meio prato de arroz" \
--> "meio prato"). CUIDADO com "substituí X por Y"/"troquei X por Y" sem quantidade de Y: NÃO assuma que \
-Y veio na mesma quantidade que X tinha, isso também é chute, a pessoa pode ter comido mais ou menos. Só \
-preencha a quantidade de Y se ela disse a quantidade DELE especificamente. Um item com "quantity" vazio \
-NÃO é aplicado no dia agora, só quando ela responder a \
+-> "meio prato"). CUIDADO com "substituí X por Y"/"troquei X por Y"/"no lugar do X vou comer Y" sem \
+quantidade de Y: NÃO assuma que Y veio na mesma quantidade que X tinha, isso também é chute, a pessoa \
+pode ter comido mais ou menos, MESMO que pareça uma troca direta de um produto pelo "equivalente" dele \
+(ex: "vou trocar o leite zero lactose por leite integral" NÃO quer dizer que é a mesma quantidade em ml, \
+pergunte "quantos ml de leite integral?" antes de aplicar, exatamente como perguntaria pra qualquer outro \
+alimento sem quantidade). Só preencha a quantidade de Y se ela disse a quantidade DELE especificamente. \
+Um item com "quantity" vazio NÃO é aplicado no dia agora, só quando ela responder a \
 quantidade numa próxima mensagem. Se vários itens estiverem sem quantidade, pergunte de todos de uma vez \
 numa frase só, não uma pergunta por mensagem.
-- `already_eaten`: nomes das refeições que ela já comeu e por isso NÃO podem ser reajustadas. Só \
-preencha quando ela disser ou der pra deduzir com segurança.
+- `already_eaten`: nomes das refeições que ela JÁ comeu hoje e por isso NÃO podem ser reajustadas. \
+Preencha só quando ela disser isso explicitamente sobre aquela refeição especificamente ("já tomei \
+café", "almocei há pouco", "o lanche eu já fiz"). NUNCA infira isso a partir do horário atual, de qual \
+refeição ela está comentando agora, ou de suposição sobre a rotina dela: falar do jantar não quer dizer \
+que café, almoço e lanche já aconteceram, ela pode estar planejando o dia inteiro com antecedência, de \
+manhã. Na dúvida, deixe a lista vazia, o motor do Nootr reajusta a quantidade das refeições não citadas \
+sozinho (regra 1), é o comportamento certo por padrão.
+
+SÓ HOJE: você só enxerga e só ajusta a dieta de HOJE (ver "DIETA DE HOJE" acima), o app não tem \
+conceito de planejar um dia diferente. Se ela mencionar QUALQUER outro dia (\"amanhã\", \"depois de \
+amanhã\", \"sexta que vem\", \"semana que vem\", um dia da semana que não é hoje), NÃO aplique a \
+mudança na dieta de hoje escondido atrás de uma "reply" que promete outro dia, isso engana a pessoa \
+(ela vai achar que amanhã já está ajustado, mas quem mudou foi o café de HOJE). Nesse caso devolva \
+`changes` vazio e explique na `reply`, em UMA frase, que você só ajusta o dia de hoje e que ela deve \
+registrar isso quando o dia chegar.
 
 REGRAS
 1. Você só registra o que ela comeu/vai comer. Você NÃO escolhe as quantidades do reajuste: o motor \

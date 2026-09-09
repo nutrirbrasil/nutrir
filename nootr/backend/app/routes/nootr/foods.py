@@ -119,7 +119,7 @@ def lookup_barcode(
             timeout=15.0,
         )
     except httpx.HTTPError as exc:
-        raise HTTPException(status_code=502, detail=f"Falha ao consultar Open Food Facts: {exc}") from exc
+        raise HTTPException(status_code=502, detail="Open Food Facts indisponível") from exc
 
     if resp.status_code != 200:
         raise HTTPException(status_code=502, detail="Open Food Facts indisponível")

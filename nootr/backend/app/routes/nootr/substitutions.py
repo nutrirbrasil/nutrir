@@ -85,18 +85,31 @@ def _targets_from_profile(user: CurrentUser, day_plan: dict) -> dict:
 
 
 @router.get("/missing-food-options")
-def missing_food_options(food_name: str, user: CurrentUser = CurrentUserDep):
+def missing_food_options(
+    food_name: str, anchor_kcal: float | None = None, user: CurrentUser = CurrentUserDep,
+):
     """
     Para "Estou em falta": resolve o perfil de macro do alimento que falta
     (proteína/carboidrato/gordura/misto) e filtra a despensa (preferências
     "costumo ter em casa") por itens do mesmo perfil, essas são as primeiras
     opções mostradas, antes de cair pra busca genérica ou sugestão da IA.
+
+    `anchor_kcal`: calorias reais do alimento que falta NA REFEIÇÃO (a pessoa
+    escolhe de um select com a quantidade exata, o frontend manda esse valor
+    junto). Sem isso, `find_food` não tem porção nenhuma pra ancorar e cai no
+    padrão de 150g pra qualquer alimento sem quantidade no texto (ex: "azeite
+    de oliva extravirgem" sozinho), o que pra algo denso calórico como azeite
+    (15g reais na dieta) virava 1326kcal em vez dos 133kcal de verdade, e
+    inflava junto TODAS as sugestões de despensa ancoradas nesse valor.
     """
     prefs = repository.get_preferences(user) or {}
     pantry_names = prefs.get("pantry", [])
     preferred_ids = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *pantry_names])
     tie_resolver = ai.build_country_tie_resolver((repository.get_profile(user) or {}).get("country") or "BR")
-    missing = food_matcher.find_food(food_name, preferred=preferred_ids, tie_resolver=tie_resolver)
+    missing = food_matcher.find_food(
+        food_name, anchor_kcal=anchor_kcal, preferred=preferred_ids, tie_resolver=tie_resolver,
+        exact_anchor=True,
+    )
     profile = food_matcher.macro_profile(missing.calories, missing.protein_g, missing.carbs_g, missing.fat_g)
 
     matches = []
@@ -104,6 +117,16 @@ def missing_food_options(food_name: str, user: CurrentUser = CurrentUserDep):
         m = food_matcher.find_food(
             name, anchor_kcal=missing.calories or None, preferred=preferred_ids, tie_resolver=tie_resolver,
         )
+        # A despensa pode ter cadastrado o PRÓPRIO alimento que está em falta
+        # (ex: "frango" na despensa e "Peito de Frango" faltando no almoço):
+        # sugerir o mesmo alimento como substituto dele mesmo não faz sentido
+        # nenhum, se a pessoa tivesse ele não estaria em falta.
+        same_food = (
+            (missing.taco_id is not None and m.taco_id == missing.taco_id)
+            or food_matcher.normalize(m.name) == food_matcher.normalize(missing.name)
+        )
+        if same_food:
+            continue
         m_profile = food_matcher.macro_profile(m.calories, m.protein_g, m.carbs_g, m.fat_g)
         if profile == "balanced" or m_profile == profile:
             matches.append(_match_to_dict(m))
@@ -113,6 +136,12 @@ def missing_food_options(food_name: str, user: CurrentUser = CurrentUserDep):
 
 class AlternativesRequest(BaseModel):
     missing_food_name: str = Field(min_length=1, max_length=120)
+    # Calorias reais do alimento que falta NA refeição (o frontend já sabe a
+    # quantidade exata, ver missing_food_options acima pro mesmo motivo):
+    # sem isso `find_food` não tem porção pra ancorar as sugestões e cada uma
+    # cai no padrão genérico de 150g, que pra alimento denso (ex: azeite,
+    # queijo) infla a sugestão bem além do que a troca precisa.
+    anchor_kcal: float | None = None
 
 
 @router.post("/alternatives")
@@ -124,10 +153,16 @@ def suggest_alternatives(body: AlternativesRequest, user: CurrentUser = CurrentU
     try:
         names = ai.suggest_substitutes(body.missing_food_name, prefs)
     except ai.AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=502, detail="Não consegui buscar sugestões agora, tente de novo em instantes.",
+        ) from exc
     allergies = prefs.get("allergies") or []
     matches = [
-        _match_to_dict(food_matcher.find_food(name, preferred=preferred_ids, tie_resolver=tie_resolver))
+        _match_to_dict(
+            food_matcher.find_food(
+                name, anchor_kcal=body.anchor_kcal, preferred=preferred_ids, tie_resolver=tie_resolver,
+            )
+        )
         for name in names
     ]
     # Última barreira determinística: mesmo com a instrução no prompt, nunca

@@ -59,19 +59,25 @@ export function DietView({ diet, date }: Props) {
               <span className="text-xs uppercase tracking-caps text-nootr-faint">{meal.time}</span>
             </div>
             <ul className="mt-3 space-y-2.5">
-              {meal.foods.map((food, i) => (
-                <li key={`${food.name}-${i}`} className="flex items-baseline justify-between gap-4 text-sm">
-                  <span className="text-nootr-cream">
-                    {food.name}{" "}
-                    <span className="text-xs text-nootr-faint">
-                      ({food.quantity}{gramsSuffix(food.quantity, food.grams)})
+              {meal.foods.map((food, i) => {
+                // food.quantity já sai pronto de quantityLabel() pra medidas
+                // caseiras ("2 unidades (120g)", com o "(Xg)" embutido), só
+                // falta o parêntese em quantidades soltas ("270g", "300
+                // mililitros"). Envolver tudo nele de novo duplicava o
+                // parêntese quando já vinha embutido.
+                const qty = `${food.quantity}${gramsSuffix(food.quantity, food.grams)}`;
+                const qtyDisplay = qty.endsWith(")") ? qty : `(${qty})`;
+                return (
+                  <li key={`${food.name}-${i}`} className="flex items-baseline justify-between gap-4 text-sm">
+                    <span className="text-nootr-cream">
+                      {food.name} <span className="text-xs text-nootr-faint">{qtyDisplay}</span>
                     </span>
-                  </span>
-                  <span className="num shrink-0 text-xs text-nootr-muted">
-                    {Math.round(food.calories)} kcal
-                  </span>
-                </li>
-              ))}
+                    <span className="num shrink-0 text-xs text-nootr-muted">
+                      {Math.round(food.calories)} kcal
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
             {meal.foods.length > 0 && (
               <p className="num mt-3 border-t border-nootr-line pt-3 text-xs text-nootr-faint">

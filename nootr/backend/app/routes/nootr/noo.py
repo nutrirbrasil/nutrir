@@ -49,17 +49,20 @@ def _targets_for(profile: dict | None, day_plan: dict) -> dict:
 
 
 def _resolve_added(
-    items: list[dict], prefs: dict, country: str, text_norm: str, unresolved: list[str],
+    items: list[dict], prefs: dict, country: str, text_norm_history: str, unresolved: list[str],
 ) -> list[dict]:
     """Casa os alimentos que o Noo propôs com a TACO.
 
     O filtro de alergia (matches_allergen) só é aplicado a um item se a
-    PRÓPRIA PESSOA não citou esse alimento na mensagem atual: nesse caso é o
-    Nootr escolhendo por conta própria (ex: "quero algo a mais no jantar" ->
-    a IA decide o quê), e aí a barreira de segurança vale. Se a pessoa citou
-    o alimento (ex: "comi amendoim"), ela já decidiu por conta própria, não
-    faz sentido bloquear o registro do que ela mesma disse que comeu/vai
-    comer, só porque bate com uma alergia cadastrada.
+    PRÓPRIA PESSOA não citou esse alimento em nenhuma mensagem dela hoje
+    (`text_norm_history`, não só a atual, ver call site pra entender por quê:
+    o nome do alimento pode ter vindo numa mensagem anterior, com a
+    quantidade só chegando nesta): nesse caso é o Nootr escolhendo por conta
+    própria (ex: "quero algo a mais no jantar" -> a IA decide o quê), e aí a
+    barreira de segurança vale. Se a pessoa citou o alimento (ex: "comi
+    amendoim"), ela já decidiu por conta própria, não faz sentido bloquear o
+    registro do que ela mesma disse que comeu/vai comer, só porque bate com
+    uma alergia cadastrada.
 
     `unresolved`: lista (compartilhada entre chamadas) onde entram os nomes
     de alimentos que nem a busca determinística nem a IA de estimativa
@@ -103,7 +106,7 @@ def _resolve_added(
         candidate_words = [
             w for w in food_matcher.normalize(item["name"] + " " + match.name).split() if len(w) > 3
         ]
-        user_named_it = any(w in text_norm for w in candidate_words)
+        user_named_it = any(w in text_norm_history for w in candidate_words)
         if not user_named_it and food_matcher.matches_allergen(match.name, allergies):
             continue
         grams = parse_portion(item["quantity"], food_hint=item["name"]) or match.grams or 100.0
@@ -194,7 +197,9 @@ async def send_audio(file: UploadFile = File(...), user: CurrentUser = CurrentUs
     try:
         transcript = ai.transcribe_audio(raw, mime)
     except ai.AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=502, detail="Não consegui transcrever o áudio agora, tente de novo em instantes.",
+        ) from exc
     transcript = transcript.strip()[:1000]
     if not transcript:
         raise HTTPException(status_code=422, detail="Não consegui entender o áudio. Tenta de novo?")
@@ -255,7 +260,9 @@ def _run_turn(
             diet_engine.day_macros(day_plan["meals"]), prefs,
         )
     except ai.AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=502, detail="Não consegui falar com o Noo agora, tente de novo em instantes.",
+        ) from exc
 
     # A mensagem do usuário só é gravada depois da IA responder: se a chamada
     # falhar, ela não consome uma das mensagens do dia.
@@ -283,6 +290,20 @@ def _run_turn(
         return meal
 
     text_norm = food_matcher.normalize(text)
+    # Todas as mensagens da PESSOA hoje (não só a atual), pra achar um
+    # alimento que ela nomeou faseado: "comi leite integral" numa mensagem e
+    # "300ml" na resposta seguinte (quantidade pendente, ver regra 12 do
+    # prompt) são a MESMA troca. Usado só pro filtro de alergia em
+    # `_resolve_added` (`user_named_it`): olhar só a mensagem atual faria o
+    # nome do alimento nunca aparecer nela, e o filtro trataria como se o Noo
+    # tivesse escolhido por conta própria, bloqueando um alimento que a
+    # PRÓPRIA pessoa nomeou só porque ele chegou em duas mensagens. NÃO troca
+    # `text_norm` (usado também pro `meal_mentioned` abaixo): esse outro
+    # precisa continuar restrito à mensagem atual, senão uma refeição citada
+    # há várias mensagens esvaziaria sem aviso nenhum na hora.
+    text_norm_history = food_matcher.normalize(
+        " ".join(m["text"] for m in history if m["role"] == "user")
+    )
     changes: list[dict] = []
     unresolved_foods: list[str] = []
     unresolved_meal_names: list[str] = []
@@ -326,7 +347,7 @@ def _run_turn(
         if not had_intent:
             continue
         before_unresolved = len(unresolved_foods)
-        new_foods = _resolve_added(change["added"], prefs, country, text_norm, unresolved_foods)
+        new_foods = _resolve_added(change["added"], prefs, country, text_norm_history, unresolved_foods)
         if len(unresolved_foods) > before_unresolved:
             # Mesma lógica atômica da quantidade vazia: um alimento que nem a
             # TACO nem a IA de estimativa reconheceram trava a troca INTEIRA

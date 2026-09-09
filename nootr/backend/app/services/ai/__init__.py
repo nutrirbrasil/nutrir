@@ -33,7 +33,7 @@ def _provider():
 
 def converse_meal(
     history: list[dict], meal_name: str, meal_foods: list[str], preferences: dict | None = None,
-    force_finalize: bool = False, recipes: list[dict] | None = None,
+    force_finalize: bool = False, recipes: list[dict] | None = None, forward_looking: bool = False,
 ) -> dict:
     """
     Turno conversacional pra registrar um DESVIO de uma refeição específica já
@@ -53,7 +53,7 @@ def converse_meal(
     `history` é uma lista de turnos [{"role": "user"|"assistant", "text": str}].
     """
     return _provider().converse_meal(
-        history, meal_name, meal_foods, preferences or {}, force_finalize, recipes,
+        history, meal_name, meal_foods, preferences or {}, force_finalize, recipes, forward_looking,
     )
 
 

@@ -368,7 +368,9 @@ def _generate_diet_meals(profile: dict, prefs: dict, country: str) -> tuple[list
         try:
             generated = ai.generate_diet(meal_targets, macros["carbs_g"], macros["fat_g"], prefs, country)
         except ai.AIError as exc:
-            raise HTTPException(status_code=502, detail=str(exc)) from exc
+            raise HTTPException(
+                status_code=502, detail="Não consegui gerar uma dieta agora, tente de novo em instantes.",
+            ) from exc
 
         meals_raw = generated.get("meals") or []
         if not meals_raw:
@@ -642,7 +644,9 @@ async def import_diet(
     try:
         parsed = ai.parse_diet_document(text)
     except ai.AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=502, detail="Não consegui ler esse arquivo agora, tente de novo em instantes.",
+        ) from exc
 
     menus_parsed = parsed.get("menus") or []
     if not menus_parsed:
@@ -837,7 +841,9 @@ async def preview_diet_import(file: UploadFile = File(...), user: CurrentUser = 
     try:
         parsed = ai.parse_diet_document(text)
     except ai.AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=502, detail="Não consegui ler esse arquivo agora, tente de novo em instantes.",
+        ) from exc
 
     menus_parsed = parsed.get("menus") or []
     if not menus_parsed:

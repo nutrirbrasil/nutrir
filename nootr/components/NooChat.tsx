@@ -1,18 +1,40 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { nootrApi } from "@/lib/api";
 import { Icon } from "@/components/Icon";
-import type { NooDayView, NooMessage, NooReply, Plan } from "@/lib/types";
+import type { Meal, NooDayView, NooMessage, NooReply, Plan } from "@/lib/types";
 import { formatQuantityWithGrams } from "@/lib/units";
 
-const SUGGESTIONS = [
-  "Não comi o pão do café",
-  "Vou comer pizza no jantar",
-  "Estou sem frango pro almoço",
-];
+/** Primeiro alimento de uma refeição cujo nome contém `nameIncludes` (ex:
+ * "café", "almoço"), sem acento pra casar "Café da manhã"/"café da tarde"
+ * do mesmo jeito. `null` quando a pessoa não tem essa refeição ou ela está
+ * vazia, aí quem chama cai no exemplo genérico. */
+function firstFoodOf(meals: Meal[], nameIncludes: string): string | null {
+  const meal = meals.find((m) => m.name.toLowerCase().includes(nameIncludes));
+  return meal?.foods[0]?.name ?? null;
+}
+
+/** Exemplos da tela vazia do Noo: sempre que der, usa um alimento de verdade
+ * da própria dieta (café da manhã e almoço) em vez de "pão"/"frango" fixos,
+ * que não fazem sentido pra quem não tem esses alimentos no plano. A pizza
+ * continua fixa, é só um exemplo de imprevisto, não precisa vir da dieta.
+ *
+ * `meals` tem que ser o TEMPLATE original (sem os ajustes de hoje, ver
+ * `original_diet` em `GET /nootr/diets/today`), não o dia já materializado:
+ * sugerir "não comi X" pra um alimento que uma troca de hoje já tirou da
+ * dieta não faz sentido nenhum. */
+function buildSuggestions(meals: Meal[]): string[] {
+  const cafeFood = firstFoodOf(meals, "café");
+  const almocoFood = firstFoodOf(meals, "almoço");
+  return [
+    cafeFood ? `Não comi ${cafeFood} no café` : "Não comi o pão do café",
+    "Vou comer pizza no jantar",
+    almocoFood ? `Estou sem ${almocoFood} pro almoço` : "Estou sem frango pro almoço",
+  ];
+}
 
 // Dourado = ganhou (mais quantidade ou alimento novo), mesmo tom de
 // confirmação usado no resto do app (ver .num/nootr-gold). Removido/diminuído
@@ -137,7 +159,16 @@ function DayView({ day }: { day: NooDayView }) {
  * aplica tudo junto, explicando o que fez. Cada mensagem é uma chamada de IA,
  * por isso o limite diário por plano (ver plan_limits.NOO_DAILY_MESSAGES).
  */
-export function NooChat({ token, onApplied }: { token: string; onApplied?: () => void }) {
+export function NooChat({
+  token, onApplied, meals = [],
+}: {
+  token: string;
+  onApplied?: () => void;
+  // Dieta ORIGINAL (template, sem ajustes de hoje), só usada pros exemplos
+  // da tela vazia, ver buildSuggestions.
+  meals?: Meal[];
+}) {
+  const SUGGESTIONS = useMemo(() => buildSuggestions(meals), [meals]);
   const [messages, setMessages] = useState<NooMessage[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -416,10 +447,10 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
               </span>
             )}
           </p>
-          <p className="text-xs text-nootr-faint">Conte o que mudou, eu ajusto o resto do dia.</p>
+          <p className="text-xs text-nootr-faint">Seu companheiro de dieta</p>
         </div>
         <span className="shrink-0 text-xs tabular-nums text-nootr-faint" title="Mensagens restantes hoje">
-          {loading ? "…" : `${remaining}/${limit}`}
+          {loading ? "…" : `${remaining}/${limit} mensagens restantes`}
         </span>
         {!isEmpty && (
           <button
@@ -464,8 +495,8 @@ export function NooChat({ token, onApplied }: { token: string; onApplied?: () =>
             <Image src="/noo-icon.png" alt="Noo" width={64} height={64} className="mx-auto" priority />
             <p className="mt-2 font-display text-xl text-nootr-cream">Oi, eu sou o Noo.</p>
             <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-nootr-muted">
-              Comeu algo fora do plano? Vai comer? Está sem um ingrediente? Me conta numa frase, do
-              seu jeito, e eu reajusto o resto do dia pra suas metas continuarem batendo.
+              Comeu algo fora do plano? Vai comer algo diferente na janta? Acabou algum ingrediente?
+              Me conta o seu problema que eu reajusto para suas metas continuarem batendo.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               {SUGGESTIONS.map((s) => (

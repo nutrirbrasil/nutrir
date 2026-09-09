@@ -25,6 +25,11 @@ class ParseMealRequest(BaseModel):
     # pra pessoa redescrever a refeição inteira.
     meal_name: str = Field(default="", max_length=80)
     meal_foods: list[str] = Field(default_factory=list, max_length=20)
+    # True no fluxo "Vou comer algo diferente" (planejando ANTES de comer):
+    # sem isso a IA sempre perguntava/confirmava no passado ("o que você
+    # comeu?"), mesmo quando a pessoa ainda nem comeu, só está avisando o
+    # que pretende comer.
+    forward_looking: bool = False
 
 
 def _match_items(
@@ -95,9 +100,14 @@ def parse_meal(body: ParseMealRequest, user: CurrentUser = CurrentUserDep):
         result = ai.converse_meal(
             history, body.meal_name, body.meal_foods, preferences,
             force_finalize=assistant_questions >= _MAX_QUESTIONS, recipes=recipes,
+            forward_looking=body.forward_looking,
         )
     except ai.AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        # Nunca repassa o erro cru do provedor de IA (ex: JSON de status do
+        # Gemini) pra pessoa, ela não tem o que fazer com isso.
+        raise HTTPException(
+            status_code=502, detail="Não consegui interpretar isso agora, tente de novo em instantes.",
+        ) from exc
 
     if result["needs_question"] and result["question"]:
         new_history = history + [{"role": "assistant", "text": result["question"]}]

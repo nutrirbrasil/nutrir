@@ -100,6 +100,14 @@ _PREP_GENDER_CANON = {
     "grelhada": "grelhado", "assada": "assado", "cozida": "cozido",
     "crua": "cru", "refogada": "refogado", "frita": "frito", "fritas": "frito",
     "salgada": "salgado", "defumada": "defumado",
+    # "à milanesa"/"empanado" É frito (empanar sem fritar/assar depois não é
+    # um prato de verdade), sem isso a query não "especifica preparo"
+    # (_PREP_PREFERRED/_PREP_DISFAVORED não reconhecem essas palavras) e o
+    # desempate caía no padrão saudável (cozido/grelhado), escondendo que o
+    # prato pedido é bem mais calórico/gorduroso que o normal da carne crua
+    # (ex: "camarão à milanesa" casava com "Camarão ... cozido", 90kcal/100g,
+    # em vez do "... frito", 231kcal/100g, quase 3x mais calórico).
+    "milanesa": "frito", "empanado": "frito", "empanada": "frito", "empanados": "frito", "empanadas": "frito",
 }
 
 
@@ -464,6 +472,7 @@ def _extract_count(query_norm: str, name: str) -> float:
 def find_food(
     description: str, anchor_kcal: float | None = None, preferred: set[int] = frozenset(),
     tie_resolver: Callable[[str, list[TacoFood]], TacoFood | None] | None = None,
+    exact_anchor: bool = False,
 ) -> MatchResult:
     """
     Estima as macros do alimento descrito.
@@ -473,6 +482,15 @@ def find_food(
 , desempata a favor do que a pessoa já tem/gosta. `tie_resolver`: ver
     search_taco, desempata empates de verdade (ex: "azeite" -> pergunta pra
     IA se é o de oliva ou de dendê, considerando o país do usuário).
+
+    `exact_anchor`: quando `anchor_kcal` vem de uma quantidade REAL já
+    conhecida (ex: "Estou em falta" ancorando no alimento que a própria
+    refeição tinha, não um chute), pula o piso/teto de porção (30-600g)
+    normalmente aplicado a uma estimativa. Sem isso, um alimento denso em
+    quantidade pequena de verdade (ex: 15g de azeite, 133kcal) virava 30g
+    (o piso) só porque 15g "parece pouco", dobrando a caloria à toa; o piso
+    faz sentido pra estimativa (não sugerir "3g" de algo chutado), não pra
+    uma quantidade que já sabemos que é essa mesmo.
     """
     common = _match_common(description)
     if common:
@@ -485,6 +503,9 @@ def find_food(
         if explicit_grams is not None:
             factor = explicit_grams / default_grams
             grams = round(explicit_grams, 1)
+        elif exact_anchor and anchor_kcal and kcal:
+            factor = anchor_kcal / kcal
+            grams = round(default_grams * factor, 1)
         else:
             factor = count
             grams = round(default_grams * count, 1)
@@ -502,7 +523,8 @@ def find_food(
         if parsed_grams is not None:
             grams = parsed_grams
         elif anchor_kcal and food.kcal:
-            grams = max(30.0, min(600.0, anchor_kcal / food.kcal * 100))
+            raw_grams = anchor_kcal / food.kcal * 100
+            grams = raw_grams if exact_anchor else max(30.0, min(600.0, raw_grams))
         else:
             grams = 150.0
         scaled = scale_food(food, grams)

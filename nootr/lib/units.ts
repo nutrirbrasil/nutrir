@@ -35,17 +35,24 @@ export function quantityLabel(quantity: number, unitId: string): string {
 
 const GRAMS_ONLY = /^\d+([.,]\d+)?\s*g$/i;
 const HAS_GRAMS_SUFFIX = /\(\s*\d+([.,]\d+)?\s*g\s*\)\s*$/i;
+const LEADING_NUMBER = /^(\d+(?:[.,]\d+)?)/;
 
 /**
  * Sufixo " (Xg)" pra completar uma medida caseira (ex: "3 unidades" ->
  * " (180g)"). Nunca duplica: se a medida já é só gramas ("150g", sem medida
- * caseira) ou já termina com um "(Xg)" embutido (ex: o que `quantityLabel`
- * acima já produz), devolve vazio.
+ * caseira), já termina com um "(Xg)" embutido (ex: o que `quantityLabel`
+ * acima já produz), ou o número já é o mesmo em gramas (ex: "300
+ * mililitros" pra 300g de leite), devolve vazio, senão repete o mesmo
+ * número só com outra palavra do lado.
  */
 export function gramsSuffix(quantity: string, grams: number | null | undefined): string {
   const q = (quantity || "").trim();
   if (grams == null || !q) return "";
   if (GRAMS_ONLY.test(q) || HAS_GRAMS_SUFFIX.test(q)) return "";
+  const leading = q.match(LEADING_NUMBER);
+  if (leading && Math.round(parseFloat(leading[1].replace(",", "."))) === Math.round(grams)) {
+    return "";
+  }
   return ` (${Math.round(grams)}g)`;
 }
 

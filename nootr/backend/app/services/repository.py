@@ -125,7 +125,17 @@ def list_diets(user: CurrentUser) -> list[dict]:
 
 
 def get_diet_by_slot(user: CurrentUser, weekday: int | None) -> dict | None:
-    params = {"select": _DIET_FIELDS, "user_id": f"eq.{user.id}", "status": "eq.approved", "limit": "1"}
+    # `order` + `limit=1` é necessário mesmo esperando 1 dieta por slot: sem
+    # ORDER BY, um LIMIT 1 com mais de uma linha batendo o filtro (ex: uma
+    # duplicata que sobrou de uma corrida entre saves concorrentes) devolve
+    # QUALQUER uma das linhas, sem garantia nenhuma, podendo trazer uma
+    # dieta velha de volta depois da pessoa já ter salvo uma nova. Mais
+    # recente primeiro cobre o caso normal (nunca há duplicata) sem mudar
+    # nada, e dá um resultado previsível (a mais recente) quando há.
+    params = {
+        "select": _DIET_FIELDS, "user_id": f"eq.{user.id}", "status": "eq.approved",
+        "order": "created_at.desc", "limit": "1",
+    }
     params["weekday"] = "is.null" if weekday is None else f"eq.{weekday}"
     rows = supabase_client.select("diets", user.token, params)
     return rows[0] if rows else None
@@ -253,27 +263,39 @@ def get_or_create_day_plan(user: CurrentUser, plan_date: str | None = None) -> d
     if diet is None:
         return None
 
-    return supabase_client.insert(
-        "day_plans",
-        user.token,
-        {
-            "user_id": user.id,
-            "diet_id": diet["id"],
-            "plan_date": plan_date,
-            "name": diet["name"],
-            "daily_calories": diet["daily_calories"],
-            "daily_protein_g": diet["daily_protein_g"],
-            "daily_carbs_g": diet["daily_carbs_g"],
-            "daily_fat_g": diet["daily_fat_g"],
-            "meals": diet["meals"],
-            # Porção original de cada alimento no dia, nunca reescrita depois
-            # (ver diet_engine._cap_total_growth): sem isso, o teto de
-            # crescimento de porção comparava contra o estado da ÚLTIMA
-            # mensagem/ajuste, e sucessivos ajustes no mesmo dia inflavam um
-            # alimento bem além do razoável mesmo cada um respeitando o teto.
-            "original_meals": diet["meals"],
-        },
-    )
+    try:
+        return supabase_client.insert(
+            "day_plans",
+            user.token,
+            {
+                "user_id": user.id,
+                "diet_id": diet["id"],
+                "plan_date": plan_date,
+                "name": diet["name"],
+                "daily_calories": diet["daily_calories"],
+                "daily_protein_g": diet["daily_protein_g"],
+                "daily_carbs_g": diet["daily_carbs_g"],
+                "daily_fat_g": diet["daily_fat_g"],
+                "meals": diet["meals"],
+                # Porção original de cada alimento no dia, nunca reescrita depois
+                # (ver diet_engine._cap_total_growth): sem isso, o teto de
+                # crescimento de porção comparava contra o estado da ÚLTIMA
+                # mensagem/ajuste, e sucessivos ajustes no mesmo dia inflavam um
+                # alimento bem além do razoável mesmo cada um respeitando o teto.
+                "original_meals": diet["meals"],
+            },
+        )
+    except supabase_client.SupabaseError as exc:
+        # Corrida entre requisições concorrentes na primeira consulta do dia
+        # (ex: a página abre e dispara /diets/today e /noo juntas): as duas
+        # veem "não existe ainda" no SELECT acima antes de qualquer uma
+        # commitar o INSERT, a segunda perde pra constraint única
+        # (day_plans_user_id_plan_date_key, código Postgres 23505) e recebia
+        # esse erro cru em vez do dia normal. Quem perdeu só busca de novo o
+        # que a outra já criou, em vez de propagar o 409.
+        if exc.status_code == 409 and "23505" in exc.detail:
+            return get_day_plan(user, plan_date)
+        raise
 
 
 def delete_day_plan(user: CurrentUser, plan_date: str) -> None:

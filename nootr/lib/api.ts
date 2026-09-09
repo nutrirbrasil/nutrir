@@ -196,17 +196,21 @@ export const nootrApi = {
   undoSubstitution: (token: string) =>
     api<{ ok: boolean; meals: Meal[] }>("/nootr/substitutions/undo", token, { method: "POST" }),
 
-  // "Estou em falta": opções da despensa com o mesmo perfil de macro do alimento que falta
-  missingFoodOptions: (token: string, foodName: string) =>
+  // "Estou em falta": opções da despensa com o mesmo perfil de macro do alimento que falta.
+  // anchorKcal: calorias reais do alimento que falta NA refeição (a pessoa
+  // escolhe de um select que já mostra a quantidade exata), pra ancorar a
+  // porção certa em vez do padrão genérico de 150g do food_matcher.
+  missingFoodOptions: (token: string, foodName: string, anchorKcal?: number) =>
     api<{ missing_food: string; profile: string; pantry_matches: PantryMatch[] }>(
-      `/nootr/substitutions/missing-food-options?food_name=${encodeURIComponent(foodName)}`,
+      `/nootr/substitutions/missing-food-options?food_name=${encodeURIComponent(foodName)}` +
+        (anchorKcal ? `&anchor_kcal=${anchorKcal}` : ""),
       token
     ),
   // "Buscar outros alimentos": a IA sugere o que pode substituir o item em falta
-  suggestAlternatives: (token: string, missingFoodName: string) =>
+  suggestAlternatives: (token: string, missingFoodName: string, anchorKcal?: number) =>
     api<{ suggestions: PantryMatch[] }>("/nootr/substitutions/alternatives", token, {
       method: "POST",
-      body: JSON.stringify({ missing_food_name: missingFoodName }),
+      body: JSON.stringify({ missing_food_name: missingFoodName, anchor_kcal: anchorKcal }),
     }),
 
   // autocomplete da TACO (nomes de exibição)
@@ -232,11 +236,14 @@ export const nootrApi = {
     text: string,
     history: ConverseTurn[],
     mealName: string,
-    mealFoods: string[]
+    mealFoods: string[],
+    forwardLooking: boolean = false
   ) =>
     api<ParseMealResponse>("/nootr/ai/parse-meal", token, {
       method: "POST",
-      body: JSON.stringify({ text, history, meal_name: mealName, meal_foods: mealFoods }),
+      body: JSON.stringify({
+        text, history, meal_name: mealName, meal_foods: mealFoods, forward_looking: forwardLooking,
+      }),
     }),
 
   // receitas próprias (pratos compostos salvos, ex: "Crepioca"), reaproveitadas

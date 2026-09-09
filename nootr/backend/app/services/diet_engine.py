@@ -484,14 +484,63 @@ def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> 
             grams_before = (before or {}).get("grams") or 0
             grams_now = food.get("grams") or 0
             if grams_before and grams_now > grams_before * _MAX_FACTOR:
-                capped.append(_scale_food(before, _MAX_FACTOR))
+                capped.append(_scale_food_at_bound(before, _MAX_FACTOR, ceiling=True))
                 near_ceiling.append(food["name"])
+            elif grams_before and grams_now < grams_before * _MIN_FACTOR:
+                # Mesmo problema do teto acima, só que no piso: passadas
+                # internas do rebalanceamento (ex: _apply_protein_ceiling_pass,
+                # que troca calorias entre o grupo proteico e o resto DENTRO
+                # de uma refeição) respeitam _MIN_FACTOR relativo ao estado
+                # JÁ encolhido por uma passada anterior, não ao original do
+                # dia, então o encolhimento composto pode passar longe do
+                # piso (ex: pão de forma indo a 40g quando o piso real sobre
+                # os 150g originais era 45g). Restaura pro piso, igual o teto.
+                capped.append(_scale_food_at_bound(before, _MIN_FACTOR, ceiling=False))
             else:
                 capped.append(food)
                 if grams_before and grams_now >= grams_before * _NEAR_CEILING_FACTOR:
                     near_ceiling.append(food["name"])
         adjusted_by_id[meal_id] = {**meal, "foods": capped}
     return near_ceiling
+
+
+def _scale_food_at_bound(before: dict, factor: float, ceiling: bool) -> dict:
+    """
+    Como `_scale_food`, mas GARANTE que o resultado não fura o limite que
+    ele deveria restaurar. `_scale_food` arredonda pro múltiplo de 5g mais
+    próximo (ver `portion._round_plain_grams`) usando o arredondamento
+    padrão do Python (half-to-even): "22.5g" pode virar "20g" em vez de
+    "25g" (round(4.5) é 4, não 5, em Python), o que reabre exatamente o
+    problema que essa função existe pra fechar, o piso "restaurado" fica
+    ainda abaixo do piso de verdade. Corrige puxando 5g pro lado certo
+    quando isso acontece.
+    """
+    scaled = _scale_food(before, factor)
+    grams_before = before.get("grams") or 0
+    bound = grams_before * factor
+    grams = scaled.get("grams") or 0
+    if ceiling and grams > bound + 1e-6:
+        return _scale_food(before, (bound - 5) / grams_before) if grams_before else scaled
+    if not ceiling and grams < bound - 1e-6:
+        return _scale_food(before, (bound + 5) / grams_before) if grams_before else scaled
+    return scaled
+
+
+def _protein_or_fat_capped(near_ceiling: list[str], adjusted_by_id: dict[str, dict]) -> bool:
+    """True se algum nome em `near_ceiling` (ver `_cap_total_growth`) é hoje
+    um alimento proteico ou gorduroso, sinal de que a folga de calorias que
+    sobrou é porque ELE bateu no teto, não porque o dia tinha espaço de
+    verdade. Usado por `_rebalance` pra impedir `_enforce_calorie_tolerance`
+    de tapar esse buraco com carboidrato (ver o parâmetro
+    `protein_or_fat_capped` lá)."""
+    if not near_ceiling:
+        return False
+    names = set(near_ceiling)
+    return any(
+        f["name"] in names and (_is_protein_food(f) or _is_fat_food(f))
+        for meal in adjusted_by_id.values()
+        for f in meal["foods"]
+    )
 
 
 def cap_meal_growth(baseline_meals: list[dict], meals: list[dict]) -> list[dict]:
@@ -530,6 +579,7 @@ def calorie_tolerance(target_calories: float) -> float:
 
 def _enforce_calorie_tolerance(
     baseline: list[dict], adjusted_by_id: dict[str, dict], fixed_calories: float, target_calories: float,
+    protein_or_fat_capped: bool = False,
 ) -> bool:
     """
     Última rede de segurança: o dia SEMPRE tem que fechar dentro de 2% da
@@ -546,6 +596,19 @@ def _enforce_calorie_tolerance(
     no próprio limite numa passada sobram pra quem ainda tem espaço na
     próxima). Se ninguém tiver mais espaço, aceita o resultado (caso raro:
     todo mundo já está no teto/piso), o mesmo comportamento de antes.
+
+    `protein_or_fat_capped`: true quando `_cap_total_growth` travou um
+    alimento proteico ou gorduroso no próprio teto (ver `_rebalance`). Nesse
+    caso, se FALTAR calorias (`deviation > 0`), a folga NÃO pode ser
+    preenchida com alimento de carboidrato: isso "fecharia" o dia por fora,
+    mas jogaria o carboidrato acima da própria meta escondendo que quem
+    devia crescer (proteína/gordura) não coube no teto. Melhor deixar a
+    diferença sobrar honestamente em `remaining_calories`/`remaining_protein_g`
+    pro `day_topup` cobrir com um alimento de verdade, em vez de fingir que
+    fechou trocando um macro por outro. Só restringe o lado "faltando"
+    (`deviation > 0`): sobra de calorias (`deviation < 0`, dia passou da
+    meta) continua podendo cortar de qualquer alimento, cortar carboidrato
+    primeiro não empurra proteína/gordura pra baixo do que já foi fechado.
     """
     tolerance = calorie_tolerance(target_calories)
     baseline_by_id = {
@@ -561,11 +624,14 @@ def _enforce_calorie_tolerance(
         if abs(deviation) <= tolerance:
             return changed
 
+        restrict_to_protein_fat = protein_or_fat_capped and deviation > 0
         candidates = []  # (meal_id, food_index, room_kcal)
         for mid, meal in adjusted_by_id.items():
             originals = baseline_by_id.get(mid, {})
             for i, food in enumerate(meal["foods"]):
                 if _is_low_density(food):
+                    continue
+                if restrict_to_protein_fat and not (_is_protein_food(food) or _is_fat_food(food)):
                     continue
                 grams = food.get("grams")
                 kcal_per_g = food["calories"] / grams if grams else 0
@@ -717,8 +783,13 @@ def _rebalance(
     # O teto de crescimento acima pode ter deixado o dia longe da meta de
     # calorias de novo; fecha essa diferença (dentro do que os alimentos
     # ainda suportam) antes de aceitar o resultado. Sempre depois do teto,
-    # nunca antes, senão essa passada é que estouraria o teto.
-    if _enforce_calorie_tolerance(cap_baseline, adjusted_by_id, consumed["calories"], targets["calories"]):
+    # nunca antes, senão essa passada é que estouraria o teto. Se quem bateu
+    # no teto foi proteína/gordura, a folga não pode ser tapada com
+    # carboidrato (ver docstring de `_enforce_calorie_tolerance`).
+    if _enforce_calorie_tolerance(
+        cap_baseline, adjusted_by_id, consumed["calories"], targets["calories"],
+        protein_or_fat_capped=_protein_or_fat_capped(near_ceiling, adjusted_by_id),
+    ):
         changed = True
 
     # Proteína por último: as passadas acima mexem em calorias sem saber de
@@ -737,8 +808,25 @@ def _rebalance(
         # é pior que proteína imperfeita (mesmo critério do docstring de
         # _cap_total_growth), reaplica o teto e fecha a meta de novo por cima
         # do resultado da proteína, não o contrário.
-        _cap_total_growth(cap_baseline, adjusted_by_id)
-        _enforce_calorie_tolerance(cap_baseline, adjusted_by_id, consumed["calories"], targets["calories"])
+        near_ceiling = _cap_total_growth(cap_baseline, adjusted_by_id)
+        _enforce_calorie_tolerance(
+            cap_baseline, adjusted_by_id, consumed["calories"], targets["calories"],
+            protein_or_fat_capped=_protein_or_fat_capped(near_ceiling, adjusted_by_id),
+        )
+
+    # `_enforce_calorie_tolerance` (rodou acima, com ou sem a passada de
+    # proteína depois) é sempre a ÚLTIMA coisa que mexe em quantidade nesta
+    # função, e ela mesma pode encolher um alimento até o piso sem violar
+    # NADA sozinha (seu próprio `room_grams` já respeita _MIN_FACTOR), mas
+    # isso só vale alimento a alimento: quando MAIS de um precisa de espaço,
+    # o resíduo é dividido proporcionalmente entre eles (`share`), e um
+    # alimento que já estava perto do piso ENTRANDO nessa passada pode
+    # acabar recebendo uma fatia do corte que, somada ao que já tinha
+    # encolhido nas passadas anteriores, passa do piso de verdade (sobre a
+    # porção ORIGINAL do dia, não a do início desta passada). Sem mais
+    # nenhum teto depois dela pra pegar isso, reaplica aqui incondicionalmente,
+    # o mesmo motivo do reaplique logo acima após a passada de proteína.
+    _cap_total_growth(cap_baseline, adjusted_by_id)
 
     # Refeição cuja proteína ficou bem abaixo da própria fatia-alvo mesmo
     # depois de todas as passadas (ver _apply_protein_ceiling_pass): sinal de

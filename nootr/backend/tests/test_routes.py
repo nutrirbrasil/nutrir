@@ -452,7 +452,7 @@ def test_foods_search_merges_custom_foods(client, monkeypatch):
 def test_parse_meal_returns_skip_and_new_items(client, monkeypatch):
     monkeypatch.setattr(
         ai, "converse_meal",
-        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None: {
+        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None, forward_looking=False: {
             "needs_question": False, "question": "", "question_kind": "",
             "skipped_names": [meal_foods[0]], "new_items": [{"name": "bolo", "quantity": "1 fatia"}],
             "proposed_dish_name": "", "proposed_ingredients": [],
@@ -473,7 +473,7 @@ def test_parse_meal_returns_skip_and_new_items(client, monkeypatch):
 def test_parse_meal_can_ask_a_question(client, monkeypatch):
     monkeypatch.setattr(
         ai, "converse_meal",
-        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None: {
+        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None, forward_looking=False: {
             "needs_question": True, "question": "Quantas fatias de bolo?", "question_kind": "text",
             "skipped_names": [], "new_items": [], "proposed_dish_name": "", "proposed_ingredients": [],
         },
@@ -492,7 +492,7 @@ def test_parse_meal_can_ask_a_question(client, monkeypatch):
 def test_parse_meal_asks_to_confirm_unknown_dish_ingredients(client, monkeypatch):
     monkeypatch.setattr(
         ai, "converse_meal",
-        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None: {
+        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None, forward_looking=False: {
             "needs_question": True, "question": "Esses são os ingredientes da sua crepioca?",
             "question_kind": "confirm_ingredients", "skipped_names": [], "new_items": [],
             "proposed_dish_name": "Crepioca",
@@ -518,7 +518,7 @@ def test_parse_meal_asks_to_confirm_unknown_dish_ingredients(client, monkeypatch
 def test_parse_meal_done_offers_to_save_confirmed_dish(client, monkeypatch):
     monkeypatch.setattr(
         ai, "converse_meal",
-        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None: {
+        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None, forward_looking=False: {
             "needs_question": False, "question": "", "question_kind": "",
             "skipped_names": [meal_foods[0]],
             "new_items": [{"name": "goma de tapioca", "quantity": "1 colher de sopa"}, {"name": "ovo", "quantity": "1 unidade"}],

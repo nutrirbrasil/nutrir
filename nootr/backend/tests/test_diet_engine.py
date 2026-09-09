@@ -443,3 +443,46 @@ def test_protein_ceiling_pass_does_not_reinflate_food_beyond_growth_cap():
     for food, baseline in zip(jantar["foods"], jantar_foods):
         cap = baseline["grams"] * 1.5 + 1
         assert food["grams"] <= cap, f"{food['name']} passou do teto: {food['grams']}g (teto {cap}g)"
+
+
+def test_calorie_tolerance_does_not_dump_slack_into_carbs_when_protein_is_capped():
+    # Achado num caso real: troca no café (proteína/gordura por suco de uva,
+    # quase só carboidrato) deixou o resto do dia precisando repor bem mais
+    # proteína do que o frango das refeições seguintes suportava crescendo
+    # até o teto (1.5x). _enforce_calorie_tolerance não sabia disso: via só
+    # que faltavam calorias e enchia o arroz até o próprio teto pra "fechar"
+    # o dia, dia batia a meta de calorias só na aparência e a proteína
+    # continuava faltando, sem nenhum sinal disso sobrar pro day_topup
+    # cobrir com um alimento de verdade. Depois do fix, quando quem bateu no
+    # teto foi proteína/gordura, o arroz não pode ser inflado pra disfarçar,
+    # a diferença tem que sobrar honesta em remaining_calories/remaining_protein_g.
+    frango = {"name": "Frango grelhado", "calories": 165.0, "protein_g": 31.0,
+              "carbs_g": 0.0, "fat_g": 3.6, "grams": 100.0, "quantity": "100g"}
+    arroz = {"name": "Arroz branco", "calories": 256.0, "protein_g": 5.0,
+              "carbs_g": 56.0, "fat_g": 0.4, "grams": 200.0, "quantity": "200g"}
+    diet = {
+        "id": "d", "user_id": "u", "name": "T",
+        "daily_calories": 1600, "daily_protein_g": 220, "daily_carbs_g": 0, "daily_fat_g": 0,
+        "meals": [
+            {"id": "meal-1", "name": "Café da manhã", "time": "07:00", "foods": [dict(frango), dict(arroz)]},
+            {"id": "meal-2", "name": "Almoço", "time": "12:00", "foods": [dict(frango), dict(arroz)]},
+            {"id": "meal-3", "name": "Jantar", "time": "20:00", "foods": [dict(frango), dict(arroz)]},
+        ],
+    }
+    # Café perde o frango (a proteína do dia), almoço e jantar sozinhos têm
+    # que compensar. O frango de cada um bate no teto (150g) bem antes de
+    # fechar a proteína que falta.
+    r = diet_engine.apply_changes(diet, [
+        {"meal_id": "meal-1", "skipped_names": ["Frango grelhado"], "new_foods": []},
+    ])
+    for mid in ("meal-2", "meal-3"):
+        meal = next(m for m in r["adjusted_meals"] if m["id"] == mid)
+        frango_after = next(f for f in meal["foods"] if f["name"] == "Frango grelhado")
+        arroz_after = next(f for f in meal["foods"] if f["name"] == "Arroz branco")
+        assert frango_after["grams"] == pytest.approx(150.0, abs=1)
+        # Arroz tinha espaço de sobra até o próprio teto (300g), mas não pode
+        # ter sido usado pra disfarçar a proteína que faltou no frango.
+        assert arroz_after["grams"] < 280.0
+    # A diferença fica honesta, não "fechada" às custas do carboidrato.
+    assert r["remaining_calories"] > 150
+    assert r["remaining_protein_g"] > 80

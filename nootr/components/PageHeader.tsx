@@ -30,7 +30,7 @@ export function PageHeader({
           )}
           <div>
             <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">{title}</h1>
-            {subtitle && <p className="mt-1.5 max-w-xl text-xs text-nootr-muted sm:mt-2 sm:text-sm">{subtitle}</p>}
+            {subtitle && <p className="mt-1.5 text-xs text-nootr-muted sm:mt-2 sm:text-sm">{subtitle}</p>}
           </div>
         </div>
         {right && <div className="shrink-0">{right}</div>}
