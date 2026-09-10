@@ -101,19 +101,6 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         </div>
       )}
 
-      {!!pricing.free_delivery_half_shortfall_cents && (
-        <p className="text-sm text-nutrir-burgundy">
-          Adicione mais {formatPrice(pricing.free_delivery_half_shortfall_cents)} para ganhar 50%
-          de desconto no frete.
-        </p>
-      )}
-      {!!pricing.free_delivery_shortfall_cents && (
-        <p className="text-sm text-nutrir-burgundy">
-          Adicione mais {formatPrice(pricing.free_delivery_shortfall_cents)} para ganhar frete
-          GRÁTIS.
-        </p>
-      )}
-
       <div
         className={`flex justify-between font-bold ${
           compact ? "text-sm" : "border-t border-nutrir-nude-dark/40 pt-3 text-lg"
@@ -122,6 +109,31 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         <span>Total</span>
         <span className="text-nutrir-burgundy">{formatPrice(pricing.total_cents)}</span>
       </div>
+
+      {(!!pricing.free_delivery_half_shortfall_cents || !!pricing.free_delivery_shortfall_cents) && (
+        <div className="mt-3 space-y-2">
+          <p className="text-sm text-nutrir-emerald">
+            Adicione mais{" "}
+            <strong className="font-bold text-nutrir-burgundy">
+              {formatPrice(
+                pricing.free_delivery_half_shortfall_cents ?? pricing.free_delivery_shortfall_cents ?? 0
+              )}
+            </strong>{" "}
+            para ganhar:{" "}
+            <strong className="font-bold text-nutrir-burgundy">
+              {pricing.free_delivery_half_shortfall_cents ? "50% de desconto no frete" : "Frete Grátis"}
+            </strong>
+          </p>
+          <div className="relative h-2 rounded-full bg-nutrir-nude-dark/40">
+            <div
+              className="h-2 rounded-full bg-nutrir-burgundy transition-[width]"
+              style={{ width: `${Math.round((pricing.free_delivery_progress_fraction ?? 0) * 100)}%` }}
+            />
+            <span className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-nutrir-burgundy bg-white" />
+            <span className="absolute right-0 top-1/2 h-4 w-4 translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-nutrir-burgundy bg-white" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

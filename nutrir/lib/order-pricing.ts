@@ -207,18 +207,23 @@ export interface FreeDeliveryProgress {
   halfShortfallCents?: number;
   /** Falta pra atingir 100% (frete grátis) — ausente se já atingiu. */
   fullShortfallCents?: number;
+  /** Progresso (0 a 1) do subtotal até o gasto que destrava o frete grátis — pra barra visual. */
+  progressFraction: number;
 }
 
-/** Quanto falta de subtotal pros dois marcos do desconto de frete (50% e grátis) — usado só pra exibir "adicione mais R$X". */
+/** Quanto falta de subtotal pros dois marcos do desconto de frete (50% e grátis) — usado só pra exibir "adicione mais R$X" e a barra de progresso. */
 export function getFreeDeliveryProgress(
   subtotalCents: number,
   deliveryFeeCents: number
 ): FreeDeliveryProgress {
-  if (deliveryFeeCents <= 0) return {};
+  if (deliveryFeeCents <= 0) return { progressFraction: 0 };
 
   const pool = Math.floor(Math.max(0, subtotalCents) / SPEND_PER_DISCOUNT_UNIT_CENTS) * DELIVERY_DISCOUNT_UNIT_CENTS;
   const halfFeeCents = Math.round(deliveryFeeCents / 2);
-  const progress: FreeDeliveryProgress = {};
+  const fullTargetCents = minSpendForDeliveryDiscount(deliveryFeeCents);
+  const progress: FreeDeliveryProgress = {
+    progressFraction: fullTargetCents > 0 ? Math.min(1, Math.max(0, subtotalCents) / fullTargetCents) : 0,
+  };
 
   if (pool < halfFeeCents) {
     progress.halfShortfallCents = Math.max(0, minSpendForDeliveryDiscount(halfFeeCents) - subtotalCents);
@@ -244,6 +249,8 @@ export interface OrderPricing {
   /** Só definidos com cupom tipo ENTREGA (spendBasedFreeDelivery) quando ainda falta gasto pro marco. */
   free_delivery_half_shortfall_cents?: number;
   free_delivery_shortfall_cents?: number;
+  /** 0 a 1, só definido com cupom tipo ENTREGA — pra desenhar a barra de progresso. */
+  free_delivery_progress_fraction?: number;
 }
 
 export function computeOrderPricing(
@@ -277,7 +284,7 @@ export function computeOrderPricing(
       : 0;
     const deliveryProgress = coupon?.spendBasedFreeDelivery
       ? getFreeDeliveryProgress(listTotal, deliveryFeeCents)
-      : {};
+      : { progressFraction: 0 };
     const itemCouponDiscount = coupon
       ? coupon.progressiveDayDish
         ? computePratoDoDiaDiscountCents(items, method)
@@ -303,6 +310,7 @@ export function computeOrderPricing(
       show_points_discount: pointsDiscount > 0,
       free_delivery_half_shortfall_cents: deliveryProgress.halfShortfallCents,
       free_delivery_shortfall_cents: deliveryProgress.fullShortfallCents,
+      free_delivery_progress_fraction: coupon?.spendBasedFreeDelivery ? deliveryProgress.progressFraction : undefined,
     };
   }
 
@@ -314,7 +322,7 @@ export function computeOrderPricing(
     : 0;
   const deliveryProgress = coupon?.spendBasedFreeDelivery
     ? getFreeDeliveryProgress(cashTotal, deliveryFeeCents)
-    : {};
+    : { progressFraction: 0 };
   const itemCouponDiscount = coupon
     ? coupon.progressiveDayDish
       ? computePratoDoDiaDiscountCents(items, method)
@@ -341,6 +349,7 @@ export function computeOrderPricing(
     show_points_discount: pointsDiscount > 0,
     free_delivery_half_shortfall_cents: deliveryProgress.halfShortfallCents,
     free_delivery_shortfall_cents: deliveryProgress.fullShortfallCents,
+    free_delivery_progress_fraction: coupon?.spendBasedFreeDelivery ? deliveryProgress.progressFraction : undefined,
   };
 }
 
