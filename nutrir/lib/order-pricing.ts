@@ -185,14 +185,21 @@ function minSpendForDeliveryDiscount(targetCents: number): number {
   return Math.ceil(targetCents / DELIVERY_DISCOUNT_UNIT_CENTS) * SPEND_PER_DISCOUNT_UNIT_CENTS;
 }
 
-/** Desconto no frete proporcional ao subtotal: R$1 a cada R$20 gastos, limitado ao valor do frete (nunca fica negativo nem paga a mais). */
+/**
+ * Desconto no frete em dois degraus (sem valor intermediário): "pool" de R$1 a
+ * cada R$20 gastos. Pool >= metade do frete -> desconto de exatamente 50% do
+ * frete. Pool >= frete inteiro -> frete 100% grátis. Abaixo da metade, 0.
+ */
 export function computeSpendBasedFreeDeliveryCents(
   subtotalCents: number,
   deliveryFeeCents: number
 ): number {
   if (deliveryFeeCents <= 0 || subtotalCents <= 0) return 0;
   const pool = Math.floor(subtotalCents / SPEND_PER_DISCOUNT_UNIT_CENTS) * DELIVERY_DISCOUNT_UNIT_CENTS;
-  return Math.min(pool, deliveryFeeCents);
+  if (pool >= deliveryFeeCents) return deliveryFeeCents;
+  const halfFeeCents = Math.round(deliveryFeeCents / 2);
+  if (pool >= halfFeeCents) return halfFeeCents;
+  return 0;
 }
 
 export interface FreeDeliveryProgress {
@@ -210,7 +217,7 @@ export function getFreeDeliveryProgress(
   if (deliveryFeeCents <= 0) return {};
 
   const pool = Math.floor(Math.max(0, subtotalCents) / SPEND_PER_DISCOUNT_UNIT_CENTS) * DELIVERY_DISCOUNT_UNIT_CENTS;
-  const halfFeeCents = Math.ceil(deliveryFeeCents / 2);
+  const halfFeeCents = Math.round(deliveryFeeCents / 2);
   const progress: FreeDeliveryProgress = {};
 
   if (pool < halfFeeCents) {
