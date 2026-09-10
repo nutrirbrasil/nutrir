@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/api";
 import { formatPhoneBR, phoneValidationMessage } from "@/lib/br-fields";
@@ -23,7 +23,13 @@ import {
   isDeliveryDateEligible,
   type DeliverySelection,
 } from "@/lib/delivery-schedule";
-import { composeDeliveryAddressPreview, getDeliveryFeeCents, isBairroDeliverable } from "@/lib/delivery-fees";
+import {
+  composeDeliveryAddressPreview,
+  getDeliveryBairroOption,
+  getDeliveryFeeCents,
+  getDeliveryScheduleGroup,
+  isBairroDeliverable,
+} from "@/lib/delivery-fees";
 import { getItemCashTotalCents } from "@/lib/order-pricing";
 import { resolvePickupAddress } from "@/lib/store-info";
 import type { FulfillmentType } from "@/lib/types";
@@ -66,6 +72,19 @@ export function OrderForm() {
     }));
   }, [profile]);
 
+  // Cada bairro pode ter dias de entrega diferentes (Piçarras/Penha, Barra Velha,
+  // Navegantes) — se o cliente troca de bairro depois de já ter escolhido uma
+  // data, essa data pode não valer mais nesse novo grupo, então reseta.
+  const deliveryGroupRef = useRef<string | null>(null);
+  useEffect(() => {
+    const option = getDeliveryBairroOption(deliveryAddress.bairroId);
+    const group = option ? getDeliveryScheduleGroup(option.municipio) : null;
+    if (deliveryGroupRef.current !== null && deliveryGroupRef.current !== group) {
+      setDeliverySelection(null);
+    }
+    deliveryGroupRef.current = group;
+  }, [deliveryAddress.bairroId]);
+
   const total = items.reduce((sum, i) => sum + getItemCashTotalCents(i) * i.quantity, 0);
 
   function buildPickupDisplay(): string {
@@ -80,7 +99,7 @@ export function OrderForm() {
     const parts: string[] = [];
 
     if (fulfillmentType === "delivery") {
-      if (deliverySelection) parts.push(formatDeliverySummary(deliverySelection));
+      if (deliverySelection) parts.push(formatDeliverySummary(deliveryAddress.bairroId, deliverySelection));
       if (form.notes) parts.push(form.notes);
       parts.push("Entrega");
       return parts.filter(Boolean).join(" · ") || undefined;
@@ -102,11 +121,14 @@ export function OrderForm() {
 
   function validatePickup(): string | null {
     if (fulfillmentType === "delivery") {
-      if (!deliverySelection?.date || !isDeliveryDateEligible(deliverySelection.date)) {
-        return "Selecione um domingo válido para entrega.";
-      }
       if (!deliveryAddress.bairroId || !isBairroDeliverable(deliveryAddress.bairroId)) {
         return "Selecione um bairro dentro da área de entrega.";
+      }
+      if (
+        !deliverySelection?.date ||
+        !isDeliveryDateEligible(deliveryAddress.bairroId, deliverySelection.date)
+      ) {
+        return "Selecione uma data válida para entrega.";
       }
       if (!deliveryAddress.street.trim() || !deliveryAddress.number.trim()) {
         return "Informe o endereço de entrega (rua e número).";
@@ -243,16 +265,20 @@ export function OrderForm() {
               Agende sua entrega
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
-              Pedidos para entrega devem ser feito até sexta-feira, se perder a data você pode
-              optar pela retirada no local.
+              Os dias e horários de entrega dependem do bairro. Pedidos precisam de no mínimo 24
+              horas de antecedência.
             </p>
           </div>
-
-          <DeliveryScheduler value={deliverySelection} onChange={setDeliverySelection} />
 
           <DeliveryAddressPicker
             value={deliveryAddress}
             onChange={(patch) => setDeliveryAddress((prev) => ({ ...prev, ...patch }))}
+          />
+
+          <DeliveryScheduler
+            bairroId={deliveryAddress.bairroId}
+            value={deliverySelection}
+            onChange={setDeliverySelection}
           />
         </div>
       ) : (

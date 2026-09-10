@@ -55,8 +55,8 @@ function validate(body: CreateOrderPayload, fulfillmentType: FulfillmentType): s
     if (!isBairroDeliverable(body.delivery_bairro_id)) {
       return "Não entregamos nesse bairro no momento. Escolha retirada na loja.";
     }
-    if (!body.delivery_date?.trim() || !isDeliveryDateEligible(body.delivery_date)) {
-      return "Selecione um domingo válido para entrega.";
+    if (!body.delivery_date?.trim() || !isDeliveryDateEligible(body.delivery_bairro_id, body.delivery_date)) {
+      return "Selecione uma data válida para entrega nesse bairro.";
     }
   }
 
@@ -122,7 +122,6 @@ export async function POST(request: Request) {
         isPatient: !!paciente,
         isFirstPurchase: !priorOrders,
         alreadyUsedByCustomer,
-        deliveryBairroId: fulfillment_type === "delivery" ? body.delivery_bairro_id : undefined,
       });
       if (restrictionError) {
         return NextResponse.json({ error: restrictionError }, { status: 400 });

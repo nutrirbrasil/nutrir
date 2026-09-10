@@ -22,7 +22,7 @@ import {
   normalizePaymentMethod,
 } from "@/lib/payment-utils";
 import { formatPickupDisplayLines } from "@/lib/pickup-schedule";
-import { DELIVERY_WINDOW } from "@/lib/delivery-schedule";
+import { formatDeliverySummary } from "@/lib/delivery-schedule";
 import { composeDeliveryAddressPreview } from "@/lib/delivery-fees";
 import { NUTRIR_STORE_ADDRESS, resolvePickupAddress } from "@/lib/store-info";
 import { useCart } from "@/lib/cart-context";
@@ -47,6 +47,7 @@ function canReusePendingOrder(
           percent: draft.coupon_percent ?? 0,
           label: draft.coupon_label,
           freeDelivery: draft.coupon_free_delivery,
+          spendBasedFreeDelivery: draft.coupon_spend_based_free_delivery,
           progressiveDayDish: draft.coupon_progressive_day_dish,
           flatPerComboCents: draft.coupon_flat_per_combo_cents,
         }
@@ -88,6 +89,7 @@ export function ReviewStep() {
         percent: d.coupon_percent ?? 0,
         label: d.coupon_label,
         freeDelivery: d.coupon_free_delivery,
+        spendBasedFreeDelivery: d.coupon_spend_based_free_delivery,
         progressiveDayDish: d.coupon_progressive_day_dish,
         flatPerComboCents: d.coupon_flat_per_combo_cents,
       }
@@ -228,7 +230,7 @@ export function ReviewStep() {
                 <>
                   <p className="font-semibold text-nutrir-emerald">
                     {d.delivery_selection
-                      ? `Domingo, ${DELIVERY_WINDOW.label}`
+                      ? formatDeliverySummary(d.delivery_bairro_id, d.delivery_selection)
                       : d.pickup_display}
                   </p>
                   <p className="text-sm leading-relaxed text-nutrir-emerald/70">
@@ -276,7 +278,6 @@ export function ReviewStep() {
               <CouponField
                 cpf={d.customer_cpf}
                 phone={d.customer_phone}
-                bairroId={isDelivery ? d.delivery_bairro_id : undefined}
                 applied={
                   d.coupon_code
                     ? {
@@ -284,6 +285,7 @@ export function ReviewStep() {
                         percent: d.coupon_percent ?? 0,
                         label: d.coupon_label,
                         freeDelivery: d.coupon_free_delivery,
+                        spendBasedFreeDelivery: d.coupon_spend_based_free_delivery,
                         progressiveDayDish: d.coupon_progressive_day_dish,
                         flatPerComboCents: d.coupon_flat_per_combo_cents,
                       }
@@ -295,6 +297,7 @@ export function ReviewStep() {
                     coupon_percent: coupon.percent,
                     coupon_label: coupon.label,
                     coupon_free_delivery: coupon.freeDelivery,
+                    coupon_spend_based_free_delivery: coupon.spendBasedFreeDelivery,
                     coupon_progressive_day_dish: coupon.progressiveDayDish,
                     coupon_flat_per_combo_cents: coupon.flatPerComboCents,
                     order_id: undefined,
@@ -306,6 +309,7 @@ export function ReviewStep() {
                     coupon_percent: undefined,
                     coupon_label: undefined,
                     coupon_free_delivery: undefined,
+                    coupon_spend_based_free_delivery: undefined,
                     coupon_progressive_day_dish: undefined,
                     coupon_flat_per_combo_cents: undefined,
                     order_id: undefined,

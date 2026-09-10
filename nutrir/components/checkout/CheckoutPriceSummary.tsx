@@ -101,6 +101,19 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         </div>
       )}
 
+      {!!pricing.free_delivery_half_shortfall_cents && (
+        <p className="text-sm text-nutrir-burgundy">
+          Adicione mais {formatPrice(pricing.free_delivery_half_shortfall_cents)} para ganhar 50%
+          de desconto no frete.
+        </p>
+      )}
+      {!!pricing.free_delivery_shortfall_cents && (
+        <p className="text-sm text-nutrir-burgundy">
+          Adicione mais {formatPrice(pricing.free_delivery_shortfall_cents)} para ganhar frete
+          GRÁTIS.
+        </p>
+      )}
+
       <div
         className={`flex justify-between font-bold ${
           compact ? "text-sm" : "border-t border-nutrir-nude-dark/40 pt-3 text-lg"

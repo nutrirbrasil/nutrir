@@ -31,7 +31,6 @@ export async function GET(request: Request) {
 
   const cpf = url.searchParams.get("cpf")?.trim() || null;
   const phone = url.searchParams.get("phone")?.trim() || null;
-  const deliveryBairroId = url.searchParams.get("bairro")?.trim() || undefined;
 
   const [paciente, isFirstPurchase, alreadyUsedByCustomer] = await Promise.all([
     cpf ? findPacienteByCpf(cpf) : Promise.resolve(null),
@@ -43,7 +42,6 @@ export async function GET(request: Request) {
     isPatient: !!paciente,
     isFirstPurchase,
     alreadyUsedByCustomer,
-    deliveryBairroId,
   });
   if (restrictionError) {
     return NextResponse.json({ valid: false, error: restrictionError });
@@ -54,6 +52,7 @@ export async function GET(request: Request) {
     percent: coupon.percent,
     label: coupon.label,
     freeDelivery: coupon.freeDelivery,
+    spendBasedFreeDelivery: coupon.spendBasedFreeDelivery,
     progressiveDayDish: coupon.progressiveDayDish,
     flatPerComboCents: coupon.flatPerComboCents,
   });

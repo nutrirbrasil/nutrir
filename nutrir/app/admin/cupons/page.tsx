@@ -60,6 +60,8 @@ export default function AdminCuponsPage() {
                 <span className="rounded-full bg-nutrir-burgundy/10 px-3 py-1 text-sm font-bold text-nutrir-burgundy">
                   {coupon.freeDelivery
                     ? "Frete grátis"
+                    : coupon.spendBasedFreeDelivery
+                    ? "Frete progressivo (R$1 a cada R$20 gastos)"
                     : coupon.progressiveDayDish
                     ? "5% a 25% progressivo (prato do dia)"
                     : coupon.flatPerComboCents

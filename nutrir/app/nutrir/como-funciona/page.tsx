@@ -46,9 +46,26 @@ export default function ComoFuncionaPage() {
 
       <InfoSection title="Entrega">
         <p>
-          Todos os <strong>domingos, das 14h às 19h30</strong>. O pedido deve ser feito até{" "}
-          <strong>sexta-feira, 19:00</strong>! Disponível para marmitas individuais e combos, com
-          taxa que varia conforme cidade e bairro.
+          Os dias e horários de entrega variam conforme a cidade do endereço, com no mínimo{" "}
+          <strong>24 horas de antecedência</strong>:
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            <strong>Balneário Piçarras e Penha:</strong> todos os dias, exceto sábado. De segunda a
+            sexta das <strong>16h às 19h</strong>, aos domingos das <strong>14h30 às 19h30</strong>.
+          </li>
+          <li>
+            <strong>Barra Velha:</strong> apenas aos <strong>sábados</strong>, das{" "}
+            <strong>14h30 às 19h30</strong>.
+          </li>
+          <li>
+            <strong>Navegantes:</strong> apenas aos <strong>domingos</strong>, das{" "}
+            <strong>14h30 às 19h30</strong>.
+          </li>
+        </ul>
+        <p>
+          Disponível para marmitas individuais e combos, com taxa que varia conforme cidade e
+          bairro.
         </p>
       </InfoSection>
 
