@@ -40,6 +40,20 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
   const extraDiscountCents = pricing.pix_discount_cents - baseDiscountCents;
   const extraDiscountPercent = roundUpToHalf(discountPercent - BASE_DISCOUNT_PERCENT);
 
+  // Cupom tipo ENTREGA: o desconto no frete é sempre 0%, 50% ou 100% (nunca
+  // intermediário, ver computeSpendBasedFreeDeliveryCents), então dá pra saber
+  // exatamente qual marco foi batido só olhando quais shortfalls sumiram.
+  const isSpendBasedDelivery = typeof pricing.free_delivery_progress_fraction === "number";
+  const hasDeliveryFee = pricing.delivery_fee_cents > 0;
+  const achievedFreeDelivery =
+    isSpendBasedDelivery && hasDeliveryFee && !pricing.free_delivery_shortfall_cents;
+  const achievedHalfDelivery =
+    isSpendBasedDelivery &&
+    hasDeliveryFee &&
+    !achievedFreeDelivery &&
+    !pricing.free_delivery_half_shortfall_cents;
+  const freeDeliveryTierLabel = achievedFreeDelivery ? " (GRÁTIS)" : achievedHalfDelivery ? " (50%)" : "";
+
   return (
     <div className={compact ? "space-y-2" : "space-y-3"}>
       {!compact && <h3 className="font-bold text-nutrir-emerald">Resumo da compra</h3>}
@@ -89,6 +103,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
           <span>
             Cupom {pricing.coupon_code}
             {pricing.coupon_percent ? ` (${formatPercent(pricing.coupon_percent)})` : ""}
+            {freeDeliveryTierLabel}
           </span>
           <span>− {formatPrice(pricing.coupon_discount_cents)}</span>
         </div>
@@ -110,30 +125,40 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         <span className="text-nutrir-burgundy">{formatPrice(pricing.total_cents)}</span>
       </div>
 
-      {(!!pricing.free_delivery_half_shortfall_cents || !!pricing.free_delivery_shortfall_cents) && (
-        <div className="mt-3 space-y-2">
-          <p className="text-sm text-nutrir-emerald">
-            Adicione mais{" "}
-            <strong className="font-bold text-nutrir-burgundy">
-              {formatPrice(
-                pricing.free_delivery_half_shortfall_cents ?? pricing.free_delivery_shortfall_cents ?? 0
-              )}
-            </strong>{" "}
-            para ganhar:{" "}
-            <strong className="font-bold text-nutrir-burgundy">
-              {pricing.free_delivery_half_shortfall_cents ? "50% de desconto no frete" : "Frete Grátis"}
-            </strong>
-          </p>
-          <div className="relative h-2 rounded-full bg-nutrir-nude-dark/40">
-            <div
-              className="h-2 rounded-full bg-nutrir-burgundy transition-[width]"
-              style={{ width: `${Math.round((pricing.free_delivery_progress_fraction ?? 0) * 100)}%` }}
-            />
-            <span className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-nutrir-burgundy bg-white" />
-            <span className="absolute right-0 top-1/2 h-4 w-4 translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-nutrir-burgundy bg-white" />
+      {isSpendBasedDelivery &&
+        hasDeliveryFee &&
+        (achievedFreeDelivery ||
+          !!pricing.free_delivery_half_shortfall_cents ||
+          !!pricing.free_delivery_shortfall_cents) && (
+          <div className="mt-3 space-y-2">
+            {achievedFreeDelivery ? (
+              <p className="text-sm font-bold text-nutrir-emerald">
+                Parabéns! Você atingiu o valor necessário para receber Frete Grátis.
+              </p>
+            ) : (
+              <p className="text-sm text-nutrir-emerald">
+                Adicione mais{" "}
+                <strong className="font-bold text-nutrir-burgundy">
+                  {formatPrice(
+                    pricing.free_delivery_half_shortfall_cents ?? pricing.free_delivery_shortfall_cents ?? 0
+                  )}
+                </strong>{" "}
+                para ganhar:{" "}
+                <strong className="font-bold text-nutrir-burgundy">
+                  {pricing.free_delivery_half_shortfall_cents ? "50% de desconto no frete" : "Frete Grátis"}
+                </strong>
+              </p>
+            )}
+            <div className="relative h-2 rounded-full bg-nutrir-nude-dark/40">
+              <div
+                className="h-2 rounded-full bg-nutrir-burgundy transition-[width]"
+                style={{ width: `${Math.round((pricing.free_delivery_progress_fraction ?? 0) * 100)}%` }}
+              />
+              <span className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-nutrir-burgundy bg-white" />
+              <span className="absolute right-0 top-1/2 h-4 w-4 translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-nutrir-burgundy bg-white" />
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }
