@@ -39,7 +39,7 @@ function bairroId(municipio: MunicipioId, bairro: string): string {
 
 const TAXAS_ENTREGA: Record<MunicipioId, { bairro: string; valor: number }[]> = {
   balnearioPicarras: [
-    { bairro: "Centro", valor: 2.99 },
+    { bairro: "Centro", valor: 3.99 },
     { bairro: "Itacolomi", valor: 9.99 },
     { bairro: "Santo Antônio", valor: 7.99 },
     { bairro: "Nossa Senhora da Paz", valor: 5.99 },
