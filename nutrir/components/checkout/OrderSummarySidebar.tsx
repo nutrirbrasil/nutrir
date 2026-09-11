@@ -3,6 +3,7 @@
 import { formatPrice } from "@/lib/api";
 import type { CheckoutDraft } from "@/lib/checkout-draft";
 import { formatItemAddonsLabel } from "@/lib/item-addons-label";
+import { getCartItemImageSrc } from "@/lib/marmita-images";
 import {
   computeOrderPricing,
   getItemChargeCents,
@@ -10,6 +11,20 @@ import {
 } from "@/lib/order-pricing";
 import { normalizePaymentMethod } from "@/lib/payment-utils";
 import { CheckoutPriceSummary } from "@/components/checkout/CheckoutPriceSummary";
+import { MarmitaPhoto } from "@/components/MarmitaPhoto";
+import type { OrderItem } from "@/lib/types";
+
+function cartItemImageBg(item: OrderItem): string {
+  if (
+    item.section_id === "kit" ||
+    item.section_id === "combo" ||
+    item.item_id?.startsWith("kit-") ||
+    item.menu_id?.startsWith("combo-build")
+  ) {
+    return "bg-nutrir-emerald";
+  }
+  return "bg-nutrir-burgundy";
+}
 
 export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
   const method = normalizePaymentMethod(draft.payment_method);
@@ -53,15 +68,24 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
           const finalCents = Math.max(0, chargeCents - couponCut);
           const hasDiscount = listCents > finalCents;
 
+          const imageSrc = getCartItemImageSrc(item);
+
           return (
-            <li key={`${item.name}-${i}`} className="flex justify-between gap-3 text-sm">
+            <li key={`${item.name}-${i}`} className="flex gap-3 text-sm">
+              <div
+                className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-lg ${cartItemImageBg(item)}`}
+              >
+                {imageSrc && (
+                  <MarmitaPhoto src={imageSrc} alt={item.name} className="h-full w-full" sizes="48px" />
+                )}
+              </div>
               <span className="flex-1 text-nutrir-emerald">
-                {item.name}
+                {item.quantity}x {item.name}
                 <span className="mt-0.5 block text-xs text-nutrir-emerald/55">
                   {formatItemAddonsLabel(item)}
                 </span>
               </span>
-              <span className="text-right">
+              <span className="shrink-0 text-right">
                 {hasDiscount && (
                   <span className="block text-xs text-nutrir-emerald/45 line-through">
                     {formatPrice(listCents)}
