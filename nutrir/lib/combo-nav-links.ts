@@ -9,13 +9,10 @@ export const COMBO_SECTION_IDS = {
 export const COMBO_NAV_EVENT = "nutrir:combo-nav";
 
 export const COMBO_MENU_LINKS = [
-  { href: `/combos#${COMBO_SECTION_IDS.frango}`, label: "Frango", sectionId: COMBO_SECTION_IDS.frango },
-  { href: `/combos#${COMBO_SECTION_IDS.carne}`, label: "Carne", sectionId: COMBO_SECTION_IDS.carne },
-  { href: `/combos#${COMBO_SECTION_IDS.misto}`, label: "Misto", sectionId: COMBO_SECTION_IDS.misto },
   {
-    href: `/combos#${COMBO_SECTION_IDS.veg}`,
-    label: "Vegetariano",
-    sectionId: COMBO_SECTION_IDS.veg,
+    href: `/combos#${COMBO_SECTION_IDS.frango}`,
+    label: "Combos Prontos",
+    sectionId: COMBO_SECTION_IDS.frango,
   },
   {
     href: `/combos#${COMBO_SECTION_IDS.montar}`,

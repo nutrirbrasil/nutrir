@@ -329,21 +329,21 @@ export function ReviewStep() {
               </section>
             )}
           </div>
-
-          {error && <p className="text-sm text-red-600">{error}</p>}
-
-          <button
-            type="button"
-            disabled={loading}
-            onClick={handleFinalize}
-            className="btn-primary w-full py-4 text-sm font-bold uppercase tracking-wide"
-          >
-            {loading ? "Processando…" : finalizeLabel()}
-          </button>
         </div>
 
         <OrderSummarySidebar draft={{ ...d, payment_method: method }} />
       </div>
+
+      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
+      <button
+        type="button"
+        disabled={loading}
+        onClick={handleFinalize}
+        className="btn-primary mt-6 w-full py-4 text-sm font-bold uppercase tracking-wide"
+      >
+        {loading ? "Processando…" : finalizeLabel()}
+      </button>
     </CheckoutShell>
   );
 }

@@ -2,11 +2,11 @@ import type { KitProduct } from "./menu-data";
 import type { OrderItem } from "./types";
 import { getJuiceImageSrc } from "./juice-images";
 
-const COM_FUNDO = "/marmitas/Com fundo";
+const COM_FUNDO = "/marmitas/V3";
 const SEM_FUNDO = "/marmitas/Sem fundo";
 
 /** Incremente ao trocar as fotos em public/marmitas para forçar atualização no navegador. */
-export const MARMITA_IMAGES_VERSION = "5";
+export const MARMITA_IMAGES_VERSION = "6";
 
 function imagePath(name: string): string {
   return `${encodeURI(`${COM_FUNDO}/${name}.png`)}?v=${MARMITA_IMAGES_VERSION}`;
