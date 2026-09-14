@@ -48,13 +48,7 @@ export default function PlanosCasalPage() {
   return (
     <section className="px-4 py-16 md:py-24">
       <div className="mx-auto max-w-5xl">
-        <div className="flex justify-center">
-          <Link href="/planos" className="btn-secondary inline-flex">
-            ← Voltar para planos individuais
-          </Link>
-        </div>
-
-        <p className="dark-accent-label mt-6 text-center">Proposta de acompanhamento em dupla</p>
+        <p className="dark-accent-label text-center">Proposta de acompanhamento em dupla</p>
         <h1 className="section-title mt-2 text-center">Planos Casal</h1>
         <p className="dark-accent-body mx-auto mt-4 max-w-2xl text-center text-lg">
           Acompanhamento conjunto, com abordagens individuais, mas que se complementam no dia a dia,
@@ -84,6 +78,12 @@ export default function PlanosCasalPage() {
           >
             Tirar dúvidas
           </a>
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <Link href="/planos" className="btn-secondary inline-flex">
+            ← Voltar para planos individuais
+          </Link>
         </div>
       </div>
     </section>
