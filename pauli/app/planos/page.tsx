@@ -49,7 +49,7 @@ export default function PlanosPage() {
       <div className="mx-auto max-w-5xl">
         <p className="dark-accent-label text-center">Proposta de acompanhamento</p>
         <h1 className="section-title mt-2 text-center">Planos e Valores</h1>
-        <p className="dark-accent-body mx-auto mt-4 max-w-2xl text-center text-lg">
+        <p className="dark-accent-body mx-auto mt-4 max-w-2xl text-center text-sm">
           {site.fullName} · {site.subtitle} · {site.crn}
         </p>
 
@@ -62,14 +62,9 @@ export default function PlanosPage() {
         </ul>
 
         <div className="surface-card mx-auto mt-10 flex max-w-2xl flex-col items-center gap-3 p-6 text-center md:flex-row md:justify-between md:text-left">
-          <div>
-            <p className="dark-accent-heading font-display text-lg font-bold">
-              Vai fazer o acompanhamento com alguém?
-            </p>
-            <p className="detail-text mt-1 text-sm">
-              Conheça os Planos Casal!
-            </p>
-          </div>
+          <p className="dark-accent-heading font-display text-lg font-bold">
+            Deseja um acompanhamento conjunto?
+          </p>
           <Link href="/planos-casal" className="btn-secondary shrink-0">
             Ver Planos Casal
           </Link>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PricingCard, type PricingCardData } from "@/components/PricingCard";
 import { site, whatsappLink } from "@/lib/site";
 
@@ -20,13 +21,13 @@ const priceCards: PricingCardData[] = [
   {
     title: "Consulta Inicial Casal",
     tagline: "Duas consultas iniciais, com suporte por 30 dias para cada um.",
-    card: { price: "R$ 549", from: "R$ 600", note: "para os dois" },
+    card: { price: "R$ 549", from: "R$ 600" },
     pix: { price: "R$ 519", note: "R$ 260 por pessoa" },
     whatsappMessage: "Olá Paula! Analisei os planos e temos interesse no Plano Casal, Consulta Inicial.",
   },
   {
     title: "Plano Trimestral Casal",
-    tagline: "Acompanhamento contínuo por 3 meses, para os dois",
+    tagline: "Acompanhamento contínuo por 3 meses, para ambos (6 consultas no total)",
     card: { price: "R$ 1.449", from: "R$ 1.600", installments: "ou parcelado em até 3x (sujeito a taxas)" },
     pix: { price: "R$ 1.369", note: "R$ 228 por consulta" },
     featured: true,
@@ -35,7 +36,7 @@ const priceCards: PricingCardData[] = [
   },
   {
     title: "Plano Semestral Casal",
-    tagline: "Acompanhamento contínuo por 6 meses, para os dois",
+    tagline: "Acompanhamento contínuo por 6 meses, para ambos (12 consultas no total)",
     card: { price: "R$ 2.529", from: "R$ 2.800", installments: "ou parcelado em até 6x (sujeito a taxas)" },
     pix: { price: "R$ 2.399", note: "R$ 199 por consulta" },
     badge: "Melhor custo por consulta",
@@ -47,10 +48,17 @@ export default function PlanosCasalPage() {
   return (
     <section className="px-4 py-16 md:py-24">
       <div className="mx-auto max-w-5xl">
-        <p className="dark-accent-label text-center">Proposta de acompanhamento em dupla</p>
+        <div className="flex justify-center">
+          <Link href="/planos" className="btn-secondary inline-flex">
+            ← Voltar para planos individuais
+          </Link>
+        </div>
+
+        <p className="dark-accent-label mt-6 text-center">Proposta de acompanhamento em dupla</p>
         <h1 className="section-title mt-2 text-center">Planos Casal</h1>
         <p className="dark-accent-body mx-auto mt-4 max-w-2xl text-center text-lg">
-          Acompanhamento nutricional para você e seu parceiro ou parceira, feito para fazerem juntos.
+          Acompanhamento conjunto, com abordagens individuais, mas que se complementam no dia a dia,
+          perfeito para evoluírem juntos.
         </p>
         <p className="dark-accent-body mx-auto mt-2 max-w-2xl text-center text-sm">
           {site.fullName} · {site.subtitle} · {site.crn}

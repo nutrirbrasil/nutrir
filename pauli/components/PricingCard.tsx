@@ -73,7 +73,9 @@ export function PricingCard({ card }: Props) {
           </span>
         </div>
         {card.pix.note ? (
-          <p className="detail-text mt-1 text-xs">({card.pix.note})</p>
+          <p className="mt-1 text-[11px] text-pauli-gray-muted">
+            *Valor total referente a {card.pix.note}
+          </p>
         ) : null}
       </div>
 
