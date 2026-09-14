@@ -2,7 +2,7 @@ export interface CouponDefinition {
   /** Percentual de desconto (0–100) sobre a base informada no checkout. */
   percent: number;
   label?: string;
-  /** Só vale se o cliente nunca tiver feito um pedido antes (por telefone). */
+  /** Só vale se o cliente nunca tiver feito um pedido antes (pelo e-mail autenticado). */
   firstPurchaseOnly?: boolean;
   /** Só vale para quem está cadastrado como paciente (ver findPacienteByCpf). */
   patientOnly?: boolean;
@@ -14,7 +14,7 @@ export interface CouponDefinition {
   spendBasedFreeDelivery?: boolean;
   /** Desconto progressivo por unidade do "prato do dia" (ver lib/pratododia.ts e computePratoDoDiaDiscountCents). Percent aqui fica 0, o valor real vem do cálculo por unidade. */
   progressiveDayDish?: boolean;
-  /** Só pode ser usado uma vez por conta (telefone). Ver hasUsedCouponByPhone em lib/supabase-db.ts. */
+  /** Só pode ser usado uma vez por conta (e-mail autenticado). Ver hasUsedCouponByEmail em lib/supabase-db.ts. */
   oncePerCustomer?: boolean;
   /** Desconto fixo em centavos por combo (kit pronto ou monte seu combo) no pedido, não por marmita nem percentual. */
   flatPerComboCents?: number;
@@ -29,7 +29,6 @@ const COUPONS: Record<string, CouponDefinition> = {
   ENTREGA: { percent: 0, label: "DESCONTO NO FRETE", spendBasedFreeDelivery: true },
   PRATODODIA: { percent: 0, label: "PRATO DO DIA", progressiveDayDish: true },
   OBRIGADO10: { percent: 10, label: "10% DE DESCONTO", oncePerCustomer: true },
-  SETE: { percent: 0, label: "R$7 POR COMBO", flatPerComboCents: 700 },
 };
 
 /** Lista os cupons fixos (não inclui os de parceiro, que vêm do banco — ver lib/partners.ts). */

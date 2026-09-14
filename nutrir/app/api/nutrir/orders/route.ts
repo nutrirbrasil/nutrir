@@ -23,7 +23,7 @@ import {
 import { isPixConfigured } from "@/lib/pix-brcode";
 import { generateUniqueOrderId } from "@/lib/order-id";
 import { saveOrder } from "@/lib/order-store";
-import { findPacienteByCpf, hasPriorOrdersByPhone, hasUsedCouponByPhone } from "@/lib/supabase-db";
+import { findPacienteByCpf, hasPriorOrdersByEmail, hasUsedCouponByEmail } from "@/lib/supabase-db";
 import { sendOrderTelegramNotification } from "@/lib/order-telegram";
 import type { CreateOrderPayload, FulfillmentType, Order } from "@/lib/types";
 
@@ -88,6 +88,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Corpo da requisição inválido." }, { status: 400 });
   }
 
+  // E-mail autenticado (do token de sessão), não o campo livre do formulário.
+  // O checkout exige login (useRequireLogin/useCheckoutGuard nas telas), mas
+  // isso é só UX — aqui é a barreira de verdade: sem sessão válida, sem pedido.
+  const authEmail = await verifyUserEmail(request);
+  if (!authEmail) {
+    return NextResponse.json(
+      { error: "É necessário estar logado para finalizar o pedido." },
+      { status: 401 }
+    );
+  }
+
   const fulfillment_type: FulfillmentType = body.fulfillment_type === "delivery" ? "delivery" : "pickup";
 
   const validationError = validate(body, fulfillment_type);
@@ -111,17 +122,17 @@ export async function POST(request: Request) {
       if (!coupon) {
         return NextResponse.json({ error: "Cupom inválido." }, { status: 400 });
       }
-      const [paciente, priorOrders, alreadyUsedByCustomer] = await Promise.all([
+      // Restrição de "1ª compra"/"uma vez por conta" é só por e-mail autenticado
+      // (telefone é fácil de trocar pra reusar o cupom).
+      const [paciente, emailHasPriorOrders, usedByEmail] = await Promise.all([
         body.customer_cpf ? findPacienteByCpf(body.customer_cpf) : Promise.resolve(null),
-        body.customer_phone ? hasPriorOrdersByPhone(body.customer_phone) : Promise.resolve(false),
-        body.customer_phone && coupon.oncePerCustomer
-          ? hasUsedCouponByPhone(body.customer_phone, body.coupon_code)
-          : Promise.resolve(false),
+        hasPriorOrdersByEmail(authEmail),
+        coupon.oncePerCustomer ? hasUsedCouponByEmail(authEmail, body.coupon_code) : Promise.resolve(false),
       ]);
       const restrictionError = validateCouponRestrictions(coupon, {
         isPatient: !!paciente,
-        isFirstPurchase: !priorOrders,
-        alreadyUsedByCustomer,
+        isFirstPurchase: !emailHasPriorOrders,
+        alreadyUsedByCustomer: usedByEmail,
       });
       if (restrictionError) {
         return NextResponse.json({ error: restrictionError }, { status: 400 });
@@ -198,6 +209,10 @@ export async function POST(request: Request) {
 
   const order: Order = {
     ...body,
+    // E-mail autenticado sempre vence o campo livre do formulário — evita que
+    // alguém digite outro e-mail só pra burlar a checagem de "1ª compra"/"uma
+    // vez por conta" numa próxima tentativa.
+    customer_email: authEmail,
     items: chargedItems,
     id: orderId,
     status: "pending",

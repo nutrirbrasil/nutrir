@@ -32,45 +32,49 @@ export interface PacienteRecord {
   cpf: string;
 }
 
-/** Já existe algum pedido salvo com esse telefone (qualquer status)? Usado pra restringir cupom de "primeira compra". */
-export async function hasPriorOrdersByPhone(phone: string): Promise<boolean> {
+/**
+ * Já existe algum pedido salvo com esse e-mail (qualquer status)? Usado pra
+ * restringir cupom de "primeira compra". E-mail vem do login (autenticado),
+ * não do campo livre do formulário nem do telefone — ambos fáceis de trocar.
+ */
+export async function hasPriorOrdersByEmail(email: string): Promise<boolean> {
   const db = getSupabaseAdmin();
   if (!db) return false;
 
-  const normalized = normalizePhone(phone);
+  const normalized = email.trim().toLowerCase();
   if (!normalized) return false;
 
   const { data, error } = await db
     .from("nutrir_orders")
     .select("order_nsu")
-    .eq("customer_phone", normalized)
+    .ilike("customer_email", normalized)
     .limit(1);
 
   if (error) {
-    console.error("[Supabase] hasPriorOrdersByPhone:", error.message);
+    console.error("[Supabase] hasPriorOrdersByEmail:", error.message);
     return false;
   }
 
   return (data ?? []).length > 0;
 }
 
-/** Esse telefone já usou esse cupom em algum pedido salvo (qualquer status)? Usado por cupons "uma vez por conta" (ex: OBRIGADO10). */
-export async function hasUsedCouponByPhone(phone: string, couponCode: string): Promise<boolean> {
+/** Esse e-mail já usou esse cupom em algum pedido salvo (qualquer status)? Usado por cupons "uma vez por conta" (ex: OBRIGADO10). */
+export async function hasUsedCouponByEmail(email: string, couponCode: string): Promise<boolean> {
   const db = getSupabaseAdmin();
   if (!db) return false;
 
-  const normalized = normalizePhone(phone);
+  const normalized = email.trim().toLowerCase();
   if (!normalized) return false;
 
   const { data, error } = await db
     .from("nutrir_orders")
     .select("order_nsu")
-    .eq("customer_phone", normalized)
+    .ilike("customer_email", normalized)
     .eq("coupon_code", couponCode.trim().toUpperCase())
     .limit(1);
 
   if (error) {
-    console.error("[Supabase] hasUsedCouponByPhone:", error.message);
+    console.error("[Supabase] hasUsedCouponByEmail:", error.message);
     return false;
   }
 

@@ -183,10 +183,10 @@ export function ReviewStep() {
       }
 
       const payload = buildPayload();
-      const { order, checkout_url } = await nutrirApi.createOrder(
-        payload,
-        pointsRedeemed > 0 ? session?.access_token : undefined
-      );
+      // Sempre manda o token quando logado (não só pra resgate de pontos) — o
+      // servidor usa o e-mail autenticado pra checar restrição de "1ª compra"
+      // e "uma vez por conta" sem depender de campo livre do formulário.
+      const { order, checkout_url } = await nutrirApi.createOrder(payload, session?.access_token);
 
       if (isLocalPayment(method)) {
         cart.clearCart();
@@ -277,7 +277,7 @@ export function ReviewStep() {
             <section className="p-5">
               <CouponField
                 cpf={d.customer_cpf}
-                phone={d.customer_phone}
+                token={session?.access_token}
                 applied={
                   d.coupon_code
                     ? {

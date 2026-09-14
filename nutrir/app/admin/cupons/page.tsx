@@ -12,9 +12,9 @@ const FIXED_COUPONS = listCoupons();
 
 function couponRestrictions(coupon: ReturnType<typeof listCoupons>[number]): string[] {
   const items: string[] = [];
-  if (coupon.firstPurchaseOnly) items.push("Só na primeira compra (por telefone)");
+  if (coupon.firstPurchaseOnly) items.push("Só na primeira compra (por e-mail)");
   if (coupon.patientOnly) items.push("Só para pacientes VIP");
-  if (coupon.oncePerCustomer) items.push("Só uma vez por conta (por telefone)");
+  if (coupon.oncePerCustomer) items.push("Só uma vez por conta (por e-mail)");
   if (coupon.expiresAt) {
     const [y, m, d] = coupon.expiresAt.split("-");
     items.push(`Expira em ${d}/${m}/${y}`);

@@ -26,7 +26,7 @@ export interface CheckoutDraft {
   coupon_spend_based_free_delivery?: boolean;
   /** Cupons tipo PRATODODIA: desconto progressivo por unidade no preview do cliente (ver lib/pratododia.ts). */
   coupon_progressive_day_dish?: boolean;
-  /** Cupons tipo SETE: desconto fixo em centavos por combo no preview do cliente. */
+  /** Cupons com flatPerComboCents: desconto fixo em centavos por combo no preview do cliente. */
   coupon_flat_per_combo_cents?: number;
   order_id?: string;
   /** Pontos de parceiro a usar como desconto (centavos) — só pra exibição; servidor recalcula/valida. */

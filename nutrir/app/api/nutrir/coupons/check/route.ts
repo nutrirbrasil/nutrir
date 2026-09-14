@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getCoupon, validateCouponRestrictions } from "@/lib/coupons";
 import { findPartnerByCouponCode, PARTNER_COUPON_PERCENT } from "@/lib/partners";
-import { findPacienteByCpf, hasPriorOrdersByPhone, hasUsedCouponByPhone } from "@/lib/supabase-db";
+import { findPacienteByCpf, hasPriorOrdersByEmail, hasUsedCouponByEmail } from "@/lib/supabase-db";
+import { verifyUserEmail } from "@/lib/session-auth";
 
 // Sem isso o Next cacheia a resposta estaticamente (a rota nao usa nada
 // "dinamico" aos olhos dele) e restricoes que dependem de CPF/telefone na
@@ -30,13 +31,18 @@ export async function GET(request: Request) {
   }
 
   const cpf = url.searchParams.get("cpf")?.trim() || null;
-  const phone = url.searchParams.get("phone")?.trim() || null;
+  // E-mail autenticado (do token de sessão), não telefone (fácil de trocar)
+  // nem campo livre do formulário — restrição de "1ª compra"/"uma vez por
+  // conta" só considera "novo" quem realmente não fez pedido com esse login.
+  const email = await verifyUserEmail(request);
 
-  const [paciente, isFirstPurchase, alreadyUsedByCustomer] = await Promise.all([
+  const [paciente, emailIsNew, usedByEmail] = await Promise.all([
     cpf ? findPacienteByCpf(cpf) : Promise.resolve(null),
-    phone ? hasPriorOrdersByPhone(phone).then((has) => !has) : Promise.resolve(false),
-    phone && coupon.oncePerCustomer ? hasUsedCouponByPhone(phone, code) : Promise.resolve(false),
+    email ? hasPriorOrdersByEmail(email).then((has) => !has) : Promise.resolve(false),
+    email && coupon.oncePerCustomer ? hasUsedCouponByEmail(email, code) : Promise.resolve(false),
   ]);
+  const isFirstPurchase = emailIsNew;
+  const alreadyUsedByCustomer = usedByEmail;
 
   const restrictionError = validateCouponRestrictions(coupon, {
     isPatient: !!paciente,

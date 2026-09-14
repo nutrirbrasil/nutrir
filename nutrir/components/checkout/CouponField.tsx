@@ -17,12 +17,13 @@ interface Props {
   applied?: AppliedCoupon | null;
   onApply: (coupon: AppliedCoupon) => void;
   onRemove: () => void;
-  /** CPF e telefone já preenchidos no checkout — conferidos contra restrições do cupom (ex: só paciente, só 1ª compra). */
+  /** CPF já preenchido no checkout — conferido contra restrições do cupom (ex: só paciente). */
   cpf?: string;
-  phone?: string;
+  /** session.access_token, pra restrição de "1ª compra"/"uma vez por conta" checar pelo e-mail autenticado, não um campo livre. */
+  token?: string;
 }
 
-export function CouponField({ applied, onApply, onRemove, cpf, phone }: Props) {
+export function CouponField({ applied, onApply, onRemove, cpf, token }: Props) {
   const [input, setInput] = useState(applied?.code ?? "");
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
@@ -41,8 +42,9 @@ export function CouponField({ applied, onApply, onRemove, cpf, phone }: Props) {
       const code = normalizeCouponCode(trimmed);
       const params = new URLSearchParams({ code });
       if (cpf?.trim()) params.set("cpf", cpf.trim());
-      if (phone?.trim()) params.set("phone", phone.trim());
-      const res = await fetch(`/api/nutrir/coupons/check?${params.toString()}`);
+      const res = await fetch(`/api/nutrir/coupons/check?${params.toString()}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       const data = (await res.json()) as {
         valid: boolean;
         percent?: number;
