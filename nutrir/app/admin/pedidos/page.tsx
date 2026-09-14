@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { FiTrash2 } from "react-icons/fi";
 import { formatPrice } from "@/lib/api";
 import { adminNutrirApi } from "@/lib/admin-api";
@@ -300,6 +301,9 @@ export default function AdminPedidosPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
+      <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+        ← Voltar
+      </Link>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Pedidos</h1>
         <button type="button" onClick={load} className="btn-secondary px-4 py-2 text-sm">

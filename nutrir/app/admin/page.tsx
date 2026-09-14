@@ -25,6 +25,11 @@ const ADMIN_PAGES = [
     label: "Cupons",
     description: "Lista de todos os cupons ativos, fixos e de parceiro, com suas regras e descontos.",
   },
+  {
+    href: "/admin/calculadora-producao",
+    label: "Calculadora de produção",
+    description: "Some as marmitas do dia e veja o total de cada ingrediente pra preparar, cru e pronto.",
+  },
 ];
 
 export default function AdminPage() {

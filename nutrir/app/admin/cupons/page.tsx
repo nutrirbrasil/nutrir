@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { formatPrice } from "@/lib/api";
 import { adminNutrirApi } from "@/lib/admin-api";
 import { listCoupons } from "@/lib/coupons";
@@ -40,6 +41,9 @@ export default function AdminCuponsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
+      <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+        ← Voltar
+      </Link>
       <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Cupons</h1>
       <p className="mt-1 text-sm text-nutrir-emerald/60">
         Todos os cupons ativos no site, pra consulta rápida sem precisar mexer no código.

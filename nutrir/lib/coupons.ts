@@ -24,7 +24,7 @@ export interface CouponDefinition {
 // coupon_code = NUTRIPAULA), 5% de desconto pro cliente + pontos pra Paula, igual
 // qualquer outro parceiro — ver lib/partners.ts.
 const COUPONS: Record<string, CouponDefinition> = {
-  PRIMEIRACOMPRA: { percent: 15, label: "15% DE DESCONTO", firstPurchaseOnly: true },
+  PRIMEIRACOMPRA: { percent: 10, label: "10% DE DESCONTO", firstPurchaseOnly: true },
   PACIENTEVIP: { percent: 10, label: "10% DE DESCONTO", patientOnly: true },
   ENTREGA: { percent: 0, label: "DESCONTO NO FRETE", spendBasedFreeDelivery: true },
   PRATODODIA: { percent: 0, label: "PRATO DO DIA", progressiveDayDish: true },

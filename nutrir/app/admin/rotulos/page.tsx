@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRequireAdmin } from "@/lib/use-require-admin";
 import { MENU_SECTIONS, type MarmitaSize } from "@/lib/menu-data";
 import { NutritionLabelPrint } from "@/components/NutritionLabelPrint";
@@ -39,6 +40,9 @@ export default function RotulosPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="print:hidden">
+        <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+          ← Voltar
+        </Link>
         <h1 className="font-display text-2xl font-bold text-nutrir-emerald">
           Rótulos nutricionais
         </h1>

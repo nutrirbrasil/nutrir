@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRequireAdmin } from "@/lib/use-require-admin";
 import { useProfile } from "@/lib/profile-context";
 import { nutrirApi, type RecipeIngredientPayload } from "@/lib/api";
@@ -298,6 +299,17 @@ function cruHint(food: Food, cookedGrams: number): string {
 }
 
 /**
+ * Verdadeiro pra subitens dosados como tempero (% do peso CRU do item
+ * principal): água, sal, orégano, páprica, pimenta (todos "referência") e o
+ * azeite (fixo em 2% do cru, só pra não grudar, não é parte da composição).
+ * Os demais (molho, queijo, leite...) são parte real da receita e por isso
+ * mostram % do total da composição, junto com o item principal.
+ */
+function isDosedByRawWeight(food: Food): boolean {
+  return food.is_reference_only || food.id === "azeite";
+}
+
+/**
  * Cartão de um ingrediente principal em modo cozinha: porção alvo fixa
  * (item principal + subitens, sem água) e uma lista tipo receita — o item
  * principal primeiro, depois cada subitem — todos com peso e % da porção
@@ -307,8 +319,13 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
   const target = cookedTotalGrams(item);
   const targetTotal = target * batchCount;
   const ingredientCount = 1 + item.children.length;
-  const ownPct = target > 0 ? (item.grams / target) * 100 : 0;
-  // Subitens (tempero, água...) são dosados em cima do peso CRU do alimento principal, não do total cozido do grupo.
+  // % dos ingredientes "de verdade" (item principal + subitens que compõem a
+  // receita, ex: massa + molho) soma 100% entre eles. Tempero/água/azeite
+  // ficam de fora dessa conta, são dosados em cima do peso cru (abaixo).
+  const compositionTotal =
+    item.grams + item.children.filter((c) => !isDosedByRawWeight(c.food)).reduce((s, c) => s + c.grams, 0);
+  const ownPct = compositionTotal > 0 ? (item.grams / compositionTotal) * 100 : 0;
+  // Tempero e água são dosados em cima do peso CRU do alimento principal, não do total cozido do grupo.
   const cru = rawGramsForFood(item.food, item.grams);
 
   return (
@@ -317,6 +334,9 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
         <div>
           <h3 className="font-display text-lg font-bold text-nutrir-emerald sm:text-xl">
             {item.food.display_name}
+            {item.note && (
+              <span className="ml-2 text-xs font-normal text-nutrir-emerald/50">({item.note})</span>
+            )}
           </h3>
           <p className="text-[11px] text-nutrir-emerald/50">
             {ingredientCount} {ingredientCount === 1 ? "ingrediente" : "ingredientes"}
@@ -339,13 +359,40 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
         </li>
         {item.children.map((child) => {
           const childTotal = child.grams * batchCount;
-          const pct = cru > 0 ? (child.grams / cru) * 100 : 0;
+          const isWater = child.food.id === "agua";
+
+          if (isWater) {
+            const multiplier = cru > 0 ? child.grams / cru : 0;
+            return (
+              <li key={child.id} className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-nutrir-emerald/85">
+                  <span className="text-nutrir-emerald/40">•</span> {child.food.display_name}
+                  <span className="ml-1 text-[10px] text-nutrir-emerald/50">(não conta no total, evapora)</span>
+                </span>
+                <span className="shrink-0 tabular-nums font-semibold text-nutrir-emerald">
+                  {fmt(childTotal)} ml{" "}
+                  <span className="font-normal text-nutrir-emerald/50">
+                    ({multiplier.toFixed(1).replace(".", ",")}x)
+                  </span>
+                </span>
+              </li>
+            );
+          }
+
+          const pct = isDosedByRawWeight(child.food)
+            ? cru > 0
+              ? (child.grams / cru) * 100
+              : 0
+            : compositionTotal > 0
+              ? (child.grams / compositionTotal) * 100
+              : 0;
+
           return (
             <li key={child.id} className="flex items-center justify-between gap-3 text-sm">
               <span className="text-nutrir-emerald/85">
                 <span className="text-nutrir-emerald/40">•</span> {child.food.display_name}
                 {child.food.is_reference_only && (
-                  <span className="ml-1 text-[10px] text-nutrir-emerald/50">(não conta no total, evapora)</span>
+                  <span className="ml-1 text-[10px] text-nutrir-emerald/50">(não conta no total)</span>
                 )}
               </span>
               <span className="shrink-0 tabular-nums font-semibold text-nutrir-emerald">
@@ -372,9 +419,13 @@ function RecipeCookingView({ recipe, batchCount }: { recipe: Recipe; batchCount:
   }
 
   const ordered = sortByCookedTotalDesc(recipe.ingredients);
+  const grandTotal = recipe.ingredients.reduce((s, item) => s + cookedTotalGrams(item), 0) * batchCount;
 
   return (
     <div className="space-y-3">
+      <p className="text-right text-sm font-bold text-nutrir-emerald/70">
+        Peso total da marmita: {fmt(grandTotal)} g
+      </p>
       {ordered.map((item) => (
         <CookingIngredientCard key={item.id} item={item} batchCount={batchCount} />
       ))}
@@ -879,6 +930,9 @@ export default function FichasTecnicasPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       {!selectedItem ? (
         <>
+          <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+            ← Voltar
+          </Link>
           <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Fichas técnicas</h1>
           <p className="mt-1 text-sm text-nutrir-emerald/60">
             Toque numa marmita pra ver a receita pronta pra cozinha: cru, cozido, temperos e água, em
