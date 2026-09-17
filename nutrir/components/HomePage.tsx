@@ -1,118 +1,102 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import Link from "next/link";
-import { FiArrowRight, FiTruck } from "react-icons/fi";
-import { logoUrl } from "@/lib/brand-assets";
-import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
-interface HomeButtonProps {
+const ALT =
+  "Combos a partir de R$15,99 por unidade, marmitas avulsas e sucos naturais sem açúcar.";
+
+/**
+ * Áreas clicáveis por cima da arte, em % da imagem. Ficam dentro de um
+ * wrapper com a proporção exata da arte, então seguem alinhadas mesmo quando
+ * as bordas são cortadas pra preencher a tela. Ao trocar uma arte, revisar
+ * os retângulos dela.
+ */
+interface Hotspot {
   href: string;
-  image: string;
-  title: string;
-  subtitle: string;
+  label: string;
+  /** left, top, width, height em % da imagem. */
+  area: [number, number, number, number];
 }
 
-function HomeButton({ href, image, title, subtitle }: HomeButtonProps) {
+interface HeroArt {
+  src: string;
+  hotspots: Hotspot[];
+}
+
+/** Celular (tela em pé): 1080x1920, proporção aspect-[1080/1920] no wrapper. */
+const PORTRAIT_ART: HeroArt = {
+  src: "/home/pagina-inicial-v2.jpg",
+  hotspots: [
+    { href: "/combos", label: "Ver combos", area: [33, 26, 37, 6] },
+    { href: "/combos", label: "Ver combos", area: [17, 32, 67, 25] },
+    { href: "/combos", label: "Ver combos", area: [43, 57, 17, 5] },
+    { href: "/marmitas", label: "Ver cardápio de marmitas", area: [7, 59, 36, 22] },
+    { href: "/sucos", label: "Ver sucos naturais", area: [60, 57, 33, 24] },
+  ],
+};
+
+/** Desktop e tablet deitado: 1920x900, proporção landscape:aspect-[1920/900] no wrapper. */
+const LANDSCAPE_ART: HeroArt = {
+  src: "/home/pagina-inicial-desktop-v2.jpg",
+  hotspots: [
+    { href: "/combos", label: "Ver combos", area: [39, 23, 22, 13] },
+    { href: "/combos", label: "Ver combos", area: [33, 37, 33, 52] },
+    { href: "/marmitas", label: "Ver cardápio de marmitas", area: [8, 44, 21, 44] },
+    { href: "/sucos", label: "Ver sucos naturais", area: [73, 43, 19, 45] },
+  ],
+};
+
+function HotspotLinks({ hotspots }: { hotspots: Hotspot[] }) {
   return (
-    <Link
-      href={href}
-      className="card group flex items-center gap-4 !p-5 transition hover:-translate-y-0.5 hover:shadow-md"
-    >
-      <MarmitaPhoto
-        src={image}
-        alt=""
-        className="h-20 w-20 shrink-0"
-        sizes="80px"
-      />
-      <span className="min-w-0 flex-1">
-        <span className="block font-display text-lg font-bold text-nutrir-emerald">{title}</span>
-        <span className="mt-0.5 block text-sm leading-snug text-nutrir-emerald/70">{subtitle}</span>
-      </span>
-      <FiArrowRight
-        aria-hidden
-        className="shrink-0 text-xl text-nutrir-burgundy transition group-hover:translate-x-1"
-      />
-    </Link>
+    <>
+      {hotspots.map(({ href, label, area: [left, top, width, height] }) => (
+        <Link
+          key={`${href}-${top}-${left}`}
+          href={href}
+          aria-label={label}
+          style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}
+          className="absolute rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nutrir-burgundy"
+        >
+          <span className="sr-only">{label}</span>
+        </Link>
+      ))}
+    </>
   );
 }
 
 export function HomePage() {
+  // getImageProps em vez de <Image> pra montar um <picture>: o navegador baixa
+  // só a arte da orientação atual, em vez das duas.
+  const { props: portrait } = getImageProps({ alt: ALT, src: PORTRAIT_ART.src, fill: true, sizes: "100vw", priority: true });
+  const { props: landscape } = getImageProps({ alt: ALT, src: LANDSCAPE_ART.src, fill: true, sizes: "100vw", priority: true });
+
   return (
-    <div>
-      <section className="card-dark relative isolate overflow-hidden rounded-none px-6 py-10 text-center md:py-14">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[300px] w-[640px] max-w-[150%] -translate-x-1/2 animate-glow-drift"
-          style={{
-            background:
-              "radial-gradient(50% 50% at 50% 42%, rgb(243 232 220 / 0.16), transparent 70%)",
-          }}
-        />
+    // Altura exata do vão entre o cabeçalho e o menu inferior (que some no
+    // desktop). A margem negativa anula o padding-bottom do main no celular,
+    // senão ele aparece como faixa entre a arte e o rodapé ao rolar.
+    <section className="relative isolate -mb-[4.75rem] h-[calc(100dvh-8.875rem)] w-full overflow-hidden bg-[#e4dacd] md:mb-0 md:h-[calc(100dvh-4rem)]">
+      <h1 className="sr-only">
+        Bem-vindo(a) ao Nutrir. Selecione a opção que você deseja: combos, marmitas ou sucos.
+      </h1>
 
-        <Image
-          src={logoUrl()}
-          alt="Nutrir Piçarras"
-          width={72}
-          height={72}
-          className="mx-auto h-16 w-auto object-contain"
-          priority
-          unoptimized
-        />
+      {/*
+        Wrapper com a proporção da arte que cresce até cobrir os dois eixos
+        (igual object-cover, a sobra é cortada pelo overflow do pai). Os
+        hotspots ficam em % dele, por isso nunca desalinham.
+      */}
+      <div className="absolute left-1/2 top-1/2 aspect-[1080/1920] min-h-full min-w-full -translate-x-1/2 -translate-y-1/2 landscape:aspect-[1920/900]">
+        <picture>
+          <source media="(orientation: landscape)" srcSet={landscape.srcSet} sizes={landscape.sizes} />
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- alt vem de portrait.alt */}
+          <img {...portrait} className="object-cover" />
+        </picture>
 
-        <p
-          className="eyebrow animate-fade-up mt-4 inline-flex items-center gap-1.5 text-[10px] text-nutrir-nude/60"
-          style={{ animationDelay: "40ms" }}
-        >
-          <FiTruck aria-hidden />
-          Entregas em Balneário Piçarras e região
-        </p>
-
-        <h1
-          className="hero-heading animate-fade-up mx-auto mt-2.5 max-w-2xl text-[2.1rem] leading-[1.05] md:text-6xl"
-          style={{ animationDelay: "120ms" }}
-        >
-          Nutrir Piçarras
-        </h1>
-
-        <div
-          className="animate-fade-up mx-auto mt-3 flex items-center justify-center gap-3"
-          style={{ animationDelay: "200ms" }}
-          aria-hidden
-        >
-          <span className="h-px w-10 bg-nutrir-nude/25" />
-          <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-nude/45" />
-          <span className="h-px w-10 bg-nutrir-nude/25" />
+        <div className="contents landscape:hidden">
+          <HotspotLinks hotspots={PORTRAIT_ART.hotspots} />
         </div>
-
-        <p
-          className="animate-fade-up mx-auto mt-3 max-w-xl text-[0.9rem] leading-relaxed text-nutrir-nude/85"
-          style={{ animationDelay: "260ms" }}
-        >
-          Comida de verdade, feita por quem entende.
-          <br />
-          Escolha o que combina com sua rotina.
-        </p>
-      </section>
-
-      <div className="mx-auto max-w-lg space-y-4 px-4 py-12">
-        <HomeButton
-          href="/combos"
-          image="/home/combos.png"
-          title="Combos"
-          subtitle="Kits semanais e mensais prontos, ou monte o seu do seu jeito."
-        />
-        <HomeButton
-          href="/marmitas"
-          image="/home/marmitas.png"
-          title="Marmitas"
-          subtitle="Marmitas avulsas, do jeito clássico, pra pedir na hora."
-        />
-        <HomeButton
-          href="/sucos"
-          image="/home/sucos.png"
-          title="Sucos"
-          subtitle="Sucos naturais feitos na hora pra completar seu pedido."
-        />
+        <div className="contents portrait:hidden">
+          <HotspotLinks hotspots={LANDSCAPE_ART.hotspots} />
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

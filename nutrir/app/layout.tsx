@@ -36,7 +36,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <AppProviders>
           <Navbar />
-          <main className="min-h-screen bg-nutrir-nude pb-[4.75rem] md:pb-0">{children}</main>
+          {/*
+            Altura mínima = tela menos cabeçalho (e menos o menu inferior no
+            celular, que fica dentro do padding). Sem isso sobra uma faixa do
+            main abaixo de páginas de tela cheia, como a home.
+          */}
+          <main className="min-h-[calc(100dvh-8.875rem)] bg-nutrir-nude pb-[4.75rem] md:min-h-[calc(100dvh-4rem)] md:pb-0">
+            {children}
+          </main>
           <MobileBottomNav />
           <WhatsAppFloatButton />
           <footer className="bg-nutrir-emerald-dark bg-grain py-10 text-center text-sm text-nutrir-nude/80">
