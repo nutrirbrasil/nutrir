@@ -24,7 +24,7 @@ interface HeroArt {
 
 /** Celular (tela em pé): 1080x1920, proporção aspect-[1080/1920] no wrapper. */
 const PORTRAIT_ART: HeroArt = {
-  src: "/home/pagina-inicial-v2.jpg",
+  src: "/home/pagina-inicial-v3.jpg",
   hotspots: [
     { href: "/combos", label: "Ver combos", area: [33, 26, 37, 6] },
     { href: "/combos", label: "Ver combos", area: [17, 32, 67, 25] },
