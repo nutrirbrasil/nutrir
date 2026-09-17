@@ -1,25 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FiArrowRight, FiBox, FiDroplet, FiLayers, FiTruck } from "react-icons/fi";
-import type { IconType } from "react-icons";
+import { FiArrowRight, FiTruck } from "react-icons/fi";
 import { logoUrl } from "@/lib/brand-assets";
+import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
 interface HomeButtonProps {
   href: string;
-  icon: IconType;
+  image: string;
   title: string;
   subtitle: string;
 }
 
-function HomeButton({ href, icon: Icon, title, subtitle }: HomeButtonProps) {
+function HomeButton({ href, image, title, subtitle }: HomeButtonProps) {
   return (
     <Link
       href={href}
       className="card group flex items-center gap-4 !p-5 transition hover:-translate-y-0.5 hover:shadow-md"
     >
-      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald text-2xl text-nutrir-nude">
-        <Icon aria-hidden />
-      </span>
+      <MarmitaPhoto
+        src={image}
+        alt=""
+        className="h-20 w-20 shrink-0"
+        sizes="80px"
+      />
       <span className="min-w-0 flex-1">
         <span className="block font-display text-lg font-bold text-nutrir-emerald">{title}</span>
         <span className="mt-0.5 block text-sm leading-snug text-nutrir-emerald/70">{subtitle}</span>
@@ -60,7 +63,7 @@ export function HomePage() {
           style={{ animationDelay: "40ms" }}
         >
           <FiTruck aria-hidden />
-          Entregas em Piçarras e Penha
+          Entregas em Balneário Piçarras e região
         </p>
 
         <h1
@@ -93,19 +96,19 @@ export function HomePage() {
       <div className="mx-auto max-w-lg space-y-4 px-4 py-12">
         <HomeButton
           href="/combos"
-          icon={FiLayers}
+          image="/home/combos.png"
           title="Combos"
           subtitle="Kits semanais e mensais prontos, ou monte o seu do seu jeito."
         />
         <HomeButton
           href="/marmitas"
-          icon={FiBox}
+          image="/home/marmitas.png"
           title="Marmitas"
           subtitle="Marmitas avulsas, do jeito clássico, pra pedir na hora."
         />
         <HomeButton
           href="/sucos"
-          icon={FiDroplet}
+          image="/home/sucos.png"
           title="Sucos"
           subtitle="Sucos naturais feitos na hora pra completar seu pedido."
         />

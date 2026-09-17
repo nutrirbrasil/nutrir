@@ -63,15 +63,6 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionUnitPlural: "porções",
   },
   {
-    id: "add-milho",
-    name: "Milho",
-    baseCost: 0.3,
-    additionalPrice: 3.7,
-    portionLabel: "1 porção (30g)",
-    portionUnit: "porção",
-    portionUnitPlural: "porções",
-  },
-  {
     id: "add-azeite",
     name: "Azeite Extravirgem",
     baseCost: 0.4,
@@ -83,15 +74,6 @@ export const MEAL_ADDONS: MealAddon[] = [
   {
     id: "add-ketchup",
     name: "Ketchup",
-    baseCost: 0.1,
-    additionalPrice: 2.9,
-    portionLabel: "1 porção",
-    portionUnit: "porção",
-    portionUnitPlural: "porções",
-  },
-  {
-    id: "add-barbecue",
-    name: "Barbecue",
     baseCost: 0.1,
     additionalPrice: 2.9,
     portionLabel: "1 porção",
