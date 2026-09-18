@@ -70,10 +70,10 @@ export function HomePage() {
   const { props: landscape } = getImageProps({ alt: ALT, src: LANDSCAPE_ART.src, fill: true, sizes: "100vw", priority: true });
 
   return (
-    // Altura exata do vão entre o cabeçalho e o menu inferior (que some no
-    // desktop). A margem negativa anula o padding-bottom do main no celular,
+    // Altura exata do vão visível (variáveis --bar-h/--nav-h/--bottom-h no
+    // layout). A margem negativa anula o padding-bottom do main no celular,
     // senão ele aparece como faixa entre a arte e o rodapé ao rolar.
-    <section className="relative isolate -mb-[4.75rem] h-[calc(100dvh-8.875rem)] w-full overflow-hidden bg-[#e4dacd] md:mb-0 md:h-[calc(100dvh-4rem)]">
+    <section className="relative isolate -mb-[4.75rem] h-[calc(100dvh-var(--bar-h)-var(--nav-h)-var(--bottom-h))] w-full overflow-hidden bg-[#e4dacd] md:mb-0">
       <h1 className="sr-only">
         Bem-vindo(a) ao Nutrir. Selecione a opção que você deseja: combos, marmitas ou sucos.
       </h1>

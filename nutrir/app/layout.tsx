@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/AppProviders";
+import { InstagramBar } from "@/components/InstagramBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Navbar } from "@/components/Navbar";
 import { WhatsAppFloatButton } from "@/components/WhatsAppFloatButton";
@@ -33,15 +34,20 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${dmSans.variable} ${fraunces.variable}`}>
-      <body>
+      {/*
+        Alturas do "chrome" (faixa do Instagram, cabeçalho, menu inferior no
+        celular) como variáveis: o main e páginas de tela cheia (home) usam
+        pra calcular o vão visível. Ao mudar a altura de algum deles, ajustar aqui.
+      */}
+      <body className="[--bar-h:2.75rem] [--bottom-h:4.875rem] [--nav-h:4rem] md:[--bar-h:2rem] md:[--bottom-h:0rem]">
         <AppProviders>
+          <InstagramBar />
           <Navbar />
           {/*
-            Altura mínima = tela menos cabeçalho (e menos o menu inferior no
-            celular, que fica dentro do padding). Sem isso sobra uma faixa do
-            main abaixo de páginas de tela cheia, como a home.
+            Altura mínima = tela menos o chrome (o menu inferior fica dentro do
+            padding). Sem isso sobra uma faixa do main abaixo da home.
           */}
-          <main className="min-h-[calc(100dvh-8.875rem)] bg-nutrir-nude pb-[4.75rem] md:min-h-[calc(100dvh-4rem)] md:pb-0">
+          <main className="min-h-[calc(100dvh-var(--bar-h)-var(--nav-h)-var(--bottom-h))] bg-nutrir-nude pb-[4.75rem] md:pb-0">
             {children}
           </main>
           <MobileBottomNav />
