@@ -8,6 +8,7 @@ const foodEstablishmentJsonLd = {
   url: legal.siteUrl,
   telephone: `+${legal.contactWhatsApp}`,
   priceRange: "$",
+  servesCuisine: "Saudável",
   image: `${legal.siteUrl}/logo.png`,
   address: {
     "@type": "PostalAddress",
