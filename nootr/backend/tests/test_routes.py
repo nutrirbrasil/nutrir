@@ -308,6 +308,28 @@ def test_suggest_alternatives_filters_allergy(client, monkeypatch):
     assert any("batata doce" in n for n in names)
 
 
+def test_suggest_alternatives_filters_allergy_lost_in_generic_match(client, monkeypatch):
+    # A IA sugere "sanduíche natural com queijo derretido": o matcher casa
+    # isso com o item comum genérico "Sanduiche natural" (_COMMON_FOODS),
+    # cujo nome NÃO contém "queijo"/"leite". Checar só o alimento casado
+    # deixava passar um item com lactose pra quem tem essa alergia, porque a
+    # palavra que denunciava o alérgeno só existia na sugestão ORIGINAL da
+    # IA, não no nome final. A barreira precisa checar os dois.
+    from backend.app.services import ai
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": ["lactose"], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+    })
+    monkeypatch.setattr(
+        ai, "suggest_substitutes",
+        lambda missing, prefs: ["sanduíche natural com queijo derretido", "batata doce"],
+    )
+    resp = client.post("/nootr/substitutions/alternatives", json={"missing_food_name": "arroz"})
+    assert resp.status_code == 200
+    names = [s["name"].lower() for s in resp.json()["suggestions"]]
+    assert not any("sanduiche" in n or "sanduíche" in n for n in names)
+    assert any("batata doce" in n for n in names)
+
+
 @pytest.fixture
 def gap_day_plan():
     meals = [{
@@ -535,6 +557,41 @@ def test_parse_meal_done_offers_to_save_confirmed_dish(client, monkeypatch):
     assert body["status"] == "done"
     assert body["proposed_dish_name"] == "Crepioca"
     assert len(body["foods"]) == 2
+
+
+def test_parse_meal_blocks_allergen_lost_in_generic_match(client, monkeypatch):
+    # Achado testando ao vivo (cenário real da "torta de limão"): a IA
+    # decompõe um prato citando o alérgeno explicitamente na descrição (ex:
+    # "cobertura de chocolate COM LEITE"), mas o matcher casa isso com o item
+    # comum genérico "Chocolate" (_COMMON_FOODS), cujo nome final não é
+    # tratado como lactose por padrão (chocolate puro não tem leite, só
+    # ESSE item específico tem, segundo a própria IA). Checar só o alimento
+    # casado deixava passar, porque a palavra que denunciava o alérgeno só
+    # existia na descrição ORIGINAL da IA, perdida no match genérico. A
+    # barreira precisa checar as duas (ver ai._match_items).
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": ["lactose"], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+    })
+    monkeypatch.setattr(
+        ai, "converse_meal",
+        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None, forward_looking=False: {
+            "needs_question": False, "question": "", "question_kind": "",
+            "skipped_names": [], "new_items": [
+                {"name": "cobertura de chocolate com leite", "quantity": "1 fatia"},
+                {"name": "massa de bolo", "quantity": "1 fatia"},
+            ],
+            "proposed_dish_name": "Bolo de chocolate", "proposed_ingredients": [],
+        },
+    )
+    resp = client.post("/nootr/ai/parse-meal", json={
+        "text": "vou comer um pedaço de bolo de chocolate",
+        "meal_name": "Jantar", "meal_foods": ["Arroz branco"],
+    })
+    assert resp.status_code == 200
+    body = resp.json()
+    names = [f["name"].lower() for f in body["foods"]]
+    assert not any("chocolate" in n for n in names)
+    assert "Chocolate" in body["blocked_allergens"]
 
 
 def test_list_recipes(client, monkeypatch):

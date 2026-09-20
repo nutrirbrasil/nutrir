@@ -34,6 +34,7 @@ class ParseMealRequest(BaseModel):
 
 def _match_items(
     items: list[dict], preferred: set[int] = frozenset(), tie_resolver=None,
+    allergies: list[str] | None = None, blocked: list[str] | None = None,
 ) -> list[dict]:
     """
     Casa cada item com um alimento real: primeiro na tabela de itens comuns
@@ -43,6 +44,30 @@ def _match_items(
     que a pessoa já tem/gosta (ex: "banana" com "Banana, nanica" na despensa).
     `tie_resolver`: quando não há favorito e ainda assim empata, pergunta pra
     IA qual é o mais comum no país do usuário (ver ai.build_country_tie_resolver).
+
+    `allergies`: barreira determinística contra alergia cadastrada, SEMPRE
+    aplicada aqui (sem a exceção "a pessoa nomeou, então libera" que o chat
+    do Noo tem, ver noo._resolve_added): nesta função TODO item vem de a IA
+    interpretar/decompor o que a pessoa descreveu em texto livre, nunca de
+    uma escolha manual direta (essa passa por outro caminho no frontend,
+    o picker de alimento, que nunca chama isto aqui). Testar "a pessoa
+    nomeou esse alimento?" olhando a mensagem dela não funciona nesse
+    contexto: ela SEMPRE nomeia alguma coisa (é a própria descrição que
+    está sendo interpretada), então um ingrediente decomposto que só
+    coincide de palavra com o prato que ela descreveu (ex: pessoa descreve
+    "lasanha", a IA decompõe em "massa de lasanha", que casa com o item
+    genérico "Lasanha" da tabela) passava a exceção à toa, sem a pessoa ter
+    pedido aquele ingrediente especificamente. `blocked`: lista (opcional)
+    onde entram os nomes barrados, pro chamador avisar a pessoa em vez de
+    só sumir com o item.
+
+    A checagem roda contra o NOME QUE A IA PROPÔS (`name`) e também contra o
+    alimento casado (`match.name`), não só o segundo: quando o matcher cai
+    num item comum/estimativa genérica (`_COMMON_FOODS`, ex: "massa de torta
+    com glúten" vira só "Torta"), o nome final perde justamente a palavra que
+    denunciava o alérgeno, mesmo a IA tendo dito claramente "com glúten" ou
+    "leite condensado" na decomposição. Confiar só em `match.name` deixava
+    esses casos passarem batido.
     """
     foods = []
     for it in items:
@@ -52,6 +77,13 @@ def _match_items(
         match = food_matcher.find_food(
             f"{it['quantity']} {name}".strip(), preferred=preferred, tie_resolver=tie_resolver,
         )
+        if allergies and (
+            food_matcher.matches_allergen(match.name, allergies)
+            or food_matcher.matches_allergen(name, allergies)
+        ):
+            if blocked is not None:
+                blocked.append(match.name)
+            continue
         grams = match.grams or 100.0  # itens de porção fixa (comum/estimativa) usam 100 como base de escala
         foods.append({
             "taco_id": match.taco_id,
@@ -120,12 +152,17 @@ def parse_meal(body: ParseMealRequest, user: CurrentUser = CurrentUserDep):
             "history": new_history,
         }
 
-    new_foods = _match_items(result["new_items"], preferred_ids, tie_resolver)
+    blocked_allergens: list[str] = []
+    new_foods = _match_items(
+        result["new_items"], preferred_ids, tie_resolver,
+        allergies=preferences.get("allergies") or [], blocked=blocked_allergens,
+    )
     return {
         "status": "done",
         "skipped_names": result["skipped_names"],
         "foods": new_foods,
         "history": history,
+        "blocked_allergens": blocked_allergens,
         # Preenchido só quando um prato composto novo (fora da lista já \
         # conhecida e sem receita salva) foi decomposto e confirmado agora \
         #, o frontend usa pra oferecer "salvar como receita".

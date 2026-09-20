@@ -576,11 +576,21 @@ _ALLERGEN_FOODS = {
         "leite", "queijo", "iogurte", "manteiga", "requeijao", "creme de leite",
         "nata", "coalhada", "doce de leite", "leite condensado", "chantilly",
         "sorvete", "mussarela", "mozarela", "ricota", "catupiry", "whey",
+        "milkshake", "cheeseburger",
     ],
     "gluten": [
         "trigo", "pao", "macarrao", "farinha de trigo", "cevada", "centeio",
         "malte", "biscoito", "bolacha", "bolo", "torrada", "cuscuz", "cerveja",
         "semola", "lasanha", "pizza", "salgadinho", "empanado",
+        # Nomes genéricos de `_COMMON_FOODS` (o fallback de item comum) que
+        # são massa/farinha de trigo por padrão, mas cujo nome final NÃO
+        # contém "trigo"/"farinha" (ex: "torta" vira só "Torta" depois de
+        # casado, perdendo a massa por trás). Sem isso o filtro deixava
+        # passar exatamente os pratos que caem nesse bucket genérico.
+        "torta", "empada", "pastel", "coxinha", "quibe", "esfiha", "esfirra",
+        "waffle", "crepe", "panqueca", "donut", "brownie", "nuggets",
+        "cheeseburger", "hamburguer", "x tudo", "x salada", "x burguer",
+        "cachorro quente", "hot dog", "hotdog", "sanduiche natural",
     ],
     "amendoim": ["amendoim", "pacoca", "pasta de amendoim"],
     "ovo": ["ovo", "clara", "gema", "maionese", "omelete"],
@@ -624,8 +634,10 @@ def matches_allergen(food_name: str, allergies: list[str]) -> bool:
     Checagem determinística (não depende da IA seguir a instrução do prompt)
     aplicada como última barreira antes de qualquer sugestão AUTOMÁTICA da IA
     (geração de dieta, coringa, ajuste de fim de dia, "buscar outros
-    alimentos") chegar no usuário; substituição manual não passa por aqui, é
-    escolha da própria pessoa.
+    alimentos", decomposição de prato em "Descrever com IA", ver
+    routes/nootr/ai._match_items) chegar no usuário. A escolha manual direta
+    (picker de alimento por busca) não passa por aqui, é a própria pessoa
+    escolhendo o alimento exato, não a IA interpretando/decompondo por ela.
 
     Casa o nome (normalizado, sem acento) contra a alergia cadastrada, contra
     os alimentos que a contêm (`_ALLERGEN_FOODS`, ex: "lactose" bloqueia

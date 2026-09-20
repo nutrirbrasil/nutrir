@@ -275,12 +275,20 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
         setPendingRecipeSave({ name: data.proposed_dish_name, foods: parsed });
       }
       // O que a IA entendeu já aparece em linguagem natural no resumo (ver
-      // swapSummary); só sobra um aviso quando ela não encontrou nada.
-      setAiNote(
-        !data.skipped_names.length && !parsed.length
-          ? "Não consegui entender o que mudou, tente descrever de outro jeito."
-          : ""
-      );
+      // swapSummary); só sobra um aviso quando ela não encontrou nada, ou
+      // quando um ingrediente que ela mesma decompôs (não a pessoa) bateu
+      // com alergia/restrição cadastrada e por isso não entrou na lista.
+      if (data.blocked_allergens.length) {
+        setAiNote(
+          `Não incluí ${data.blocked_allergens.join(", ")}: bate com uma alergia/restrição sua cadastrada.`
+        );
+      } else {
+        setAiNote(
+          !data.skipped_names.length && !parsed.length
+            ? "Não consegui entender o que mudou, tente descrever de outro jeito."
+            : ""
+        );
+      }
       // Abre o detalhamento pra pessoa conferir/corrigir o que a IA entendeu
       // antes de adaptar o dia.
       if (data.skipped_names.length || parsed.length) setManualMode(true);

@@ -711,7 +711,14 @@ def converse_meal(
             "finalize agora (needs_question=false) com sua melhor estimativa de skipped_names e "
             "new_items a partir de tudo que a pessoa já disse, mesmo que falte algum detalhe. Isso "
             "inclui uma confirmação de ingredientes pendente (regra 8), se a pessoa ainda não "
-            "confirmou, finalize com sua melhor estimativa dos ingredientes mesmo assim."
+            "confirmou, finalize com sua melhor estimativa dos ingredientes mesmo assim.\n"
+            "\"Melhor estimativa\" NÃO quer dizer simplificar um prato composto pra um ingrediente só "
+            "(ex: \"bolo de cenoura com cobertura de chocolate\" virando só \"chocolate\", perdendo a "
+            "massa do bolo inteira do cálculo, que é a maior parte da caloria). As regras de "
+            "decomposição continuam valendo INTEIRAS aqui, finalizar sob pressão de tempo é sobre não "
+            "fazer mais perguntas, não sobre decompor pela metade: liste TODOS os ingredientes "
+            "principais que você decomporia normalmente, só chutando o que ainda não foi respondido "
+            "(ex: sem confirmação do recheio exato, use o recheio mais comum pra esse prato)."
         )
     contents = [
         {"role": "model" if turn["role"] == "assistant" else "user", "parts": [{"text": turn["text"]}]}

@@ -455,6 +455,40 @@ def _apply_protein_ceiling_pass(
 _NEAR_CEILING_FACTOR = _MAX_FACTOR - 0.2
 
 
+def _extend_baseline_with_untracked(original_meals: list[dict], meals: list[dict]) -> list[dict]:
+    """
+    Um alimento ADICIONADO hoje (Noo ou substituição manual) não existe em
+    `original_meals` (a porção do dia ANTES de qualquer ajuste, nunca
+    reescrita, ver repository.get_or_create_day_plan): `_cap_total_growth`
+    não acha `before` pra ele e o deixa crescer sem teto num ajuste FUTURO do
+    mesmo dia. Ex real: "comi queijo no lanche" adiciona 40g; numa mensagem
+    seguinte, "vou pular o jantar" redistribui as calorias do jantar entre as
+    OUTRAS refeições (agora incluindo o lanche já ajustado), e o queijo
+    inflava pra 120g (3x, bem além de _MAX_FACTOR) porque não tinha
+    referência nenhuma pra comparar.
+
+    Sem reescrever `original_meals` (o teto continua sendo o do DIA inteiro
+    pros alimentos que JÁ tinham baseline, evitando a composição entre
+    passadas que o teto existe pra evitar), completa só os alimentos
+    FALTANTES com a quantidade que `meals` (o estado vigente ANTES deste
+    ajuste, que já reflete turnos anteriores de hoje) já tinha pra eles. Um
+    alimento adicionado NESTE MESMO turno continua sem teto (não está nem em
+    `original_meals` nem em `meals`), o que é o esperado: a quantidade que a
+    pessoa/IA acabou de escolher pra ele não é "crescimento" de nada.
+    """
+    meals_by_id = {m["id"]: m for m in meals}
+    extended = []
+    for meal in original_meals:
+        current = meals_by_id.get(meal["id"])
+        if current is None:
+            extended.append(meal)
+            continue
+        known_names = {f["name"] for f in meal["foods"]}
+        extra = [f for f in current["foods"] if f["name"] not in known_names]
+        extended.append({**meal, "foods": [*meal["foods"], *extra]} if extra else meal)
+    return extended
+
+
 def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> list[str]:
     """
     Limita o crescimento ACUMULADO de cada alimento a `_MAX_FACTOR` sobre
@@ -507,23 +541,35 @@ def _cap_total_growth(baseline: list[dict], adjusted_by_id: dict[str, dict]) -> 
 def _scale_food_at_bound(before: dict, factor: float, ceiling: bool) -> dict:
     """
     Como `_scale_food`, mas GARANTE que o resultado não fura o limite que
-    ele deveria restaurar. `_scale_food` arredonda pro múltiplo de 5g mais
-    próximo (ver `portion._round_plain_grams`) usando o arredondamento
-    padrão do Python (half-to-even): "22.5g" pode virar "20g" em vez de
-    "25g" (round(4.5) é 4, não 5, em Python), o que reabre exatamente o
-    problema que essa função existe pra fechar, o piso "restaurado" fica
-    ainda abaixo do piso de verdade. Corrige puxando 5g pro lado certo
-    quando isso acontece.
+    ele deveria restaurar (`grams_before * factor`).
+
+    `_scale_food` passa pela medida caseira (`portion.rescale_quantity`,
+    ex: "unidade" pro ovo) que ARREDONDA pra contagem inteira mais próxima
+    daquele alimento. Quando o tamanho da unidade não divide o alvo
+    igualzinho (ex: ovo = 50g/unidade, alvo = 180g = 3,6 unidades), o
+    arredondamento pode passar do teto pro lado errado (180/50 = 3,6 vira 4
+    unidades = 200g, 20g além do teto que essa função deveria estar
+    IMPONDO). Como essa é a última passada de segurança, não dá pra confiar
+    de novo em `_scale_food` pro valor final: calcula a gramagem do limite
+    direto (proporção simples sobre o alimento original), sem passar pela
+    contagem de unidade. O rótulo vira gramas cru ("180g") só nesse caso
+    extremo, porção irreal é pior que rótulo bonito (mesmo critério do
+    resto desta função).
     """
-    scaled = _scale_food(before, factor)
     grams_before = before.get("grams") or 0
+    if not grams_before:
+        return _scale_food(before, factor)
     bound = grams_before * factor
-    grams = scaled.get("grams") or 0
-    if ceiling and grams > bound + 1e-6:
-        return _scale_food(before, (bound - 5) / grams_before) if grams_before else scaled
-    if not ceiling and grams < bound - 1e-6:
-        return _scale_food(before, (bound + 5) / grams_before) if grams_before else scaled
-    return scaled
+    ratio = bound / grams_before
+    return {
+        **before,
+        "grams": round(bound, 1),
+        "quantity": f"{round(bound)}g",
+        "calories": round(before["calories"] * ratio, 1),
+        "protein_g": round(before["protein_g"] * ratio, 1),
+        "carbs_g": round(before["carbs_g"] * ratio, 1),
+        "fat_g": round(before["fat_g"] * ratio, 1),
+    }
 
 
 def _protein_or_fat_capped(near_ceiling: list[str], adjusted_by_id: dict[str, dict]) -> bool:
@@ -543,7 +589,9 @@ def _protein_or_fat_capped(near_ceiling: list[str], adjusted_by_id: dict[str, di
     )
 
 
-def cap_meal_growth(baseline_meals: list[dict], meals: list[dict]) -> list[dict]:
+def cap_meal_growth(
+    baseline_meals: list[dict], meals: list[dict], fallback_meals: list[dict] | None = None,
+) -> list[dict]:
     """
     Wrapper público de `_cap_total_growth` pra quem NÃO passa pelo
     `_rebalance` (ver `day_topup.try_day_topup`): o "coringa" de IA adiciona
@@ -553,7 +601,15 @@ def cap_meal_growth(baseline_meals: list[dict], meals: list[dict]) -> list[dict]
     um arroz que o rebalanceamento normal já tinha crescido passava longe do
     teto de porção realista (ex: 270g virando 675g, 2,5x, mesmo com o teto
     em 2x). Aplica o MESMO teto sobre a porção ORIGINAL do dia.
+
+    `fallback_meals`: mesmo raciocínio de `_extend_baseline_with_untracked`
+    (ver lá): um alimento adicionado num turno ANTERIOR de hoje não está em
+    `baseline_meals` (o original do dia), então usa a quantidade que ele já
+    tinha em `fallback_meals` (o estado vigente ANTES deste top-up) como
+    referência, em vez de ficar sem teto nenhum.
     """
+    if fallback_meals is not None:
+        baseline_meals = _extend_baseline_with_untracked(baseline_meals, fallback_meals)
     baseline_by_id = {m["id"]: m for m in baseline_meals}
     adjusted_by_id = {m["id"]: m for m in meals}
     _cap_total_growth(list(baseline_by_id.values()), adjusted_by_id)
@@ -776,7 +832,7 @@ def _rebalance(
     if _apply_floor_pass(remaining, adjusted_by_id, solvable_ids, targets):
         changed = True
 
-    cap_source = original_meals if original_meals is not None else meals
+    cap_source = _extend_baseline_with_untracked(original_meals, meals) if original_meals is not None else meals
     cap_baseline = [m for m in cap_source if m["id"] in adjustable_ids]
     near_ceiling = _cap_total_growth(cap_baseline, adjusted_by_id)
 

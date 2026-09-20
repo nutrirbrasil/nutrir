@@ -244,6 +244,34 @@ def test_allergy_barrier_blocks_what_noo_suggested(client, monkeypatch):
     assert not any("mendoim" in f["name"] for f in jantar["foods"])
 
 
+def test_allergy_barrier_catches_allergen_lost_in_generic_match(client, monkeypatch):
+    # Achado testando ao vivo: o Noo propõe um item cujo NOME já denuncia o
+    # alérgeno ("cobertura de chocolate COM LEITE"), mas o matcher casa isso
+    # com o item comum genérico "Chocolate" (_COMMON_FOODS), que não é
+    # tratado como lactose por padrão (chocolate puro não tem leite, só
+    # ESSE item específico tem, segundo o próprio Noo). Checar só o
+    # alimento casado deixava passar; a pessoa nunca mencionou "chocolate"
+    # nem "leite" na própria mensagem, então a exceção user_named_it também
+    # não se aplica (ver noo._resolve_added).
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": ["lactose"], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+    })
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Coloquei uma cobertura de chocolate.",
+        "changes": [{
+            "meal": "Jantar", "skipped": [],
+            "added": [{"name": "cobertura de chocolate com leite", "quantity": "1 fatia"}],
+        }],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "quero algo doce a mais no jantar"})
+    assert resp.status_code == 200
+    body = resp.json()
+    jantar = next(m for m in body["day"]["meals"] if m["id"] == "m3")
+    assert not any("chocolate" in f["name"].lower() for f in jantar["foods"])
+    assert "bate com uma alergia" in body["reply"].lower()
+
+
 def test_blank_quantity_asks_instead_of_guessing(client, monkeypatch):
     # O Noo não sabe que quantidade de "kingcrab" a pessoa comeu e deixou
     # "quantity" vazio (ver regra do prompt): não aplica nada agora, só

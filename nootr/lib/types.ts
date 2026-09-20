@@ -258,6 +258,11 @@ export type ParseMealResponse =
       // preenchido quando um prato composto novo foi decomposto e confirmado
       // agora, o app oferece "salvar como receita" usando `foods` acima.
       proposed_dish_name: string;
+      // nomes de ingredientes que a IA decompôs mas o backend barrou por
+      // baterem com alergia/restrição cadastrada (ex: "torta de frango" ->
+      // farinha, pra alguém com restrição a glúten): não entraram em `foods`,
+      // mostra um aviso em vez de só sumir com o item sem explicação.
+      blocked_allergens: string[];
     };
 
 export interface FoodInput {

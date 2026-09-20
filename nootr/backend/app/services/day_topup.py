@@ -79,7 +79,8 @@ def try_day_topup(result: dict, user: CurrentUser, original_meals: list[dict] | 
         return
 
     allergies = prefs.get("allergies") or []
-    meals = result["adjusted_meals"]
+    pre_topup_meals = result["adjusted_meals"]
+    meals = pre_topup_meals
     applied: list[dict] = []
     for change in topup["changes"]:
         target_meal = next((m for m in meals if m["name"].lower() == change["meal_name"].lower()), None)
@@ -90,7 +91,13 @@ def try_day_topup(result: dict, user: CurrentUser, original_meals: list[dict] | 
             )
             # Última barreira determinística: mesmo com a instrução no prompt,
             # nunca confia só na IA pra alergia (ver food_matcher.matches_allergen).
-            if food_matcher.matches_allergen(match.name, allergies):
+            # Checa o nome que a IA propôs e não só o alimento casado: quando
+            # o matcher cai num item comum/estimativa genérica, o nome final
+            # pode perder a palavra que denunciava o alérgeno (ver mesmo
+            # raciocínio em ai._match_items).
+            if food_matcher.matches_allergen(match.name, allergies) or food_matcher.matches_allergen(
+                item["name"], allergies,
+            ):
                 continue
             # Se já existe um alimento de mesmo nome na refeição e ele é de
             # baixa densidade calórica (salada, folha), "adicionar mais" só
@@ -130,7 +137,7 @@ def try_day_topup(result: dict, user: CurrentUser, original_meals: list[dict] | 
     # teto (ex: 270g -> 675g, 2,5x, mesmo com o teto configurado em 2x), já
     # que apply_meal_changes/merge_foods funde sem limite nenhum.
     if original_meals:
-        meals = diet_engine.cap_meal_growth(original_meals, meals)
+        meals = diet_engine.cap_meal_growth(original_meals, meals, fallback_meals=pre_topup_meals)
 
     after = diet_engine.day_macros(meals)
     tgt = result["targets"]

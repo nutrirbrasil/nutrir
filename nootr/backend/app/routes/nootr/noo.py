@@ -50,6 +50,7 @@ def _targets_for(profile: dict | None, day_plan: dict) -> dict:
 
 def _resolve_added(
     items: list[dict], prefs: dict, country: str, text_norm_history: str, unresolved: list[str],
+    blocked_allergens: list[str] | None = None,
 ) -> list[dict]:
     """Casa os alimentos que o Noo propôs com a TACO.
 
@@ -68,7 +69,15 @@ def _resolve_added(
     de alimentos que nem a busca determinística nem a IA de estimativa
     souberam identificar, pra send_message avisar a pessoa a cadastrar em
     "Meus Alimentos" em vez de aplicar um chute genérico sem relação com o
-    alimento real."""
+    alimento real.
+
+    `blocked_allergens`: lista (compartilhada entre chamadas) onde entram os
+    nomes de itens que o filtro de alergia acima BLOQUEOU de verdade. Sem
+    isso, a `reply` da IA (gerada ANTES desse filtro rodar) continuava
+    afirmando que um ingrediente entrou no cálculo (ex: "vou considerar
+    frango, farinha, ovo e óleo" pra decompor uma torta) mesmo quando a
+    farinha foi barrada por causa de alergia a glúten, uma resposta que
+    mente sobre o que aconteceu de verdade pra alguém com restrição real."""
     preferred = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
     tie_resolver = ai.build_country_tie_resolver(country)
     allergies = prefs.get("allergies") or []
@@ -107,7 +116,16 @@ def _resolve_added(
             w for w in food_matcher.normalize(item["name"] + " " + match.name).split() if len(w) > 3
         ]
         user_named_it = any(w in text_norm_history for w in candidate_words)
-        if not user_named_it and food_matcher.matches_allergen(match.name, allergies):
+        # Checa o nome que o Noo propôs (`item["name"]`) e não só o alimento
+        # casado (`match.name`): quando o matcher cai num item comum/estimativa
+        # genérica, o nome final pode perder a palavra que denunciava o
+        # alérgeno (ver mesmo raciocínio em ai._match_items).
+        blocks = food_matcher.matches_allergen(match.name, allergies) or food_matcher.matches_allergen(
+            item["name"], allergies,
+        )
+        if not user_named_it and blocks:
+            if blocked_allergens is not None:
+                blocked_allergens.append(match.name)
             continue
         grams = parse_portion(item["quantity"], food_hint=item["name"]) or match.grams or 100.0
         label = item["quantity"][:60] or None
@@ -307,6 +325,7 @@ def _run_turn(
     changes: list[dict] = []
     unresolved_foods: list[str] = []
     unresolved_meal_names: list[str] = []
+    blocked_allergen_foods: list[str] = []
     for change in answer["changes"]:
         # Se algum item de "added" ainda não tem quantidade definida, a troca
         # INTEIRA dessa refeição fica pendente: nem tira o que ela disse que
@@ -347,7 +366,9 @@ def _run_turn(
         if not had_intent:
             continue
         before_unresolved = len(unresolved_foods)
-        new_foods = _resolve_added(change["added"], prefs, country, text_norm_history, unresolved_foods)
+        new_foods = _resolve_added(
+            change["added"], prefs, country, text_norm_history, unresolved_foods, blocked_allergen_foods,
+        )
         if len(unresolved_foods) > before_unresolved:
             # Mesma lógica atômica da quantidade vazia: um alimento que nem a
             # TACO nem a IA de estimativa reconheceram trava a troca INTEIRA
@@ -407,6 +428,21 @@ def _run_turn(
             f"\n\nAinda não mudei {'as refeições' if meals_plural else 'a refeição'} de {meal_names} "
             f"porque não conheço {'esses alimentos' if foods_plural else 'esse alimento'} ({food_names}). "
             f"Cadastra {'eles' if foods_plural else 'ele'} em Meus Alimentos que aí sim eu aplico certinho."
+        )
+
+    # Mesmo raciocínio do aviso acima: a `reply` foi gerada pela IA achando
+    # que ia incluir CADA ingrediente que ela mesma escolheu pra decompor um
+    # prato (ex: "vou considerar frango, farinha, ovo e óleo" pra uma torta),
+    # sem saber ainda que um deles bate com alergia cadastrada. Sem esse
+    # aviso, a pessoa lia que a farinha entrou no cálculo quando na verdade
+    # foi barrada, informação errada bem mais sensível que "não conheço esse
+    # alimento" (aqui é sobre a segurança dela).
+    if blocked_allergen_foods:
+        names = ", ".join(dict.fromkeys(blocked_allergen_foods))
+        plural = len(set(blocked_allergen_foods)) > 1
+        reply += (
+            f"\n\nUma coisa: não incluí {'esses itens' if plural else 'esse item'} ({names}) no ajuste "
+            f"porque {'batem' if plural else 'bate'} com uma alergia/restrição sua cadastrada."
         )
 
     # O snapshot do dia é guardado junto da resposta pra conversa reabrir

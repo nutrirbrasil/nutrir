@@ -408,6 +408,56 @@ def test_growth_cap_holds_across_several_messages_in_the_same_day():
     assert jantar["foods"][0]["grams"] <= 150 * 1.5 + 1
 
 
+def test_growth_cap_holds_for_food_added_in_an_earlier_message_same_day():
+    # Achado testando ao vivo: "comi queijo no lanche" adiciona 40g (o
+    # alimento não existe em `original_meals`, foi adicionado hoje). Numa
+    # mensagem SEGUINTE, "vou pular o jantar" redistribui as calorias do
+    # jantar pras outras refeições, incluindo o lanche que já tem o queijo.
+    # Sem baseline nenhuma pra comparar, o teto não pegava esse alimento e
+    # ele inflava 3x (40g -> 120g) numa única passada de rebalanceamento,
+    # bem além do 1.5x que _cap_total_growth deveria impor. O fix usa o
+    # estado do dia ANTES deste turno (que já inclui o queijo a 40g) como
+    # referência pra alimentos sem baseline no dia inteiro.
+    almoco_food = {"name": "Arroz branco", "calories": 128.0, "protein_g": 2.5, "carbs_g": 28.0,
+                   "fat_g": 0.2, "grams": 150.0, "quantity": "150g"}
+    lanche_food = {"name": "Banana prata", "calories": 90.0, "protein_g": 1.0, "carbs_g": 23.0,
+                   "fat_g": 0.1, "grams": 100.0, "quantity": "1 unidade (100g)"}
+    jantar_food = {"name": "Peito de frango", "calories": 300.0, "protein_g": 60.0, "carbs_g": 0.0,
+                   "fat_g": 6.0, "grams": 150.0, "quantity": "150g"}
+    original_meals = [
+        {"id": "meal-1", "name": "Almoço", "time": "12:00", "foods": [dict(almoco_food)]},
+        {"id": "meal-2", "name": "Lanche", "time": "16:00", "foods": [dict(lanche_food)]},
+        {"id": "meal-3", "name": "Jantar", "time": "20:00", "foods": [dict(jantar_food)]},
+    ]
+    diet = {
+        "id": "d", "user_id": "u", "name": "T",
+        "daily_calories": 2000, "daily_protein_g": 100, "daily_carbs_g": 0, "daily_fat_g": 0,
+        "meals": original_meals,
+        "original_meals": original_meals,
+    }
+    # 1ª mensagem: "comi queijo no lanche" -> adiciona Queijo (40g) no lanche,
+    # a própria refeição tocada não é reescalada nesta passada.
+    queijo = {"name": "Queijo mussarela", "calories": 132.0, "protein_g": 8.0, "carbs_g": 1.2,
+              "fat_g": 10.1, "grams": 40.0, "quantity": "2 fatias (40g)"}
+    r1 = diet_engine.apply_changes(diet, [
+        {"meal_id": "meal-2", "skipped_names": [], "new_foods": [dict(queijo)]},
+    ])
+    lanche_after_r1 = next(m for m in r1["adjusted_meals"] if m["id"] == "meal-2")
+    queijo_after_r1 = next(f for f in lanche_after_r1["foods"] if f["name"] == "Queijo mussarela")
+    assert queijo_after_r1["grams"] == 40.0  # adição do próprio turno, sem teto
+
+    # 2ª mensagem no MESMO dia: "vou pular o jantar" remove TUDO do jantar
+    # sem repor nada, o lanche (com o queijo recém-adicionado) e o almoço
+    # absorvem a diferença.
+    diet_turn_2 = {**diet, "meals": r1["adjusted_meals"]}
+    r2 = diet_engine.apply_changes(diet_turn_2, [
+        {"meal_id": "meal-3", "skipped_names": ["Peito de frango"], "new_foods": []},
+    ])
+    lanche_after_r2 = next(m for m in r2["adjusted_meals"] if m["id"] == "meal-2")
+    queijo_after_r2 = next(f for f in lanche_after_r2["foods"] if f["name"] == "Queijo mussarela")
+    assert queijo_after_r2["grams"] <= 40.0 * 1.5 + 1  # nunca passava disso sem o fix (chegava a 120g)
+
+
 def test_protein_ceiling_pass_does_not_reinflate_food_beyond_growth_cap():
     # Achado testando cenarios reais de troca (comi diferente no almoço, o
     # jantar com espaguete + frango absorve o desvio do dia): _cap_total_growth
