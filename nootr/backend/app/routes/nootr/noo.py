@@ -116,13 +116,16 @@ def _resolve_added(
             w for w in food_matcher.normalize(item["name"] + " " + match.name).split() if len(w) > 3
         ]
         user_named_it = any(w in text_norm_history for w in candidate_words)
-        # Checa o nome que o Noo propôs (`item["name"]`) e não só o alimento
-        # casado (`match.name`): quando o matcher cai num item comum/estimativa
-        # genérica, o nome final pode perder a palavra que denunciava o
-        # alérgeno (ver mesmo raciocínio em ai._match_items).
-        blocks = food_matcher.matches_allergen(match.name, allergies) or food_matcher.matches_allergen(
-            item["name"], allergies,
-        )
+        # Checa o nome que o Noo propôs (`item["name"]`) JUNTO com o alimento
+        # casado (`match.name`), concatenados na mesma string, não um OR de
+        # duas checagens separadas: quando o matcher cai num item comum/
+        # estimativa genérica, o nome final pode perder a palavra que
+        # denunciava o alérgeno (ver mesmo raciocínio em ai._match_items) OU
+        # perder um "sem X" que a descrição original declarava (ex:
+        # "hambúrguer sem pão" casando com o item genérico "Hamburguer", que
+        # por padrão conta como glúten). Concatenado, o "sem pão" e o
+        # "hamburguer" ficam visíveis juntos pra `matches_allergen` decidir.
+        blocks = food_matcher.matches_allergen(f"{match.name} {item['name']}", allergies)
         if not user_named_it and blocks:
             if blocked_allergens is not None:
                 blocked_allergens.append(match.name)

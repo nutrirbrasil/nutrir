@@ -112,6 +112,12 @@ def missing_food_options(
     )
     profile = food_matcher.macro_profile(missing.calories, missing.protein_g, missing.carbs_g, missing.fat_g)
 
+    # Sem barreira de alergia aqui de propósito: a despensa é a própria
+    # pessoa dizendo "eu tenho/consumo isso", mesmo que bata com uma alergia
+    # cadastrada (ex: "Queijo mussarela" na despensa de quem tem restrição a
+    # lactose pode ser uma reação leve que ela sabe que tolera). Igual ao
+    # Noo chat quando a PRÓPRIA pessoa nomeia o alimento, é escolha dela, não
+    # a IA decidindo por conta própria.
     matches = []
     for name in pantry_names:
         m = food_matcher.find_food(
@@ -170,12 +176,13 @@ def suggest_alternatives(body: AlternativesRequest, user: CurrentUser = CurrentU
     ]
     # Última barreira determinística: mesmo com a instrução no prompt, nunca
     # confia só na IA pra alergia (ver food_matcher.matches_allergen). Checa
-    # o nome que a IA propôs e não só o alimento casado: quando o matcher cai
-    # num item comum/estimativa genérica, o nome final pode perder a palavra
-    # que denunciava o alérgeno (mesmo raciocínio em ai._match_items).
+    # o nome que a IA propôs JUNTO com o alimento casado (concatenados, não
+    # um OR de duas checagens separadas): sem isso, um "sem X" que só a
+    # descrição original declarava se perdia quando o matcher caía num item
+    # genérico (mesmo raciocínio em ai._match_items).
     matches = [
         m for name, m in matched_pairs
-        if not (food_matcher.matches_allergen(m["name"], allergies) or food_matcher.matches_allergen(name, allergies))
+        if not food_matcher.matches_allergen(f"{m['name']} {name}", allergies)
     ]
     return {"suggestions": matches}
 
@@ -277,13 +284,12 @@ def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentU
                     # Última barreira determinística: mesmo com a instrução no
                     # prompt, nunca confia só na IA pra alergia (ver
                     # food_matcher.matches_allergen). Checa o nome que a IA
-                    # propôs e não só o alimento casado: quando o matcher cai
-                    # num item comum/estimativa genérica, o nome final pode
-                    # perder a palavra que denunciava o alérgeno (mesmo
-                    # raciocínio em ai._match_items).
-                    blocked_by_allergy = food_matcher.matches_allergen(
-                        wildcard.name, allergies,
-                    ) or food_matcher.matches_allergen(wildcard_name, allergies)
+                    # propôs JUNTO com o alimento casado (concatenados, não um
+                    # OR de duas checagens separadas): sem isso, um "sem X"
+                    # que só a descrição original declarava se perdia quando
+                    # o matcher caía num item genérico (mesmo raciocínio em
+                    # ai._match_items).
+                    blocked_by_allergy = food_matcher.matches_allergen(f"{wildcard.name} {wildcard_name}", allergies)
                     if not blocked_by_allergy:
                         grams = wildcard.grams or 50.0
                         foods.append({

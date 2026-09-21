@@ -68,6 +68,15 @@ def _match_items(
     denunciava o alérgeno, mesmo a IA tendo dito claramente "com glúten" ou
     "leite condensado" na decomposição. Confiar só em `match.name` deixava
     esses casos passarem batido.
+
+    As duas strings são checadas JUNTAS (concatenadas), não uma OR da outra
+    separada: se checasse cada uma isolada, um item que a IA descreveu como
+    "sem pão" (ex: hambúrguer sem pão) mas que casou com o item genérico
+    "Hamburguer" (que por padrão conta como glúten, ver _ALLERGEN_FOODS)
+    seria bloqueado mesmo declarando a ausência, porque só a descrição
+    original tem o "sem pão", só o nome casado tem "hamburguer", e nenhuma
+    das duas isoladas sabe da outra. Concatenado, `matches_allergen` vê o
+    "sem pão" e o "hamburguer" no mesmo texto e libera certinho.
     """
     foods = []
     for it in items:
@@ -77,10 +86,7 @@ def _match_items(
         match = food_matcher.find_food(
             f"{it['quantity']} {name}".strip(), preferred=preferred, tie_resolver=tie_resolver,
         )
-        if allergies and (
-            food_matcher.matches_allergen(match.name, allergies)
-            or food_matcher.matches_allergen(name, allergies)
-        ):
+        if allergies and food_matcher.matches_allergen(f"{match.name} {name}", allergies):
             if blocked is not None:
                 blocked.append(match.name)
             continue

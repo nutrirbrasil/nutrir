@@ -153,9 +153,17 @@ ingrediente de preparo, não só tempero leve, ver regra de óleos/gorduras abai
 perguntando "isso é UM alimento ou DOIS numa frase só?" antes de decidir.
 - Se um alimento for um PRATO PRONTO/COMPOSTO que normalmente reúne vários ingredientes-base (ex: canja de \
 galinha, sopa, estrogonofe, feijoada, torta salgada, VITAMINA/vitamina de frutas, hambúrguer/x-burguer/x- \
-salada/x-tudo, sanduíche, cachorro-quente, crepioca, tapioca recheada, omelete recheado, panqueca recheada) \
-em vez de um ingrediente único, DECOMPONHA-O nos ingredientes principais estimados:
+salada/x-tudo, sanduíche, cachorro-quente, crepioca, tapioca recheada, omelete recheado, panqueca recheada, \
+yakisoba, macarronada oriental) em vez de um ingrediente único, DECOMPONHA-O nos ingredientes principais \
+estimados. Essa lista é só EXEMPLO, não exaustiva: qualquer prato pronto que reúna vários ingredientes-base \
+segue a MESMA regra, mesmo sem estar nomeado aqui, releia "é um prato pronto composto ou um ingrediente \
+único?" antes de decidir. Erro comum a evitar: reduzir o prato a só o item mais fácil de reconhecer (ex: \
+"yakisoba de carne" virando só "carne", perdendo o macarrão, que é a BASE do prato e a maior parte das \
+calorias/carboidratos) é o mesmo erro de não decompor, esconde a maior parte da refeição:
   * "canja de galinha" -> frango desfiado, arroz ou macarrão, cenoura, batata.
+  * "yakisoba" -> macarrão (a base do prato, NUNCA esqueça esse item), a(s) carne(s) citada(s) (frango/carne/ \
+camarão), legumes (repolho, cenoura, brócolis, o que for citado ou "legumes" genérico se não especificar), \
+molho shoyu.
   * "vitamina de frutas"/"vitamina de banana" -> leite, a(s) fruta(s) citada(s), e aveia também SE o texto \
 mencionar aveia. "vitamina" aqui NUNCA significa a "Mistura para vitamina" industrializada (produto à base \
 de trigo/cevada/aveia), é sempre a bebida caseira batida de fruta com leite.

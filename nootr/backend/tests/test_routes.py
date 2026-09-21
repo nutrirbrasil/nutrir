@@ -284,6 +284,22 @@ def test_missing_food_options_filters_by_profile(client, monkeypatch):
     assert not any("frango" in n for n in names)  # proteína, perfil diferente do arroz
 
 
+def test_missing_food_options_does_not_filter_pantry_by_allergy(client, monkeypatch):
+    # A despensa ("costumo ter em casa") é a própria pessoa dizendo "eu
+    # tenho/consumo isso", mesmo que bata com uma alergia cadastrada (pode
+    # ser uma reação leve que ela sabe que tolera). Não filtra por design,
+    # igual o Noo chat quando a PRÓPRIA pessoa nomeia o alimento.
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "pantry": ["Queijo mussarela", "Batata doce cozida"],
+        "allergies": ["lactose"], "dislikes": [], "likes": [], "notes": "",
+    })
+    resp = client.get("/nootr/substitutions/missing-food-options", params={"food_name": "ovo cozido"})
+    assert resp.status_code == 200
+    body = resp.json()
+    names = [m["name"].lower() for m in body["pantry_matches"]]
+    assert any("queijo" in n for n in names)
+
+
 def test_suggest_alternatives_calls_ai(client, monkeypatch):
     from backend.app.services import ai
     monkeypatch.setattr(repository, "get_preferences", lambda user: None)
@@ -592,6 +608,66 @@ def test_parse_meal_blocks_allergen_lost_in_generic_match(client, monkeypatch):
     names = [f["name"].lower() for f in body["foods"]]
     assert not any("chocolate" in n for n in names)
     assert "Chocolate" in body["blocked_allergens"]
+
+
+def test_parse_meal_does_not_block_explicit_free_of_claim(client, monkeypatch):
+    # Achado testando ao vivo, o outro lado do teste acima: "hambúrguer sem
+    # pão" casa com o item genérico "Hamburguer" (glúten por padrão, ver
+    # food_matcher._ALLERGEN_FOODS), mas a PRÓPRIA descrição já excluiu a
+    # fonte do alérgeno. Bloquear isso seria pior que o bug original: a
+    # pessoa já fez a escolha seguro, e o app ainda assim recusaria o prato.
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": ["glúten"], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+    })
+    monkeypatch.setattr(
+        ai, "converse_meal",
+        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None, forward_looking=False: {
+            "needs_question": False, "question": "", "question_kind": "",
+            "skipped_names": [], "new_items": [
+                {"name": "hambúrguer sem pão, só carne e queijo", "quantity": "150g"},
+            ],
+            "proposed_dish_name": "", "proposed_ingredients": [],
+        },
+    )
+    resp = client.post("/nootr/ai/parse-meal", json={
+        "text": "vou comer um hambúrguer sem pão", "meal_name": "Jantar", "meal_foods": ["Arroz branco"],
+    })
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["blocked_allergens"] == []
+
+
+def test_parse_meal_decomposed_burger_patty_not_blocked_when_bread_omitted(client, monkeypatch):
+    # Achado testando ao vivo, o cenário REAL (não o hipotético acima): a IA
+    # não deixa nenhum "sem pão" escrito em lugar nenhum, ela só OMITE o item
+    # de pão da decomposição (ver _FOOD_DECOMPOSITION_RULES) e nomeia o disco
+    # de carne "carne de hambúrguer", como manda a regra de decomposição.
+    # Esse nome contém "hamburguer" e casava com o bucket genérico de
+    # _COMMON_FOODS (sanduíche inteiro, pressupõe pão), bloqueando por glúten
+    # uma carne que não tem, quando a TACO tem o item exato só pra ela (ver
+    # food_matcher._ALLERGEN_EXCEPTIONS["gluten"]).
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": ["glúten"], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+    })
+    monkeypatch.setattr(
+        ai, "converse_meal",
+        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None, forward_looking=False: {
+            "needs_question": False, "question": "", "question_kind": "",
+            "skipped_names": [], "new_items": [
+                {"name": "carne de hambúrguer", "quantity": "150g"},
+                {"name": "salada", "quantity": "1 porção"},
+            ],
+            "proposed_dish_name": "", "proposed_ingredients": [],
+        },
+    )
+    resp = client.post("/nootr/ai/parse-meal", json={
+        "text": "vou comer um hambúrguer sem pão", "meal_name": "Jantar", "meal_foods": ["Arroz branco"],
+    })
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["blocked_allergens"] == []
+    names = [f["name"].lower() for f in body["foods"]]
+    assert any("hamburguer" in n or "hambúrguer" in n for n in names)
 
 
 def test_list_recipes(client, monkeypatch):

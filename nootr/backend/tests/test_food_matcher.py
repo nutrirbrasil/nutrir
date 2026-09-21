@@ -51,11 +51,105 @@ def test_matches_allergen_false_without_allergies():
     assert not fm.matches_allergen("Amendoim, torrado, salgado", [])
 
 
+def test_matches_allergen_generic_bucket_foods_default_to_gluten():
+    # Achado testando ao vivo: itens genéricos de _COMMON_FOODS (fallback
+    # quando nem TACO nem item comum específico casam) são pão/massa de
+    # trigo por padrão, mas seus nomes finais não citam "trigo"/"pão"
+    # (ex: "torta" vira só "Torta"). Sem essas palavras na lista de glúten,
+    # o filtro deixava passar exatamente os pratos que caem nesse bucket.
+    for name in ("Torta", "Empada", "Coxinha", "Hamburguer", "Cachorro quente", "Sanduiche natural"):
+        assert fm.matches_allergen(name, ["glúten"]), name
+
+
+def test_matches_allergen_generic_bucket_foods_default_to_ovo():
+    # Mesmo raciocínio do teste acima, mas pra ovo: massas/receitas batidas
+    # (panqueca, waffle, crepe, brownie, bolo, donut) levam ovo por padrão,
+    # mas o nome genérico do bucket não cita "ovo".
+    for name in ("Panqueca", "Waffle", "Crepe", "Brownie", "Bolo", "Donut"):
+        assert fm.matches_allergen(name, ["ovo"]), name
+    # Controle: "sem ovo" declarado explicitamente ainda libera.
+    assert not fm.matches_allergen("Bolo sem ovo", ["ovo"])
+
+
+def test_matches_allergen_known_brand_items_default_to_their_real_allergens():
+    # Achado testando ao vivo: itens de marca (McDonald's) ficam ATÔMICOS de
+    # propósito na decomposição (ver _FOOD_DECOMPOSITION_RULES em gemini.py,
+    # "NÃO decomponha" pra item de rede por nome específico), então nunca
+    # passam pelas palavras-chave genéricas de glúten/lactose, o nome da
+    # marca não cita "pão"/"queijo". "Big Mac" não batia com glúten nenhum
+    # antes desse fix, um sanduíche de pão passando batido pra quem tem
+    # celíaquia/alergia a glúten registrada.
+    for name in ("Big Mac", "Cheseburguer Mc Donald's", "Burguer Mc Donald's",
+                 "Mc Chicken (Mc Donald's)", "Quarteirão (Mc Donald's)", "Me Fish (Mc Donald's)"):
+        assert fm.matches_allergen(name, ["glúten"]), name
+    for name in ("Big Mac", "Cheseburguer Mc Donald's", "Quarteirão (Mc Donald's)"):
+        assert fm.matches_allergen(name, ["lactose"]), name
+    # Controle: item da mesma marca sem alérgeno conhecido (batata frita) não
+    # deve ser bloqueado só por citar "Mc Donald's".
+    assert not fm.matches_allergen("Batata frita - Mc Donald's", ["glúten"])
+
+
+def test_matches_allergen_respects_free_of_claim_via_synonym():
+    # Achado testando ao vivo: "hambúrguer sem pão" (a pessoa tirou o pão de
+    # propósito) casava com o item genérico "Hamburguer", que por padrão
+    # conta como glúten (ver teste acima). "sem pão" declara ausência de
+    # glúten tanto quanto "sem glúten" mesmo, ninguém fala do segundo jeito
+    # na prática, então tratar só o literal "sem glúten" bloqueava um prato
+    # que a própria pessoa já tinha excluído a fonte do alérgeno.
+    assert not fm.matches_allergen("Hamburguer sem pão", ["glúten"])
+    assert not fm.matches_allergen("Cachorro quente sem pão, só a salsicha", ["glúten"])
+    # Controle: sem o "sem pão", o mesmo alimento genérico continua bloqueado.
+    assert fm.matches_allergen("Hamburguer", ["glúten"])
+
+
+def test_hamburger_patty_alone_matches_taco_not_the_full_sandwich_bucket():
+    # Achado testando ao vivo, mais fundo que o "sem pão" isolado: quando a
+    # pessoa exclui o pão, a IA decompõe o prato SEM um item de pão separado
+    # (não sobra texto "sem pão" em lugar nenhum), e nomeia o disco de carne
+    # "carne de hambúrguer" (ver _FOOD_DECOMPOSITION_RULES em gemini.py). Essa
+    # frase CONTÉM "hamburguer" e casava com o bucket genérico de
+    # _COMMON_FOODS (sanduíche inteiro, 450kcal/150g, pressupõe pão), em vez
+    # de cair na TACO, que tem o item exato pra só a carne ("Hambúrguer,
+    # bovino, grelhado", ids 415-417, sem pão nenhum). Bloqueava por glúten
+    # (errado, a carne não tem) E inflava a nutrição (450kcal de sanduíche
+    # completo pra 150g de carne pura).
+    m = fm.find_food("150g carne de hamburguer")
+    assert m.source == "taco"
+    assert m.taco_id in (415, 416, 417)
+    assert not fm.matches_allergen(m.name, ["glúten"])
+    # Controle: o sanduíche inteiro (com pão) continua caindo no bucket
+    # genérico e continua bloqueado por glúten.
+    full = fm.find_food("1 hamburguer")
+    assert full.source == "common"
+    assert fm.matches_allergen(full.name, ["glúten"])
+
+
 def test_common_food_match():
     m = fm.find_food("comi um cheeseburger")
     assert m.source == "common"
     assert m.name == "Cheeseburger"
     assert m.calories == 520.0
+
+
+def test_search_taco_ignores_colher_de_sopa_as_a_food_word():
+    # Achado testando ao vivo: "colher de sopa"/"colher de chá" é MEDIDA, não
+    # o alimento "sopa"/"chá". Sem tirar a frase inteira antes de tokenizar,
+    # "sopa" sobrava como token e competia com o nome real do alimento:
+    # "1 colher de sopa de ketchup" casava com "Sopa de cebola" em vez de
+    # "Catchup (Ketchup)", porque "sopa" bate em várias entradas da TACO e
+    # "ketchup"/"orégano" são palavras únicas sem margem pra vencer o empate
+    # (pior ainda pra tempero: ver _SEASONING_WORDS, que já removia o próprio
+    # nome do tempero quando sobrava só "colher"+"sopa"+tempero).
+    for food, expected_word in (("ketchup", "ketchup"), ("oregano", "oregano")):
+        plain = fm.search_taco(food, limit=1)
+        with_colher = fm.search_taco(f"1 colher de sopa {food}", limit=1)
+        assert plain and with_colher
+        assert plain[0].id == with_colher[0].id, (food, plain[0].name, with_colher[0].name)
+    # Controle: "sopa"/"chá" como o próprio alimento (sem "colher de" antes)
+    # continuam achando sopa/chá de verdade, a frase só é removida nesse
+    # contexto específico.
+    assert "sopa" in fm.normalize(fm.search_taco("sopa de legumes", limit=1)[0].name)
+    assert "cha" in fm.normalize(fm.search_taco("cha preto", limit=1)[0].name)
 
 
 def test_common_food_count_multiplies():

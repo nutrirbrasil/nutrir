@@ -91,13 +91,14 @@ def try_day_topup(result: dict, user: CurrentUser, original_meals: list[dict] | 
             )
             # Última barreira determinística: mesmo com a instrução no prompt,
             # nunca confia só na IA pra alergia (ver food_matcher.matches_allergen).
-            # Checa o nome que a IA propôs e não só o alimento casado: quando
-            # o matcher cai num item comum/estimativa genérica, o nome final
-            # pode perder a palavra que denunciava o alérgeno (ver mesmo
-            # raciocínio em ai._match_items).
-            if food_matcher.matches_allergen(match.name, allergies) or food_matcher.matches_allergen(
-                item["name"], allergies,
-            ):
+            # Checa o nome que a IA propôs JUNTO com o alimento casado
+            # (concatenados, não um OR de duas checagens separadas): sem
+            # isso, um "sem X" que só a descrição original declarava (ex:
+            # "hambúrguer sem pão" casando com o item genérico "Hamburguer",
+            # que por padrão conta como glúten) se perdia, e a checagem
+            # isolada em `match.name` bloqueava mesmo com a ausência
+            # declarada (ver mesmo raciocínio em ai._match_items).
+            if food_matcher.matches_allergen(f"{match.name} {item['name']}", allergies):
                 continue
             # Se já existe um alimento de mesmo nome na refeição e ele é de
             # baixa densidade calórica (salada, folha), "adicionar mais" só

@@ -182,10 +182,24 @@ _SEASONING_WORDS = {"acafrao", "oregano", "cominho", "canela", "louro", "colorau
 # NÃO inclui "sem": esse carrega negação relevante (distingue "sem pele").
 _STOPWORDS = {"com", "para", "por", "uma", "um", "dos", "das"}
 
+# "Colher de sopa"/"colher de chá" são MEDIDA (colher grande/pequena), não o
+# alimento "sopa"/"chá" de verdade. Sem tirar a frase inteira, "sopa"/"chá"
+# sobravam como token e competiam de igual pra igual com o nome real do
+# alimento buscado: "1 colher de sopa de ketchup" casava com "Sopa de
+# cebola" em vez de "Catchup (Ketchup)", porque "sopa" bate em várias
+# entradas da TACO e "ketchup" é uma palavra só, sem margem pra perder o
+# empate. Não filtra "sopa"/"chá" fora dessa frase (ex: busca só "sopa"
+# continua achando sopa de verdade). "colher" sozinho (sem "de sopa/chá",
+# ex: "1 colher de manteiga") nunca é o nome de um alimento, também sai.
+_MEASURE_PHRASE_RE = re.compile(r"\bcolher(es)?\s+de\s+(sopa|cha)\b")
+_MEASURE_WORDS = {"colher", "colheres"}
+
 
 def tokens(text: str) -> set[str]:
-    toks = {_canon_prep(_singular(t)) for t in normalize(text).split() if len(t) > 2}
+    normalized = _MEASURE_PHRASE_RE.sub(" ", normalize(text))
+    toks = {_canon_prep(_singular(t)) for t in normalized.split() if len(t) > 2}
     toks -= _STOPWORDS
+    toks -= _MEASURE_WORDS
     if len(toks) > 1:
         without_seasoning = toks - _SEASONING_WORDS
         if without_seasoning:
@@ -441,6 +455,20 @@ def search_taco(
     return [food for _, food in scored[:limit]]
 
 
+# Frases que CONTÊM a chave de `_COMMON_FOODS` mas significam só uma PARTE do
+# prato composto, não o prato inteiro (ex: "carne de hambúrguer" é só o disco
+# de carne, não o sanduíche com pão+carne+queijo que `_COMMON_FOODS["hamburguer"]`
+# representa). Sem essa exceção, a decomposição da IA (que já tira o pão
+# quando a pessoa pede "sem pão", ver _FOOD_DECOMPOSITION_RULES em gemini.py)
+# ainda casava a carne sozinha com o sanduíche inteiro: inflava a nutrição
+# (450kcal do sanduíche pra só a carne) E bloqueava por glúten um prato que
+# já tinha excluído o pão de propósito. Cai pra busca na TACO, que tem o item
+# certo ("Hambúrguer, bovino, grelhado", só carne, sem pão).
+_COMMON_FOOD_EXCEPTIONS = {
+    "hamburguer": ["carne de hamburguer", "disco de hamburguer", "hamburguer sem pao"],
+}
+
+
 def _match_common(query: str) -> tuple[str, tuple[float, float, float, float, float], float] | None:
     """Devolve (nome, macros_por_porção, quantidade) do item comum encontrado."""
     query_norm = normalize(query)
@@ -448,6 +476,9 @@ def _match_common(query: str) -> tuple[str, tuple[float, float, float, float, fl
     # chave curta "roube" o match de uma composta (ex: "x tudo" vs "x salada").
     for name in sorted(_COMMON_FOODS, key=len, reverse=True):
         if name in query_norm:
+            exceptions = _COMMON_FOOD_EXCEPTIONS.get(name, ())
+            if any(exc in query_norm for exc in exceptions):
+                continue
             return name, _COMMON_FOODS[name], _extract_count(query_norm, name)
     return None
 
@@ -577,6 +608,9 @@ _ALLERGEN_FOODS = {
         "nata", "coalhada", "doce de leite", "leite condensado", "chantilly",
         "sorvete", "mussarela", "mozarela", "ricota", "catupiry", "whey",
         "milkshake", "cheeseburger",
+        # Itens de marca da TACO (ver comentário equivalente em "gluten"):
+        # o nome não cita "queijo" mas o sanduíche real tem.
+        "big mac", "cheseburguer", "quarteirao",
     ],
     "gluten": [
         "trigo", "pao", "macarrao", "farinha de trigo", "cevada", "centeio",
@@ -591,9 +625,23 @@ _ALLERGEN_FOODS = {
         "waffle", "crepe", "panqueca", "donut", "brownie", "nuggets",
         "cheeseburger", "hamburguer", "x tudo", "x salada", "x burguer",
         "cachorro quente", "hot dog", "hotdog", "sanduiche natural",
+        # Itens de marca (McDonald's) da TACO: ficam ATÔMICOS de propósito
+        # (ver _FOOD_DECOMPOSITION_RULES em gemini.py, "NÃO decomponha" pra
+        # item de rede por nome específico), então nunca passam pelas
+        # palavras-chave genéricas acima (o nome da marca não cita "pão").
+        # Todos levam pão, sem exceção conhecida.
+        "big mac", "cheseburguer", "burguer mc donald", "mc chicken",
+        "quarteirao", "me fish",
     ],
     "amendoim": ["amendoim", "pacoca", "pasta de amendoim"],
-    "ovo": ["ovo", "clara", "gema", "maionese", "omelete"],
+    "ovo": [
+        "ovo", "clara", "gema", "maionese", "omelete",
+        # Mesmo raciocínio da lista de glúten: itens genéricos de
+        # _COMMON_FOODS que levam ovo na massa/receita padrão, mas cujo nome
+        # final não cita "ovo" (ex: "panqueca" vira só "Panqueca").
+        "panqueca", "waffle", "crepe", "brownie", "bolo", "donut",
+    ],
+    "soja": ["soja", "shoyu", "tofu", "missô"],
     "soja": ["soja", "shoyu", "tofu", "missô"],
     "frutos do mar": [
         "camarao", "lagosta", "siri", "caranguejo", "marisco", "ostra",
@@ -610,7 +658,12 @@ _ALLERGEN_FOODS = {
 _ALLERGEN_EXCEPTIONS = {
     "lactose": ["leite de coco", "leite de amendoa", "leite de aveia", "leite de castanha",
                 "leite de arroz", "leite de soja", "bebida de soja", "leite vegetal"],
-    "gluten": ["pao de queijo", "pao de tapioca"],
+    # "carne de hamburguer" é o disco de carne bovina da TACO (ids 415-417,
+    # nome de exibição curado "Carne de Hambúrguer cru/frito/grelhado"), não
+    # o sanduíche com pão que a palavra "hamburguer" normalmente indica (ver
+    # _ALLERGEN_FOODS["gluten"], adicionada pra pegar o item GENÉRICO de
+    # _COMMON_FOODS que pressupõe pão). É carne pura, sem glúten nenhum.
+    "gluten": ["pao de queijo", "pao de tapioca", "carne de hamburguer"],
 }
 
 # "Sem glúten", "zero lactose", "0% lactose": o nome do alimento afirma a
@@ -622,11 +675,25 @@ _FREE_OF_PATTERNS = (
     r"isento\s+(?:de\s+)?{term}", r"livre\s+(?:de\s+)?{term}", r"nao\s+contem\s+{term}",
 )
 
+# Jeitos de declarar ausência do alérgeno sem citar o nome dele: ninguém diz
+# "hambúrguer sem glúten" quando quer dizer que tirou o pão, diz "hambúrguer
+# sem pão" mesmo. Sem isso, alimentos genéricos que viraram alérgenos por
+# tabela (ver _ALLERGEN_FOODS["gluten"]: hamburguer, cachorro quente,
+# sanduiche natural etc, todos "pão" por padrão) bloqueavam mesmo quando a
+# própria descrição já excluía a fonte do alérgeno.
+_FREE_OF_ALT_TERMS = {
+    "gluten": ["pao"],
+}
+
 
 def _declares_free_of(name_norm: str, allergy_norm: str) -> bool:
-    """O nome do alimento afirma não conter o alérgeno ("sem glúten")?"""
-    term = re.escape(allergy_norm)
-    return any(re.search(p.format(term=term), name_norm) for p in _FREE_OF_PATTERNS)
+    """O nome/descrição afirma não conter o alérgeno ("sem glúten", ou um
+    jeito equivalente de dizer isso, ver `_FREE_OF_ALT_TERMS`)?"""
+    terms = (allergy_norm, *_FREE_OF_ALT_TERMS.get(allergy_norm, ()))
+    return any(
+        re.search(p.format(term=re.escape(t)), name_norm)
+        for t in terms for p in _FREE_OF_PATTERNS
+    )
 
 
 def matches_allergen(food_name: str, allergies: list[str]) -> bool:
