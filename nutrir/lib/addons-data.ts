@@ -1,4 +1,4 @@
-export type MealStarchType = "massa" | "arroz" | "batata";
+export type MealStarchType = "massa" | "arroz" | "batata" | "batata-cogumelo";
 
 export interface MealAddon {
   id: string;
@@ -8,10 +8,12 @@ export interface MealAddon {
   portionLabel: string;
   portionUnit: string;
   portionUnitPlural: string;
-  /** Se definido, o adicional só aparece em marmitas com esse acompanhamento. */
-  forStarch?: MealStarchType;
+  /** Se definido, o adicional só aparece em marmitas com um desses acompanhamentos. */
+  forStarch?: MealStarchType[];
   /** Substituições com o mesmo grupo são mutuamente exclusivas (ex.: arroz integral x arroz branco). */
   exclusiveGroup?: string;
+  /** Foto do ingrediente (public/addons/*.png), exibida no card do adicional. */
+  imageSrc?: string;
 }
 
 export const MAX_ADDON_PORTIONS = 10;
@@ -22,9 +24,10 @@ export const MEAL_ADDONS: MealAddon[] = [
     name: "Molho da casa",
     baseCost: 0.06,
     additionalPrice: 1.5,
-    portionLabel: "1 porção",
-    portionUnit: "porção",
-    portionUnitPlural: "porções",
+    portionLabel: "1 pote (20g)",
+    portionUnit: "pote",
+    portionUnitPlural: "potes",
+    imageSrc: "/addons/molho-da-casa.png",
   },
   {
     id: "add-queijo",
@@ -34,33 +37,37 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionLabel: "1 fatia",
     portionUnit: "fatia",
     portionUnitPlural: "fatias",
+    imageSrc: "/addons/queijo.png",
   },
   {
     id: "add-ervilha",
     name: "Ervilha",
-    baseCost: 0.44,
-    additionalPrice: 3.56,
-    portionLabel: "1 porção (30g)",
+    baseCost: 0.88,
+    additionalPrice: 4.11,
+    portionLabel: "1 porção (60g)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
+    imageSrc: "/addons/ervilha.png",
   },
   {
     id: "add-lentilha",
     name: "Lentilha",
-    baseCost: 0.4,
-    additionalPrice: 3.6,
-    portionLabel: "1 porção (30g)",
+    baseCost: 0.8,
+    additionalPrice: 4.19,
+    portionLabel: "1 porção (60g)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
+    imageSrc: "/addons/lentilha.png",
   },
   {
     id: "add-grao",
     name: "Grão de Bico",
-    baseCost: 0.4,
-    additionalPrice: 3.6,
-    portionLabel: "1 porção (30g)",
+    baseCost: 0.8,
+    additionalPrice: 4.19,
+    portionLabel: "1 porção (60g)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
+    imageSrc: "/addons/grao-de-bico.png",
   },
   {
     id: "add-azeite",
@@ -70,24 +77,27 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionLabel: "1 porção (10ml)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
+    imageSrc: "/addons/azeite.png",
   },
   {
     id: "add-ketchup",
     name: "Ketchup",
     baseCost: 0.1,
     additionalPrice: 2.9,
-    portionLabel: "1 porção",
-    portionUnit: "porção",
-    portionUnitPlural: "porções",
+    portionLabel: "1 pote (20g)",
+    portionUnit: "pote",
+    portionUnitPlural: "potes",
+    imageSrc: "/addons/ketchup.png",
   },
   {
     id: "add-mostarda",
-    name: "Mostarda",
+    name: "Mostarda e Mel",
     baseCost: 0.1,
     additionalPrice: 2.9,
-    portionLabel: "1 porção",
-    portionUnit: "porção",
-    portionUnitPlural: "porções",
+    portionLabel: "1 pote (20g)",
+    portionUnit: "pote",
+    portionUnitPlural: "potes",
+    imageSrc: "/addons/mostarda-e-mel.png",
   },
   {
     id: "add-massa-sem-gluten",
@@ -97,7 +107,8 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionLabel: "Desejo substituir Massa por Massa sem Glúten",
     portionUnit: "porção",
     portionUnitPlural: "porções",
-    forStarch: "massa",
+    forStarch: ["massa"],
+    imageSrc: "/addons/sem-gluten.png",
   },
   {
     id: "add-arroz-integral",
@@ -107,7 +118,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionLabel: "Desejo substituir Arroz de Brócolis por Arroz Integral",
     portionUnit: "porção",
     portionUnitPlural: "porções",
-    forStarch: "arroz",
+    forStarch: ["arroz"],
     exclusiveGroup: "arroz-tipo",
   },
   {
@@ -118,7 +129,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionLabel: "Desejo substituir Arroz de Brócolis por Arroz Branco",
     portionUnit: "porção",
     portionUnitPlural: "porções",
-    forStarch: "arroz",
+    forStarch: ["arroz"],
     exclusiveGroup: "arroz-tipo",
   },
   {
@@ -129,7 +140,7 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionLabel: "Desejo substituir purê de batata inglesa por Purê de Mandioquinha (Batata Salsa)",
     portionUnit: "porção",
     portionUnitPlural: "porções",
-    forStarch: "batata",
+    forStarch: ["batata", "batata-cogumelo"],
   },
   {
     id: "add-leite-vegetal",
@@ -139,7 +150,8 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionLabel: "Desejo substituir Leite Zero Lactose por Leite Vegetal",
     portionUnit: "porção",
     portionUnitPlural: "porções",
-    forStarch: "batata",
+    forStarch: ["batata", "batata-cogumelo"],
+    imageSrc: "/addons/sem-lactose.png",
   },
   {
     id: "add-remover-queijo",
@@ -149,7 +161,19 @@ export const MEAL_ADDONS: MealAddon[] = [
     portionLabel: "Sou intolerante a lactose e desejo remover a finalização com queijo",
     portionUnit: "porção",
     portionUnitPlural: "porções",
-    forStarch: "batata",
+    forStarch: ["batata"],
+    imageSrc: "/addons/sem-lactose.png",
+  },
+  {
+    id: "add-queijo-cogumelo",
+    name: "Queijo",
+    baseCost: 0,
+    additionalPrice: 0.99,
+    portionLabel: "Desejo substituir Mix de Sementes por Queijo (contém lactose)",
+    portionUnit: "porção",
+    portionUnitPlural: "porções",
+    forStarch: ["batata-cogumelo"],
+    imageSrc: "/addons/queijo.png",
   },
 ];
 
@@ -173,9 +197,16 @@ export function getAddonById(id: string): MealAddon | undefined {
   return ADDON_BY_ID[id];
 }
 
-/** Detecta massa, arroz ou batata (escondidinho) a partir do rótulo da marmita ou do item_id. */
+/**
+ * Detecta massa, arroz, batata (escondidinho de frango/carne) ou batata de
+ * cogumelo (escondidinho de cogumelos, purê finalizado com mix de sementes em
+ * vez de queijo) a partir do rótulo da marmita ou do item_id.
+ */
 export function getMealStarchType(hint: string): MealStarchType | undefined {
   const lower = hint.toLowerCase();
+  if (lower.includes("cogu")) {
+    return "batata-cogumelo";
+  }
   if (lower.includes("escondidinho") || lower.includes("batata")) {
     return "batata";
   }
@@ -195,7 +226,7 @@ export function getMealStarchType(hint: string): MealStarchType | undefined {
 }
 
 export function getAddonsForStarch(starch?: MealStarchType): MealAddon[] {
-  return MEAL_ADDONS.filter((addon) => !addon.forStarch || addon.forStarch === starch);
+  return MEAL_ADDONS.filter((addon) => !addon.forStarch || (starch && addon.forStarch.includes(starch)));
 }
 
 export function getAddonsForMealHint(hint: string): MealAddon[] {
@@ -204,8 +235,9 @@ export function getAddonsForMealHint(hint: string): MealAddon[] {
 
 /**
  * Adicionais no modo "mesmo em todas". Substituições (forStarch) aparecem se pelo menos
- * uma marmita do combo tiver aquele acompanhamento — o preço final considera só as
- * marmitas realmente compatíveis (ver computeSameModeAddonsCents), não o total do combo.
+ * uma marmita do combo tiver um dos acompanhamentos daquele adicional — o preço final
+ * considera só as marmitas realmente compatíveis (ver computeSameModeAddonsCents), não
+ * o total do combo.
  */
 export function getAddonsForSameSelection(
   mealLabels: string[],
@@ -219,12 +251,22 @@ export function getAddonsForSameSelection(
   const starchTypesPresent = new Set(
     mealLabels.map((label) => getMealStarchType(label)).filter((s): s is MealStarchType => Boolean(s))
   );
-  return MEAL_ADDONS.filter((addon) => !addon.forStarch || starchTypesPresent.has(addon.forStarch));
+  return MEAL_ADDONS.filter(
+    (addon) => !addon.forStarch || addon.forStarch.some((s) => starchTypesPresent.has(s))
+  );
 }
 
 /** Quantas marmitas da lista têm o acompanhamento indicado. */
 export function countMealsForStarch(mealLabels: string[], starch: MealStarchType): number {
   return mealLabels.filter((label) => getMealStarchType(label) === starch).length;
+}
+
+/** Quantas marmitas da lista têm QUALQUER UM dos acompanhamentos indicados (sem contar duas vezes). */
+function countMealsForAnyStarch(mealLabels: string[], starches: MealStarchType[]): number {
+  return mealLabels.filter((label) => {
+    const type = getMealStarchType(label);
+    return type ? starches.includes(type) : false;
+  }).length;
 }
 
 export type AddonSelectionMap = Record<string, number>;
@@ -259,8 +301,10 @@ export function formatSelectionMap(selection: AddonSelectionMap): string {
 
 /**
  * Preço do modo "mesmo em todas": adicionais normais valem para todas as marmitas do
- * combo, mas substituições (forStarch) valem só nas marmitas com aquele acompanhamento
- * (ex.: 3 marmitas de arroz selecionando Arroz Integral cobra 3x, não o total do combo).
+ * combo, mas substituições (forStarch) valem só nas marmitas com um dos acompanhamentos
+ * do adicional (ex.: 3 marmitas de arroz selecionando Arroz Integral cobra 3x, não o
+ * total do combo; uma marmita de cogumelos junto com escondidinhos de frango não conta
+ * pra "Remover Queijo", já que cogumelos não leva queijo).
  */
 export function computeSameModeAddonsCents(
   mealLabels: string[],
@@ -271,7 +315,7 @@ export function computeSameModeAddonsCents(
     const addon = getAddonById(id);
     if (!addon) return sum;
     const multiplier = addon.forStarch
-      ? countMealsForStarch(mealLabels, addon.forStarch)
+      ? countMealsForAnyStarch(mealLabels, addon.forStarch)
       : mealLabels.length;
     return sum + getAddonUnitPriceCents(addon) * portions * multiplier;
   }, 0);
@@ -303,7 +347,7 @@ export function buildAddonsNote(
         const addon = getAddonById(id);
         if (!addon) return null;
         if (mode === "same" && addon.forStarch) {
-          const count = countMealsForStarch(mealLabels, addon.forStarch);
+          const count = countMealsForAnyStarch(mealLabels, addon.forStarch);
           return `${addon.name} (${count} marmita${count === 1 ? "" : "s"})`;
         }
         return formatAddonSelectionLine(id, portions);

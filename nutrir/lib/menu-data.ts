@@ -424,7 +424,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       {
         id: "veg-cogumelo",
         name: "Escondidinho de Cogu",
-        description: "Mix de cogumelos e brócolis salteados no molho shoyu, coberto por purê de batatas.",
+        description: "Mix de cogumelos e brócolis salteados no molho shoyu, coberto por purê de batatas e finalizado com mix de sementes.",
         prices: { P: PRICES.cogumeloEscondidinho.P, G: PRICES.cogumeloEscondidinho.G },
         glutenFree: true,
       },
@@ -452,7 +452,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       {
         id: "veg-cogumelo",
         name: "Escondidinho de Cogu",
-        description: "Mix de cogumelos e brócolis salteados no molho shoyu, coberto por purê de batatas.",
+        description: "Mix de cogumelos e brócolis salteados no molho shoyu, coberto por purê de batatas e finalizado com mix de sementes.",
         prices: { P: PRICES.cogumeloEscondidinho.P, G: PRICES.cogumeloEscondidinho.G },
         glutenFree: true,
       },

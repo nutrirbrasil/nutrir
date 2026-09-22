@@ -89,6 +89,18 @@ function SubstitutionToggle({ selected, onToggle }: { selected: boolean; onToggl
   );
 }
 
+function AddonThumb({ addon }: { addon: MealAddon }) {
+  if (!addon.imageSrc) return null;
+  return (
+    <MarmitaPhoto
+      src={addon.imageSrc}
+      alt=""
+      className="h-10 w-10 shrink-0"
+      sizes="40px"
+    />
+  );
+}
+
 function AddonCard({
   addon,
   qty,
@@ -104,7 +116,10 @@ function AddonCard({
   return (
     <div className="flex flex-col gap-1.5 rounded-xl border border-nutrir-nude-dark/60 bg-nutrir-cream/50 px-2.5 py-2.5">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-nutrir-emerald">{addon.name}</p>
+        <div className="flex min-w-0 items-center gap-2">
+          <AddonThumb addon={addon} />
+          <p className="text-sm font-semibold text-nutrir-emerald">{addon.name}</p>
+        </div>
         <span className="shrink-0 text-sm font-bold text-nutrir-burgundy">
           {formatAddonPriceTag(unitCents)}
         </span>
