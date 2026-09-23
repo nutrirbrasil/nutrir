@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from backend.app.auth import CurrentUser, CurrentUserDep
-from backend.app.services import energy, repository
+from backend.app.services import energy, food_matcher, repository
 
 router = APIRouter(prefix="/nootr/profile", tags=["Nootr - Perfil"])
 
@@ -99,10 +99,22 @@ def get_profile(user: CurrentUser = CurrentUserDep):
     tabela ainda), a resposta já vem com valores default pra UI não travar,
     mas o frontend usa esse flag pra saber que a conta é nova e ainda precisa
     passar pelo onboarding (país + plano, ver app/onboarding).
+
+    `pantry_complete=False` quando a despensa/favoritos ainda não cumpre o
+    mínimo (`food_matcher.pantry_gap`, ver routes/nootr/preferences.py), vale
+    tanto pra conta nova quanto pra conta antiga que nunca cadastrou o
+    suficiente: o coringa e as sugestões de substituição só têm de onde
+    escolher se a despensa tiver alimentos de verdade cadastrados.
     """
     existing = repository.get_profile(user)
     profile = existing or {**_DEFAULT_PROFILE, "user_id": user.id}
-    return {**_with_macro_targets(dict(profile)), "has_profile": existing is not None}
+    prefs = repository.get_preferences(user) or {}
+    pantry_complete = not food_matcher.pantry_gap(prefs.get("pantry") or [])
+    return {
+        **_with_macro_targets(dict(profile)),
+        "has_profile": existing is not None,
+        "pantry_complete": pantry_complete,
+    }
 
 
 @router.put("")
@@ -115,7 +127,9 @@ def update_profile(body: ProfileUpdate, user: CurrentUser = CurrentUserDep):
         merged["macro_mode"] = "percent"
     merged = _with_computed_calories(merged)
     saved = repository.upsert_profile(user, merged)
-    return {**_with_macro_targets(dict(saved)), "has_profile": True}
+    prefs = repository.get_preferences(user) or {}
+    pantry_complete = not food_matcher.pantry_gap(prefs.get("pantry") or [])
+    return {**_with_macro_targets(dict(saved)), "has_profile": True, "pantry_complete": pantry_complete}
 
 
 @router.delete("")

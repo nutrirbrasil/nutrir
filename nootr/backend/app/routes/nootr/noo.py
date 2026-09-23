@@ -77,8 +77,15 @@ def _resolve_added(
     afirmando que um ingrediente entrou no cálculo (ex: "vou considerar
     frango, farinha, ovo e óleo" pra decompor uma torta) mesmo quando a
     farinha foi barrada por causa de alergia a glúten, uma resposta que
-    mente sobre o que aconteceu de verdade pra alguém com restrição real."""
-    preferred = food_matcher.preferred_taco_ids([*prefs.get("likes", []), *prefs.get("pantry", [])])
+    mente sobre o que aconteceu de verdade pra alguém com restrição real.
+
+    Propositalmente NÃO usa a preferência da despensa (`preferred_taco_ids`)
+    pra desempatar o match, pelo mesmo motivo documentado em
+    `ai._match_items`: aqui é uma descrição de um evento real específico, e
+    a despensa pode ter justamente a versão "sem alérgeno" de um alimento
+    (ex: "Pão de forma sem glúten" de quem é alérgico a glúten), o que
+    esconderia silenciosamente o alérgeno de verdade quando a pessoa descreve
+    ter comido a versão comum (achado testando ao vivo)."""
     tie_resolver = ai.build_country_tie_resolver(country)
     allergies = prefs.get("allergies") or []
 
@@ -89,7 +96,7 @@ def _resolve_added(
         # aplica esse item agora, só quando a pessoa responder a quantidade.
         if not item["quantity"].strip():
             continue
-        match = food_matcher.find_food(item["name"], preferred=preferred, tie_resolver=tie_resolver)
+        match = food_matcher.find_food(item["name"], tie_resolver=tie_resolver)
         # Alimento que a busca determinística não cobre (nem TACO, nem extra,
         # nem lista de itens comuns): em vez do placeholder genérico ancorado
         # só na caloria da refeição, pede uma estimativa nutricional real pra

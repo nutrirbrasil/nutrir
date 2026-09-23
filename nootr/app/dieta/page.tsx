@@ -45,7 +45,7 @@ function DietaContent({ token }: { token: string }) {
       .getProfile(token)
       .then((profile) => {
         if (!active) return;
-        if (!profile.has_profile) {
+        if (!profile.has_profile || !profile.pantry_complete) {
           router.replace("/onboarding");
           return;
         }

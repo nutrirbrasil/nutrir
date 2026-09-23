@@ -155,6 +155,11 @@ export interface Profile {
   // false = conta nova, nunca salvou nada, o app deve levar pro onboarding
   // (país + plano) antes de mostrar o resto (ver app/onboarding).
   has_profile: boolean;
+  // false = despensa/favoritos ainda não tem o mínimo de alimentos (ver
+  // PANTRY_MIN_TOTAL/PANTRY_MIN_BY_MACRO em food_matcher.py), vale pra conta
+  // nova E pra conta antiga que nunca completou. O app deve levar pro passo
+  // de despensa do onboarding até completar.
+  pantry_complete: boolean;
   plan: Plan;
   billing_cycle: "mensal" | "anual";
   country: string;

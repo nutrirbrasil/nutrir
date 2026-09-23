@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/RequireAuth";
 import { PlanCard } from "@/components/PlanCard";
@@ -81,6 +81,61 @@ function OnboardingContent({ token }: { token: string }) {
   const [mealTimes, setMealTimes] = useState<string[]>(MEAL_NAME_TEMPLATES[4].map((m) => m.time));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  // Conta que já passou pelo onboarding (has_profile=true) mas nunca
+  // completou o mínimo de despensa/favoritos (ver profile.pantry_complete),
+  // conta antiga de antes desse mínimo existir ou que pulou o passo. Pula
+  // direto pro passo de despensa, sem repetir país/plano/alergias/condições
+  // médicas que ela já preencheu antes.
+  const [resumeMode, setResumeMode] = useState(false);
+  const [checkingResume, setCheckingResume] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([nootrApi.getProfile(token), nootrApi.getPreferences(token)])
+      .then(([profile, prefs]) => {
+        if (!active) return;
+        if (profile.has_profile && !profile.pantry_complete) {
+          // Carrega o que a conta já tinha, não só a despensa: sem isso,
+          // `savePantryAndContinue` mandava `allergies: []` (o estado local
+          // nunca foi preenchido nesse modo) e apagava alergias reais já
+          // cadastradas (achado testando ao vivo: sumiu a alergia a lactose/
+          // glúten de uma conta de teste real).
+          setLikesPantry(prefs.pantry);
+          setAllergies(prefs.allergies);
+          const medicalPrefix = "Condições médicas: ";
+          setMedicalConditions(
+            prefs.notes.startsWith(medicalPrefix) ? prefs.notes.slice(medicalPrefix.length) : ""
+          );
+          setResumeMode(true);
+          setStep("preferences");
+        }
+      })
+      .finally(() => {
+        if (active) setCheckingResume(false);
+      });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  async function savePantryAndContinue(onSuccess: () => void) {
+    setError("");
+    setSaving(true);
+    try {
+      await nootrApi.updatePreferences(token, {
+        allergies,
+        likes: likesPantry,
+        pantry: likesPantry,
+        notes: medicalConditions.trim() ? `Condições médicas: ${medicalConditions.trim()}` : undefined,
+      });
+      onSuccess();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não deu para salvar sua despensa. Tente de novo.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   function patchCal(patch: Partial<CalorieCalculatorState>) {
     setCalState((s) => ({ ...s, ...patch }));
@@ -118,6 +173,15 @@ function OnboardingContent({ token }: { token: string }) {
       setError(err instanceof Error ? err.message : "Não deu para salvar seus dados. Tente de novo.");
       setSaving(false);
     }
+  }
+
+  if (checkingResume) {
+    return (
+      <div className="mx-auto max-w-lg py-10">
+        <div className="divider-bordo mb-6" />
+        <p className="text-sm text-nootr-muted">Carregando…</p>
+      </div>
+    );
   }
 
   return (
@@ -277,7 +341,9 @@ function OnboardingContent({ token }: { token: string }) {
         <>
           <h1 className="font-display text-2xl text-nootr-cream sm:text-4xl">O que você gosta ou costuma ter em casa?</h1>
           <p className="mt-2 text-sm text-nootr-muted">
-            O Nootr prioriza esses alimentos nas substituições, sempre que fizerem sentido.
+            O Nootr prioriza esses alimentos nas substituições, sempre que fizerem sentido. Escolha pelo
+            menos 10 alimentos, sendo ao menos 3 fontes de proteína (ex: frango, ovo, feijão), 3 de
+            carboidrato (ex: arroz, batata doce, pão) e 2 de gordura (ex: azeite, castanha, abacate).
           </p>
           <div className="mt-6">
             <TacoTagListInput
@@ -288,16 +354,26 @@ function OnboardingContent({ token }: { token: string }) {
               onChange={setLikesPantry}
             />
           </div>
-          <button type="button" onClick={() => setStep("calories")} className="btn-primary mt-8 w-full py-3">
-            Continuar
-          </button>
+
+          {error && <p className="mt-4 text-sm text-nootr-bordoSoft">{error}</p>}
+
           <button
             type="button"
-            onClick={() => setStep("medical")}
-            className="mt-4 text-xs text-nootr-faint transition-colors hover:text-nootr-bordoSoft"
+            disabled={saving}
+            onClick={() => savePantryAndContinue(() => (resumeMode ? router.replace("/dieta") : setStep("calories")))}
+            className="btn-primary mt-8 w-full py-3 disabled:opacity-60"
           >
-            ← voltar
+            {saving ? "Salvando…" : "Continuar"}
           </button>
+          {!resumeMode && (
+            <button
+              type="button"
+              onClick={() => setStep("medical")}
+              className="mt-4 text-xs text-nootr-faint transition-colors hover:text-nootr-bordoSoft"
+            >
+              ← voltar
+            </button>
+          )}
         </>
       )}
 

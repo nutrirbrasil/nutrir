@@ -311,7 +311,10 @@ def test_suggest_alternatives_calls_ai(client, monkeypatch):
 
 def test_suggest_alternatives_filters_allergy(client, monkeypatch):
     # A IA "erra" e sugere amendoim mesmo com a instrução do prompt, a
-    # barreira determinística descarta antes de devolver pro usuário.
+    # barreira determinística descarta antes de devolver pro usuário. Pantry
+    # vazia aqui: amendoim não é algo que a pessoa disse que tem/consome (ver
+    # test_suggest_alternatives_allows_pantry_item_despite_allergy pro caso
+    # oposto), então a barreira vale a sério.
     from backend.app.services import ai
     monkeypatch.setattr(repository, "get_preferences", lambda user: {
         "allergies": ["amendoim"], "dislikes": [], "likes": [], "pantry": [], "notes": "",
@@ -321,6 +324,27 @@ def test_suggest_alternatives_filters_allergy(client, monkeypatch):
     assert resp.status_code == 200
     names = [s["name"].lower() for s in resp.json()["suggestions"]]
     assert not any("amendoim" in n for n in names)
+    assert any("batata doce" in n for n in names)
+
+
+def test_suggest_alternatives_allows_pantry_item_despite_allergy(client, monkeypatch):
+    # Achado em feedback do usuário: a despensa/favoritos nunca passam pela
+    # barreira de alergia em nenhum outro lugar do app (ver
+    # missing_food_options e feedback_nootr_allergy_filter_pantry_exemption),
+    # porque a pessoa ter cadastrado o item ali já é ela dizendo que consome,
+    # mesmo batendo numa alergia registrada. Se a IA sugerir de volta um item
+    # que já está na despensa da pessoa, a mesma isenção vale: não é a IA
+    # "adivinhando" algo perigoso, é reconfirmar algo que a própria pessoa já
+    # disse que tem em casa.
+    from backend.app.services import ai
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": ["amendoim"], "dislikes": [], "likes": [], "pantry": ["Amendoim torrado"], "notes": "",
+    })
+    monkeypatch.setattr(ai, "suggest_substitutes", lambda missing, prefs: ["amendoim torrado", "batata doce"])
+    resp = client.post("/nootr/substitutions/alternatives", json={"missing_food_name": "arroz"})
+    assert resp.status_code == 200
+    names = [s["name"].lower() for s in resp.json()["suggestions"]]
+    assert any("amendoim" in n for n in names)
     assert any("batata doce" in n for n in names)
 
 
@@ -369,7 +393,7 @@ def test_missing_food_adds_wildcard_when_gap(client, monkeypatch, gap_day_plan):
     monkeypatch.setattr(repository, "get_preferences", lambda user: {
         "pantry": ["Ovo cozido"], "allergies": [], "dislikes": [], "likes": [], "notes": "",
     })
-    monkeypatch.setattr(ai, "suggest_wildcard", lambda meal_name, current, gap, pantry: "Ovo cozido")
+    monkeypatch.setattr(ai, "suggest_wildcard", lambda meal_name, current, gap, pantry, missing_food="": "Ovo cozido")
     resp = client.post(
         "/nootr/substitutions",
         json={
@@ -388,18 +412,122 @@ def test_missing_food_adds_wildcard_when_gap(client, monkeypatch, gap_day_plan):
 
 def test_missing_food_wildcard_blocked_by_allergy(client, monkeypatch, gap_day_plan):
     # Mesmo se a IA "errar" e sugerir amendoim (violando a própria instrução do
-    # prompt), a barreira determinística em food_matcher.matches_allergen
-    # descarta a sugestão antes de chegar no usuário.
+    # prompt), a barreira determinística descarta a sugestão antes de chegar
+    # no usuário: amendoim NÃO está na despensa aqui (ver
+    # test_missing_food_wildcard_allows_pantry_item_despite_allergy pro caso
+    # oposto), então nem chega a ser considerado pantry (ver
+    # test_missing_food_wildcard_rejects_item_not_in_pantry, que isola essa
+    # mesma barreira sem um alérgeno envolvido).
+    from backend.app.services import ai
+    monkeypatch.setattr(repository, "get_or_create_day_plan", lambda user, plan_date=None: gap_day_plan)
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "pantry": ["Ovo cozido"], "allergies": ["amendoim"], "dislikes": [], "likes": [], "notes": "",
+    })
+    monkeypatch.setattr(
+        ai, "suggest_wildcard", lambda meal_name, current, gap, preferences, missing_food="": "amendoim torrado",
+    )
+    resp = client.post(
+        "/nootr/substitutions",
+        json={
+            "action": "missing_food", "meal_id": "jantar", "missing_food_name": "Frango grelhado",
+            "foods": [{"name": "Batata doce cozida", "grams": 150, "kcal_100g": 77,
+                       "protein_100g": 1.6, "carbs_100g": 18, "fat_100g": 0.1}],
+        },
+    )
+    assert resp.status_code == 200
+    assert "wildcard_added" not in resp.json()
+
+
+def test_missing_food_wildcard_allows_pantry_item_despite_allergy(client, monkeypatch, gap_day_plan):
+    # Achado em feedback do usuário: a despensa NUNCA passa pela barreira de
+    # alergia em nenhum outro lugar do app (ver missing_food_options e
+    # feedback_nootr_allergy_filter_pantry_exemption), porque cadastrar um
+    # item ali já é a pessoa dizendo "eu tenho/consumo isso", mesmo que bata
+    # numa alergia registrada (a alergia pode ser leve o bastante pra ela
+    # tolerar aquele item específico). O coringa pede pra IA escolher algo
+    # QUE JÁ ESTÁ na despensa, então a mesma isenção vale aqui: se o item
+    # sugerido é de fato um item da despensa/favoritos, a barreira de
+    # alergia não deve descartá-lo.
     from backend.app.services import ai
     monkeypatch.setattr(repository, "get_or_create_day_plan", lambda user, plan_date=None: gap_day_plan)
     monkeypatch.setattr(repository, "get_preferences", lambda user: {
         "pantry": ["Amendoim torrado"], "allergies": ["amendoim"], "dislikes": [], "likes": [], "notes": "",
     })
-    monkeypatch.setattr(ai, "suggest_wildcard", lambda meal_name, current, gap, preferences: "amendoim torrado")
+    monkeypatch.setattr(
+        ai, "suggest_wildcard", lambda meal_name, current, gap, preferences, missing_food="": "amendoim torrado",
+    )
     resp = client.post(
         "/nootr/substitutions",
         json={
             "action": "missing_food", "meal_id": "jantar", "missing_food_name": "Frango grelhado",
+            "foods": [{"name": "Batata doce cozida", "grams": 150, "kcal_100g": 77,
+                       "protein_100g": 1.6, "carbs_100g": 18, "fat_100g": 0.1}],
+        },
+    )
+    assert resp.status_code == 200
+    assert "amendoim" in resp.json()["wildcard_added"].lower()
+
+
+def test_missing_food_wildcard_rejects_item_not_in_pantry(client, monkeypatch, gap_day_plan):
+    # Pedido do usuário: o coringa só pode ESCOLHER algo que a pessoa já tem
+    # na despensa/favoritos, a IA nunca pode inventar um alimento novo (isso
+    # é papel do "Buscar outros alimentos", uma ação separada). Aqui a IA
+    # sugere "banana" (sem nenhum alérgeno envolvido, isolando a barreira do
+    # caso de alergia) mas a despensa só tem "Ovo cozido": a barreira
+    # determinística rejeita mesmo sem nenhuma alergia cadastrada.
+    from backend.app.services import ai
+    monkeypatch.setattr(repository, "get_or_create_day_plan", lambda user, plan_date=None: gap_day_plan)
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "pantry": ["Ovo cozido"], "allergies": [], "dislikes": [], "likes": [], "notes": "",
+    })
+    monkeypatch.setattr(
+        ai, "suggest_wildcard", lambda meal_name, current, gap, preferences, missing_food="": "banana",
+    )
+    resp = client.post(
+        "/nootr/substitutions",
+        json={
+            "action": "missing_food", "meal_id": "jantar", "missing_food_name": "Frango grelhado",
+            "foods": [{"name": "Batata doce cozida", "grams": 150, "kcal_100g": 77,
+                       "protein_100g": 1.6, "carbs_100g": 18, "fat_100g": 0.1}],
+        },
+    )
+    assert resp.status_code == 200
+    assert "wildcard_added" not in resp.json()
+
+
+def test_missing_food_wildcard_never_readds_the_missing_food(client, monkeypatch):
+    # Achado testando ao vivo: "estou sem peito de frango" gerou um coringa
+    # sugerindo "Peito de Frango" de volta, porque a despensa ("costumo ter
+    # em casa") é uma lista geral, não sabe o que falta especificamente
+    # hoje. Mesmo se a IA ignorar a instrução do prompt (ver missing_food no
+    # _WILDCARD_PROMPT) e sugerir de volta o próprio alimento em falta, a
+    # barreira determinística descarta antes. Usa o nome real casado pela
+    # TACO ("Peito de Frango", taco_id 410) pra refletir o cenário de
+    # verdade, não um nome de fixture arbitrário.
+    from backend.app.services import ai
+    day_plan = {
+        "id": "dp-3", "diet_id": "diet-3", "plan_date": "2026-07-03",
+        "name": "Dieta gap", "daily_calories": 200,
+        "daily_protein_g": 30, "daily_carbs_g": 0, "daily_fat_g": 8,
+        "meals": [{
+            "id": "jantar", "name": "Jantar", "time": "19:30",
+            "foods": [{
+                "name": "Peito de Frango", "calories": 200, "protein_g": 30, "carbs_g": 0, "fat_g": 8,
+                "grams": 120, "quantity": "120g", "taco_id": 410,
+            }],
+        }],
+    }
+    monkeypatch.setattr(repository, "get_or_create_day_plan", lambda user, plan_date=None: day_plan)
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "pantry": ["Peito de Frango"], "allergies": [], "dislikes": [], "likes": [], "notes": "",
+    })
+    monkeypatch.setattr(
+        ai, "suggest_wildcard", lambda meal_name, current, gap, preferences, missing_food="": "Peito de Frango",
+    )
+    resp = client.post(
+        "/nootr/substitutions",
+        json={
+            "action": "missing_food", "meal_id": "jantar", "missing_food_name": "Peito de Frango",
             "foods": [{"name": "Batata doce cozida", "grams": 150, "kcal_100g": 77,
                        "protein_100g": 1.6, "carbs_100g": 18, "fat_100g": 0.1}],
         },
@@ -414,7 +542,7 @@ def test_missing_food_no_wildcard_when_ai_declines(client, monkeypatch, gap_day_
     monkeypatch.setattr(repository, "get_preferences", lambda user: {
         "pantry": ["Ovo cozido"], "allergies": [], "dislikes": [], "likes": [], "notes": "",
     })
-    monkeypatch.setattr(ai, "suggest_wildcard", lambda meal_name, current, gap, pantry: None)
+    monkeypatch.setattr(ai, "suggest_wildcard", lambda meal_name, current, gap, pantry, missing_food="": None)
     resp = client.post(
         "/nootr/substitutions",
         json={
@@ -670,6 +798,39 @@ def test_parse_meal_decomposed_burger_patty_not_blocked_when_bread_omitted(clien
     assert any("hamburguer" in n or "hambúrguer" in n for n in names)
 
 
+def test_parse_meal_pantry_preference_never_hides_allergen_in_described_food(client, monkeypatch):
+    # Achado testando ao vivo (cenário real: "misto quente" com pão normal):
+    # a despensa da pessoa tem "Pão de forma sem glúten" (o pão que ela usa
+    # em casa, justamente por ser alérgica), mas ela descreve ter comido pão
+    # comum fora de casa. A query genérica "pão" empata entre um pão com
+    # glúten (ex: "Pão caseiro") e o pão sem glúten da despensa, e a
+    # preferência da despensa (usada em outros contextos pra desempatar a
+    # favor do que a pessoa tem/gosta) escolhia silenciosamente o item sem
+    # glúten, escondendo o próprio glúten que a pessoa acabou de descrever
+    # ter comido. `ai._match_items` não pode usar a preferência da despensa
+    # justamente por isso (ver docstring).
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": ["glúten"], "dislikes": [], "likes": [], "pantry": ["Pão de forma sem glúten"], "notes": "",
+    })
+    monkeypatch.setattr(
+        ai, "converse_meal",
+        lambda history, meal_name, meal_foods, preferences, force_finalize=False, recipes=None, forward_looking=False: {
+            "needs_question": False, "question": "", "question_kind": "",
+            "skipped_names": [], "new_items": [{"name": "pão", "quantity": "50g"}],
+            "proposed_dish_name": "", "proposed_ingredients": [],
+        },
+    )
+    resp = client.post("/nootr/ai/parse-meal", json={
+        "text": "não comi o que tinha planejado, comi um misto quente com pão normal mesmo mais tarde",
+        "meal_name": "Jantar", "meal_foods": ["Arroz branco"],
+    })
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["blocked_allergens"] != []
+    names = [f["name"].lower() for f in body["foods"]]
+    assert not any("pão" in n for n in names)
+
+
 def test_list_recipes(client, monkeypatch):
     monkeypatch.setattr(
         repository, "list_recipes",
@@ -806,35 +967,21 @@ def test_profile_saves_custom_g_per_kg_and_reflects_in_targets(client, monkeypat
     assert body["macro_targets_g"]["protein_g"] == 200  # 80kg * 2,5
 
 
-def test_import_diet_requires_pro(client, monkeypatch):
+def test_import_diet_preview_requires_pro(client, monkeypatch):
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "basic"})
     resp = client.post(
-        "/nootr/diets/import",
+        "/nootr/diets/import/preview",
         files={"file": ("dieta.pdf", b"%PDF-fake", "application/pdf")},
-        data={"name": "Dieta importada"},
     )
     assert resp.status_code == 403
 
 
-def test_import_diet_pdf_saves_diet_and_merges_preferences(client, monkeypatch):
-    from backend.app.routes.nootr import diets as diets_route
-    from backend.app.services import ai
-
+def test_import_diet_confirm_merges_preferences(client, monkeypatch):
+    # `_persist_diet_menus` (chamada por /import/confirm) funde alergias
+    # novas com as já cadastradas sem duplicar, e concatena notas em vez de
+    # sobrescrever (a pessoa pode ter editado as preferências manualmente
+    # depois da última importação).
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
-    monkeypatch.setattr(diets_route, "_extract_document_text", lambda raw, ext: "texto fake do pdf")
-    monkeypatch.setattr(
-        ai, "parse_diet_document",
-        lambda text: {
-            "menus": [{
-                "label": "", "days": [],
-                "meals": [{"meal": "Almoço", "time": "12:00", "foods": [{"name": "arroz", "quantity": "150g"}]}],
-            }],
-            "preferences": {
-                "allergies": ["Lactose"], "dislikes": [], "likes": [],
-                "notes": "Pode trocar arroz por batata-doce.",
-            },
-        },
-    )
     monkeypatch.setattr(repository, "get_preferences", lambda user: {
         "allergies": ["Camarão"], "dislikes": [], "likes": [], "pantry": ["Ovo"], "notes": "",
     })
@@ -855,12 +1002,22 @@ def test_import_diet_pdf_saves_diet_and_merges_preferences(client, monkeypatch):
     monkeypatch.setattr(repository, "delete_day_plan", lambda user, d: None)
     monkeypatch.setattr(repository, "delete_all_diets", lambda user: None)
     monkeypatch.setattr(repository, "upsert_preferences", fake_upsert_prefs)
+    monkeypatch.setattr(repository, "upsert_profile", lambda user, patch: {"user_id": user.id, **patch})
 
-    resp = client.post(
-        "/nootr/diets/import",
-        files={"file": ("dieta.pdf", b"%PDF-fake", "application/pdf")},
-        data={"name": "Dieta da nutri"},
-    )
+    resp = client.post("/nootr/diets/import/confirm", json={
+        "name": "Dieta da nutri",
+        "menus": [{
+            "label": "", "days": [],
+            "meals": [{"name": "Almoço", "time": "12:00", "foods": [
+                {"name": "Arroz", "quantity": "150g", "calories": 190, "protein_g": 4, "carbs_g": 40, "fat_g": 0, "taco_id": 3, "grams": 150},
+            ]}],
+        }],
+        "preferences": {
+            "allergies": ["Lactose"], "dislikes": [], "likes": [],
+            "notes": "Pode trocar arroz por batata-doce.",
+        },
+        "targets": {},
+    })
     assert resp.status_code == 200
     body = resp.json()
     assert body["menus_found"] == 1
@@ -874,27 +1031,9 @@ def test_import_diet_pdf_saves_diet_and_merges_preferences(client, monkeypatch):
     assert "batata-doce" in saved_prefs["notes"]
 
 
-def test_import_diet_pdf_distributes_multiple_menus(client, monkeypatch):
-    """2 cardápios sem dia explícito -> intercala; 1 com dia explícito -> respeita."""
-    from backend.app.routes.nootr import diets as diets_route
-    from backend.app.services import ai
-
+def test_import_diet_confirm_distributes_multiple_menus(client, monkeypatch):
+    """2 cardápios sem dia explícito -> intercala; 1 com dia explícito -> respeita (_assign_weekdays, via /import/confirm)."""
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
-    monkeypatch.setattr(diets_route, "_extract_document_text", lambda raw, ext: "texto fake do pdf")
-    monkeypatch.setattr(
-        ai, "parse_diet_document",
-        lambda text: {
-            "menus": [
-                {"label": "Dia de treino", "days": [], "meals": [
-                    {"meal": "Almoço", "time": "12:00", "foods": [{"name": "arroz", "quantity": "150g"}]},
-                ]},
-                {"label": "Fim de semana", "days": [5, 6], "meals": [
-                    {"meal": "Almoço", "time": "12:00", "foods": [{"name": "feijão", "quantity": "100g"}]},
-                ]},
-            ],
-            "preferences": {"allergies": [], "dislikes": [], "likes": [], "notes": ""},
-        },
-    )
     monkeypatch.setattr(repository, "get_preferences", lambda user: None)
     monkeypatch.setattr(repository, "delete_day_plan", lambda user, d: None)
     monkeypatch.setattr(repository, "delete_all_diets", lambda user: None)
@@ -907,11 +1046,20 @@ def test_import_diet_pdf_distributes_multiple_menus(client, monkeypatch):
         lambda user, weekday, payload: (saved_diets.append({"weekday": weekday, **payload}) or {"id": f"d{weekday}", **payload}),
     )
 
-    resp = client.post(
-        "/nootr/diets/import",
-        files={"file": ("dieta.pdf", b"%PDF-fake", "application/pdf")},
-        data={"name": "Dieta"},
-    )
+    def food(taco_id: int) -> dict:
+        return {"name": "x", "quantity": "150g", "calories": 190, "protein_g": 4, "carbs_g": 40, "fat_g": 0, "taco_id": taco_id, "grams": 150}
+
+    resp = client.post("/nootr/diets/import/confirm", json={
+        "name": "Dieta",
+        "menus": [
+            # taco_id 3 = "Arroz branco", 561 = "Feijão, carioca, cozido" (o nome final
+            # vem do resolve_food real, não do "name" enviado, que é só um placeholder).
+            {"label": "Dia de treino", "days": [], "meals": [{"name": "Almoço", "time": "12:00", "foods": [food(3)]}]},
+            {"label": "Fim de semana", "days": [5, 6], "meals": [{"name": "Almoço", "time": "12:00", "foods": [food(561)]}]},
+        ],
+        "preferences": {"allergies": [], "dislikes": [], "likes": [], "notes": ""},
+        "targets": {},
+    })
     assert resp.status_code == 200
     assert resp.json()["menus_found"] == 2
 
@@ -928,24 +1076,9 @@ def test_import_diet_pdf_distributes_multiple_menus(client, monkeypatch):
         assert "arroz" in food_name(weekday)
 
 
-def test_import_diet_pdf_updates_profile_targets(client, monkeypatch):
-    from backend.app.routes.nootr import diets as diets_route
-    from backend.app.services import ai
-
+def test_import_diet_confirm_updates_profile_targets(client, monkeypatch):
+    # Sem % explícito, mas com o VET e os gramas totais diários (_profile_patch_from_targets, via /import/confirm).
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
-    monkeypatch.setattr(diets_route, "_extract_document_text", lambda raw, ext: "texto fake do pdf")
-    monkeypatch.setattr(
-        ai, "parse_diet_document",
-        lambda text: {
-            "menus": [{
-                "label": "", "days": [],
-                "meals": [{"meal": "Almoço", "time": "12:00", "foods": [{"name": "arroz", "quantity": "150g"}]}],
-            }],
-            "preferences": {"allergies": [], "dislikes": [], "likes": [], "notes": ""},
-            # Sem % explícito, mas com o VET e os gramas totais diários.
-            "targets": {"daily_calories": 2000.0, "protein_g": 150.0, "carbs_g": 200.0, "fat_g": 60.0},
-        },
-    )
     monkeypatch.setattr(repository, "get_preferences", lambda user: None)
     monkeypatch.setattr(repository, "save_diet", lambda user, weekday, payload: {"id": "diet-x", **payload})
     monkeypatch.setattr(repository, "delete_day_plan", lambda user, d: None)
@@ -960,11 +1093,17 @@ def test_import_diet_pdf_updates_profile_targets(client, monkeypatch):
 
     monkeypatch.setattr(repository, "upsert_profile", fake_upsert_profile)
 
-    resp = client.post(
-        "/nootr/diets/import",
-        files={"file": ("dieta.pdf", b"%PDF-fake", "application/pdf")},
-        data={"name": "Dieta com VET"},
-    )
+    resp = client.post("/nootr/diets/import/confirm", json={
+        "name": "Dieta com VET",
+        "menus": [{
+            "label": "", "days": [],
+            "meals": [{"name": "Almoço", "time": "12:00", "foods": [
+                {"name": "Arroz", "quantity": "150g", "calories": 190, "protein_g": 4, "carbs_g": 40, "fat_g": 0, "taco_id": 3, "grams": 150},
+            ]}],
+        }],
+        "preferences": {"allergies": [], "dislikes": [], "likes": [], "notes": ""},
+        "targets": {"daily_calories": 2000.0, "protein_g": 150.0, "carbs_g": 200.0, "fat_g": 60.0},
+    })
     assert resp.status_code == 200
     assert saved_profile["target_calories"] == 2000
     # 150g proteína * 4 / 2000 * 100 = 30% ; 200g carbo * 4 / 2000 * 100 = 40% ; 60g gordura * 9 / 2000 * 100 = 27%
@@ -973,17 +1112,16 @@ def test_import_diet_pdf_updates_profile_targets(client, monkeypatch):
     assert saved_profile["fat_pct"] == 27
 
 
-def test_import_diet_rejects_unsupported_extension(client, monkeypatch):
+def test_import_diet_preview_rejects_unsupported_extension(client, monkeypatch):
     monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "pro"})
     resp = client.post(
-        "/nootr/diets/import",
+        "/nootr/diets/import/preview",
         files={"file": ("dieta.txt", b"nao e um formato suportado", "text/plain")},
-        data={"name": "x"},
     )
     assert resp.status_code == 400
 
 
-def test_import_diet_accepts_docx(client, monkeypatch):
+def test_import_diet_preview_accepts_docx(client, monkeypatch):
     """.docx (Word) deve ser aceito e passar pelo mesmo pipeline do PDF."""
     from backend.app.routes.nootr import diets as diets_route
     from backend.app.services import ai
@@ -1006,16 +1144,10 @@ def test_import_diet_accepts_docx(client, monkeypatch):
         },
     )
     monkeypatch.setattr(repository, "get_preferences", lambda user: None)
-    monkeypatch.setattr(repository, "save_diet", lambda user, weekday, payload: {"id": f"d{weekday}", **payload})
-    monkeypatch.setattr(repository, "delete_day_plan", lambda user, d: None)
-    monkeypatch.setattr(repository, "delete_all_diets", lambda user: None)
-    monkeypatch.setattr(repository, "upsert_preferences", lambda user, patch: {"user_id": user.id, **patch})
-    monkeypatch.setattr(repository, "upsert_profile", lambda user, patch: {"user_id": user.id, **patch})
 
     resp = client.post(
-        "/nootr/diets/import",
+        "/nootr/diets/import/preview",
         files={"file": ("dieta.docx", b"conteudo fake docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},
-        data={"name": "Dieta Word"},
     )
     assert resp.status_code == 200
     assert seen_ext["value"] == ".docx"
@@ -1548,3 +1680,68 @@ def test_substitution_saves_snapshot_for_undo(client, fake_day_plan, monkeypatch
     )
     assert resp.status_code == 200
     assert saved["previous"] == fake_day_plan["meals"]
+
+
+# Lista verificada em test_food_matcher._FULL_PANTRY (10 itens, 3 proteína, 3
+# carboidrato, 2+2 gordura), reaproveitada aqui pros testes de rota do mínimo
+# de despensa/favoritos (ver food_matcher.pantry_gap).
+_FULL_PANTRY = [
+    "Peito de Frango", "Carne bovina magra grelhada", "Atum em conserva",
+    "Arroz branco", "Batata doce", "Pão francês",
+    "Azeite de oliva extravirgem", "Abacate",
+    "Ovo de galinha", "Castanha do pará",
+]
+
+
+def test_update_preferences_rejects_pantry_below_minimum(client, monkeypatch):
+    # Pedido do usuário: a despensa/favoritos precisa de um mínimo pra o
+    # coringa e as sugestões de substituição terem de onde escolher (ver
+    # food_matcher.PANTRY_MIN_TOTAL/PANTRY_MIN_BY_MACRO). Salvar com menos
+    # que isso é bloqueado, com uma mensagem explicando o que falta.
+    monkeypatch.setattr(repository, "get_preferences", lambda user: None)
+    resp = client.put("/nootr/preferences", json={"pantry": _FULL_PANTRY[:3], "likes": _FULL_PANTRY[:3]})
+    assert resp.status_code == 400
+    assert "carboidrato" in resp.json()["detail"].lower()
+    assert "gordura" in resp.json()["detail"].lower()
+
+
+def test_update_preferences_allows_pantry_meeting_minimum(client, monkeypatch):
+    saved = {}
+    monkeypatch.setattr(repository, "get_preferences", lambda user: None)
+    monkeypatch.setattr(
+        repository, "upsert_preferences",
+        lambda user, patch: saved.update(patch) or {"user_id": user.id, **patch},
+    )
+    resp = client.put("/nootr/preferences", json={"pantry": _FULL_PANTRY, "likes": _FULL_PANTRY})
+    assert resp.status_code == 200
+    assert saved["pantry"] == _FULL_PANTRY
+
+
+def test_update_preferences_does_not_block_unrelated_save_when_pantry_already_short(client, monkeypatch):
+    # Conta antiga com despensa incompleta (de antes desse mínimo existir):
+    # salvar algo SEM MEXER na despensa (ex: só as horas das refeições) não
+    # pode ficar travado por um problema numa tela diferente.
+    monkeypatch.setattr(
+        repository, "get_preferences",
+        lambda user: {"allergies": [], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+                       "meal_count": 4, "meal_times": []},
+    )
+    monkeypatch.setattr(
+        repository, "upsert_preferences",
+        lambda user, patch: {"user_id": user.id, **patch},
+    )
+    resp = client.put("/nootr/preferences", json={"meal_count": 5})
+    assert resp.status_code == 200
+
+
+def test_get_profile_pantry_complete_reflects_pantry_gap(client, monkeypatch):
+    monkeypatch.setattr(repository, "get_profile", lambda user: {"plan": "basic"})
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {"pantry": _FULL_PANTRY[:3]})
+    resp = client.get("/nootr/profile")
+    assert resp.status_code == 200
+    assert resp.json()["pantry_complete"] is False
+
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {"pantry": _FULL_PANTRY})
+    resp = client.get("/nootr/profile")
+    assert resp.status_code == 200
+    assert resp.json()["pantry_complete"] is True

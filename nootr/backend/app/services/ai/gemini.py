@@ -843,6 +843,9 @@ _WILDCARD_SCHEMA = {
 _WILDCARD_PROMPT = """A refeição "{meal_name}" ficou faltando {gap_macro} depois de um ajuste.
 Alimentos já presentes nessa refeição: {current_foods}.
 Alimentos que a pessoa tem em casa disponíveis: {pantry}.
+Alimento que a pessoa ACABOU DE DIZER que está em falta agora (não confundir com a despensa \
+geral, "tem em casa" é uma lista de itens que ela costuma ter, não necessariamente hoje): \
+{missing_food}.
 
 Escolha NO MÁXIMO 1 alimento da lista "tem em casa" que:
 1. Combine bem com os alimentos já presentes (faça sentido comer junto, mesmo contexto de \
@@ -852,6 +855,11 @@ da tarde se não fizer sentido).
 3. NUNCA, em hipótese nenhuma, seja um item da lista de alergias, é restrição de segurança, não \
 preferência. Considere também qualquer condição médica nas observações (ex: diabetes -> nunca \
 escolha algo doce/açúcar simples, mesmo que combine bem).
+4. NUNCA seja o mesmo alimento que "ACABOU DE DIZER que está em falta agora" (nem uma variação \
+óbvia dele, ex: se o que falta é "Peito de Frango", não sugira "Frango grelhado" nem "Frango, \
+peito, sem pele, grelhado"), mesmo que esse alimento esteja na lista "tem em casa": ele pode estar \
+registrado ali de um dia comum, mas a pessoa literalmente acabou de dizer que não tem ele HOJE, \
+sugerir de volta é ignorar o que ela acabou de falar.
 
 Alergias (NUNCA escolher): {allergies}
 Observações/condições médicas: {notes}
@@ -862,7 +870,9 @@ responda food="" (vazio), não force uma escolha ruim.
 Responda estritamente no formato JSON do schema: {{"food": "<nome escolhido ou vazio>"}}."""
 
 
-def suggest_wildcard(meal_name: str, current_foods: list[str], gap_macro: str, preferences: dict) -> str | None:
+def suggest_wildcard(
+    meal_name: str, current_foods: list[str], gap_macro: str, preferences: dict, missing_food: str = "",
+) -> str | None:
     prompt = _WILDCARD_PROMPT.format(
         meal_name=meal_name,
         gap_macro=gap_macro,
@@ -870,6 +880,7 @@ def suggest_wildcard(meal_name: str, current_foods: list[str], gap_macro: str, p
         pantry=", ".join(preferences.get("pantry") or []),
         allergies=", ".join(preferences.get("allergies") or []) or "nenhuma informada",
         notes=preferences.get("notes") or "nenhuma informada",
+        missing_food=missing_food or "não informado",
     )
     raw = _generate(prompt, _WILDCARD_SCHEMA)
     try:

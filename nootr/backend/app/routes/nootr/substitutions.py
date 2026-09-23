@@ -180,9 +180,16 @@ def suggest_alternatives(body: AlternativesRequest, user: CurrentUser = CurrentU
     # um OR de duas checagens separadas): sem isso, um "sem X" que só a
     # descrição original declarava se perdia quando o matcher caía num item
     # genérico (mesmo raciocínio em ai._match_items).
+    # EXCETO quando a sugestão é um alimento que a própria pessoa já tem nos
+    # favoritos/despensa (`preferred_ids`, calculado acima pro desempate de
+    # busca): a despensa já não passa pela barreira de alergia em nenhum
+    # outro lugar do app (ver missing_food_options), porque a pessoa ter
+    # cadastrado o item ali é ela dizendo "eu tenho/consumo isso", mesmo que
+    # bata numa alergia registrada. Sem essa exceção, um item que ela mesma
+    # cadastrou como favorito nunca voltava como sugestão de troca.
     matches = [
         m for name, m in matched_pairs
-        if not food_matcher.matches_allergen(f"{m['name']} {name}", allergies)
+        if m["taco_id"] in preferred_ids or not food_matcher.matches_allergen(f"{m['name']} {name}", allergies)
     ]
     return {"suggestions": matches}
 
@@ -265,12 +272,14 @@ def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentU
         if gap_macro and meal:
             wildcard_prefs = repository.get_preferences(user) or {}
             pantry = wildcard_prefs.get("pantry", [])
-            allergies = wildcard_prefs.get("allergies") or []
             if pantry:
                 current_names = [f["name"] for f in foods] + [
                     f["name"] for f in meal["foods"] if f["name"] != body.missing_food_name
                 ]
-                wildcard_name = ai.suggest_wildcard(meal["name"], current_names, gap_macro, wildcard_prefs)
+                wildcard_name = ai.suggest_wildcard(
+                    meal["name"], current_names, gap_macro, wildcard_prefs,
+                    missing_food=body.missing_food_name or "",
+                )
                 if wildcard_name:
                     anchor = max((missing_food_dict or {}).get("calories", 0) * 0.3, 50.0)
                     wildcard_preferred = food_matcher.preferred_taco_ids([*wildcard_prefs.get("likes", []), *pantry])
@@ -281,16 +290,35 @@ def suggest_substitution(body: SubstitutionRequest, user: CurrentUser = CurrentU
                         wildcard_name, anchor_kcal=anchor, preferred=wildcard_preferred,
                         tie_resolver=wildcard_tie_resolver,
                     )
-                    # Última barreira determinística: mesmo com a instrução no
-                    # prompt, nunca confia só na IA pra alergia (ver
-                    # food_matcher.matches_allergen). Checa o nome que a IA
-                    # propôs JUNTO com o alimento casado (concatenados, não um
-                    # OR de duas checagens separadas): sem isso, um "sem X"
-                    # que só a descrição original declarava se perdia quando
-                    # o matcher caía num item genérico (mesmo raciocínio em
-                    # ai._match_items).
-                    blocked_by_allergy = food_matcher.matches_allergen(f"{wildcard.name} {wildcard_name}", allergies)
-                    if not blocked_by_allergy:
+                    # Barreira determinística: mesmo com a instrução no prompt
+                    # pra nunca sugerir de volta o alimento que a pessoa
+                    # acabou de dizer que está em falta, não confia só nisso
+                    # (achado testando ao vivo: "estou sem peito de frango"
+                    # gerou coringa sugerindo "peito de frango" de volta, a
+                    # despensa geral não sabe o que falta especificamente
+                    # hoje). Mesma comparação de "é o mesmo alimento" usada em
+                    # missing_food_options acima.
+                    is_the_missing_food = missing_food_dict is not None and (
+                        (missing_food_dict.get("taco_id") is not None and wildcard.taco_id == missing_food_dict.get("taco_id"))
+                        or food_matcher.normalize(wildcard.name) == food_matcher.normalize(missing_food_dict.get("name", ""))
+                    )
+                    # Barreira determinística: o coringa só pode ser um item
+                    # que a pessoa JÁ tem na despensa/favoritos, nunca algo
+                    # que a IA inventou por conta própria. O papel dela aqui é
+                    # escolher QUAL item da despensa e QUANTO, não sugerir um
+                    # alimento novo (isso é o "Buscar outros alimentos", uma
+                    # ação separada). Sem essa checagem, uma alucinação da IA
+                    # (nome parecido mas fora da lista) virava coringa mesmo
+                    # assim, contrariando a promessa da própria função.
+                    #
+                    # Justamente por só poder ser um item real da despensa, a
+                    # barreira de alergia não se aplica aqui: a despensa nunca
+                    # passa por ela em nenhum outro lugar do app (ver
+                    # missing_food_options), porque a pessoa ter cadastrado o
+                    # item ali já é ela dizendo que consome, mesmo batendo com
+                    # uma alergia registrada.
+                    is_pantry_item = wildcard.taco_id in wildcard_preferred
+                    if is_pantry_item and not is_the_missing_food:
                         grams = wildcard.grams or 50.0
                         foods.append({
                             "name": wildcard.name, "calories": wildcard.calories,

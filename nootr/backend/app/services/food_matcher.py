@@ -85,7 +85,7 @@ _PREP_PREFERRED = {
 }
 _PREP_DISFAVORED = {
     "frito", "frita", "fritas", "conserva", "salgada", "salgado",
-    "torrada", "torrado", "defumado", "defumada",
+    "torrada", "torrado", "defumado", "defumada", "milanesa",
 }
 # A TACO (e agora a Tucunduva) não é consistente na concordância de gênero do
 # particípio ("Alcatra, grelhado" vs "Linguiça, grelhada", cada fonte/prato
@@ -100,14 +100,17 @@ _PREP_GENDER_CANON = {
     "grelhada": "grelhado", "assada": "assado", "cozida": "cozido",
     "crua": "cru", "refogada": "refogado", "frita": "frito", "fritas": "frito",
     "salgada": "salgado", "defumada": "defumado",
-    # "à milanesa"/"empanado" É frito (empanar sem fritar/assar depois não é
-    # um prato de verdade), sem isso a query não "especifica preparo"
-    # (_PREP_PREFERRED/_PREP_DISFAVORED não reconhecem essas palavras) e o
-    # desempate caía no padrão saudável (cozido/grelhado), escondendo que o
-    # prato pedido é bem mais calórico/gorduroso que o normal da carne crua
-    # (ex: "camarão à milanesa" casava com "Camarão ... cozido", 90kcal/100g,
-    # em vez do "... frito", 231kcal/100g, quase 3x mais calórico).
-    "milanesa": "frito", "empanado": "frito", "empanada": "frito", "empanados": "frito", "empanadas": "frito",
+    # "Empanado" vira "milanesa" (não "frito"): "milanesa" já é o termo LITERAL
+    # que a TACO usa no nome/display desses pratos ("Frango à milanesa"), então
+    # canonizar pra ele faz a busca casar meme sem perder a distinção de que é
+    # um prato EMPANADO (com farinha de trigo), não só frito sem farinha.
+    # Canonizar pra "frito" (tentativa anterior) colava "peixe empanado" em
+    # "Peixe frito" (Pescada sem empanar, TACO id 308) em vez de "Peixe à
+    # milanesa" (Cação empanado de verdade, id 281), porque os dois ganhavam
+    # "frito" no nome e o desempate por nome-mais-curto favorecia o errado,
+    # escondendo o próprio glúten do empanado atrás de um peixe sem farinha.
+    "empanado": "milanesa", "empanada": "milanesa",
+    "empanados": "milanesa", "empanadas": "milanesa",
 }
 
 
@@ -436,10 +439,24 @@ def search_taco(
     # nunca encontraria macarrão de jeito nenhum.
     if "massa" in query_tokens:
         query_tokens = query_tokens | {"macarrao"}
+    # O filtro de candidato olha nome ORIGINAL e nome de exibição curado (não só
+    # o original): achado testando ao vivo com "peixe empanado" pra "Peixe à
+    # milanesa" (nome original real "Cação, posta, com farinha de trigo,
+    # frita", TACO id 281), cujo nome curado troca TANTO a espécie ("cação" ->
+    # "peixe") quanto o preparo ("com farinha de trigo, frita" -> "à
+    # milanesa"). Filtrando só pelo nome original, o candidato nunca passava
+    # (score_match = 0, zero token em comum), mesmo pontuando bem no
+    # desempate (`_rank_key`, que já considera os dois nomes) se chegasse até
+    # lá, então nunca aparecia na busca. Qualquer alimento com nome curado
+    # bem diferente do original tinha esse mesmo risco.
     scored = [
         (_rank_key(query_tokens, food, preferred), food)
         for food in load_taco_foods()
-        if score_match(query_tokens, normalize(food.name)) > 0 and not _is_excluded(food, query_tokens)
+        if (
+            score_match(query_tokens, normalize(food.name)) > 0
+            or score_match(query_tokens, normalize(food.display_name)) > 0
+        )
+        and not _is_excluded(food, query_tokens)
     ]
     scored.sort(key=lambda pair: pair[0], reverse=True)
 
@@ -596,6 +613,36 @@ def macro_profile(calories: float, protein_g: float, carbs_g: float, fat_g: floa
     return macro if share >= _PROFILE_DOMINANCE else "balanced"
 
 
+# Mínimo de itens na despensa/favoritos (onboarding e /perfil, ver
+# routes/nootr/preferences.py): sem isso, o coringa e as sugestões de
+# substituição não têm de onde escolher (ex: conta nova sem nenhum item
+# cadastrado nunca recebe um coringa, mesmo quando a refeição precisaria).
+PANTRY_MIN_TOTAL = 10
+PANTRY_MIN_BY_MACRO = {"protein": 3, "carb": 3, "fat": 2}
+
+
+def pantry_gap(pantry_names: list[str]) -> dict[str, int]:
+    """
+    Classifica cada item da despensa/favoritos por `macro_profile` e compara
+    contra o mínimo (`PANTRY_MIN_TOTAL`/`PANTRY_MIN_BY_MACRO`). Devolve um
+    dict só com o que FALTA (chave "total" e/ou "protein"/"carb"/"fat"),
+    vazio quando o mínimo já está cumprido.
+    """
+    counts = {"protein": 0, "carb": 0, "fat": 0, "balanced": 0}
+    for name in pantry_names:
+        food = find_food(name)
+        counts[macro_profile(food.calories, food.protein_g, food.carbs_g, food.fat_g)] += 1
+    gap = {
+        macro: minimum - counts[macro]
+        for macro, minimum in PANTRY_MIN_BY_MACRO.items()
+        if counts[macro] < minimum
+    }
+    total = sum(counts.values())
+    if total < PANTRY_MIN_TOTAL:
+        gap["total"] = PANTRY_MIN_TOTAL - total
+    return gap
+
+
 # Alergia/intolerância -> alimentos que a contêm mesmo sem citá-la no nome.
 # Sem isso a checagem é só substring e não bloqueia nada de útil: "lactose"
 # não aparece no nome "Queijo mozarela", "glúten" não aparece em "Macarrão".
@@ -615,7 +662,22 @@ _ALLERGEN_FOODS = {
     "gluten": [
         "trigo", "pao", "macarrao", "farinha de trigo", "cevada", "centeio",
         "malte", "biscoito", "bolacha", "bolo", "torrada", "cuscuz", "cerveja",
-        "semola", "lasanha", "pizza", "salgadinho", "empanado",
+        "semola", "lasanha", "pizza", "salgadinho", "empanado", "empanada",
+        "empanados", "empanadas",
+        # "Farinha de rosca" é farinha de trigo torrada moída (sempre glúten,
+        # nunca outra farinha), achado testando ao vivo: quando a IA decompõe
+        # um prato empanado/à milanesa em ingredientes (peixe cru + farinha de
+        # rosca + ovo + óleo, em vez do item curado único da TACO), o item
+        # "Farinha de rosca" sozinho não batia em "trigo" nem em "farinha de
+        # trigo" (frase exata, "rosca" não é "trigo"), passando reto pro
+        # alérgico a glúten.
+        "farinha de rosca",
+        # "À milanesa" é empanado com farinha de trigo (ver _PREP_GENDER_CANON
+        # acima), mas o nome de exibição curado (taco_display_names.csv) diz só
+        # "Frango à milanesa"/"Peixe à milanesa", nunca cita "farinha"/"trigo"/
+        # "empanado", achado testando ao vivo com "frango empanado" pra alergia
+        # a glúten: casava com "Frango à milanesa" e não era bloqueado.
+        "milanesa",
         # Nomes genéricos de `_COMMON_FOODS` (o fallback de item comum) que
         # são massa/farinha de trigo por padrão, mas cujo nome final NÃO
         # contém "trigo"/"farinha" (ex: "torta" vira só "Torta" depois de
@@ -641,7 +703,6 @@ _ALLERGEN_FOODS = {
         # final não cita "ovo" (ex: "panqueca" vira só "Panqueca").
         "panqueca", "waffle", "crepe", "brownie", "bolo", "donut",
     ],
-    "soja": ["soja", "shoyu", "tofu", "missô"],
     "soja": ["soja", "shoyu", "tofu", "missô"],
     "frutos do mar": [
         "camarao", "lagosta", "siri", "caranguejo", "marisco", "ostra",

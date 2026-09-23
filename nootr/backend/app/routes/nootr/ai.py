@@ -33,17 +33,33 @@ class ParseMealRequest(BaseModel):
 
 
 def _match_items(
-    items: list[dict], preferred: set[int] = frozenset(), tie_resolver=None,
+    items: list[dict], tie_resolver=None,
     allergies: list[str] | None = None, blocked: list[str] | None = None,
 ) -> list[dict]:
     """
     Casa cada item com um alimento real: primeiro na tabela de itens comuns
     (fast-food/industrializados que a TACO não cobre), depois na TACO, e por
     último uma estimativa genérica, nunca fica "sem casar" (ver food_matcher).
-    `preferred`: taco_ids da despensa/gosta do usuário, desempata a favor do
-    que a pessoa já tem/gosta (ex: "banana" com "Banana, nanica" na despensa).
-    `tie_resolver`: quando não há favorito e ainda assim empata, pergunta pra
-    IA qual é o mais comum no país do usuário (ver ai.build_country_tie_resolver).
+    `tie_resolver`: quando empata entre variedades, pergunta pra IA qual é a
+    mais comum no país do usuário (ver ai.build_country_tie_resolver).
+
+    Propositalmente SEM `preferred` (taco_ids da despensa/gosta): achado
+    testando ao vivo, usar a preferência da despensa pra desempatar aqui é
+    perigoso porque essa função lida com uma descrição de um evento real e
+    específico ("comi/vou comer X"), não uma sugestão genérica. Ex: a
+    despensa tem "Pão de forma sem glúten" (a pessoa é alérgica a glúten e
+    por isso tem esse pão em casa), mas ela descreve "comi um misto quente,
+    o pão era normal mesmo, com glúten" (comeu fora): sem qualificador na
+    query, "pão" empatava entre "Pão caseiro" (com glúten) e "Pão de forma
+    sem glúten", e a preferência da despensa escolhia silenciosamente o
+    segundo, escondendo o próprio glúten que a pessoa acabou de confirmar
+    ter comido. Resolver sem preferência aqui perde um pouco de precisão de
+    variedade (ex: "banana" podia preferir a variedade que a pessoa tem em
+    casa), mas essa troca vale a pena: é o caminho de maior risco do app
+    (texto livre descrevendo o que foi comido de verdade), e "Estou em
+    falta"/coringa/import de PDF (que ainda usam `preferred_taco_ids`)
+    continuam se beneficiando da preferência sem esse risco, porque lá a IA
+    está sugerindo, não registrando um evento real.
 
     `allergies`: barreira determinística contra alergia cadastrada, SEMPRE
     aplicada aqui (sem a exceção "a pessoa nomeou, então libera" que o chat
@@ -84,7 +100,7 @@ def _match_items(
         if not name:
             continue
         match = food_matcher.find_food(
-            f"{it['quantity']} {name}".strip(), preferred=preferred, tie_resolver=tie_resolver,
+            f"{it['quantity']} {name}".strip(), tie_resolver=tie_resolver,
         )
         if allergies and food_matcher.matches_allergen(f"{match.name} {name}", allergies):
             if blocked is not None:
@@ -121,7 +137,6 @@ def parse_meal(body: ParseMealRequest, user: CurrentUser = CurrentUserDep):
     history = [t.model_dump() for t in body.history] + [{"role": "user", "text": body.text}]
     assistant_questions = sum(1 for t in history if t["role"] == "assistant")
     preferences = repository.get_preferences(user) or {}
-    preferred_ids = food_matcher.preferred_taco_ids([*preferences.get("likes", []), *preferences.get("pantry", [])])
     profile = repository.get_profile(user)
     tie_resolver = ai.build_country_tie_resolver((profile or {}).get("country") or "BR")
     # Receitas próprias + aprovadas de outros usuários (ver /aprovar), a IA
@@ -160,7 +175,7 @@ def parse_meal(body: ParseMealRequest, user: CurrentUser = CurrentUserDep):
 
     blocked_allergens: list[str] = []
     new_foods = _match_items(
-        result["new_items"], preferred_ids, tie_resolver,
+        result["new_items"], tie_resolver,
         allergies=preferences.get("allergies") or [], blocked=blocked_allergens,
     )
     return {

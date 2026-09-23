@@ -152,6 +152,45 @@ def test_search_taco_ignores_colher_de_sopa_as_a_food_word():
     assert "cha" in fm.normalize(fm.search_taco("cha preto", limit=1)[0].name)
 
 
+def test_search_taco_finds_food_by_curated_display_name_not_just_raw_name():
+    # Achado testando ao vivo: o filtro de candidato do search_taco olhava só
+    # `food.name` (o nome original da TACO, ex: "Cação, posta, com farinha de
+    # trigo, frita"), nunca `food.display_name` (o nome curado que o app de
+    # fato mostra, ex: "Peixe à milanesa", taco_display_names.csv). Pra esse
+    # item específico o nome curado troca tanto a espécie ("cação" -> "peixe")
+    # quanto o preparo ("com farinha de trigo, frita" -> "à milanesa"), sem
+    # nenhum token em comum com o original, então "peixe empanado"/"peixe a
+    # milanesa" nunca encontrava esse alimento (zero pontos no filtro),
+    # mesmo pontuando bem no desempate (que já considerava os dois nomes) se
+    # chegasse até lá.
+    for query in ("peixe empanado", "peixe a milanesa", "frango empanado"):
+        results = fm.search_taco(query, limit=5)
+        assert any("milanesa" in fm.normalize(f.display_name) for f in results), (query, results)
+
+
+def test_matches_allergen_blocks_milanesa_and_empanado_as_gluten():
+    # Achado testando ao vivo: "Frango à milanesa"/"Peixe à milanesa" (TACO,
+    # empanado com farinha de trigo de verdade, ver raw name em
+    # test_search_taco_finds_food_by_curated_display_name_not_just_raw_name)
+    # não batiam em nenhuma palavra-chave de `_ALLERGEN_FOODS["gluten"]`
+    # ("milanesa" não estava na lista), deixando passar glúten de verdade pra
+    # quem tem a alergia.
+    assert fm.matches_allergen("Frango à milanesa", ["gluten"])
+    assert fm.matches_allergen("Peixe à milanesa", ["gluten"])
+    assert fm.matches_allergen("frango empanado", ["gluten"])
+    m = fm.find_food("frango empanado")
+    assert m is not None
+    assert fm.matches_allergen(m.name, ["gluten"])
+    # Controle: o "empanado" da query não pode virar "frito" genérico e casar
+    # com um peixe frito SEM farinha (ex: "Peixe frito", filé de pescada
+    # simplesmente frito), que perderia o glúten de propósito e também erraria
+    # a macro (a crosta de farinha/ovo tem calorias e carboidrato a mais).
+    fish = fm.find_food("peixe empanado")
+    assert fish is not None
+    assert "milanesa" in fm.normalize(fish.name)
+    assert fm.matches_allergen(fish.name, ["gluten"])
+
+
 def test_common_food_count_multiplies():
     m = fm.find_food("comi 3 coxinhas")
     assert m.source == "common"
@@ -298,3 +337,49 @@ def test_tie_resolver_none_keeps_default():
     default = fm.search_taco("azeite", limit=1)[0]
     resolved = fm.search_taco("azeite", limit=1, tie_resolver=lambda q, tied: None)[0]
     assert resolved.id == default.id
+
+
+def test_matches_allergen_blocks_farinha_de_rosca_as_gluten():
+    # Achado testando ao vivo: quando a IA decompõe um prato empanado/à
+    # milanesa em ingredientes (ex: "peixe à milanesa" -> peixe cru + farinha
+    # de rosca + ovo + óleo, em "Vou comer algo diferente"), o item "Farinha
+    # de rosca" sozinho é sempre farinha de TRIGO torrada moída, mas não
+    # batia em nenhuma palavra-chave de `_ALLERGEN_FOODS["gluten"]` ("trigo"
+    # sozinho não é substring de "rosca", e "farinha de trigo" é a frase
+    # exata, não bate com "farinha de rosca"), passando reto pro alérgico a
+    # glúten mesmo com a barreira ativa.
+    assert fm.matches_allergen("Farinha de rosca", ["gluten"])
+    assert fm.matches_allergen("farinha de rosca (empanado)", ["glúten"])
+
+
+# Lista verificada manualmente (ver comentário de cada teste): 3 fontes de
+# proteína, 3 de carboidrato, 2 de gordura extra (2 a mais viram gordura
+# também, "Ovo de galinha" e "Castanha do pará"), total 10, cumprindo o
+# mínimo de pantry_gap (PANTRY_MIN_TOTAL=10, PANTRY_MIN_BY_MACRO
+# protein=3/carb=3/fat=2).
+_FULL_PANTRY = [
+    "Peito de Frango", "Carne bovina magra grelhada", "Atum em conserva",
+    "Arroz branco", "Batata doce", "Pão francês",
+    "Azeite de oliva extravirgem", "Abacate",
+    "Ovo de galinha", "Castanha do pará",
+]
+
+
+def test_pantry_gap_empty_when_minimum_met():
+    assert fm.pantry_gap(_FULL_PANTRY) == {}
+
+
+def test_pantry_gap_reports_missing_categories_and_total():
+    # Só as 3 fontes de proteína: falta carboidrato, gordura e o total.
+    gap = fm.pantry_gap(_FULL_PANTRY[:3])
+    assert gap == {"carb": 3, "fat": 2, "total": 7}
+    # Sem nenhum item: falta tudo.
+    assert fm.pantry_gap([]) == {"protein": 3, "carb": 3, "fat": 2, "total": 10}
+
+
+def test_pantry_gap_can_be_short_only_on_total():
+    # 9 itens que já cumprem proteína/carboidrato/gordura (3/3/3), só falta 1
+    # no total pra chegar em 10, confirma que "total" é checado
+    # independentemente das categorias já estarem completas.
+    gap = fm.pantry_gap(_FULL_PANTRY[:9])
+    assert gap == {"total": 1}

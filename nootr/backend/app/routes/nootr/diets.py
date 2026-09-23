@@ -10,7 +10,7 @@ do documento pelos 7 dias).
 """
 import io
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from markitdown import MarkItDown
 from pydantic import BaseModel, Field
 
@@ -612,96 +612,14 @@ def _merge_preference_list(existing: list[str], new: list[str]) -> list[str]:
     return merged
 
 
-@router.post("/import")
-async def import_diet(
-    file: UploadFile = File(...),
-    name: str = Form(default="Dieta importada"),
-    user: CurrentUser = CurrentUserDep,
-):
-    """
-    Pro: a IA lê o documento da dieta montada pela nutricionista (PDF, Word ou
-    Excel), extrai o(s) cardápio(s) (a maioria dos documentos tem só um;
-    alguns trazem mais de um, ex: treino/descanso ou semana/fim de semana) E
-    qualquer contexto do paciente que o documento carregue (alergias,
-    substituições já sugeridas, gostos/não-gostos), distribui os cardápios
-    pelos 7 dias da semana (respeitando os dias que o documento disser
-    explicitamente, intercalando o resto) e atualiza as preferências do
-    usuário.
-    """
-    profile = repository.get_profile(user)
-    if (profile or {}).get("plan") != "pro":
-        raise HTTPException(status_code=403, detail="Importar dieta é um recurso do plano Pro.")
-    ext = _extract_ext(file.filename or "")
-    if ext is None:
-        raise HTTPException(status_code=400, detail="Envie um arquivo PDF, Word (.docx) ou Excel (.xlsx).")
-
-    raw = await file.read()
-    if len(raw) > _MAX_UPLOAD_BYTES:
-        raise HTTPException(status_code=400, detail="Arquivo muito grande (máximo 15MB).")
-
-    text = _extract_document_text(raw, ext)
-
-    try:
-        parsed = ai.parse_diet_document(text)
-    except ai.AIError as exc:
-        raise HTTPException(
-            status_code=502, detail="Não consegui ler esse arquivo agora, tente de novo em instantes.",
-        ) from exc
-
-    menus_parsed = parsed.get("menus") or []
-    if not menus_parsed:
-        raise HTTPException(status_code=422, detail="Não consegui interpretar nenhum cardápio no PDF.")
-
-    # Preferências do usuário (gosto/despensa, escolhidas na tela de perfil a
-    # partir da própria base TACO) desempatam variedades genéricas na hora de
-    # casar, ex: dieta diz só "banana", mas a pessoa tem "Banana, nanica" na
-    # despensa: prefere nanica ao invés do default genérico (figo).
-    existing_prefs = repository.get_preferences(user) or {}
-    preferred_names = [*existing_prefs.get("likes", []), *existing_prefs.get("pantry", [])]
-    preferred_ids = food_matcher.preferred_taco_ids(preferred_names)
-    # Sem favorito decidindo, empates de verdade (ex: "azeite" -> oliva vs
-    # dendê) perguntam pra IA qual é o mais comum no país do usuário.
-    tie_resolver = ai.build_country_tie_resolver((profile or {}).get("country") or "BR")
-
-    unmatched: list[str] = []
-    menus_built: list[dict] = []  # [{"label", "days", "meals", "totals"}]
-    for menu in menus_parsed:
-        meals_in: list[MealIn] = []
-        for m in menu["meals"]:
-            foods_in: list[FoodIn] = []
-            for f in m["foods"]:
-                matches = food_matcher.search_taco(f["name"], limit=1, preferred=preferred_ids, tie_resolver=tie_resolver)
-                if not matches:
-                    unmatched.append(f["name"])
-                    continue
-                grams = parse_portion(f["quantity"], food_hint=f["name"]) or 100.0
-                foods_in.append(FoodIn(taco_id=matches[0].id, grams=grams, quantity_label=f["quantity"]))
-            if foods_in:
-                meals_in.append(MealIn(name=m["meal"][:60], time=_norm_time(m.get("time", ""), m["meal"]), foods=foods_in))
-        if not meals_in:
-            continue
-        meals, totals = _build_meals(meals_in)
-        menus_built.append({"label": menu.get("label") or "", "days": menu.get("days") or [], "meals": meals, "totals": totals})
-
-    if not menus_built:
-        raise HTTPException(status_code=422, detail="Não consegui casar os alimentos com a base TACO.")
-
-    result = _persist_diet_menus(
-        user, name, menus_built, profile, existing_prefs,
-        parsed.get("preferences") or {}, parsed.get("targets") or {},
-    )
-    return {**result, "unmatched": unmatched}
-
-
 def _persist_diet_menus(
     user: CurrentUser, name: str, menus_built: list[dict], profile: dict | None,
     existing_prefs: dict | None, prefs_found: dict, targets: dict,
 ) -> dict:
     """
     Grava as dietas (todos os slots) + atualiza perfil/preferências a partir
-    de um `menus_built` já pronto, usado tanto pelo atalho `/import` (que faz
-    tudo de uma vez) quanto por `/import/confirm` (depois da revisão de
-    pratos, ver `/import/preview`).
+    de um `menus_built` já pronto, chamado por `/import/confirm` depois da
+    revisão de pratos (ver `/import/preview`, primeira etapa).
     """
     weekday_to_menu = _assign_weekdays(menus_built)
 

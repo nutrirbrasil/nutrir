@@ -117,6 +117,7 @@ def suggest_substitutes(missing_food: str, preferences: dict | None = None) -> l
 
 def suggest_wildcard(
     meal_name: str, current_foods: list[str], gap_macro: str, preferences: dict | None = None,
+    missing_food: str = "",
 ) -> str | None:
     """
     Depois de repor o alimento em falta, se a refeição ainda ficar bem abaixo
@@ -127,12 +128,18 @@ def suggest_wildcard(
     `food_matcher.matches_allergen`, ver routes/nootr/substitutions.py). NÃO
     bloqueia: se a IA falhar ou não houver despensa, devolve None e o app segue
     só com o rebalanceamento normal.
+
+    `missing_food`: nome do alimento que a pessoa acabou de dizer que está em
+    falta AGORA (achado testando ao vivo: sem isso, o coringa podia sugerir de
+    volta o MESMO alimento que faltou, ex: "estou sem peito de frango" ->
+    coringa sugere "peito de frango" da despensa geral, porque a despensa
+    ("costumo ter em casa") é uma lista separada e não diz nada sobre hoje).
     """
     preferences = preferences or {}
     if not preferences.get("pantry"):
         return None
     try:
-        return _provider().suggest_wildcard(meal_name, current_foods, gap_macro, preferences)
+        return _provider().suggest_wildcard(meal_name, current_foods, gap_macro, preferences, missing_food)
     except AIError:
         return None
 
