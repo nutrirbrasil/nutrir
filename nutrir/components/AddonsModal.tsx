@@ -200,24 +200,6 @@ function AddonPicker({
 
   return (
     <div className="space-y-4">
-      {regularAddons.length > 0 && (
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
-            Adicionais
-          </p>
-          <div className={`grid gap-2 ${gridClass}`}>
-            {regularAddons.map((addon) => (
-              <AddonCard
-                key={addon.id}
-                addon={addon}
-                qty={selection[addon.id] ?? 0}
-                onDec={() => setPortions(addon.id, (selection[addon.id] ?? 0) - 1)}
-                onInc={() => setPortions(addon.id, (selection[addon.id] ?? 0) + 1)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
       {substitutionAddons.length > 0 && (
         <div>
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
@@ -235,6 +217,24 @@ function AddonPicker({
                 />
               );
             })}
+          </div>
+        </div>
+      )}
+      {regularAddons.length > 0 && (
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
+            Adicionais
+          </p>
+          <div className={`grid gap-2 ${gridClass}`}>
+            {regularAddons.map((addon) => (
+              <AddonCard
+                key={addon.id}
+                addon={addon}
+                qty={selection[addon.id] ?? 0}
+                onDec={() => setPortions(addon.id, (selection[addon.id] ?? 0) - 1)}
+                onInc={() => setPortions(addon.id, (selection[addon.id] ?? 0) + 1)}
+              />
+            ))}
           </div>
         </div>
       )}

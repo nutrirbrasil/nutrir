@@ -163,7 +163,13 @@ export interface StockOrderCreatePayload {
   delivery_complement?: string;
   delivery_reference?: string;
   user_notes?: string;
-  items: { item_id: string; size: StockSize; quantity: number }[];
+  items: {
+    item_id: string;
+    size: StockSize;
+    quantity: number;
+    addons_cents?: number;
+    addons_note?: string;
+  }[];
 }
 
 export function formatPrice(cents: number) {

@@ -22,6 +22,9 @@ export interface StockCartItem {
   quantity: number;
   unitCashCents: number;
   unitCardCents: number;
+  /** Adicionais (potes de molho/ketchup/etc.) escolhidos ao adicionar este item, se houver. */
+  addonsCents?: number;
+  addonsNote?: string;
 }
 
 interface StockCartContextValue {
@@ -51,18 +54,24 @@ function loadCart(): StockCartItem[] {
 
 export function StockCartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<StockCartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setItems(loadCart());
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
+    // Só grava depois de carregar o que já tinha salvo — senão o primeiro
+    // render (items ainda vazio) sobrescreve a sacola real com "[]" assim que
+    // o provider remonta (ex.: ao sair de /estoque pra logar e voltar).
+    if (!hydrated) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
       /* ignore */
     }
-  }, [items]);
+  }, [items, hydrated]);
 
   const setQuantity = useCallback(
     (item: Omit<StockCartItem, "quantity">, quantity: number) => {
@@ -84,7 +93,7 @@ export function StockCartProvider({ children }: { children: ReactNode }) {
 
   const itemCount = useMemo(() => items.reduce((s, i) => s + i.quantity, 0), [items]);
   const cashTotalCents = useMemo(
-    () => items.reduce((s, i) => s + i.unitCashCents * i.quantity, 0),
+    () => items.reduce((s, i) => s + i.unitCashCents * i.quantity + (i.addonsCents ?? 0), 0),
     [items]
   );
 

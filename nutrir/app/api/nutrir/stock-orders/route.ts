@@ -35,6 +35,9 @@ interface StockOrderLine {
   item_id?: string;
   size?: string;
   quantity?: number;
+  /** Adicionais em pote (molho/ketchup/etc.) escolhidos no popup da pronta entrega. Confiado do cliente, mesmo padrão já usado pros adicionais do pedido agendado (ver order-pricing.ts). */
+  addons_cents?: number;
+  addons_note?: string;
 }
 
 interface StockOrderPayload {
@@ -160,6 +163,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const addons_cents =
+      Number.isFinite(line.addons_cents) && (line.addons_cents ?? 0) > 0
+        ? Math.round(line.addons_cents!)
+        : undefined;
+
     orderItems.push({
       name: catalogOption.size === "UN" ? catalogItem.name : `${catalogItem.name} (${catalogOption.label})`,
       quantity,
@@ -167,6 +175,8 @@ export async function POST(request: Request) {
       item_id: line.item_id,
       section_id: catalogItem.kind === "marmita" ? undefined : catalogItem.kind === "suco" ? "suco" : "bebida",
       size: line.size as OrderItem["size"],
+      addons_cents,
+      addons_note: addons_cents ? line.addons_note?.trim() || undefined : undefined,
     });
     stockLines.push({ itemId: line.item_id, size: line.size as StockSize, quantity });
   }
@@ -174,7 +184,7 @@ export async function POST(request: Request) {
   const itemsTotalCents = orderItems.reduce((sum, item) => {
     const catalogOption = getStockCatalogSizeOption(item.item_id!, item.size!);
     const unit = isOnlineCardPayment(payment_method) ? catalogOption!.cardCents : catalogOption!.cashCents;
-    return sum + unit * item.quantity;
+    return sum + unit * item.quantity + (item.addons_cents ?? 0);
   }, 0);
   const total_cents = itemsTotalCents + delivery_fee_cents;
 

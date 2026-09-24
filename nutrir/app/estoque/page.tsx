@@ -1,140 +1,38 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiCheckCircle, FiClock, FiTruck } from "react-icons/fi";
-import { nutrirApi, formatPrice } from "@/lib/api";
+import { nutrirApi } from "@/lib/api";
 import { PageHero } from "@/components/PageHero";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
+import { StockItemCard, quantityFor } from "@/components/StockPieces";
+import { StockAddonsModal } from "@/components/StockAddonsModal";
+import { BebidaModal } from "@/components/BebidaModal";
 import { useStockCart } from "@/lib/stock-cart-context";
 import { STOCK_CATALOG, type StockCatalogItem, type StockSize } from "@/lib/stock-catalog";
 import type { StockRow } from "@/lib/stock-db";
+import {
+  formatSelectionMap,
+  selectionMapTotalCents,
+  type AddonSelectionMap,
+} from "@/lib/addons-data";
 
-function quantityFor(stock: StockRow[], itemId: string, size: StockSize): number {
-  return stock.find((s) => s.item_id === itemId && s.size === size)?.quantity ?? 0;
-}
-
-function SizeBadge({ children }: { children: ReactNode }) {
-  return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald/10 text-xs font-bold text-nutrir-emerald">
-      {children}
-    </span>
-  );
-}
-
-function QtyStepper({
-  item,
-  size,
-  available,
-  cashCents,
-  cardCents,
-  label,
-  singlePrice,
-}: {
+interface PendingAddonsAdd {
   item: StockCatalogItem;
   size: StockSize;
-  available: number;
   cashCents: number;
   cardCents: number;
-  label: string;
-  singlePrice?: boolean;
-}) {
-  const { items, setQuantity } = useStockCart();
-  const inCart = items.find((i) => i.itemId === item.itemId && i.size === size)?.quantity ?? 0;
-
-  function change(delta: number) {
-    const next = Math.max(0, Math.min(available, inCart + delta));
-    setQuantity(
-      { itemId: item.itemId, size, name: item.name, imageSrc: item.imageSrc, unitCashCents: cashCents, unitCardCents: cardCents },
-      next
-    );
-  }
-
-  const priceBlock =
-    singlePrice || cashCents === cardCents ? (
-      <p className="font-semibold">{formatPrice(cardCents)}</p>
-    ) : (
-      <p>
-        <span className="line-through opacity-60">{formatPrice(cardCents)}</span>{" "}
-        <span className="font-semibold">{formatPrice(cashCents)} (dinheiro ou pix)</span>
-      </p>
-    );
-
-  if (available <= 0) {
-    return (
-      <div className="flex items-center gap-2 rounded-xl border border-nutrir-nude-dark/50 bg-nutrir-nude-dark/10 px-3 py-2">
-        <SizeBadge>{label}</SizeBadge>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-nutrir-emerald/60">Esgotado</p>
-          <div className="text-[11px] text-nutrir-emerald/40">{priceBlock}</div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2 rounded-xl border border-nutrir-emerald/30 bg-nutrir-emerald/10 px-3 py-2">
-      <SizeBadge>{label}</SizeBadge>
-      <div className="min-w-0 flex-1">
-        <div className="text-[11px] text-nutrir-emerald">{priceBlock}</div>
-        <p className="text-[11px] text-nutrir-emerald/60">
-          {available} {available === 1 ? "unidade disponível" : "unidades disponíveis"}
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={() => change(-1)}
-        disabled={inCart <= 0}
-        className="btn-secondary px-2 py-0.5 text-sm disabled:opacity-40"
-      >
-        −
-      </button>
-      <span className="min-w-[1.25rem] text-center text-sm font-bold tabular-nums text-nutrir-emerald">
-        {inCart}
-      </span>
-      <button
-        type="button"
-        onClick={() => change(1)}
-        disabled={inCart >= available}
-        className="btn-secondary px-2 py-0.5 text-sm disabled:opacity-40"
-      >
-        +
-      </button>
-    </div>
-  );
-}
-
-function StockItemCard({ item, stock }: { item: StockCatalogItem; stock: StockRow[] }) {
-  return (
-    <div className="card flex items-start gap-4">
-      {item.imageSrc && (
-        <MarmitaPhoto src={item.imageSrc} alt={item.name} className="h-16 w-16 shrink-0" sizes="64px" />
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="font-display text-base font-bold text-nutrir-emerald">{item.name}</p>
-        <div className="mt-2 space-y-2">
-          {item.sizes.map((s) => (
-            <QtyStepper
-              key={s.size}
-              item={item}
-              size={s.size}
-              available={quantityFor(stock, item.itemId, s.size)}
-              cashCents={s.cashCents}
-              cardCents={s.cardCents}
-              label={s.size === "UN" ? "UN" : s.size}
-              singlePrice={item.kind === "marmita"}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default function EstoquePage() {
   const [stock, setStock] = useState<StockRow[] | null>(null);
   const [error, setError] = useState("");
-  const { itemCount, cashTotalCents } = useStockCart();
+  const { itemCount, cashTotalCents, setQuantity } = useStockCart();
+
+  const [pendingAddons, setPendingAddons] = useState<PendingAddonsAdd | null>(null);
+  const [addonsSelection, setAddonsSelection] = useState<AddonSelectionMap>({});
+  const [showBebida, setShowBebida] = useState(false);
 
   useEffect(() => {
     nutrirApi
@@ -142,6 +40,36 @@ export default function EstoquePage() {
       .then((r) => setStock(r.stock))
       .catch(() => setError("Não foi possível carregar o estoque agora."));
   }, []);
+
+  function handleFirstAdd(item: StockCatalogItem, size: StockSize, cashCents: number, cardCents: number) {
+    setAddonsSelection({});
+    setPendingAddons({ item, size, cashCents, cardCents });
+  }
+
+  function handleConfirmAddons() {
+    if (!pendingAddons) return;
+    const wasEmpty = itemCount === 0;
+    const addonsCents = selectionMapTotalCents(addonsSelection);
+    const addonsText = formatSelectionMap(addonsSelection);
+
+    setQuantity(
+      {
+        itemId: pendingAddons.item.itemId,
+        size: pendingAddons.size,
+        name: pendingAddons.item.name,
+        imageSrc: pendingAddons.item.imageSrc,
+        unitCashCents: pendingAddons.cashCents,
+        unitCardCents: pendingAddons.cardCents,
+        addonsCents: addonsCents > 0 ? addonsCents : undefined,
+        addonsNote: addonsText ? `Adicionais: ${addonsText}` : undefined,
+      },
+      1
+    );
+
+    setPendingAddons(null);
+    setAddonsSelection({});
+    if (wasEmpty) setShowBebida(true);
+  }
 
   const withStock = stock
     ? STOCK_CATALOG.filter((item) => item.sizes.some((s) => quantityFor(stock, item.itemId, s.size) > 0))
@@ -184,7 +112,12 @@ export default function EstoquePage() {
                   </h2>
                   <div className="space-y-3">
                     {kindItems.map((item) => (
-                      <StockItemCard key={item.itemId} item={item} stock={stock} />
+                      <StockItemCard
+                        key={item.itemId}
+                        item={item}
+                        stock={stock}
+                        onFirstAdd={kind === "marmita" ? handleFirstAdd : undefined}
+                      />
                     ))}
                   </div>
                 </section>
@@ -242,6 +175,21 @@ export default function EstoquePage() {
           </div>
         </div>
       )}
+
+      {pendingAddons && (
+        <StockAddonsModal
+          itemName={`${pendingAddons.item.name} (${pendingAddons.size})`}
+          selection={addonsSelection}
+          onChange={setAddonsSelection}
+          onConfirm={handleConfirmAddons}
+          onClose={() => {
+            setPendingAddons(null);
+            setAddonsSelection({});
+          }}
+        />
+      )}
+
+      {showBebida && stock && <BebidaModal stock={stock} onClose={() => setShowBebida(false)} />}
     </div>
   );
 }

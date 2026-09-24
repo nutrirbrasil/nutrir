@@ -3,6 +3,8 @@ import { JUICE_CATEGORIES, type JuiceSize } from "./juice-data";
 import { getMarmitaCardPriceCents } from "./order-pricing";
 import { getMarmitaImageSrc } from "./marmita-images";
 import { getJuiceImageSrc } from "./juice-images";
+import { getBebidaImageSrc } from "./bebida-images";
+import type { StockRow } from "./stock-db";
 
 /** "UN" cobre itens sem tamanho P/G (ex.: água). */
 export type StockSize = MarmitaSize | "UN";
@@ -26,6 +28,24 @@ export interface StockCatalogItem {
   imageSrc?: string;
   sizes: StockCatalogSizeOption[];
 }
+
+/** Água com/sem gás — só existem aqui (não fazem parte do cardápio principal). Oferecidas só dentro do popup "deseja uma bebida?" da pronta entrega, não aparecem como seção própria em /estoque. */
+export const BEBIDAS: StockCatalogItem[] = [
+  {
+    itemId: "agua-com-gas",
+    name: "Água com Gás",
+    kind: "bebida",
+    imageSrc: getBebidaImageSrc("agua-com-gas"),
+    sizes: [{ size: "UN", label: "Unidade", cashCents: 499, cardCents: 499 }],
+  },
+  {
+    itemId: "agua-sem-gas",
+    name: "Água sem Gás",
+    kind: "bebida",
+    imageSrc: getBebidaImageSrc("agua-sem-gas"),
+    sizes: [{ size: "UN", label: "Unidade", cashCents: 499, cardCents: 499 }],
+  },
+];
 
 function buildMarmitaCatalog(): StockCatalogItem[] {
   const seen = new Set<string>();
@@ -78,6 +98,7 @@ function buildJuiceCatalog(): StockCatalogItem[] {
 export const STOCK_CATALOG: StockCatalogItem[] = [
   ...buildMarmitaCatalog(),
   ...buildJuiceCatalog(),
+  ...BEBIDAS,
 ];
 
 const STOCK_CATALOG_BY_ID = new Map(STOCK_CATALOG.map((item) => [item.itemId, item]));
@@ -91,4 +112,8 @@ export function getStockCatalogSizeOption(
   size: string
 ): StockCatalogSizeOption | undefined {
   return getStockCatalogItem(itemId)?.sizes.find((s) => s.size === size);
+}
+
+export function quantityFor(stock: StockRow[], itemId: string, size: StockSize): number {
+  return stock.find((s) => s.item_id === itemId && s.size === size)?.quantity ?? 0;
 }

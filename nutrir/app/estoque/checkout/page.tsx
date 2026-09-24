@@ -136,7 +136,13 @@ export default function EstoqueCheckoutPage() {
           delivery_number: fulfillment === "delivery" ? number : undefined,
           delivery_complement: fulfillment === "delivery" ? complement : undefined,
           delivery_reference: fulfillment === "delivery" ? reference : undefined,
-          items: items.map((i) => ({ item_id: i.itemId, size: i.size, quantity: i.quantity })),
+          items: items.map((i) => ({
+            item_id: i.itemId,
+            size: i.size,
+            quantity: i.quantity,
+            addons_cents: i.addonsCents,
+            addons_note: i.addonsNote,
+          })),
         },
         token
       );
