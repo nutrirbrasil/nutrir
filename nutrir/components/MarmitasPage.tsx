@@ -11,7 +11,7 @@ export function MarmitasPage() {
         eyebrow={
           <>
             <FiTruck aria-hidden />
-            Entregas em Piçarras e Penha
+            Entregas em Piçarras, Penha, Barra Velha e Navegantes
           </>
         }
         title="Marmitas individuais"

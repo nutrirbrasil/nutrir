@@ -1,6 +1,8 @@
 import type { CreateOrderPayload, CustomerAddress, CustomerAddressInput, Order } from "./types";
 import type { Food, FoodInput, Recipe } from "./marmita-nutrition";
 import type { MarmitaSize } from "./menu-data";
+import type { StockRow } from "./stock-db";
+import type { StockSize } from "./stock-catalog";
 
 export interface RecipeIngredientPayload {
   food_id: string;
@@ -123,7 +125,46 @@ export const nutrirApi = {
       body: JSON.stringify(body),
       headers: { Authorization: `Bearer ${token}` },
     }),
+  listStock: () => api<{ stock: StockRow[] }>("/nutrir/stock"),
+  updateStock: (itemId: string, size: StockSize, quantity: number, token: string) =>
+    api<{ ok: boolean }>(`/nutrir/stock/${itemId}/${size}`, {
+      method: "PATCH",
+      body: JSON.stringify({ quantity }),
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  createStockOrder: (body: StockOrderCreatePayload, token: string) =>
+    api<{ order: Order; notified: boolean; checkout_url?: string }>("/nutrir/stock-orders", {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  addEmail: (email: string, token: string) =>
+    api<{ email: string }>("/nutrir/profile/email", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  addPhone: (phone: string, token: string) =>
+    api<{ phone: string }>("/nutrir/profile/phone", {
+      method: "POST",
+      body: JSON.stringify({ phone }),
+      headers: { Authorization: `Bearer ${token}` },
+    }),
 };
+
+export interface StockOrderCreatePayload {
+  customer_name: string;
+  customer_phone: string;
+  fulfillment_type: "pickup" | "delivery";
+  payment_method: string;
+  delivery_bairro_id?: string;
+  delivery_street?: string;
+  delivery_number?: string;
+  delivery_complement?: string;
+  delivery_reference?: string;
+  user_notes?: string;
+  items: { item_id: string; size: StockSize; quantity: number }[];
+}
 
 export function formatPrice(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });

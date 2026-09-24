@@ -15,6 +15,7 @@ import { logoUrl } from "@/lib/brand-assets";
 const links = [
   { href: "/marmitas", label: "Marmitas" },
   { href: "/sucos", label: "Sucos" },
+  { href: "/estoque", label: "Pronta Entrega" },
 ] as const;
 
 export function Navbar() {

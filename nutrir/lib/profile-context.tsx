@@ -17,6 +17,7 @@ import { usePartnerStatus, type PartnerStatus } from "./use-partner-status";
 import { fetchCustomerByEmail, fetchCustomerByPhone, syncCustomerToServer } from "./order-history";
 import { getAuthCallbackUrl } from "./auth-redirect";
 import { getSupabaseBrowser, isSupabaseAuthConfigured } from "./supabase-browser";
+import type { AuthCredential } from "./auth-identifier";
 
 export interface UserProfile {
   name: string;
@@ -38,8 +39,8 @@ interface ProfileContextValue {
   patientLoading: boolean;
   partner: PartnerStatus;
   partnerLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<{ needsVerification: boolean }>;
+  login: (credential: AuthCredential, password: string) => Promise<void>;
+  register: (credential: AuthCredential, password: string) => Promise<{ needsVerification: boolean }>;
   verifyEmail: (email: string, code: string) => Promise<void>;
   resendVerification: (email: string) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
@@ -196,27 +197,29 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     };
   }, [hydrated, session?.user.email]);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (credential: AuthCredential, password: string) => {
     if (!authConfigured) throw new Error("Autenticação não configurada.");
     const supabase = getSupabaseBrowser();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
+    const { error } =
+      credential.type === "email"
+        ? await supabase.auth.signInWithPassword({ email: credential.email, password })
+        : await supabase.auth.signInWithPassword({ phone: credential.phone, password });
     if (error) throw new Error(mapAuthError(error));
   }, [authConfigured]);
 
-  const register = useCallback(async (email: string, password: string) => {
+  const register = useCallback(async (credential: AuthCredential, password: string) => {
     if (!authConfigured) throw new Error("Autenticação não configurada.");
     const supabase = getSupabaseBrowser();
-    const normalized = email.trim().toLowerCase();
     const redirectTo = getAuthCallbackUrl("signup");
 
-    const { data, error } = await supabase.auth.signUp({
-      email: normalized,
-      password,
-      options: { emailRedirectTo: redirectTo },
-    });
+    const { data, error } =
+      credential.type === "email"
+        ? await supabase.auth.signUp({
+            email: credential.email,
+            password,
+            options: { emailRedirectTo: redirectTo },
+          })
+        : await supabase.auth.signUp({ phone: credential.phone, password });
     if (error) throw new Error(mapAuthError(error));
 
     return { needsVerification: Boolean(data.user && !data.session) };

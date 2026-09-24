@@ -11,6 +11,7 @@ import { NUTRIR_MENU_LINKS } from "@/components/NutrirNavMenu";
 const mainLinks = [
   { href: "/marmitas", label: "Marmitas" },
   { href: "/sucos", label: "Sucos" },
+  { href: "/estoque", label: "Pronta Entrega" },
   { href: "/perfil", label: "Perfil" },
 ] as const;
 

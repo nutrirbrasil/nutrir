@@ -394,7 +394,10 @@ export function validateCatalogItemPrice(item: OrderItem): string | null {
   }
 
   if (isSingleMarmitaItem(item) && item.item_id) {
-    const catalogPrice = getMarmitaCatalogPriceCents(item.item_id, item.size);
+    const catalogPrice = getMarmitaCatalogPriceCents(
+      item.item_id,
+      item.size === "UN" ? undefined : item.size
+    );
     if (catalogPrice === undefined) return `Item inválido: ${item.item_id}`;
     if (item.price_cents !== catalogPrice) {
       return "Preço de um dos itens não confere com o cardápio.";

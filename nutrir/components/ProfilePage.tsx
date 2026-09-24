@@ -12,7 +12,8 @@ import {
   formatPhoneBR,
   phoneValidationMessage,
 } from "@/lib/br-fields";
-import { formatPrice } from "@/lib/api";
+import { formatPrice, nutrirApi } from "@/lib/api";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { formatPoints } from "@/lib/points";
 import { useCart } from "@/lib/cart-context";
 import {
@@ -28,6 +29,8 @@ import {
   clearAuthNext,
   resolveAuthNext,
 } from "@/lib/auth-next";
+import { getWhatsAppUrl } from "@/lib/payment-utils";
+import { resolveAuthIdentifier } from "@/lib/auth-identifier";
 import { PAYMENT_METHOD_SHORT_LABELS } from "@/lib/payment-labels";
 import type { PaymentMethod } from "@/lib/types";
 import { OrderDetailsModal } from "@/components/OrderDetailsModal";
@@ -66,9 +69,11 @@ export function ProfilePage() {
 
   const [mode, setMode] = useState<"login" | "register">("register");
   const [authStep, setAuthStep] = useState<AuthStep>("form");
+  /** E-mail ou telefone digitado no login/cadastro. */
+  const [identifier, setIdentifier] = useState("");
+  /** E-mail real, usado só nas etapas de verificação/recuperação de senha por e-mail. */
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [verifyCode, setVerifyCode] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
@@ -139,8 +144,9 @@ export function ProfilePage() {
       return;
     }
 
-    if (mode === "register" && password !== confirm) {
-      setError("As senhas não coincidem.");
+    const resolved = resolveAuthIdentifier(identifier);
+    if (resolved.error || !resolved.credential) {
+      setError(resolved.error ?? "Informe um e-mail ou telefone válido.");
       return;
     }
     if (password.length < 6) {
@@ -151,13 +157,23 @@ export function ProfilePage() {
     setLoading(true);
     try {
       if (mode === "login") {
-        await login(email, password);
+        await login(resolved.credential, password);
         setPassword("");
         goToPendingNext();
         return;
       }
 
-      const { needsVerification } = await register(email, password);
+      const { needsVerification } = await register(resolved.credential, password);
+      if (resolved.credential.type === "email") setEmail(resolved.credential.email);
+
+      if (needsVerification && resolved.credential.type === "phone") {
+        // Sem provedor de SMS configurado, não tem como confirmar por telefone.
+        setError(
+          "Não foi possível concluir o cadastro por telefone agora. Peça ajuda pelo WhatsApp."
+        );
+        return;
+      }
+
       if (needsVerification) {
         setAuthStep("verify");
         setInfo(
@@ -198,7 +214,6 @@ export function ProfilePage() {
       await verifyEmail(email, verifyCode);
       setAuthStep("form");
       setPassword("");
-      setConfirm("");
       setVerifyCode("");
       setInfo("Conta confirmada! Você já está logado.");
       goToPendingNext();
@@ -244,10 +259,39 @@ export function ProfilePage() {
       setError(phoneErr);
       return;
     }
+    if (profile.email.trim() && !profile.email.includes("@")) {
+      setError("Informe um e-mail válido.");
+      return;
+    }
 
     const cpf = formatCpf(profile.cpf);
     const phone = formatPhoneBR(profile.phone);
     updateProfile({ cpf, phone });
+
+    // Telefone/e-mail digitados aqui também passam a valer pra login, automaticamente,
+    // sem passo extra — o objetivo é não exigir nenhuma ação a mais de quem tem
+    // dificuldade com o site. Falha em vincular não deve travar o resto do salvamento.
+    const token = session?.access_token;
+    if (token) {
+      let linked = false;
+      if (!session?.user.phone) {
+        try {
+          await nutrirApi.addPhone(phone, token);
+          linked = true;
+        } catch {
+          // Número pode já estar em uso por outra conta — segue o salvamento normalmente.
+        }
+      }
+      if (!session?.user.email && profile.email.trim()) {
+        try {
+          await nutrirApi.addEmail(profile.email, token);
+          linked = true;
+        } catch {
+          // E-mail pode já estar em uso por outra conta — segue o salvamento normalmente.
+        }
+      }
+      if (linked) await getSupabaseBrowser().auth.refreshSession();
+    }
 
     const ok = await syncCustomerToServer({
       phone,
@@ -480,6 +524,20 @@ export function ProfilePage() {
           >
             ← Voltar ao login
           </button>
+
+          <p className="text-center text-xs leading-relaxed text-nutrir-emerald/60">
+            Caso tenha criado a conta com telefone e ainda não tenha adicionado um e-mail, entre
+            em contato conosco pelo{" "}
+            <a
+              href={getWhatsAppUrl("Oi! Não consigo recuperar a senha da minha conta no site.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-nutrir-burgundy hover:underline"
+            >
+              Whatsapp
+            </a>
+            .
+          </p>
         </form>
       </div>
     );
@@ -617,6 +675,11 @@ export function ProfilePage() {
               onChange={(e) => updateProfile({ phone: formatPhoneBR(e.target.value) })}
               placeholder="(47) 99999-9999"
             />
+            {session?.user.phone && (
+              <p className="mt-1 text-xs text-nutrir-emerald/60">
+                ✓ Você também pode entrar com esse telefone.
+              </p>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">CPF</label>
@@ -646,12 +709,22 @@ export function ProfilePage() {
           <div>
             <label className="mb-1 block text-sm font-medium">E-mail</label>
             <input
-              required
               type="email"
-              className="input-field bg-nutrir-nude-dark/20"
+              className={`input-field ${session?.user.email ? "bg-nutrir-nude-dark/20" : ""}`}
               value={profile.email}
-              readOnly
+              readOnly={!!session?.user.email}
+              onChange={(e) => !session?.user.email && updateProfile({ email: e.target.value })}
+              placeholder="seuemail@exemplo.com"
             />
+            {session?.user.email ? (
+              <p className="mt-1 text-xs text-nutrir-emerald/60">
+                ✓ Você também pode entrar com esse e-mail.
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-nutrir-emerald/60">
+                Opcional. Preencha e clique em "Salvar dados" pra poder entrar com e-mail também.
+              </p>
+            )}
           </div>
           {saved && (
             <p className="text-sm font-medium text-nutrir-emerald">Dados salvos com sucesso!</p>
@@ -887,60 +960,22 @@ export function ProfilePage() {
         </p>
       )}
 
-      <p className="mt-6 text-center text-sm text-nutrir-emerald/70">
-        Entre ou cadastre-se com sua conta Google
-      </p>
-
-      <button
-        type="button"
-        onClick={handleGoogleLogin}
-        disabled={loading}
-        className="mt-4 flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-nutrir-cream text-sm font-semibold text-gray-700 transition hover:bg-white disabled:opacity-50"
-      >
-        <FcGoogle className="text-xl" aria-hidden />
-        Continuar com Google
-      </button>
-
-      <p className="mt-3 text-center text-xs leading-relaxed text-nutrir-emerald/60">
-        Ao continuar com Google, você declara estar de acordo com os{" "}
-        <Link href="/termos-de-uso" className="font-medium text-nutrir-burgundy hover:underline">
-          Termos de Uso
-        </Link>{" "}
-        e a{" "}
-        <Link href="/politica-de-privacidade" className="font-medium text-nutrir-burgundy hover:underline">
-          Política de Privacidade
-        </Link>
-        .
-      </p>
-
-      {!authConfigured && (
-        <p className="mt-2 text-center text-xs text-nutrir-emerald/50">
-          Configure Supabase e o provedor Google para ativar este botão.
-        </p>
-      )}
-
-      <div className="my-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-nutrir-nude-dark" />
-        <span className="text-sm text-nutrir-emerald/50">ou</span>
-        <div className="h-px flex-1 bg-nutrir-nude-dark" />
-      </div>
-
-      <form onSubmit={handleAuth} className="space-y-4">
+      <form onSubmit={handleAuth} className="mt-6 space-y-4">
         <div>
           <input
             required
-            type="email"
-            placeholder="E-mail"
+            type="text"
+            placeholder={mode === "register" ? "Insira seu e-mail ou telefone" : "E-mail ou telefone"}
             className="input-field w-full"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
           />
         </div>
         <div className="relative">
           <input
             required
             type={showPass ? "text" : "password"}
-            placeholder="Senha"
+            placeholder={mode === "register" ? "Crie uma Senha" : "Senha"}
             className="input-field w-full pr-10"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -953,18 +988,6 @@ export function ProfilePage() {
             {showPass ? <FiEyeOff /> : <FiEye />}
           </button>
         </div>
-        {mode === "register" && (
-          <div className="relative">
-            <input
-              required
-              type={showPass ? "text" : "password"}
-              placeholder="Confirmar senha"
-              className="input-field w-full"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-            />
-          </div>
-        )}
 
         {mode === "login" && (
           <div className="text-right">
@@ -1003,6 +1026,40 @@ export function ProfilePage() {
           {loading ? "Aguarde…" : mode === "register" ? "Criar conta" : "Entrar"}
         </button>
       </form>
+
+      <div className="my-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-nutrir-nude-dark" />
+        <span className="text-sm text-nutrir-emerald/50">ou</span>
+        <div className="h-px flex-1 bg-nutrir-nude-dark" />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        disabled={loading}
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-nutrir-cream text-sm font-semibold text-gray-700 transition hover:bg-white disabled:opacity-50"
+      >
+        <FcGoogle className="text-xl" aria-hidden />
+        Continuar com Google
+      </button>
+
+      <p className="mt-3 text-center text-xs leading-relaxed text-nutrir-emerald/60">
+        Ao continuar com Google, você declara estar de acordo com os{" "}
+        <Link href="/termos-de-uso" className="font-medium text-nutrir-burgundy hover:underline">
+          Termos de Uso
+        </Link>{" "}
+        e a{" "}
+        <Link href="/politica-de-privacidade" className="font-medium text-nutrir-burgundy hover:underline">
+          Política de Privacidade
+        </Link>
+        .
+      </p>
+
+      {!authConfigured && (
+        <p className="mt-2 text-center text-xs text-nutrir-emerald/50">
+          Configure Supabase e o provedor Google para ativar este botão.
+        </p>
+      )}
 
       <button
         type="button"

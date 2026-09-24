@@ -96,7 +96,7 @@ export function CardapioPage() {
           style={{ animationDelay: "40ms" }}
         >
           <FiTruck aria-hidden />
-          Entregas em Piçarras e Penha
+          Entregas em Piçarras, Penha, Barra Velha e Navegantes
         </p>
 
         <h1

@@ -299,6 +299,7 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
       points_redeemed_cents: order.points_redeemed_cents ?? 0,
       telegram_notified: order.telegram_notified ?? false,
       pix_telegram_notified: order.pix_telegram_notified ?? false,
+      is_stock_order: order.is_stock_order ?? false,
     },
     { onConflict: "order_nsu" }
   );
@@ -411,7 +412,7 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
   const { data, error } = await db
     .from("nutrir_orders")
     .select(
-      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents, telegram_notified, pix_telegram_notified"
+      "order_nsu, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents, telegram_notified, pix_telegram_notified, is_stock_order"
     )
     .eq("order_nsu", orderNsu)
     .maybeSingle();
@@ -451,6 +452,7 @@ export async function getOrderByNsuFromSupabase(orderNsu: string): Promise<Order
     points_redeemed_cents: (data.points_redeemed_cents as number) ?? 0,
     telegram_notified: (data.telegram_notified as boolean) ?? false,
     pix_telegram_notified: (data.pix_telegram_notified as boolean) ?? false,
+    is_stock_order: (data.is_stock_order as boolean) ?? false,
   };
 }
 
@@ -461,7 +463,7 @@ export interface AdminOrderRow extends Order {
 }
 
 const ADMIN_ORDER_COLUMNS =
-  "order_nsu, customer_id, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents";
+  "order_nsu, customer_id, customer_name, customer_phone, delivery_address, delivery_date, pickup_display, payment_method, payment_status, user_notes, items, total_cents, status, created_at, fulfillment_type, delivery_bairro, delivery_municipio, delivery_fee_cents, delivery_street, delivery_number, delivery_complement, delivery_reference, coupon_code, coupon_discount_cents, partner_id, points_redeemed_cents, is_stock_order";
 
 /** Lista de pedidos pra tela de admin. Sem escopo por cliente — só a chamar com service-role, atrás de verifyAdminRequest. */
 export async function listOrdersForAdmin(opts: {
@@ -570,6 +572,7 @@ export async function listOrdersForAdmin(opts: {
       partner_name: partner?.name,
       partner_coupon_code: partner?.coupon_code,
       is_patient: isPatient,
+      is_stock_order: (row.is_stock_order as boolean) ?? false,
     };
   });
 }

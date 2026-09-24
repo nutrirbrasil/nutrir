@@ -93,6 +93,11 @@ function OrderCard({
           <span className="ml-2 text-sm text-nutrir-emerald/60">
             {formatOrderDateTime(order.created_at)}
           </span>
+          {order.is_stock_order && (
+            <span className="ml-2 rounded-full bg-nutrir-burgundy/15 px-2.5 py-0.5 text-[10px] font-bold uppercase text-nutrir-burgundy">
+              🚀 Pronta entrega
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span

@@ -54,16 +54,20 @@ export async function createInfinitePayLink(input: {
   customerName: string;
   customerEmail?: string;
   customerPhone: string;
+  /** Página de volta após o pagamento. Padrão: checkout normal do site. */
+  redirectPath?: string;
 }): Promise<{ url: string } | null> {
   const handle = process.env.INFINITEPAY_HANDLE?.trim().replace(/^\$/, "") ?? "";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "";
   if (!handle || !siteUrl) return null;
 
+  const redirectPath = input.redirectPath ?? "/checkout/obrigado";
+
   const payload = {
     handle,
     order_nsu: input.orderId,
     items: buildGatewayItems(input.items, input.totalCents),
-    redirect_url: `${siteUrl}/checkout/obrigado?order=${encodeURIComponent(input.orderId)}`,
+    redirect_url: `${siteUrl}${redirectPath}?order=${encodeURIComponent(input.orderId)}`,
     webhook_url: `${siteUrl}/api/nutrir/webhooks/infinitepay`,
     customer: {
       name: input.customerName,

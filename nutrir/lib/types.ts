@@ -1,4 +1,4 @@
-export type MenuSectionId = "frango" | "carne" | "vegetariano" | "kit" | "combo" | "suco";
+export type MenuSectionId = "frango" | "carne" | "vegetariano" | "kit" | "combo" | "suco" | "bebida";
 
 export interface OrderItem {
   menu_id?: string | null;
@@ -8,7 +8,8 @@ export interface OrderItem {
   price_cents: number;
   section_id?: MenuSectionId;
   item_id?: string;
-  size?: "P" | "G";
+  /** "UN" cobre itens de pronta entrega sem tamanho (ex.: água). */
+  size?: "P" | "G" | "UN";
   /** Total dos adicionais em centavos (pix/dinheiro) */
   addons_cents?: number;
   /** Detalhes dos adicionais para pedido / sacola */
@@ -98,4 +99,6 @@ export interface Order extends CreateOrderPayload {
   delivery_fee_cents?: number;
   /** Preenchido pelo servidor quando coupon_code pertence a um parceiro. */
   partner_id?: string;
+  /** Pedido feito pela sacola de pronta entrega (/estoque), não pelo checkout agendado normal. */
+  is_stock_order?: boolean;
 }
