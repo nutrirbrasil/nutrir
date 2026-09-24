@@ -1,6 +1,6 @@
 const STORAGE_KEY = "nutrir-auth-next";
 
-const ALLOWED_PREFIXES = ["/agendar", "/checkout/"];
+const ALLOWED_PREFIXES = ["/agendar", "/checkout/", "/estoque/checkout"];
 
 export function sanitizeAuthNext(raw: string | null | undefined): string | null {
   if (!raw) return null;

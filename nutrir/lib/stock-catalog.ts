@@ -3,6 +3,7 @@ import { JUICE_CATEGORIES, type JuiceSize } from "./juice-data";
 import { getMarmitaCardPriceCents } from "./order-pricing";
 import { getMarmitaImageSrc } from "./marmita-images";
 import { getJuiceImageSrc } from "./juice-images";
+import { getBebidaImageSrc } from "./bebida-images";
 
 /** "UN" cobre itens sem tamanho P/G (ex.: água). */
 export type StockSize = MarmitaSize | "UN";
@@ -33,12 +34,14 @@ const BEBIDAS: StockCatalogItem[] = [
     itemId: "agua-com-gas",
     name: "Água com Gás",
     kind: "bebida",
+    imageSrc: getBebidaImageSrc("agua-com-gas"),
     sizes: [{ size: "UN", label: "Unidade", cashCents: 499, cardCents: 499 }],
   },
   {
     itemId: "agua-sem-gas",
     name: "Água sem Gás",
     kind: "bebida",
+    imageSrc: getBebidaImageSrc("agua-sem-gas"),
     sizes: [{ size: "UN", label: "Unidade", cashCents: 499, cardCents: 499 }],
   },
 ];
