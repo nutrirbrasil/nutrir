@@ -3,7 +3,6 @@ import { JUICE_CATEGORIES, type JuiceSize } from "./juice-data";
 import { getMarmitaCardPriceCents } from "./order-pricing";
 import { getMarmitaImageSrc } from "./marmita-images";
 import { getJuiceImageSrc } from "./juice-images";
-import { getBebidaImageSrc } from "./bebida-images";
 
 /** "UN" cobre itens sem tamanho P/G (ex.: água). */
 export type StockSize = MarmitaSize | "UN";
@@ -27,24 +26,6 @@ export interface StockCatalogItem {
   imageSrc?: string;
   sizes: StockCatalogSizeOption[];
 }
-
-/** Água com/sem gás — só existem aqui (não fazem parte do cardápio principal), preço único (sem diferença pix/cartão). */
-const BEBIDAS: StockCatalogItem[] = [
-  {
-    itemId: "agua-com-gas",
-    name: "Água com Gás",
-    kind: "bebida",
-    imageSrc: getBebidaImageSrc("agua-com-gas"),
-    sizes: [{ size: "UN", label: "Unidade", cashCents: 499, cardCents: 499 }],
-  },
-  {
-    itemId: "agua-sem-gas",
-    name: "Água sem Gás",
-    kind: "bebida",
-    imageSrc: getBebidaImageSrc("agua-sem-gas"),
-    sizes: [{ size: "UN", label: "Unidade", cashCents: 499, cardCents: 499 }],
-  },
-];
 
 function buildMarmitaCatalog(): StockCatalogItem[] {
   const seen = new Set<string>();
@@ -97,7 +78,6 @@ function buildJuiceCatalog(): StockCatalogItem[] {
 export const STOCK_CATALOG: StockCatalogItem[] = [
   ...buildMarmitaCatalog(),
   ...buildJuiceCatalog(),
-  ...BEBIDAS,
 ];
 
 const STOCK_CATALOG_BY_ID = new Map(STOCK_CATALOG.map((item) => [item.itemId, item]));

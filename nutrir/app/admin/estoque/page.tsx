@@ -188,13 +188,6 @@ export default function AdminEstoquePage() {
             token={token}
             onSaved={handleSaved}
           />
-          <CatalogSection
-            title="Bebidas"
-            items={STOCK_CATALOG.filter((i) => i.kind === "bebida")}
-            stock={stock}
-            token={token}
-            onSaved={handleSaved}
-          />
         </div>
       )}
     </div>

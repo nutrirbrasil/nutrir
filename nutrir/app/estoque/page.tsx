@@ -29,6 +29,7 @@ function QtyStepper({
   cashCents,
   cardCents,
   label,
+  singlePrice,
 }: {
   item: StockCatalogItem;
   size: StockSize;
@@ -36,6 +37,7 @@ function QtyStepper({
   cashCents: number;
   cardCents: number;
   label: string;
+  singlePrice?: boolean;
 }) {
   const { items, setQuantity } = useStockCart();
   const inCart = items.find((i) => i.itemId === item.itemId && i.size === size)?.quantity ?? 0;
@@ -49,8 +51,8 @@ function QtyStepper({
   }
 
   const priceBlock =
-    cashCents === cardCents ? (
-      <p className="font-semibold">{formatPrice(cashCents)}</p>
+    singlePrice || cashCents === cardCents ? (
+      <p className="font-semibold">{formatPrice(cardCents)}</p>
     ) : (
       <p>
         <span className="line-through opacity-60">{formatPrice(cardCents)}</span>{" "}
@@ -120,6 +122,7 @@ function StockItemCard({ item, stock }: { item: StockCatalogItem; stock: StockRo
               cashCents={s.cashCents}
               cardCents={s.cardCents}
               label={s.size === "UN" ? "UN" : s.size}
+              singlePrice={item.kind === "marmita"}
             />
           ))}
         </div>
@@ -169,10 +172,10 @@ export default function EstoquePage() {
 
         {stock && (
           <div className="space-y-8">
-            {(["marmita", "suco", "bebida"] as const).map((kind) => {
+            {(["marmita", "suco"] as const).map((kind) => {
               const kindItems = withStock.filter((i) => i.kind === kind);
               if (kindItems.length === 0) return null;
-              const title = kind === "marmita" ? "Marmitas" : kind === "suco" ? "Sucos" : "Bebidas";
+              const title = kind === "marmita" ? "Marmitas" : "Sucos";
               return (
                 <section key={kind}>
                   <h2 className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-nutrir-emerald/60">
