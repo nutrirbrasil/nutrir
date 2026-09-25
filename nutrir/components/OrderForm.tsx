@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { FiAlertTriangle } from "react-icons/fi";
 import { formatPrice, nutrirApi } from "@/lib/api";
 import { formatPhoneBR, phoneValidationMessage } from "@/lib/br-fields";
 import { useCart } from "@/lib/cart-context";
@@ -250,6 +251,77 @@ export function OrderForm() {
     router.push("/checkout/pagamento");
   }
 
+  const stockWarning = hasStockIssue && (
+    <div className="space-y-2 rounded-lg border border-nutrir-burgundy/30 bg-nutrir-burgundy/5 p-2.5">
+      <p className="flex items-start gap-1.5 text-xs font-medium text-nutrir-emerald">
+        <FiAlertTriangle className="mt-0.5 shrink-0 text-nutrir-burgundy" aria-hidden />
+        <span>
+          Um ou mais itens em sua sacola não estão disponíveis para{" "}
+          {fulfillmentType === "delivery" ? "entrega" : "retirada"} imediata. Você ainda pode
+          agendar o pedido ou substituir esse item.
+        </span>
+      </p>
+      <ul className="space-y-1.5 pl-5">
+        {unavailableItems.map(({ index, item, available }) => {
+          const substitutes = stock ? getSubstituteOptions(item, stock) : [];
+          const expanded = expandedSubstitute === index;
+          return (
+            <li key={`${item.name}-${index}`}>
+              <div className="flex flex-wrap items-center justify-between gap-1.5">
+                <span className="text-xs text-nutrir-emerald">
+                  {item.name} × {item.quantity}
+                  {available > 0 && (
+                    <span className="ml-1 text-[10px] text-gray-400">
+                      (apenas {available} {available === 1 ? "item" : "itens"} em estoque)
+                    </span>
+                  )}
+                </span>
+                <div className="flex shrink-0 gap-3 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => cart.removeItem(index)}
+                    className="text-nutrir-emerald/70 underline hover:text-nutrir-emerald"
+                  >
+                    Remover
+                  </button>
+                  {substitutes.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedSubstitute(expanded ? null : index)}
+                      className="font-bold text-nutrir-burgundy underline"
+                    >
+                      Substituir
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {expanded && (
+                <div className="mt-1.5 grid gap-1 sm:grid-cols-2">
+                  {substitutes.map((opt) => (
+                    <button
+                      key={`${opt.itemId}-${opt.size}`}
+                      type="button"
+                      onClick={() => applySubstitute(index, opt)}
+                      className="rounded-lg border border-nutrir-emerald/30 bg-nutrir-nude px-2 py-1.5 text-left text-[11px] hover:border-nutrir-emerald"
+                    >
+                      <span className="block font-semibold text-nutrir-emerald">
+                        {opt.name} ({opt.size})
+                      </span>
+                      <span className="text-nutrir-emerald/60">
+                        {formatPrice(opt.priceCents)} · {opt.available} disponíveis
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+
   return (
     <form onSubmit={handleContinue} className="space-y-6">
       {items.length > 0 && (
@@ -311,69 +383,6 @@ export function OrderForm() {
         </div>
       </div>
 
-      {hasStockIssue && (
-        <div className="card space-y-3 border-2 border-nutrir-burgundy/40 bg-nutrir-burgundy/5">
-          <p className="text-sm font-semibold text-nutrir-emerald">
-            Um ou mais itens em sua sacola não estão disponíveis para{" "}
-            {fulfillmentType === "delivery" ? "entrega" : "retirada"} imediata. Você ainda pode
-            agendar o pedido ou substituir esse item.
-          </p>
-          <ul className="space-y-2">
-            {unavailableItems.map(({ index, item }) => {
-              const substitutes = stock ? getSubstituteOptions(item, stock) : [];
-              const expanded = expandedSubstitute === index;
-              return (
-                <li key={`${item.name}-${index}`} className="rounded-xl border border-nutrir-burgundy/30 bg-white p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-sm font-medium text-nutrir-emerald">
-                      {item.name} × {item.quantity}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => cart.removeItem(index)}
-                        className="btn-secondary px-3 py-1.5 text-xs"
-                      >
-                        Remover
-                      </button>
-                      {substitutes.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => setExpandedSubstitute(expanded ? null : index)}
-                          className="btn-primary px-3 py-1.5 text-xs"
-                        >
-                          Substituir
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {expanded && (
-                    <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
-                      {substitutes.map((opt) => (
-                        <button
-                          key={`${opt.itemId}-${opt.size}`}
-                          type="button"
-                          onClick={() => applySubstitute(index, opt)}
-                          className="rounded-lg border border-nutrir-emerald/30 bg-nutrir-nude px-2.5 py-2 text-left text-xs hover:border-nutrir-emerald"
-                        >
-                          <span className="block font-semibold text-nutrir-emerald">
-                            {opt.name} ({opt.size})
-                          </span>
-                          <span className="text-nutrir-emerald/60">
-                            {formatPrice(opt.priceCents)} · {opt.available} disponíveis
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
       {fulfillmentType === "delivery" ? (
         <div className="card space-y-6">
           <div>
@@ -392,6 +401,8 @@ export function OrderForm() {
             value={deliveryAddress}
             onChange={(patch) => setDeliveryAddress((prev) => ({ ...prev, ...patch }))}
           />
+
+          {stockWarning}
 
           <DeliveryScheduler
             bairroId={deliveryAddress.bairroId}
@@ -415,6 +426,8 @@ export function OrderForm() {
                 : "Pedidos devem ser feitos com no mínimo 24 horas de antecedência (pedidos até as 19h retiram ainda hoje; depois disso, só a partir de amanhã)."}
             </p>
           </div>
+
+          {stockWarning}
 
           <PickupScheduler
             value={pickupUnified}

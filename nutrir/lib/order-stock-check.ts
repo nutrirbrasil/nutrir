@@ -6,6 +6,8 @@ import { getMarmitaCartSectionId, findMarmitaOptionById, type MarmitaSize } from
 export interface UnavailableCartItem {
   index: number;
   item: OrderItem;
+  /** Quantidade real em estoque agora (0 quando o item nem existe no catálogo de estoque, ex.: kits/combos). */
+  available: number;
 }
 
 /**
@@ -20,20 +22,20 @@ export function findUnavailableCartItems(items: OrderItem[], stock: StockRow[]):
 
   items.forEach((item, index) => {
     if (!item.item_id || !item.size) {
-      unavailable.push({ index, item });
+      unavailable.push({ index, item, available: 0 });
       return;
     }
 
     const catalogItem = STOCK_CATALOG.find((c) => c.itemId === item.item_id);
     const sizeOption = catalogItem?.sizes.find((s) => s.size === item.size);
     if (!catalogItem || !sizeOption) {
-      unavailable.push({ index, item });
+      unavailable.push({ index, item, available: 0 });
       return;
     }
 
     const available = quantityFor(stock, item.item_id, sizeOption.size);
     if (available < item.quantity) {
-      unavailable.push({ index, item });
+      unavailable.push({ index, item, available });
     }
   });
 
