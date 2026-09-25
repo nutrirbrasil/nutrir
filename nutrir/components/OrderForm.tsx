@@ -285,7 +285,14 @@ export function OrderForm() {
     router.push("/checkout/pagamento");
   }
 
-  const stockWarning = hasStockIssue && (
+  // Pra entrega, o aviso só faz sentido em bairros que teriam entrega imediata caso houvesse estoque
+  // (Balneário Piçarras e Centro de Penha) — nos demais bairros a entrega nunca é no mesmo dia, então
+  // "não disponível pra entrega imediata" não se aplica e o aviso não deve aparecer.
+  const showStockWarning =
+    hasStockIssue &&
+    (fulfillmentType === "pickup" || isSameDayDeliveryEligible(deliveryAddress.bairroId));
+
+  const stockWarning = showStockWarning && (
     <div className="space-y-2 rounded-lg border border-nutrir-burgundy/30 bg-nutrir-burgundy/5 p-2.5">
       <p className="flex items-start gap-1.5 text-xs font-medium text-nutrir-emerald">
         <FiAlertTriangle className="mt-0.5 shrink-0 text-nutrir-burgundy" aria-hidden />
