@@ -45,6 +45,7 @@ function TierRow({
         }`,
         quantity: 1,
         price_cents: pricing.cash_total_cents,
+        meal_count: tier.meals,
       },
     });
   }

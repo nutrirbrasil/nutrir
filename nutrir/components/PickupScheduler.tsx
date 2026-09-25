@@ -21,6 +21,8 @@ interface Props {
   allowToday?: boolean;
   /** Mostra um "Hoje" desabilitado (cinza) explicando que algum item da sacola não está disponível pra retirada imediata. */
   todayBlockedByStock?: boolean;
+  /** Dias extras de antecedência exigidos (combos grandes = 1, ou seja 48h em vez de 24h). */
+  extraDays?: number;
 }
 
 export function PickupScheduler({
@@ -30,15 +32,19 @@ export function PickupScheduler({
   now = new Date(),
   allowToday = false,
   todayBlockedByStock = false,
+  extraDays = 0,
 }: Props) {
-  const dates = useMemo(() => getNextAvailablePickupDates(now, 5, allowToday), [now, allowToday]);
+  const dates = useMemo(
+    () => getNextAvailablePickupDates(now, 5, allowToday, extraDays),
+    [now, allowToday, extraDays]
+  );
 
   const selectedDate = value?.date ? parseISODate(value.date) : null;
-  const slots = selectedDate ? getAvailableSlotsForDay(selectedDate, now, allowToday) : [];
+  const slots = selectedDate ? getAvailableSlotsForDay(selectedDate, now, allowToday, extraDays) : [];
 
   function selectDate(iso: string) {
     const day = parseISODate(iso);
-    const daySlots = getAvailableSlotsForDay(day, now, allowToday);
+    const daySlots = getAvailableSlotsForDay(day, now, allowToday, extraDays);
     onChange({
       date: iso,
       slot: value?.date === iso && value.slot && daySlots.includes(value.slot)

@@ -7,6 +7,7 @@ import {
 
 /** Antecedência mínima pra qualquer entrega (marmita ou combo), igual à retirada. */
 const LEAD_MS = 24 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface DeliveryWindow {
   label: string;
@@ -58,12 +59,15 @@ export function isDeliveryDayEligible(
   group: DeliveryScheduleGroup,
   day: Date,
   now: Date,
-  allowToday = false
+  allowToday = false,
+  extraDays = 0
 ): boolean {
   if (!isDeliveryWeekday(group, day)) return false;
   const window = getDeliveryWindow(group, day.getDay());
 
   if (allowToday && isSameCalendarDay(day, now)) {
+    // Combos grandes (extraDays > 0) nunca podem sair hoje, mesmo com estoque liberado.
+    if (extraDays > 0) return false;
     const windowEnd = new Date(
       day.getFullYear(),
       day.getMonth(),
@@ -81,14 +85,15 @@ export function isDeliveryDayEligible(
     window.startHour,
     window.startMinute
   );
-  return windowStart.getTime() >= now.getTime() + LEAD_MS;
+  return windowStart.getTime() >= now.getTime() + LEAD_MS + extraDays * ONE_DAY_MS;
 }
 
 export function getNextAvailableDeliveryDates(
   group: DeliveryScheduleGroup,
   now: Date = new Date(),
   count = 5,
-  allowToday = false
+  allowToday = false,
+  extraDays = 0
 ): Date[] {
   const results: Date[] = [];
   const cursor = startOfDay(now);
@@ -97,7 +102,7 @@ export function getNextAvailableDeliveryDates(
     const day = new Date(cursor);
     day.setDate(cursor.getDate() + offset);
 
-    if (isDeliveryDayEligible(group, day, now, allowToday)) {
+    if (isDeliveryDayEligible(group, day, now, allowToday, extraDays)) {
       results.push(day);
     }
   }
@@ -105,12 +110,13 @@ export function getNextAvailableDeliveryDates(
   return results;
 }
 
-/** bairroId decide o grupo (e portanto os dias/janela válidos) — sem bairro válido, nada é elegível. */
+/** bairroId decide o grupo (e portanto os dias/janela válidos), sem bairro válido, nada é elegível. */
 export function isDeliveryDateEligible(
   bairroId: string | undefined,
   iso: string,
   now: Date = new Date(),
-  allowToday = false
+  allowToday = false,
+  extraDays = 0
 ): boolean {
   const option = bairroId ? getDeliveryBairroOption(bairroId) : undefined;
   if (!option) return false;
@@ -124,7 +130,7 @@ export function isDeliveryDateEligible(
   if (Number.isNaN(day.getTime())) return false;
 
   const group = getDeliveryScheduleGroup(option.municipio);
-  return isDeliveryDayEligible(group, day, now, allowToday);
+  return isDeliveryDayEligible(group, day, now, allowToday, extraDays);
 }
 
 const WEEKDAYS_LONG = [

@@ -126,6 +126,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
         name: `Combo, ${formatComboSummary(build.lines)}`,
         quantity: 1,
         price_cents: build.total_cents,
+        meal_count: build.totalMeals,
       },
     });
     setQuantities({});

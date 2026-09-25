@@ -14,6 +14,8 @@ export interface OrderItem {
   addons_cents?: number;
   /** Detalhes dos adicionais para pedido / sacola */
   addons_note?: string;
+  /** Total de marmitas dentro de um kit/combo (ex.: 28), usado pra exigir 48h de antecedência em combos grandes. Não se aplica a itens avulsos. */
+  meal_count?: number;
 }
 
 export type PaymentMethod = "pix" | "card" | "local_cash" | "local_card" | "local";

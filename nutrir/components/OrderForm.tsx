@@ -39,6 +39,7 @@ import { resolvePickupAddress } from "@/lib/store-info";
 import type { StockRow } from "@/lib/stock-db";
 import {
   findUnavailableCartItems,
+  getRequiredLeadDays,
   getSubstituteOptions,
   type SubstituteOption,
 } from "@/lib/order-stock-check";
@@ -89,11 +90,13 @@ export function OrderForm() {
   );
   const hasStockIssue = unavailableItems.length > 0;
   const beforeCutoff = isBeforeTodayCutoff(new Date());
-  const allowTodayPickup = stock !== null && !hasStockIssue && beforeCutoff;
+  const requiredLeadDays = useMemo(() => getRequiredLeadDays(items), [items]);
+  const allowTodayPickup = stock !== null && !hasStockIssue && beforeCutoff && requiredLeadDays === 0;
   const allowTodayDelivery =
     stock !== null &&
     !hasStockIssue &&
     beforeCutoff &&
+    requiredLeadDays === 0 &&
     isSameDayDeliveryEligible(deliveryAddress.bairroId);
 
   useEffect(() => {
@@ -195,7 +198,8 @@ export function OrderForm() {
           deliveryAddress.bairroId,
           deliverySelection.date,
           new Date(),
-          allowTodayDelivery
+          allowTodayDelivery,
+          requiredLeadDays
         )
       ) {
         return "Selecione uma data válida para entrega.";
@@ -407,9 +411,11 @@ export function OrderForm() {
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
               Os dias e horários de entrega dependem do bairro.{" "}
-              {allowTodayDelivery
-                ? "Sua sacola está disponível pra entrega ainda hoje, se preferir."
-                : "Pedidos precisam de no mínimo 24 horas de antecedência."}
+              {requiredLeadDays > 0
+                ? "Combos grandes precisam de no mínimo 48 horas de antecedência."
+                : allowTodayDelivery
+                  ? "Sua sacola está disponível pra entrega ainda hoje, se preferir."
+                  : "Pedidos precisam de no mínimo 24 horas de antecedência."}
             </p>
           </div>
 
@@ -426,6 +432,7 @@ export function OrderForm() {
             onChange={setDeliverySelection}
             allowToday={allowTodayDelivery}
             todayBlockedByStock={hasStockIssue && isSameDayDeliveryEligible(deliveryAddress.bairroId)}
+            extraDays={requiredLeadDays}
           />
         </div>
       ) : (
@@ -437,9 +444,11 @@ export function OrderForm() {
             <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
               Retirada de Segunda a Sexta.
               <br />
-              {allowTodayPickup
-                ? "Sua sacola está disponível pra retirada ainda hoje, se preferir."
-                : "Pedidos devem ser feitos com no mínimo 24 horas de antecedência (pedidos até as 19h retiram ainda hoje; depois disso, só a partir de amanhã)."}
+              {requiredLeadDays > 0
+                ? "Combos grandes precisam de no mínimo 48 horas de antecedência."
+                : allowTodayPickup
+                  ? "Sua sacola está disponível pra retirada ainda hoje, se preferir."
+                  : "Pedidos devem ser feitos com no mínimo 24 horas de antecedência (pedidos até as 19h retiram ainda hoje; depois disso, só a partir de amanhã)."}
             </p>
           </div>
 
@@ -450,6 +459,7 @@ export function OrderForm() {
             onChange={setPickupUnified}
             allowToday={allowTodayPickup}
             todayBlockedByStock={hasStockIssue}
+            extraDays={requiredLeadDays}
           />
         </div>
       )}

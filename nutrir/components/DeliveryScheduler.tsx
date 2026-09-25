@@ -20,6 +20,8 @@ interface Props {
   allowToday?: boolean;
   /** Mostra um "Hoje" desabilitado (cinza) explicando que algum item da sacola não está disponível pra entrega imediata. */
   todayBlockedByStock?: boolean;
+  /** Dias extras de antecedência exigidos (combos grandes = 1, ou seja 48h em vez de 24h). */
+  extraDays?: number;
 }
 
 export function DeliveryScheduler({
@@ -29,13 +31,14 @@ export function DeliveryScheduler({
   now = new Date(),
   allowToday = false,
   todayBlockedByStock = false,
+  extraDays = 0,
 }: Props) {
   const option = getDeliveryBairroOption(bairroId);
   const group = option ? getDeliveryScheduleGroup(option.municipio) : null;
 
   const dates = useMemo(
-    () => (group ? getNextAvailableDeliveryDates(group, now, 5, allowToday) : []),
-    [group, now, allowToday]
+    () => (group ? getNextAvailableDeliveryDates(group, now, 5, allowToday, extraDays) : []),
+    [group, now, allowToday, extraDays]
   );
 
   const showDisabledToday = todayBlockedByStock && !allowToday;

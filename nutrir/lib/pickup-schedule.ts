@@ -59,8 +59,12 @@ export function getSlotEndDateTime(day: Date, slotId: PickupSlotId): Date {
   return new Date(day.getFullYear(), day.getMonth(), day.getDate(), slot.endHour, slot.endMinute);
 }
 
-/** Antes das 19h30 → amanhã à tarde; após 19h30 → depois de amanhã (qualquer turno). Isso garante ~24h de antecedência mínima pra qualquer pedido. */
-export function getEarliestSlotStart(now: Date): Date {
+/**
+ * Antes das 19h30 → amanhã à tarde; após 19h30 → depois de amanhã (qualquer turno). Isso garante ~24h de
+ * antecedência mínima pra qualquer pedido. extraDays soma dias além desse mínimo, usado pra combos grandes
+ * que exigem 48h em vez de 24h.
+ */
+export function getEarliestSlotStart(now: Date, extraDays = 0): Date {
   const cutoff = new Date(
     now.getFullYear(),
     now.getMonth(),
@@ -73,12 +77,12 @@ export function getEarliestSlotStart(now: Date): Date {
 
   if (now.getTime() >= cutoff.getTime()) {
     const day = startOfDay(now);
-    day.setDate(day.getDate() + 2);
+    day.setDate(day.getDate() + 2 + extraDays);
     return getSlotDateTime(day, "morning");
   }
 
   const day = startOfDay(now);
-  day.setDate(day.getDate() + 1);
+  day.setDate(day.getDate() + 1 + extraDays);
   return getSlotDateTime(day, "afternoon");
 }
 
@@ -103,17 +107,23 @@ export function isBeforeTodayCutoff(now: Date): boolean {
   return now.getTime() < cutoff.getTime();
 }
 
-export function isDayEligible(day: Date, now: Date, allowToday = false): boolean {
+export function isDayEligible(day: Date, now: Date, allowToday = false, extraDays = 0): boolean {
   if (!isWeekday(day)) return false;
   if (isSameCalendarDay(day, now) && !allowToday) return false;
-  return getAvailableSlotsForDay(day, now, allowToday).length > 0;
+  return getAvailableSlotsForDay(day, now, allowToday, extraDays).length > 0;
 }
 
-export function getAvailableSlotsForDay(day: Date, now: Date, allowToday = false): PickupSlotId[] {
+export function getAvailableSlotsForDay(
+  day: Date,
+  now: Date,
+  allowToday = false,
+  extraDays = 0
+): PickupSlotId[] {
   if (!isWeekday(day)) return [];
 
   if (isSameCalendarDay(day, now)) {
-    if (!allowToday || !isBeforeTodayCutoff(now)) return [];
+    // Combos grandes (extraDays > 0) nunca podem sair hoje, mesmo com estoque liberado.
+    if (!allowToday || extraDays > 0 || !isBeforeTodayCutoff(now)) return [];
     // Pro dia de hoje, o que importa é o período ainda não ter terminado (não ter começado é bom demais: quem
     // pede às 15h ainda pode retirar no período da tarde, que só termina às 19h30).
     return PICKUP_SLOTS.filter((slot) => getSlotEndDateTime(day, slot.id).getTime() > now.getTime()).map(
@@ -121,7 +131,7 @@ export function getAvailableSlotsForDay(day: Date, now: Date, allowToday = false
     );
   }
 
-  const minTime = getEarliestSlotStart(now).getTime();
+  const minTime = getEarliestSlotStart(now, extraDays).getTime();
 
   return PICKUP_SLOTS.filter((slot) => {
     const slotStart = getSlotDateTime(day, slot.id);
@@ -129,7 +139,12 @@ export function getAvailableSlotsForDay(day: Date, now: Date, allowToday = false
   }).map((s) => s.id);
 }
 
-export function getNextAvailablePickupDates(now: Date = new Date(), count = 5, allowToday = false): Date[] {
+export function getNextAvailablePickupDates(
+  now: Date = new Date(),
+  count = 5,
+  allowToday = false,
+  extraDays = 0
+): Date[] {
   const results: Date[] = [];
   const cursor = startOfDay(now);
 
@@ -137,7 +152,7 @@ export function getNextAvailablePickupDates(now: Date = new Date(), count = 5, a
     const day = new Date(cursor);
     day.setDate(cursor.getDate() + offset);
 
-    if (isDayEligible(day, now, allowToday)) {
+    if (isDayEligible(day, now, allowToday, extraDays)) {
       results.push(day);
     }
   }

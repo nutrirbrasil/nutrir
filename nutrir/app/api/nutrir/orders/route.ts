@@ -13,8 +13,8 @@ import {
   MUNICIPIO_LABELS,
 } from "@/lib/delivery-fees";
 import { isDeliveryDateEligible } from "@/lib/delivery-schedule";
-import { isBeforeTodayCutoff, toISODate } from "@/lib/pickup-schedule";
-import { findUnavailableCartItems } from "@/lib/order-stock-check";
+import { isBeforeTodayCutoff, isDayEligible, parseISODate, toISODate } from "@/lib/pickup-schedule";
+import { findUnavailableCartItems, getRequiredLeadDays } from "@/lib/order-stock-check";
 import { listStock } from "@/lib/stock-db";
 import { computeOrderPricing, getChargedItems, validateCatalogItemPrice } from "@/lib/order-pricing";
 import {
@@ -34,7 +34,9 @@ import type { CreateOrderPayload, FulfillmentType, Order } from "@/lib/types";
 function validate(
   body: CreateOrderPayload,
   fulfillmentType: FulfillmentType,
-  allowTodayDelivery: boolean
+  allowTodayDelivery: boolean,
+  allowTodayPickup: boolean,
+  requiredLeadDays: number
 ): string | null {
   if (!body.customer_name?.trim() || body.customer_name.trim().length < 3) {
     // A InfinitePay rejeita nomes com menos de 3 caracteres no checkout de cartão
@@ -53,6 +55,15 @@ function validate(
     if (!body.delivery_date?.trim()) {
       return "Selecione a data de retirada.";
     }
+    let pickupDay;
+    try {
+      pickupDay = parseISODate(body.delivery_date);
+    } catch {
+      return "Selecione uma data válida para retirada.";
+    }
+    if (Number.isNaN(pickupDay.getTime()) || !isDayEligible(pickupDay, new Date(), allowTodayPickup, requiredLeadDays)) {
+      return "Selecione uma data válida para retirada.";
+    }
   } else {
     if (!body.delivery_street?.trim() || !body.delivery_number?.trim()) {
       return "Informe o endereço de entrega (rua e número).";
@@ -65,7 +76,13 @@ function validate(
     }
     if (
       !body.delivery_date?.trim() ||
-      !isDeliveryDateEligible(body.delivery_bairro_id, body.delivery_date, new Date(), allowTodayDelivery)
+      !isDeliveryDateEligible(
+        body.delivery_bairro_id,
+        body.delivery_date,
+        new Date(),
+        allowTodayDelivery,
+        requiredLeadDays
+      )
     ) {
       return "Selecione uma data válida para entrega nesse bairro.";
     }
@@ -112,23 +129,40 @@ export async function POST(request: Request) {
 
   const fulfillment_type: FulfillmentType = body.fulfillment_type === "delivery" ? "delivery" : "pickup";
 
-  // "Hoje" só é permitido pra entrega quando o bairro é elegível, ainda está dentro do
-  // horário de corte, e a sacola inteira já está confirmada no estoque de agora — tudo
-  // recalculado aqui, nunca confiado do cliente (mesmo padrão de preço/estoque do resto da API).
+  // Antecedência mínima exigida pela sacola (combos grandes pedem 48h em vez de 24h),
+  // sempre recalculada aqui a partir dos itens, nunca confiada do cliente.
+  const requiredLeadDays = getRequiredLeadDays(body.items ?? []);
+
+  // "Hoje" só é permitido quando a sacola inteira já está confirmada no estoque de agora,
+  // ainda dentro do horário de corte, sem exigência de antecedência extra e (pra entrega)
+  // com o bairro elegível — tudo recalculado aqui, nunca confiado do cliente (mesmo padrão
+  // de preço/estoque do resto da API).
   let allowTodayDelivery = false;
+  let allowTodayPickup = false;
   const now = new Date();
   if (
-    fulfillment_type === "delivery" &&
-    body.delivery_bairro_id &&
+    requiredLeadDays === 0 &&
     body.delivery_date === toISODate(now) &&
-    isSameDayDeliveryEligible(body.delivery_bairro_id) &&
     isBeforeTodayCutoff(now)
   ) {
     const stock = await listStock();
-    allowTodayDelivery = findUnavailableCartItems(body.items ?? [], stock).length === 0;
+    const hasStockIssue = findUnavailableCartItems(body.items ?? [], stock).length > 0;
+    if (!hasStockIssue) {
+      allowTodayPickup = fulfillment_type === "pickup";
+      allowTodayDelivery =
+        fulfillment_type === "delivery" &&
+        !!body.delivery_bairro_id &&
+        isSameDayDeliveryEligible(body.delivery_bairro_id);
+    }
   }
 
-  const validationError = validate(body, fulfillment_type, allowTodayDelivery);
+  const validationError = validate(
+    body,
+    fulfillment_type,
+    allowTodayDelivery,
+    allowTodayPickup,
+    requiredLeadDays
+  );
   if (validationError) {
     return NextResponse.json({ error: validationError }, { status: 400 });
   }
