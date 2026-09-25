@@ -21,6 +21,7 @@ interface CartContextValue {
   totalCents: number;
   addItem: (item: OrderItem) => void;
   updateQty: (index: number, delta: number) => void;
+  updateItem: (index: number, next: OrderItem) => void;
   removeItem: (index: number) => void;
   clearCart: () => void;
   replaceItems: (items: OrderItem[]) => void;
@@ -84,6 +85,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const updateItem = useCallback((index: number, next: OrderItem) => {
+    setItems((prev) => prev.map((item, i) => (i === index ? next : item)));
+  }, []);
+
   const removeItem = useCallback((index: number) => {
     setItems((prev) => prev.filter((_, i) => i !== index));
   }, []);
@@ -112,13 +117,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
       totalCents,
       addItem,
       updateQty,
+      updateItem,
       removeItem,
       clearCart,
       replaceItems,
       openCart: () => setIsOpen(true),
       closeCart: () => setIsOpen(false),
     }),
-    [items, isOpen, itemCount, totalCents, addItem, updateQty, removeItem, clearCart, replaceItems]
+    [
+      items,
+      isOpen,
+      itemCount,
+      totalCents,
+      addItem,
+      updateQty,
+      updateItem,
+      removeItem,
+      clearCart,
+      replaceItems,
+    ]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

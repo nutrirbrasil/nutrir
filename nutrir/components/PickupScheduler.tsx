@@ -17,17 +17,28 @@ interface Props {
   value: PickupSelection | null;
   onChange: (value: PickupSelection | null) => void;
   now?: Date;
+  /** true quando a sacola inteira está no estoque de hoje (e ainda dentro do horário) — libera "hoje" como opção normal. */
+  allowToday?: boolean;
+  /** Mostra um "Hoje" desabilitado (cinza) explicando que algum item da sacola não está disponível pra retirada imediata. */
+  todayBlockedByStock?: boolean;
 }
 
-export function PickupScheduler({ title, value, onChange, now = new Date() }: Props) {
-  const dates = useMemo(() => getNextAvailablePickupDates(now, 5), [now]);
+export function PickupScheduler({
+  title,
+  value,
+  onChange,
+  now = new Date(),
+  allowToday = false,
+  todayBlockedByStock = false,
+}: Props) {
+  const dates = useMemo(() => getNextAvailablePickupDates(now, 5, allowToday), [now, allowToday]);
 
   const selectedDate = value?.date ? parseISODate(value.date) : null;
-  const slots = selectedDate ? getAvailableSlotsForDay(selectedDate, now) : [];
+  const slots = selectedDate ? getAvailableSlotsForDay(selectedDate, now, allowToday) : [];
 
   function selectDate(iso: string) {
     const day = parseISODate(iso);
-    const daySlots = getAvailableSlotsForDay(day, now);
+    const daySlots = getAvailableSlotsForDay(day, now, allowToday);
     onChange({
       date: iso,
       slot: value?.date === iso && value.slot && daySlots.includes(value.slot)
@@ -41,7 +52,9 @@ export function PickupScheduler({ title, value, onChange, now = new Date() }: Pr
     onChange({ date: value.date, slot });
   }
 
-  if (dates.length === 0) {
+  const showDisabledToday = todayBlockedByStock && !allowToday;
+
+  if (dates.length === 0 && !showDisabledToday) {
     return (
       <p className="text-sm text-nutrir-emerald/70">
         Nenhuma data disponível no momento. Tente novamente mais tarde.
@@ -61,6 +74,15 @@ export function PickupScheduler({ title, value, onChange, now = new Date() }: Pr
         <p className="text-sm font-medium text-nutrir-emerald">Selecione a data da retirada</p>
 
         <div className="mt-3 grid grid-cols-5 gap-2">
+          {showDisabledToday && (
+            <div
+              className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-nude-dark/10 px-1 py-3 text-center text-nutrir-emerald/40"
+              title="Um ou mais itens da sacola não estão disponíveis para retirada hoje"
+            >
+              <span className="block text-xl font-bold">Hoje</span>
+              <span className="block text-[10px]">Indisponível</span>
+            </div>
+          )}
           {dates.map((d) => {
             const iso = toISODate(d);
             const { day, weekday } = formatPickupDayLabel(d);

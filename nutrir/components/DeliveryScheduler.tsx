@@ -16,16 +16,29 @@ interface Props {
   value: DeliverySelection | null;
   onChange: (value: DeliverySelection | null) => void;
   now?: Date;
+  /** true quando a sacola inteira está no estoque de hoje (e o bairro é elegível pra entrega no mesmo dia) — libera "hoje" como opção normal. */
+  allowToday?: boolean;
+  /** Mostra um "Hoje" desabilitado (cinza) explicando que algum item da sacola não está disponível pra entrega imediata. */
+  todayBlockedByStock?: boolean;
 }
 
-export function DeliveryScheduler({ bairroId, value, onChange, now = new Date() }: Props) {
+export function DeliveryScheduler({
+  bairroId,
+  value,
+  onChange,
+  now = new Date(),
+  allowToday = false,
+  todayBlockedByStock = false,
+}: Props) {
   const option = getDeliveryBairroOption(bairroId);
   const group = option ? getDeliveryScheduleGroup(option.municipio) : null;
 
   const dates = useMemo(
-    () => (group ? getNextAvailableDeliveryDates(group, now, 5) : []),
-    [group, now]
+    () => (group ? getNextAvailableDeliveryDates(group, now, 5, allowToday) : []),
+    [group, now, allowToday]
   );
+
+  const showDisabledToday = todayBlockedByStock && !allowToday;
 
   function selectDate(iso: string) {
     onChange({ date: iso });
@@ -44,12 +57,21 @@ export function DeliveryScheduler({ bairroId, value, onChange, now = new Date() 
       <div>
         <p className="text-sm font-medium text-nutrir-emerald">Selecione a data da entrega</p>
 
-        {dates.length === 0 ? (
+        {dates.length === 0 && !showDisabledToday ? (
           <p className="mt-2 text-sm text-nutrir-emerald/70">
             Nenhuma data disponível no momento. Tente novamente mais tarde.
           </p>
         ) : (
           <div className="mt-3 grid grid-cols-5 gap-2">
+            {showDisabledToday && (
+              <div
+                className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-nude-dark/10 px-1 py-3 text-center text-nutrir-emerald/40"
+                title="Um ou mais itens da sacola não estão disponíveis para entrega hoje"
+              >
+                <span className="block text-xl font-bold">Hoje</span>
+                <span className="block text-[10px]">Indisponível</span>
+              </div>
+            )}
             {dates.map((d) => {
               const iso = toISODate(d);
               const { day, weekday } = formatPickupDayLabel(d);

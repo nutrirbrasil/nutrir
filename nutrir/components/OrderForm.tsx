@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatPrice } from "@/lib/api";
+import { formatPrice, nutrirApi } from "@/lib/api";
 import { formatPhoneBR, phoneValidationMessage } from "@/lib/br-fields";
 import { useCart } from "@/lib/cart-context";
 import { useCheckout } from "@/lib/checkout-context";
@@ -15,6 +15,7 @@ import { formatItemAddonsLabel } from "@/lib/item-addons-label";
 import {
   formatPickupShort,
   formatPickupSummary,
+  isBeforeTodayCutoff,
   type PickupSelection,
 } from "@/lib/pickup-schedule";
 import {
@@ -29,9 +30,17 @@ import {
   getDeliveryFeeCents,
   getDeliveryScheduleGroup,
   isBairroDeliverable,
+  isSameDayDeliveryEligible,
 } from "@/lib/delivery-fees";
 import { getItemCashTotalCents } from "@/lib/order-pricing";
+import { getMarmitaCartSectionId } from "@/lib/menu-data";
 import { resolvePickupAddress } from "@/lib/store-info";
+import type { StockRow } from "@/lib/stock-db";
+import {
+  findUnavailableCartItems,
+  getSubstituteOptions,
+  type SubstituteOption,
+} from "@/lib/order-stock-check";
 import type { FulfillmentType } from "@/lib/types";
 
 const EMPTY_DELIVERY_ADDRESS: DeliveryAddressValue = {
@@ -62,6 +71,29 @@ export function OrderForm() {
     customer_email: profile.email,
     notes: "",
   });
+
+  const [stock, setStock] = useState<StockRow[] | null>(null);
+  const [expandedSubstitute, setExpandedSubstitute] = useState<number | null>(null);
+
+  useEffect(() => {
+    nutrirApi
+      .listStock()
+      .then((r) => setStock(r.stock))
+      .catch(() => setStock([]));
+  }, []);
+
+  const unavailableItems = useMemo(
+    () => (stock ? findUnavailableCartItems(items, stock) : []),
+    [items, stock]
+  );
+  const hasStockIssue = unavailableItems.length > 0;
+  const beforeCutoff = isBeforeTodayCutoff(new Date());
+  const allowTodayPickup = stock !== null && !hasStockIssue && beforeCutoff;
+  const allowTodayDelivery =
+    stock !== null &&
+    !hasStockIssue &&
+    beforeCutoff &&
+    isSameDayDeliveryEligible(deliveryAddress.bairroId);
 
   useEffect(() => {
     setForm((f) => ({
@@ -112,6 +144,22 @@ export function OrderForm() {
     return parts.filter(Boolean).join(" · ") || undefined;
   }
 
+  function applySubstitute(index: number, opt: SubstituteOption) {
+    const original = items[index];
+    cart.updateItem(index, {
+      ...original,
+      item_id: opt.itemId,
+      name: `${opt.name} (${opt.size})`,
+      size: opt.size as typeof original.size,
+      price_cents: opt.priceCents,
+      menu_id: `${opt.itemId}-${opt.size}`,
+      section_id: getMarmitaCartSectionId(opt.itemId),
+      addons_cents: undefined,
+      addons_note: undefined,
+    });
+    setExpandedSubstitute(null);
+  }
+
   function getPrimaryDeliveryDate(): string {
     if (fulfillmentType === "delivery") {
       return deliverySelection?.date ?? "";
@@ -126,7 +174,12 @@ export function OrderForm() {
       }
       if (
         !deliverySelection?.date ||
-        !isDeliveryDateEligible(deliveryAddress.bairroId, deliverySelection.date)
+        !isDeliveryDateEligible(
+          deliveryAddress.bairroId,
+          deliverySelection.date,
+          new Date(),
+          allowTodayDelivery
+        )
       ) {
         return "Selecione uma data válida para entrega.";
       }
@@ -258,6 +311,69 @@ export function OrderForm() {
         </div>
       </div>
 
+      {hasStockIssue && (
+        <div className="card space-y-3 border-2 border-nutrir-burgundy/40 bg-nutrir-burgundy/5">
+          <p className="text-sm font-semibold text-nutrir-emerald">
+            Um ou mais itens em sua sacola não estão disponíveis para{" "}
+            {fulfillmentType === "delivery" ? "entrega" : "retirada"} imediata. Você ainda pode
+            agendar o pedido ou substituir esse item.
+          </p>
+          <ul className="space-y-2">
+            {unavailableItems.map(({ index, item }) => {
+              const substitutes = stock ? getSubstituteOptions(item, stock) : [];
+              const expanded = expandedSubstitute === index;
+              return (
+                <li key={`${item.name}-${index}`} className="rounded-xl border border-nutrir-burgundy/30 bg-white p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-nutrir-emerald">
+                      {item.name} × {item.quantity}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => cart.removeItem(index)}
+                        className="btn-secondary px-3 py-1.5 text-xs"
+                      >
+                        Remover
+                      </button>
+                      {substitutes.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedSubstitute(expanded ? null : index)}
+                          className="btn-primary px-3 py-1.5 text-xs"
+                        >
+                          Substituir
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {expanded && (
+                    <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
+                      {substitutes.map((opt) => (
+                        <button
+                          key={`${opt.itemId}-${opt.size}`}
+                          type="button"
+                          onClick={() => applySubstitute(index, opt)}
+                          className="rounded-lg border border-nutrir-emerald/30 bg-nutrir-nude px-2.5 py-2 text-left text-xs hover:border-nutrir-emerald"
+                        >
+                          <span className="block font-semibold text-nutrir-emerald">
+                            {opt.name} ({opt.size})
+                          </span>
+                          <span className="text-nutrir-emerald/60">
+                            {formatPrice(opt.priceCents)} · {opt.available} disponíveis
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
       {fulfillmentType === "delivery" ? (
         <div className="card space-y-6">
           <div>
@@ -265,8 +381,10 @@ export function OrderForm() {
               Agende sua entrega
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
-              Os dias e horários de entrega dependem do bairro. Pedidos precisam de no mínimo 24
-              horas de antecedência.
+              Os dias e horários de entrega dependem do bairro.{" "}
+              {allowTodayDelivery
+                ? "Sua sacola está disponível pra entrega ainda hoje, se preferir."
+                : "Pedidos precisam de no mínimo 24 horas de antecedência."}
             </p>
           </div>
 
@@ -279,6 +397,8 @@ export function OrderForm() {
             bairroId={deliveryAddress.bairroId}
             value={deliverySelection}
             onChange={setDeliverySelection}
+            allowToday={allowTodayDelivery}
+            todayBlockedByStock={hasStockIssue && isSameDayDeliveryEligible(deliveryAddress.bairroId)}
           />
         </div>
       ) : (
@@ -290,12 +410,18 @@ export function OrderForm() {
             <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
               Retirada de Segunda a Sexta.
               <br />
-              Pedidos devem ser feitos com no mínimo 24 horas de antecedência (pedidos até as
-              19h30 retiram na tarde do dia seguinte; depois disso, só a partir do outro dia).
+              {allowTodayPickup
+                ? "Sua sacola está disponível pra retirada ainda hoje, se preferir."
+                : "Pedidos devem ser feitos com no mínimo 24 horas de antecedência (pedidos até as 19h retiram ainda hoje; depois disso, só a partir de amanhã)."}
             </p>
           </div>
 
-          <PickupScheduler value={pickupUnified} onChange={setPickupUnified} />
+          <PickupScheduler
+            value={pickupUnified}
+            onChange={setPickupUnified}
+            allowToday={allowTodayPickup}
+            todayBlockedByStock={hasStockIssue}
+          />
         </div>
       )}
 

@@ -126,6 +126,15 @@ export function getDeliveryBairroOption(bairroId: string): DeliveryBairroOption 
   return OPTIONS_BY_ID.get(bairroId);
 }
 
+/** Entrega no mesmo dia só existe em todo Balneário Piçarras e no Centro de Penha — os demais bairros ficam longe demais pra confirmar entrega ainda hoje. */
+export function isSameDayDeliveryEligible(bairroId: string): boolean {
+  const option = OPTIONS_BY_ID.get(bairroId);
+  if (!option || !option.available) return false;
+  if (option.municipio === "balnearioPicarras") return true;
+  if (option.municipio === "penha") return option.bairro === "Centro";
+  return false;
+}
+
 /**
  * Agrupamento de município por regra de agendamento de entrega (ver
  * lib/delivery-schedule.ts): Piçarras/Penha entregam todo dia menos sábado,

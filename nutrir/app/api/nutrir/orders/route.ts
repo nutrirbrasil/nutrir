@@ -9,9 +9,13 @@ import {
   getDeliveryBairroOption,
   getDeliveryFeeCents,
   isBairroDeliverable,
+  isSameDayDeliveryEligible,
   MUNICIPIO_LABELS,
 } from "@/lib/delivery-fees";
 import { isDeliveryDateEligible } from "@/lib/delivery-schedule";
+import { isBeforeTodayCutoff, toISODate } from "@/lib/pickup-schedule";
+import { findUnavailableCartItems } from "@/lib/order-stock-check";
+import { listStock } from "@/lib/stock-db";
 import { computeOrderPricing, getChargedItems, validateCatalogItemPrice } from "@/lib/order-pricing";
 import {
   calcLocalPaymentDeadline,
@@ -27,7 +31,11 @@ import { findPacienteByCpf, hasPriorOrdersByEmail, hasUsedCouponByEmail } from "
 import { sendOrderTelegramNotification } from "@/lib/order-telegram";
 import type { CreateOrderPayload, FulfillmentType, Order } from "@/lib/types";
 
-function validate(body: CreateOrderPayload, fulfillmentType: FulfillmentType): string | null {
+function validate(
+  body: CreateOrderPayload,
+  fulfillmentType: FulfillmentType,
+  allowTodayDelivery: boolean
+): string | null {
   if (!body.customer_name?.trim() || body.customer_name.trim().length < 3) {
     // A InfinitePay rejeita nomes com menos de 3 caracteres no checkout de cartão
     // ("size cannot be less than 3"); exigimos o mesmo mínimo aqui pra não criar
@@ -55,7 +63,10 @@ function validate(body: CreateOrderPayload, fulfillmentType: FulfillmentType): s
     if (!isBairroDeliverable(body.delivery_bairro_id)) {
       return "Não entregamos nesse bairro no momento. Escolha retirada na loja.";
     }
-    if (!body.delivery_date?.trim() || !isDeliveryDateEligible(body.delivery_bairro_id, body.delivery_date)) {
+    if (
+      !body.delivery_date?.trim() ||
+      !isDeliveryDateEligible(body.delivery_bairro_id, body.delivery_date, new Date(), allowTodayDelivery)
+    ) {
       return "Selecione uma data válida para entrega nesse bairro.";
     }
   }
@@ -101,7 +112,23 @@ export async function POST(request: Request) {
 
   const fulfillment_type: FulfillmentType = body.fulfillment_type === "delivery" ? "delivery" : "pickup";
 
-  const validationError = validate(body, fulfillment_type);
+  // "Hoje" só é permitido pra entrega quando o bairro é elegível, ainda está dentro do
+  // horário de corte, e a sacola inteira já está confirmada no estoque de agora — tudo
+  // recalculado aqui, nunca confiado do cliente (mesmo padrão de preço/estoque do resto da API).
+  let allowTodayDelivery = false;
+  const now = new Date();
+  if (
+    fulfillment_type === "delivery" &&
+    body.delivery_bairro_id &&
+    body.delivery_date === toISODate(now) &&
+    isSameDayDeliveryEligible(body.delivery_bairro_id) &&
+    isBeforeTodayCutoff(now)
+  ) {
+    const stock = await listStock();
+    allowTodayDelivery = findUnavailableCartItems(body.items ?? [], stock).length === 0;
+  }
+
+  const validationError = validate(body, fulfillment_type, allowTodayDelivery);
   if (validationError) {
     return NextResponse.json({ error: validationError }, { status: 400 });
   }

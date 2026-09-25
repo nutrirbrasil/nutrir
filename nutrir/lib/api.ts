@@ -132,12 +132,6 @@ export const nutrirApi = {
       body: JSON.stringify({ quantity }),
       headers: { Authorization: `Bearer ${token}` },
     }),
-  createStockOrder: (body: StockOrderCreatePayload, token: string) =>
-    api<{ order: Order; notified: boolean; checkout_url?: string }>("/nutrir/stock-orders", {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: { Authorization: `Bearer ${token}` },
-    }),
   addEmail: (email: string, token: string) =>
     api<{ email: string }>("/nutrir/profile/email", {
       method: "POST",
@@ -151,26 +145,6 @@ export const nutrirApi = {
       headers: { Authorization: `Bearer ${token}` },
     }),
 };
-
-export interface StockOrderCreatePayload {
-  customer_name: string;
-  customer_phone: string;
-  fulfillment_type: "pickup" | "delivery";
-  payment_method: string;
-  delivery_bairro_id?: string;
-  delivery_street?: string;
-  delivery_number?: string;
-  delivery_complement?: string;
-  delivery_reference?: string;
-  user_notes?: string;
-  items: {
-    item_id: string;
-    size: StockSize;
-    quantity: number;
-    addons_cents?: number;
-    addons_note?: string;
-  }[];
-}
 
 export function formatPrice(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });

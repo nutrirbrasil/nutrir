@@ -1,4 +1,4 @@
-import { startOfDay, toISODate, parseISODate } from "./pickup-schedule";
+import { isBeforeTodayCutoff, isSameCalendarDay, startOfDay, toISODate, parseISODate } from "./pickup-schedule";
 import {
   getDeliveryBairroOption,
   getDeliveryScheduleGroup,
@@ -54,9 +54,26 @@ export function isDeliveryWeekday(group: DeliveryScheduleGroup, day: Date): bool
   return GROUP_WEEKDAYS[group].has(day.getDay());
 }
 
-export function isDeliveryDayEligible(group: DeliveryScheduleGroup, day: Date, now: Date): boolean {
+export function isDeliveryDayEligible(
+  group: DeliveryScheduleGroup,
+  day: Date,
+  now: Date,
+  allowToday = false
+): boolean {
   if (!isDeliveryWeekday(group, day)) return false;
   const window = getDeliveryWindow(group, day.getDay());
+
+  if (allowToday && isSameCalendarDay(day, now)) {
+    const windowEnd = new Date(
+      day.getFullYear(),
+      day.getMonth(),
+      day.getDate(),
+      window.endHour,
+      window.endMinute
+    );
+    return isBeforeTodayCutoff(now) && windowEnd.getTime() > now.getTime();
+  }
+
   const windowStart = new Date(
     day.getFullYear(),
     day.getMonth(),
@@ -70,7 +87,8 @@ export function isDeliveryDayEligible(group: DeliveryScheduleGroup, day: Date, n
 export function getNextAvailableDeliveryDates(
   group: DeliveryScheduleGroup,
   now: Date = new Date(),
-  count = 5
+  count = 5,
+  allowToday = false
 ): Date[] {
   const results: Date[] = [];
   const cursor = startOfDay(now);
@@ -79,7 +97,7 @@ export function getNextAvailableDeliveryDates(
     const day = new Date(cursor);
     day.setDate(cursor.getDate() + offset);
 
-    if (isDeliveryDayEligible(group, day, now)) {
+    if (isDeliveryDayEligible(group, day, now, allowToday)) {
       results.push(day);
     }
   }
@@ -91,7 +109,8 @@ export function getNextAvailableDeliveryDates(
 export function isDeliveryDateEligible(
   bairroId: string | undefined,
   iso: string,
-  now: Date = new Date()
+  now: Date = new Date(),
+  allowToday = false
 ): boolean {
   const option = bairroId ? getDeliveryBairroOption(bairroId) : undefined;
   if (!option) return false;
@@ -105,7 +124,7 @@ export function isDeliveryDateEligible(
   if (Number.isNaN(day.getTime())) return false;
 
   const group = getDeliveryScheduleGroup(option.municipio);
-  return isDeliveryDayEligible(group, day, now);
+  return isDeliveryDayEligible(group, day, now, allowToday);
 }
 
 const WEEKDAYS_LONG = [

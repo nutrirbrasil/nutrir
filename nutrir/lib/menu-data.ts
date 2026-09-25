@@ -339,6 +339,25 @@ export function getMarmitaCartSectionId(
   return "vegetariano";
 }
 
+/** Todas as marmitas avulsas (sem duplicar a seção "premium", que repete itens das outras). */
+export function getAllMarmitaOptions(): MarmitaOption[] {
+  const seen = new Set<string>();
+  const options: MarmitaOption[] = [];
+  for (const section of MENU_SECTIONS) {
+    if (section.id === "premium") continue;
+    for (const item of section.items) {
+      if (seen.has(item.id) || item.comingSoon) continue;
+      seen.add(item.id);
+      options.push(item);
+    }
+  }
+  return options;
+}
+
+export function findMarmitaOptionById(itemId: string): MarmitaOption | undefined {
+  return getAllMarmitaOptions().find((item) => item.id === itemId);
+}
+
 export const MENU_SECTIONS: MenuSection[] = [
   {
     id: "frango",
