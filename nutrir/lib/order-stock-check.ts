@@ -61,9 +61,16 @@ function realCashPriceFor(catalogItem: StockCatalogItem, size: string, cashCents
 /**
  * Sugestões pra trocar um item sem estoque suficiente: o mesmo item noutro
  * tamanho, ou outro item da mesma linha (frango/carne/vegetariano) — sempre
- * só o que realmente tem estoque agora.
+ * só o que realmente sobra de estoque, descontando o que outras linhas da
+ * própria sacola já estão usando (senão sugere um item que "tem estoque" mas
+ * que já foi todo reservado por outro item igual que já está na sacola).
  */
-export function getSubstituteOptions(item: OrderItem, stock: StockRow[]): SubstituteOption[] {
+export function getSubstituteOptions(
+  item: OrderItem,
+  stock: StockRow[],
+  cartItems: OrderItem[],
+  itemIndex: number
+): SubstituteOption[] {
   if (!item.item_id) return [];
   const catalogItem = STOCK_CATALOG.find((c) => c.itemId === item.item_id);
   if (!catalogItem) return [];
@@ -77,11 +84,20 @@ export function getSubstituteOptions(item: OrderItem, stock: StockRow[]): Substi
     return isMarmita && section ? getMarmitaCartSectionId(c.itemId) === section : false;
   });
 
+  function claimedByOtherLines(candidateItemId: string, size: string): number {
+    return cartItems.reduce((sum, cartItem, index) => {
+      if (index === itemIndex) return sum; // a própria linha que está sendo substituída não conta
+      if (cartItem.item_id === candidateItemId && cartItem.size === size) return sum + cartItem.quantity;
+      return sum;
+    }, 0);
+  }
+
   const results: SubstituteOption[] = [];
   for (const candidate of candidates) {
     for (const sizeOption of candidate.sizes) {
       if (candidate.itemId === item.item_id && sizeOption.size === item.size) continue;
-      const available = quantityFor(stock, candidate.itemId, sizeOption.size);
+      const raw = quantityFor(stock, candidate.itemId, sizeOption.size);
+      const available = raw - claimedByOtherLines(candidate.itemId, sizeOption.size);
       if (available <= 0) continue;
       results.push({
         itemId: candidate.itemId,

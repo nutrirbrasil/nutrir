@@ -279,7 +279,7 @@ export function OrderForm() {
       </p>
       <ul className="space-y-1.5 pl-5">
         {unavailableItems.map(({ index, item, available }) => {
-          const substitutes = stock ? getSubstituteOptions(item, stock) : [];
+          const substitutes = stock ? getSubstituteOptions(item, stock, items, index) : [];
           const expanded = expandedSubstitute === index;
           return (
             <li key={`${item.name}-${index}`}>
