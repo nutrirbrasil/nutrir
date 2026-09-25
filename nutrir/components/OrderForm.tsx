@@ -147,17 +147,33 @@ export function OrderForm() {
 
   function applySubstitute(index: number, opt: SubstituteOption) {
     const original = items[index];
-    cart.updateItem(index, {
+    // Se parte da quantidade pedida já tem estoque do item original, mantém
+    // essa parte como está e substitui só o excedente — não faz sentido trocar
+    // as 2 unidades que já cabem no estoque só porque a 3ª não cabe.
+    const entry = unavailableItems.find((u) => u.index === index);
+    const keepQty = entry ? Math.min(entry.available, original.quantity) : 0;
+    const substituteQty = original.quantity - keepQty;
+
+    const substituteItem = {
       ...original,
       item_id: opt.itemId,
       name: `${opt.name} (${opt.size})`,
       size: opt.size as typeof original.size,
       price_cents: opt.priceCents,
+      quantity: substituteQty,
       menu_id: `${opt.itemId}-${opt.size}`,
       section_id: getMarmitaCartSectionId(opt.itemId),
       addons_cents: undefined,
       addons_note: undefined,
-    });
+    };
+
+    if (keepQty > 0) {
+      cart.updateItem(index, { ...original, quantity: keepQty });
+      cart.addItem(substituteItem);
+    } else {
+      cart.updateItem(index, substituteItem);
+    }
+
     setExpandedSubstitute(null);
   }
 
