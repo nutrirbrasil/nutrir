@@ -78,10 +78,15 @@ function realCashPriceFor(catalogItem: StockCatalogItem, size: string, cashCents
 
 /**
  * Sugestões pra trocar um item sem estoque suficiente: o mesmo item noutro
- * tamanho, ou outro item da mesma linha (frango/carne/vegetariano) — sempre
- * só o que realmente sobra de estoque, descontando o que outras linhas da
+ * tamanho, ou outro item da mesma linha (frango/carne/vegetariano), sempre só
+ * o que realmente sobra de estoque, descontando o que outras linhas da
  * própria sacola já estão usando (senão sugere um item que "tem estoque" mas
  * que já foi todo reservado por outro item igual que já está na sacola).
+ *
+ * Sempre tenta devolver pelo menos uma opção: se não sobrar nada na mesma
+ * linha/tamanho, amplia pra qualquer item do mesmo tipo (kind) no mesmo
+ * tamanho, e como último recurso qualquer item do mesmo tipo em outro
+ * tamanho.
  */
 export function getSubstituteOptions(
   item: OrderItem,
@@ -96,12 +101,6 @@ export function getSubstituteOptions(
   const isMarmita = catalogItem.kind === "marmita";
   const section = isMarmita ? getMarmitaCartSectionId(item.item_id) : null;
 
-  const candidates = STOCK_CATALOG.filter((c) => {
-    if (c.kind !== catalogItem.kind) return false;
-    if (c.itemId === catalogItem.itemId) return true;
-    return isMarmita && section ? getMarmitaCartSectionId(c.itemId) === section : false;
-  });
-
   function claimedByOtherLines(candidateItemId: string, size: string): number {
     return cartItems.reduce((sum, cartItem, index) => {
       if (index === itemIndex) return sum; // a própria linha que está sendo substituída não conta
@@ -110,24 +109,41 @@ export function getSubstituteOptions(
     }, 0);
   }
 
-  const results: SubstituteOption[] = [];
-  for (const candidate of candidates) {
-    for (const sizeOption of candidate.sizes) {
-      if (candidate.itemId === item.item_id && sizeOption.size === item.size) continue;
-      const raw = quantityFor(stock, candidate.itemId, sizeOption.size);
-      const available = raw - claimedByOtherLines(candidate.itemId, sizeOption.size);
-      if (available <= 0) continue;
-      results.push({
-        itemId: candidate.itemId,
-        name: candidate.name,
-        size: sizeOption.size,
-        priceCents: realCashPriceFor(candidate, sizeOption.size, sizeOption.cashCents),
-        available,
-        imageSrc: candidate.imageSrc,
-      });
+  function buildResults(candidates: StockCatalogItem[], sizeFilter?: string): SubstituteOption[] {
+    const results: SubstituteOption[] = [];
+    for (const candidate of candidates) {
+      for (const sizeOption of candidate.sizes) {
+        if (sizeFilter && sizeOption.size !== sizeFilter) continue;
+        if (candidate.itemId === item.item_id && sizeOption.size === item.size) continue;
+        const raw = quantityFor(stock, candidate.itemId, sizeOption.size);
+        const available = raw - claimedByOtherLines(candidate.itemId, sizeOption.size);
+        if (available <= 0) continue;
+        results.push({
+          itemId: candidate.itemId,
+          name: candidate.name,
+          size: sizeOption.size,
+          priceCents: realCashPriceFor(candidate, sizeOption.size, sizeOption.cashCents),
+          available,
+          imageSrc: candidate.imageSrc,
+        });
+      }
     }
+    results.sort((a, b) => (a.itemId === item.item_id ? 0 : 1) - (b.itemId === item.item_id ? 0 : 1));
+    return results;
   }
 
-  results.sort((a, b) => (a.itemId === item.item_id ? 0 : 1) - (b.itemId === item.item_id ? 0 : 1));
-  return results;
+  const sameLineCandidates = STOCK_CATALOG.filter((c) => {
+    if (c.kind !== catalogItem.kind) return false;
+    if (c.itemId === catalogItem.itemId) return true;
+    return isMarmita && section ? getMarmitaCartSectionId(c.itemId) === section : false;
+  });
+  const sameLineResults = buildResults(sameLineCandidates);
+  if (sameLineResults.length > 0) return sameLineResults;
+
+  const sameKindCandidates = STOCK_CATALOG.filter((c) => c.kind === catalogItem.kind);
+
+  const sameSizeResults = item.size ? buildResults(sameKindCandidates, item.size) : [];
+  if (sameSizeResults.length > 0) return sameSizeResults;
+
+  return buildResults(sameKindCandidates);
 }

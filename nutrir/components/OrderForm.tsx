@@ -180,6 +180,20 @@ export function OrderForm() {
     setExpandedSubstitute(null);
   }
 
+  function removeUnavailableExcess(index: number) {
+    // Mesma lógica do substituir: se parte da quantidade já cabe no estoque,
+    // remove só o excedente em vez do item inteiro.
+    const original = items[index];
+    const entry = unavailableItems.find((u) => u.index === index);
+    const keepQty = entry ? Math.min(entry.available, original.quantity) : 0;
+
+    if (keepQty > 0) {
+      cart.updateItem(index, { ...original, quantity: keepQty });
+    } else {
+      cart.removeItem(index);
+    }
+  }
+
   function getPrimaryDeliveryDate(): string {
     if (fulfillmentType === "delivery") {
       return deliverySelection?.date ?? "";
@@ -299,7 +313,7 @@ export function OrderForm() {
                 <div className="flex shrink-0 gap-3 text-[11px]">
                   <button
                     type="button"
-                    onClick={() => cart.removeItem(index)}
+                    onClick={() => removeUnavailableExcess(index)}
                     className="text-nutrir-emerald/70 underline hover:text-nutrir-emerald"
                   >
                     Remover
