@@ -54,8 +54,8 @@ function LinkButton({
 }: LinkButtonProps) {
   const className = `flex items-center gap-4 rounded-2xl border px-4 py-3 transition hover:-translate-y-0.5 ${
     highlighted
-      ? "border-nutrir-burgundy bg-nutrir-burgundy/25 hover:bg-nutrir-burgundy/35"
-      : "border-white/10 bg-white/5 hover:bg-white/10"
+      ? "border-nutrir-burgundy bg-nutrir-burgundy/30 hover:bg-nutrir-burgundy/40"
+      : "border-white/10 bg-white/[0.08] hover:bg-white/[0.14]"
   }`;
   const content = (
     <>
@@ -69,7 +69,7 @@ function LinkButton({
             alt=""
             fill
             sizes="64px"
-            className={`object-cover ${imagePositionClassName} ${imageZoom ? "scale-[1.35]" : ""}`}
+            className={`object-cover ${imagePositionClassName} ${imageZoom ? "scale-[1.15]" : ""}`}
             unoptimized
           />
         ) : (
@@ -100,7 +100,7 @@ function LinkButton({
 
 export default function LinksPage() {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#141a17]">
       <div className="mx-auto flex max-w-md flex-col items-center px-4 py-12">
         <Image
           src={logoUrl()}
@@ -126,7 +126,7 @@ export default function LinksPage() {
           <LinkButton
             href="/parceiro"
             icon={FaHandshake}
-            iconClassName="text-nutrir-burgundy"
+            iconClassName="text-nutrir-burgundy text-4xl"
             title="Seja Parceiro"
             subtitle="Ver Requisitos | Inscrever-se"
           />
@@ -134,7 +134,7 @@ export default function LinksPage() {
             href={whatsappContactUrl()}
             external
             icon={FaWhatsapp}
-            iconClassName="text-white"
+            iconClassName="text-white text-4xl"
             iconBgClassName="bg-[#25D366]"
             title="WhatsApp"
             subtitle="Tire suas dúvidas | Faça seu Pedido."
@@ -143,6 +143,7 @@ export default function LinksPage() {
             href={GOOGLE_REVIEW_URL}
             external
             icon={FcGoogle}
+            iconClassName="text-4xl"
             title="Avalie no Google"
             subtitle="Gostou? Nos avalie com 5 estrelas!"
           />
@@ -150,7 +151,7 @@ export default function LinksPage() {
             href={INSTAGRAM_URL}
             external
             icon={FaInstagram}
-            iconClassName="text-white"
+            iconClassName="text-white text-4xl"
             iconBgStyle={{ backgroundImage: INSTAGRAM_GRADIENT }}
             title="Instagram"
             subtitle="Nos siga e fique por dentro das novidades e promoções."
