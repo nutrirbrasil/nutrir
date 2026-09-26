@@ -29,12 +29,14 @@ export const metadata: Metadata = {
 };
 
 // Aplica a classe "dark" em <html> antes do React hidratar, senão a página
-// pisca no tema errado (claro) por um instante quando o usuário já escolheu escuro.
+// pisca no tema errado por um instante quando o usuário já escolheu escuro.
+// O modo claro é sempre o padrão pra quem nunca visitou (não segue a preferência
+// do sistema) — só entra em escuro se a pessoa escolheu isso explicitamente antes.
 const THEME_INIT_SCRIPT = `
 try {
-  var t = localStorage.getItem("nutrir-theme");
-  if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  if (t === "dark") document.documentElement.classList.add("dark");
+  if (localStorage.getItem("nutrir-theme") === "dark") {
+    document.documentElement.classList.add("dark");
+  }
 } catch (e) {}
 `;
 
