@@ -186,7 +186,7 @@ export function KitCard({ kit }: Props) {
                       className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                         size === s
                           ? "bg-nutrir-burgundy text-nutrir-nude shadow-[0_1px_4px_rgb(92_34_44/0.28)]"
-                          : "bg-nutrir-emerald/10 text-nutrir-ink hover:bg-nutrir-emerald/20"
+                          : "bg-nutrir-emerald/10 text-nutrir-ink hover:bg-nutrir-emerald/20 dark:bg-nutrir-emerald/30 dark:hover:bg-nutrir-emerald/40"
                       }`}
                     >
                       {s}

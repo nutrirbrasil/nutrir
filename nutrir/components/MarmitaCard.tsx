@@ -103,7 +103,7 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
                 className={`flex-1 rounded-lg py-1.5 text-center text-[10px] font-bold transition sm:py-2 sm:text-sm ${
                   size === s
                     ? "bg-nutrir-burgundy text-nutrir-nude"
-                    : "bg-nutrir-emerald/10 text-nutrir-ink hover:bg-nutrir-emerald/20"
+                    : "bg-nutrir-emerald/10 text-nutrir-ink hover:bg-nutrir-emerald/20 dark:bg-nutrir-emerald/30 dark:hover:bg-nutrir-emerald/40"
                 }`}
               >
                 {s}

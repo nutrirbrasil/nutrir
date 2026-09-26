@@ -54,8 +54,8 @@ function LinkButton({
 }: LinkButtonProps) {
   const className = `flex items-center gap-4 rounded-2xl border px-4 py-3 transition hover:-translate-y-0.5 ${
     highlighted
-      ? "border-nutrir-burgundy bg-nutrir-burgundy/30 hover:bg-nutrir-burgundy/40"
-      : "border-white/10 bg-white/[0.08] hover:bg-white/[0.14]"
+      ? "border-nutrir-burgundy bg-nutrir-burgundy/25 hover:bg-nutrir-burgundy/35"
+      : "border-white/10 bg-white/5 hover:bg-white/10"
   }`;
   const content = (
     <>
@@ -100,7 +100,7 @@ function LinkButton({
 
 export default function LinksPage() {
   return (
-    <div className="min-h-screen bg-[#141a17]">
+    <div className="min-h-screen bg-black">
       <div className="mx-auto flex max-w-md flex-col items-center px-4 py-12">
         <Image
           src={logoUrl()}

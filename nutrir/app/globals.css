@@ -45,6 +45,11 @@
     --nutrir-canvas-alt: 28 36 32;
     --nutrir-ink: 237 231 222;
     --nutrir-ink-muted: 196 205 199;
+
+    /* No claro a linha é bordô escuro bem sutil sobre fundo claro; no escuro isso
+       fica quase invisível (escuro sobre escuro), então vira um traço claro sutil. */
+    --nutrir-hairline: rgb(237 231 222 / 0.1);
+    --nutrir-hairline-strong: rgb(237 231 222 / 0.18);
   }
 
   html {
@@ -152,6 +157,12 @@
     background-color: rgb(var(--nutrir-canvas));
     box-shadow: var(--shadow-md);
   }
+  /* No escuro, canvas (fundo da página) e canvas-alt (cards) ficam próximos demais
+     se o card usar a mesma cor da página, então usa a variante um pouco mais clara
+     aqui pra o card se destacar do fundo (no claro isso não muda, cards continuam nude). */
+  .dark .card {
+    background-color: rgb(var(--nutrir-canvas-alt));
+  }
 
   .card-dark {
     @apply rounded-2xl p-6;
@@ -196,6 +207,9 @@
     border-color: var(--nutrir-emerald);
     box-shadow: inset 0 1px 2px rgb(10 58 44 / 0.04), 0 0 0 3px rgb(15 77 58 / 0.12);
   }
+  .dark .input-field {
+    background-color: rgb(var(--nutrir-canvas-alt));
+  }
 
   .size-badge {
     @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider;
@@ -209,6 +223,17 @@
     @apply size-badge;
     background-color: rgb(122 46 58 / 0.15);
     color: var(--nutrir-burgundy);
+  }
+  /* No escuro, texto verde/bordô escuro sobre um chip do mesmo tom (mesmo clareado
+     a 15%) fica ilegível, então o texto vira ink (claro) e o chip fica bem mais
+     saturado, senão perde o tom de marca de cada badge. */
+  .dark .size-badge-p {
+    background-color: rgb(15 77 58 / 0.45);
+    color: rgb(var(--nutrir-ink));
+  }
+  .dark .size-badge-g {
+    background-color: rgb(122 46 58 / 0.45);
+    color: rgb(var(--nutrir-ink));
   }
 
   /* Título de marca dos heroes: caixa alta, peso black, sem itálico. */
