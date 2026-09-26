@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import type { IconType } from "react-icons";
-import { FaGoogle, FaHandshake, FaInstagram, FaUserDoctor, FaWhatsapp } from "react-icons/fa6";
+import { FaHandshake, FaInstagram, FaWhatsapp } from "react-icons/fa6";
+import { FcGoogle } from "react-icons/fc";
 import { SiIfood } from "react-icons/si";
 import { whatsappContactUrl } from "@/lib/legal";
 import { logoUrl } from "@/lib/brand-assets";
@@ -18,12 +19,20 @@ const PAULI_URL = "https://pauli.nutrirpicarras.com.br/";
 const IFOOD_URL =
   "https://www.ifood.com.br/delivery/balneario-picarras-sc/nutrir-picarras---marmitas-saudaveis-centro/8bf60ae3-a177-49fb-aefc-8e033cf4ea82";
 
+/** Gradiente aproximado do ícone oficial do Instagram. */
+const INSTAGRAM_GRADIENT =
+  "radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%)";
+
 interface LinkButtonProps {
   href: string;
   external?: boolean;
   icon?: IconType;
+  iconClassName?: string;
   imageSrc?: string;
-  iconColorClass?: string;
+  imageZoom?: boolean;
+  imagePositionClassName?: string;
+  iconBgClassName?: string;
+  iconBgStyle?: React.CSSProperties;
   title: string;
   subtitle: string;
   highlighted?: boolean;
@@ -33,8 +42,12 @@ function LinkButton({
   href,
   external,
   icon: Icon,
+  iconClassName,
   imageSrc,
-  iconColorClass,
+  imageZoom,
+  imagePositionClassName = "object-center",
+  iconBgClassName = "bg-white",
+  iconBgStyle,
   title,
   subtitle,
   highlighted,
@@ -46,11 +59,21 @@ function LinkButton({
   }`;
   const content = (
     <>
-      <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-3xl">
+      <span
+        className={`relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full text-3xl ${iconBgClassName}`}
+        style={iconBgStyle}
+      >
         {imageSrc ? (
-          <Image src={imageSrc} alt="" width={64} height={64} className="h-full w-full object-cover" unoptimized />
+          <Image
+            src={imageSrc}
+            alt=""
+            fill
+            sizes="64px"
+            className={`object-cover ${imagePositionClassName} ${imageZoom ? "scale-[1.35]" : ""}`}
+            unoptimized
+          />
         ) : (
-          Icon && <Icon className={iconColorClass} />
+          Icon && <Icon className={iconClassName} />
         )}
       </span>
       <span className="min-w-0 flex-1">
@@ -93,7 +116,9 @@ export default function LinksPage() {
         <div className="mt-8 w-full space-y-3">
           <LinkButton
             href="/marmitas"
-            imageSrc="/links/nosso-site.png"
+            imageSrc={logoUrl()}
+            imageZoom
+            iconBgClassName="bg-nutrir-burgundy"
             title="Nosso Site"
             subtitle="Ver Cardápio | Faça seu Pedido."
             highlighted
@@ -101,7 +126,7 @@ export default function LinksPage() {
           <LinkButton
             href="/parceiro"
             icon={FaHandshake}
-            iconColorClass="text-nutrir-burgundy"
+            iconClassName="text-nutrir-burgundy"
             title="Seja Parceiro"
             subtitle="Ver Requisitos | Inscrever-se"
           />
@@ -109,15 +134,15 @@ export default function LinksPage() {
             href={whatsappContactUrl()}
             external
             icon={FaWhatsapp}
-            iconColorClass="text-[#25D366]"
+            iconClassName="text-white"
+            iconBgClassName="bg-[#25D366]"
             title="WhatsApp"
             subtitle="Tire suas dúvidas | Faça seu Pedido."
           />
           <LinkButton
             href={GOOGLE_REVIEW_URL}
             external
-            icon={FaGoogle}
-            iconColorClass="text-[#4285F4]"
+            icon={FcGoogle}
             title="Avalie no Google"
             subtitle="Gostou? Nos avalie com 5 estrelas!"
           />
@@ -125,15 +150,17 @@ export default function LinksPage() {
             href={INSTAGRAM_URL}
             external
             icon={FaInstagram}
-            iconColorClass="text-[#E1306C]"
+            iconClassName="text-white"
+            iconBgStyle={{ backgroundImage: INSTAGRAM_GRADIENT }}
             title="Instagram"
             subtitle="Nos siga e fique por dentro das novidades e promoções."
           />
           <LinkButton
             href={PAULI_URL}
             external
-            icon={FaUserDoctor}
-            iconColorClass="text-nutrir-emerald"
+            imageSrc="/links/nutricionista.png"
+            imageZoom
+            imagePositionClassName="object-[50%_15%]"
             title="Conheça a Nutricionista"
             subtitle="Conheça o trabalho da nutricionista fundadora do Nutrir."
           />
@@ -141,7 +168,8 @@ export default function LinksPage() {
             href={IFOOD_URL}
             external
             icon={SiIfood}
-            iconColorClass="text-[#EA1D2C]"
+            iconClassName="text-white"
+            iconBgClassName="bg-[#EA1D2C]"
             title="Peça no iFood"
             subtitle="Faça seu pedido no iFood."
           />
