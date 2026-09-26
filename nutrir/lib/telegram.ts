@@ -132,6 +132,28 @@ export function formatOrderTelegramMessage(
   return lines.join("\n");
 }
 
+export interface PartnerApplication {
+  name: string;
+  address: string;
+  cpf: string;
+  email: string;
+  instagram: string;
+}
+
+export function formatPartnerApplicationTelegramMessage(app: PartnerApplication): string {
+  const lines = [
+    "🤝 Nova inscrição de parceiro",
+    "",
+    `👤 ${escapeMarkdown(app.name.trim())}`,
+    `🆔 CPF: ${escapeMarkdown(app.cpf.trim())}`,
+    `📧 ${escapeMarkdown(app.email.trim())}`,
+    `📍 ${escapeMarkdown(app.address.trim())}`,
+    `📷 ${escapeMarkdown(app.instagram.trim())}`,
+  ];
+
+  return lines.join("\n");
+}
+
 export async function sendTelegramMessage(text: string): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();

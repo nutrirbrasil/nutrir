@@ -6,6 +6,7 @@ const PUBLIC_ROUTES = [
   { path: "/combos", priority: 0.9, changeFrequency: "weekly" as const },
   { path: "/marmitas", priority: 0.9, changeFrequency: "weekly" as const },
   { path: "/beneficios", priority: 0.6, changeFrequency: "monthly" as const },
+  { path: "/parceiro", priority: 0.6, changeFrequency: "monthly" as const },
   { path: "/nutrir/sobre", priority: 0.6, changeFrequency: "monthly" as const },
   { path: "/nutrir/como-funciona", priority: 0.6, changeFrequency: "monthly" as const },
   { path: "/nutrir/formas-de-pagamento", priority: 0.6, changeFrequency: "monthly" as const },

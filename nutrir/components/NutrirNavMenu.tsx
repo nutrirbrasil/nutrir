@@ -9,6 +9,7 @@ export const NUTRIR_MENU_LINKS = [
   { href: "/nutrir/como-funciona", label: "Como Funciona" },
   { href: "/nutrir/formas-de-pagamento", label: "Formas de Pagamento" },
   { href: "/beneficios", label: "Paciente VIP" },
+  { href: "/parceiro", label: "Seja Parceiro" },
 ] as const;
 
 export function NutrirNavMenu({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
@@ -17,7 +18,9 @@ export function NutrirNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
   return (
     <NavDropdown
       label="Nutrir"
-      active={pathname.startsWith("/nutrir") || pathname === "/beneficios"}
+      active={
+        pathname.startsWith("/nutrir") || pathname === "/beneficios" || pathname === "/parceiro"
+      }
       variant={variant}
       pathname={pathname}
     >

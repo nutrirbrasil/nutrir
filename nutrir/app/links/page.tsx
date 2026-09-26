@@ -2,46 +2,44 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import type { IconType } from "react-icons";
-import { FaGoogle, FaInstagram, FaUserDoctor, FaWhatsapp } from "react-icons/fa6";
+import { FaGoogle, FaHandshake, FaInstagram, FaUserDoctor, FaWhatsapp } from "react-icons/fa6";
+import { SiIfood } from "react-icons/si";
 import { FiShoppingBag } from "react-icons/fi";
 import { whatsappContactUrl } from "@/lib/legal";
 import { logoUrl } from "@/lib/brand-assets";
 
 export const metadata: Metadata = {
   title: "Links | Nutrir Piçarras",
-  description: "Instagram, cardápio, WhatsApp e avaliação da Nutrir Piçarras.",
+  description: "Cardápio, WhatsApp, Instagram, iFood e avaliação da Nutrir Piçarras.",
 };
 
 const INSTAGRAM_URL = "https://www.instagram.com/nutrirpicarras";
 const GOOGLE_REVIEW_URL = "https://g.page/r/CXJ5WKkcHYgMEAI/review";
 const PAULI_URL = "https://pauli.nutrirpicarras.com.br/";
+const IFOOD_URL =
+  "https://www.ifood.com.br/delivery/balneario-picarras-sc/nutrir-picarras---marmitas-saudaveis-centro/8bf60ae3-a177-49fb-aefc-8e033cf4ea82";
 
 interface LinkButtonProps {
   href: string;
   external?: boolean;
   icon: IconType;
+  iconColorClass: string;
   title: string;
-  subtitle: string;
   highlighted?: boolean;
 }
 
-function LinkButton({ href, external, icon: Icon, title, subtitle, highlighted }: LinkButtonProps) {
-  const className = `card flex items-center gap-4 !p-4 transition hover:-translate-y-0.5 hover:shadow-md ${
-    highlighted ? "border-2 border-nutrir-burgundy" : ""
+function LinkButton({ href, external, icon: Icon, iconColorClass, title, highlighted }: LinkButtonProps) {
+  const className = `flex items-center gap-4 rounded-full border px-4 py-3.5 transition hover:-translate-y-0.5 ${
+    highlighted
+      ? "border-nutrir-burgundy bg-nutrir-burgundy/20 hover:bg-nutrir-burgundy/30"
+      : "border-white/10 bg-white/5 hover:bg-white/10"
   }`;
   const content = (
     <>
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald text-xl text-nutrir-nude">
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg ${iconColorClass}`}>
         <Icon />
       </span>
-      <span className="min-w-0">
-        <span className="block font-display text-base font-bold text-nutrir-emerald">
-          {title}
-        </span>
-        <span className="mt-0.5 block text-sm leading-snug text-nutrir-emerald/70">
-          {subtitle}
-        </span>
-      </span>
+      <span className="flex-1 text-center font-display text-sm font-bold text-white">{title}</span>
     </>
   );
 
@@ -62,60 +60,69 @@ function LinkButton({ href, external, icon: Icon, title, subtitle, highlighted }
 
 export default function LinksPage() {
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center px-4 py-12">
-      <Image
-        src={logoUrl()}
-        alt="Nutrir Piçarras"
-        width={88}
-        height={88}
-        className="h-20 w-auto object-contain"
-        unoptimized
-      />
-      <h1 className="mt-4 font-display text-2xl font-bold text-nutrir-emerald">Nutrir Piçarras</h1>
-      <p className="mt-1 text-sm text-nutrir-emerald/60">Marmitas saudáveis em Piçarras</p>
+    <div className="min-h-screen bg-black">
+      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-12">
+        <Image
+          src={logoUrl()}
+          alt="Nutrir Piçarras"
+          width={88}
+          height={88}
+          className="h-20 w-auto rounded-full border-2 border-white/20 object-contain"
+          unoptimized
+        />
+        <h1 className="mt-4 font-display text-2xl font-bold text-white">Nutrir Piçarras</h1>
+        <p className="mt-1 text-sm text-white/60">@nutrirpicarras</p>
 
-      <div className="mt-8 w-full">
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-burgundy">
-          Promoções Ativas
-        </p>
-        <LinkButton
-          href={GOOGLE_REVIEW_URL}
-          external
-          icon={FaGoogle}
-          title="Avalie e ganhe"
-          subtitle="Nos avalie no Google com 5 estrelas e ganhe um suco grátis no seu próximo pedido!"
-          highlighted
-        />
-      </div>
-
-      <div className="mt-6 w-full space-y-4">
-        <LinkButton
-          href="/marmitas"
-          icon={FiShoppingBag}
-          title="Cardápio"
-          subtitle="Ver Cardápio | Faça seu Pedido."
-        />
-        <LinkButton
-          href={whatsappContactUrl()}
-          external
-          icon={FaWhatsapp}
-          title="WhatsApp"
-          subtitle="Tire suas dúvidas | Envie feedbacks."
-        />
-        <LinkButton
-          href={INSTAGRAM_URL}
-          external
-          icon={FaInstagram}
-          title="Instagram"
-          subtitle="Nos siga e concorra a prêmios mensais."
-        />
-        <LinkButton
-          href={PAULI_URL}
-          external
-          icon={FaUserDoctor}
-          title="Conheça a Nutricionista"
-          subtitle="Conheça o trabalho da nutricionista fundadora do Nutrir."
-        />
+        <div className="mt-8 w-full space-y-3">
+          <LinkButton
+            href="/parceiro"
+            icon={FaHandshake}
+            iconColorClass="text-nutrir-burgundy"
+            title="Seja Parceiro"
+            highlighted
+          />
+          <LinkButton
+            href="/marmitas"
+            icon={FiShoppingBag}
+            iconColorClass="text-nutrir-emerald"
+            title="Faça seu pedido"
+          />
+          <LinkButton
+            href={whatsappContactUrl()}
+            external
+            icon={FaWhatsapp}
+            iconColorClass="text-[#25D366]"
+            title="Nosso WhatsApp"
+          />
+          <LinkButton
+            href={GOOGLE_REVIEW_URL}
+            external
+            icon={FaGoogle}
+            iconColorClass="text-[#4285F4]"
+            title="Avalie no Google"
+          />
+          <LinkButton
+            href={INSTAGRAM_URL}
+            external
+            icon={FaInstagram}
+            iconColorClass="text-[#E1306C]"
+            title="Instagram"
+          />
+          <LinkButton
+            href={IFOOD_URL}
+            external
+            icon={SiIfood}
+            iconColorClass="text-[#EA1D2C]"
+            title="Peça no iFood"
+          />
+          <LinkButton
+            href={PAULI_URL}
+            external
+            icon={FaUserDoctor}
+            iconColorClass="text-nutrir-emerald"
+            title="Conheça a Nutricionista"
+          />
+        </div>
       </div>
     </div>
   );
