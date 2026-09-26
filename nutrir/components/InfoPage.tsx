@@ -16,11 +16,11 @@ export function InfoPage({ title, subtitle, children }: Props) {
 
       <Reveal>
         <article className="mx-auto max-w-3xl px-4 py-12 md:py-16">
-          <div className="space-y-5 text-sm leading-relaxed text-nutrir-emerald/90 md:text-base">
+          <div className="space-y-5 text-sm leading-relaxed text-nutrir-ink/90 md:text-base">
             {children}
           </div>
 
-          <p className="mt-10 text-center text-sm text-nutrir-emerald/60">
+          <p className="mt-10 text-center text-sm text-nutrir-ink/60">
             <Link href="/" className="font-medium text-nutrir-burgundy hover:underline">
               Voltar ao cardápio
             </Link>
@@ -34,7 +34,7 @@ export function InfoPage({ title, subtitle, children }: Props) {
 export function InfoSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="font-display text-lg font-bold text-nutrir-emerald md:text-xl">{title}</h2>
+      <h2 className="font-display text-lg font-bold text-nutrir-ink md:text-xl">{title}</h2>
       <div className="mt-3 space-y-3">{children}</div>
     </section>
   );

@@ -64,9 +64,9 @@ export function AuthCallbackClient() {
   if (status === "error") {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Link expirado</h1>
-        <p className="mt-4 text-sm text-nutrir-emerald/80">{errorMsg}</p>
-        <p className="mt-2 text-sm text-nutrir-emerald/60">
+        <h1 className="font-display text-2xl font-bold text-nutrir-ink">Link expirado</h1>
+        <p className="mt-4 text-sm text-nutrir-ink/80">{errorMsg}</p>
+        <p className="mt-2 text-sm text-nutrir-ink/60">
           Links de confirmação expiram rápido. Peça um novo e-mail e clique assim que receber.
         </p>
         <Link href="/perfil" className="btn-primary mt-8 inline-block">
@@ -77,7 +77,7 @@ export function AuthCallbackClient() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-16 text-center text-nutrir-emerald/70">
+    <div className="mx-auto max-w-md px-4 py-16 text-center text-nutrir-ink/70">
       Confirmando login…
     </div>
   );

@@ -28,7 +28,7 @@ export function PointsRedemptionField({ balanceCents, maxCents, valueCents, onCh
 
   return (
     <div>
-      <p className="text-xs font-bold uppercase text-nutrir-emerald/60">
+      <p className="text-xs font-bold uppercase text-nutrir-ink/60">
         Seus pontos ({formatPoints(balanceCents)} disponíveis)
       </p>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -52,7 +52,7 @@ export function PointsRedemptionField({ balanceCents, maxCents, valueCents, onCh
         </button>
       </div>
       {valueCents > 0 && (
-        <p className="mt-1.5 text-sm text-nutrir-emerald/70">
+        <p className="mt-1.5 text-sm text-nutrir-ink/70">
           Desconto de {formatPrice(valueCents)} em pontos.
         </p>
       )}

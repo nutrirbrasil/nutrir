@@ -56,7 +56,7 @@ function QtyEditor({
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald/10 text-xs font-bold text-nutrir-emerald">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald/10 text-xs font-bold text-nutrir-ink">
           {size}
         </span>
         <input
@@ -97,7 +97,7 @@ function CatalogSection({
   if (items.length === 0) return null;
   return (
     <section>
-      <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-nutrir-emerald/60">{title}</h2>
+      <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-nutrir-ink/60">{title}</h2>
       <div className="space-y-3">
         {items.map((item) => (
           <div key={item.itemId} className="card flex items-center gap-4">
@@ -105,7 +105,7 @@ function CatalogSection({
               <MarmitaPhoto src={item.imageSrc} alt={item.name} className="h-14 w-14 shrink-0" sizes="56px" />
             )}
             <div className="min-w-0 flex-1">
-              <p className="font-display text-base font-bold text-nutrir-emerald">{item.name}</p>
+              <p className="font-display text-base font-bold text-nutrir-ink">{item.name}</p>
               <div className="mt-2 flex flex-wrap gap-3">
                 {item.sizes.map((s) => (
                   <QtyEditor
@@ -159,18 +159,18 @@ export default function AdminEstoquePage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <Link
         href="/admin"
-        className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald"
+        className="mb-4 inline-block text-sm font-semibold text-nutrir-ink/70 hover:text-nutrir-ink"
       >
         ← Voltar
       </Link>
-      <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Estoque de pronta entrega</h1>
-      <p className="mt-1 text-sm text-nutrir-emerald/60">
+      <h1 className="font-display text-2xl font-bold text-nutrir-ink">Estoque de pronta entrega</h1>
+      <p className="mt-1 text-sm text-nutrir-ink/60">
         Quantidade disponível pra retirada/entrega imediata, sem precisar agendar. Tudo com 0 aparece
         em /estoque como indisponível. Olá, {profile.name || "admin"}.
       </p>
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-      {!stock && !error && <p className="mt-6 text-sm text-nutrir-emerald/60">Carregando…</p>}
+      {!stock && !error && <p className="mt-6 text-sm text-nutrir-ink/60">Carregando…</p>}
 
       {stock && token && (
         <div className="mt-6 space-y-8">

@@ -25,24 +25,24 @@ export function KitContentModal({ kit, includeVeg = false, onClose }: Props) {
       <div
         role="dialog"
         aria-modal="true"
-        className="fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] w-[min(92vw,440px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-cream shadow-2xl"
+        className="fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] w-[min(92vw,440px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl"
       >
         <div className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 p-5 pb-4">
           <div>
-            <h2 className="font-display text-xl font-bold text-nutrir-emerald">Conteúdo do Combo</h2>
-            <p className="mt-1 text-sm text-nutrir-emerald/65">{kit.name}</p>
+            <h2 className="font-display text-xl font-bold text-nutrir-ink">Conteúdo do Combo</h2>
+            <p className="mt-1 text-sm text-nutrir-ink/65">{kit.name}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-nutrir-emerald/20 text-nutrir-emerald/70 transition hover:bg-nutrir-emerald/5"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-nutrir-emerald/20 text-nutrir-ink/70 transition hover:bg-nutrir-emerald/5"
           >
             <FiX />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
-          <p className="mb-4 text-xs text-nutrir-emerald/60">
+          <p className="mb-4 text-xs text-nutrir-ink/60">
             O conteúdo é o mesmo nos tamanhos P e G, muda apenas as quantidades.
           </p>
 
@@ -54,12 +54,12 @@ export function KitContentModal({ kit, includeVeg = false, onClose }: Props) {
               return (
                 <li
                   key={tier.meals}
-                  className="rounded-xl border border-nutrir-nude-dark/50 bg-nutrir-nude/60 px-4 py-3"
+                  className="rounded-xl border border-nutrir-nude-dark/50 bg-nutrir-canvas/60 px-4 py-3"
                 >
-                  <p className="font-display text-lg font-bold text-nutrir-emerald">
+                  <p className="font-display text-lg font-bold text-nutrir-ink">
                     {tier.meals} refeições
                   </p>
-                  <ul className="mt-2 space-y-1 text-sm text-nutrir-emerald/80">
+                  <ul className="mt-2 space-y-1 text-sm text-nutrir-ink/80">
                     {lines.map((line) => (
                       <li key={line.label}>
                         {line.count}× {line.label}

@@ -84,7 +84,7 @@ export default function LinksPage() {
           <LinkButton
             href="/marmitas"
             icon={FiShoppingBag}
-            iconColorClass="text-nutrir-emerald"
+            iconColorClass="text-nutrir-ink"
             title="Faça seu pedido"
           />
           <LinkButton
@@ -119,7 +119,7 @@ export default function LinksPage() {
             href={PAULI_URL}
             external
             icon={FaUserDoctor}
-            iconColorClass="text-nutrir-emerald"
+            iconColorClass="text-nutrir-ink"
             title="Conheça a Nutricionista"
           />
         </div>

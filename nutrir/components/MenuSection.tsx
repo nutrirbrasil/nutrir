@@ -12,10 +12,10 @@ function PremiumInstagramCard() {
   return (
     <article className="card flex flex-col items-center justify-center border-dashed py-10 text-center sm:py-16">
       <span className="text-4xl opacity-60">✨</span>
-      <p className="mt-4 font-display text-lg font-bold text-nutrir-emerald sm:text-xl">
+      <p className="mt-4 font-display text-lg font-bold text-nutrir-ink sm:text-xl">
         Em breve
       </p>
-      <p className="mt-2 max-w-sm px-4 text-xs leading-snug text-nutrir-emerald/60 sm:text-sm">
+      <p className="mt-2 max-w-sm px-4 text-xs leading-snug text-nutrir-ink/60 sm:text-sm">
         Novas opções premium chegando em breve.
       </p>
       <p className="mt-1 max-w-sm px-4 text-xs leading-snug sm:text-sm">
@@ -23,7 +23,7 @@ function PremiumInstagramCard() {
           href={INSTAGRAM_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-bold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-emerald"
+          className="font-bold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-ink"
         >
           Nos siga no Instagram.
         </Link>

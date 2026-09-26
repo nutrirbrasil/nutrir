@@ -77,9 +77,9 @@ export function CartSidebar() {
         className="fixed inset-0 z-[60] bg-black/40"
         onClick={closeCart}
       />
-      <aside className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md flex-col bg-nutrir-cream shadow-2xl">
+      <aside className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md flex-col bg-nutrir-canvas-alt shadow-2xl">
         <header className="flex items-center justify-between border-b border-nutrir-nude-dark/40 px-5 py-4">
-          <h2 className="font-display text-lg font-bold text-nutrir-emerald">
+          <h2 className="font-display text-lg font-bold text-nutrir-ink">
             Sua sacola tem{" "}
             <span className="text-nutrir-burgundy">
               {itemCount} {itemCount === 1 ? "item" : "itens"}
@@ -88,7 +88,7 @@ export function CartSidebar() {
           <button
             type="button"
             onClick={closeCart}
-            className="flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/70 hover:text-nutrir-emerald"
+            className="flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-nutrir-ink/70 hover:text-nutrir-ink"
           >
             Ocultar
             <span className="flex h-7 w-7 items-center justify-center rounded-full border border-nutrir-emerald/30">
@@ -99,9 +99,9 @@ export function CartSidebar() {
 
         <div className="flex-1 overflow-y-auto">
           {suggestions.length > 0 && (
-            <section className="border-b border-nutrir-nude-dark/40 bg-nutrir-cream px-5 py-4">
+            <section className="border-b border-nutrir-nude-dark/40 bg-nutrir-canvas-alt px-5 py-4">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-nutrir-emerald">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-nutrir-ink">
                   Leve também
                 </h3>
                 <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export function CartSidebar() {
                   >
                     ‹
                   </button>
-                  <span className="text-xs text-nutrir-emerald/60">
+                  <span className="text-xs text-nutrir-ink/60">
                     {suggestionIndex + 1} / {suggestions.length}
                   </span>
                   <button
@@ -129,7 +129,7 @@ export function CartSidebar() {
                 </div>
               </div>
               {currentSuggestion && (
-                <div className="flex gap-3 rounded-xl border border-nutrir-nude-dark/50 bg-nutrir-cream p-3">
+                <div className="flex gap-3 rounded-xl border border-nutrir-nude-dark/50 bg-nutrir-canvas-alt p-3">
                   <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-nutrir-burgundy">
                     {getMarmitaImageSrc(currentSuggestion.item.id) && (
                       <MarmitaPhoto
@@ -141,10 +141,10 @@ export function CartSidebar() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 text-sm font-semibold text-nutrir-emerald">
+                    <p className="line-clamp-2 text-sm font-semibold text-nutrir-ink">
                       {currentSuggestion.item.name}
                     </p>
-                    <p className="mt-0.5 text-xs text-nutrir-emerald/50">
+                    <p className="mt-0.5 text-xs text-nutrir-ink/50">
                       {currentSuggestion.weight_g}g · {defaultSize}
                     </p>
                     <p className="mt-1 text-sm font-bold text-nutrir-burgundy">
@@ -165,12 +165,12 @@ export function CartSidebar() {
 
           <section className="px-5 py-4">
             {items.length === 0 ? (
-              <p className="py-8 text-center text-sm text-nutrir-emerald/60">
+              <p className="py-8 text-center text-sm text-nutrir-ink/60">
                 Sua sacola está vazia. Escolha itens no cardápio ou monte sua marmita.
               </p>
             ) : (
               <>
-                <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-nutrir-emerald/70">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-nutrir-ink/70">
                   Itens
                 </h3>
                 <ul className="space-y-4">
@@ -192,11 +192,11 @@ export function CartSidebar() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="line-clamp-2 text-sm font-medium text-nutrir-emerald">
+                        <p className="line-clamp-2 text-sm font-medium text-nutrir-ink">
                           {item.name}
                         </p>
                         {item.addons_note && (
-                          <p className="mt-1 whitespace-pre-line text-xs text-nutrir-emerald/55">
+                          <p className="mt-1 whitespace-pre-line text-xs text-nutrir-ink/55">
                             {item.addons_note}
                           </p>
                         )}
@@ -209,7 +209,7 @@ export function CartSidebar() {
                           <button
                             type="button"
                             onClick={() => updateQty(i, -1)}
-                            className="px-2 py-1 text-nutrir-emerald hover:bg-nutrir-emerald/5"
+                            className="px-2 py-1 text-nutrir-ink hover:bg-nutrir-emerald/5"
                           >
                             −
                           </button>
@@ -219,7 +219,7 @@ export function CartSidebar() {
                           <button
                             type="button"
                             onClick={() => updateQty(i, 1)}
-                            className="px-2 py-1 text-nutrir-emerald hover:bg-nutrir-emerald/5"
+                            className="px-2 py-1 text-nutrir-ink hover:bg-nutrir-emerald/5"
                           >
                             +
                           </button>
@@ -233,9 +233,9 @@ export function CartSidebar() {
           </section>
         </div>
 
-        <footer className="border-t border-nutrir-nude-dark/40 bg-nutrir-cream px-5 py-4">
+        <footer className="border-t border-nutrir-nude-dark/40 bg-nutrir-canvas-alt px-5 py-4">
           <div className="mb-4 flex items-baseline justify-between">
-            <span className="text-sm text-nutrir-emerald/70">Total</span>
+            <span className="text-sm text-nutrir-ink/70">Total</span>
             <span className="text-xl font-bold text-nutrir-burgundy">
               {formatPrice(totalCents)}
             </span>

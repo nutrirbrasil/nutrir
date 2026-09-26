@@ -62,7 +62,7 @@ export function PickupScheduler({
 
   if (dates.length === 0 && !showDisabledToday) {
     return (
-      <p className="text-sm text-nutrir-emerald/70">
+      <p className="text-sm text-nutrir-ink/70">
         Nenhuma data disponível no momento. Tente novamente mais tarde.
       </p>
     );
@@ -71,18 +71,18 @@ export function PickupScheduler({
   return (
     <div className="space-y-6">
       {title && (
-        <h3 className="font-display text-lg font-bold uppercase tracking-wide text-nutrir-emerald">
+        <h3 className="font-display text-lg font-bold uppercase tracking-wide text-nutrir-ink">
           {title}
         </h3>
       )}
 
       <div>
-        <p className="text-sm font-medium text-nutrir-emerald">Selecione a data da retirada</p>
+        <p className="text-sm font-medium text-nutrir-ink">Selecione a data da retirada</p>
 
         <div className="mt-3 grid grid-cols-5 gap-2">
           {showDisabledToday && (
             <div
-              className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-nude-dark/10 px-1 py-3 text-center text-nutrir-emerald/40"
+              className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-canvas-alt/10 px-1 py-3 text-center text-nutrir-ink/40"
               title="Um ou mais itens da sacola não estão disponíveis para retirada hoje"
             >
               <span className="block text-xl font-bold">Hoje</span>
@@ -100,12 +100,12 @@ export function PickupScheduler({
                 onClick={() => selectDate(iso)}
                 className={`rounded-xl border-2 px-1 py-3 text-center transition ${
                   selected
-                    ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                    : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                    ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"
+                    : "border-nutrir-burgundy/30 bg-nutrir-canvas text-nutrir-ink hover:border-nutrir-burgundy"
                 }`}
               >
                 <span className="block text-xl font-bold">{day}</span>
-                <span className="block text-[10px] capitalize text-nutrir-emerald/70">{weekday}</span>
+                <span className="block text-[10px] capitalize text-nutrir-ink/70">{weekday}</span>
               </button>
             );
           })}
@@ -114,7 +114,7 @@ export function PickupScheduler({
 
       {value?.date && slots.length > 0 && (
         <div>
-          <p className="text-sm font-medium text-nutrir-emerald">
+          <p className="text-sm font-medium text-nutrir-ink">
             Selecione o período que deseja retirar
           </p>
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -128,19 +128,19 @@ export function PickupScheduler({
                   className={`rounded-xl border-2 px-2 py-2.5 text-left transition sm:px-3 sm:py-3 ${
                     selected
                       ? "border-nutrir-emerald bg-nutrir-emerald/10"
-                      : "border-nutrir-burgundy/30 bg-nutrir-nude hover:border-nutrir-burgundy"
+                      : "border-nutrir-burgundy/30 bg-nutrir-canvas hover:border-nutrir-burgundy"
                   }`}
                 >
                   <span
                     className={`block text-sm font-bold ${
-                      selected ? "text-nutrir-emerald" : "text-nutrir-emerald-dark"
+                      selected ? "text-nutrir-ink" : "text-nutrir-ink"
                     }`}
                   >
                     {slot.label}
                   </span>
                   <span
                     className={`mt-0.5 block text-xs ${
-                      selected ? "text-nutrir-emerald/80" : "text-nutrir-emerald/55"
+                      selected ? "text-nutrir-ink/80" : "text-nutrir-ink/55"
                     }`}
                   >
                     {slot.range}

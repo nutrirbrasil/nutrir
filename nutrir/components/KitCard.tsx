@@ -51,24 +51,24 @@ function TierRow({
   }
 
   return (
-    <div className="rounded-xl border border-nutrir-burgundy/15 bg-nutrir-cream/70 p-4 shadow-[0_1px_2px_rgb(10_58_44/0.04)] transition-shadow duration-200 hover:shadow-[0_2px_10px_rgb(10_58_44/0.08)]">
+    <div className="rounded-xl border border-nutrir-burgundy/15 bg-nutrir-canvas-alt/70 p-4 shadow-[0_1px_2px_rgb(10_58_44/0.04)] transition-shadow duration-200 hover:shadow-[0_2px_10px_rgb(10_58_44/0.08)]">
       {/* Mobile: 3 colunas numa linha só (contagem | preço centralizado | box+botão empilhados). */}
       <div className="flex items-center justify-between gap-1.5 sm:hidden">
         <div className="shrink-0 text-center">
-          <p className="font-display text-xl font-bold text-nutrir-emerald">{tier.meals}</p>
-          <p className="text-[10px] uppercase tracking-wide text-nutrir-emerald/60">marmitas</p>
+          <p className="font-display text-xl font-bold text-nutrir-ink">{tier.meals}</p>
+          <p className="text-[10px] uppercase tracking-wide text-nutrir-ink/60">marmitas</p>
         </div>
 
         <div className="min-w-0 flex-1 text-center">
-          <p className="text-xs text-nutrir-emerald/70">
+          <p className="text-xs text-nutrir-ink/70">
             De{" "}
-            <span className="line-through text-nutrir-emerald/60">
+            <span className="line-through text-nutrir-ink/60">
               {formatPrice(pricing.card_total_cents)}
             </span>
           </p>
-          <p className="text-[11px] text-nutrir-emerald/70">
+          <p className="text-[11px] text-nutrir-ink/70">
             Por{" "}
-            <strong className="text-nutrir-emerald">{formatPrice(pricing.cash_total_cents)}</strong>{" "}
+            <strong className="text-nutrir-ink">{formatPrice(pricing.cash_total_cents)}</strong>{" "}
             <span className="text-[10px]">no dinheiro ou pix</span>
           </p>
         </div>
@@ -94,19 +94,19 @@ function TierRow({
       <div className="hidden sm:block">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="font-display text-xl font-bold text-nutrir-emerald">{tier.meals}</p>
-            <p className="text-xs uppercase tracking-widest text-nutrir-emerald/60">marmitas</p>
+            <p className="font-display text-xl font-bold text-nutrir-ink">{tier.meals}</p>
+            <p className="text-xs uppercase tracking-widest text-nutrir-ink/60">marmitas</p>
           </div>
           <div className="text-left">
-            <p className="text-sm text-nutrir-emerald/70">
+            <p className="text-sm text-nutrir-ink/70">
               De{" "}
-              <span className="line-through text-nutrir-emerald/60">
+              <span className="line-through text-nutrir-ink/60">
                 {formatPrice(pricing.card_total_cents)}
               </span>
             </p>
-            <p className="text-sm text-nutrir-emerald/70">
+            <p className="text-sm text-nutrir-ink/70">
               Por{" "}
-              <strong className="text-nutrir-emerald">{formatPrice(pricing.cash_total_cents)}</strong>{" "}
+              <strong className="text-nutrir-ink">{formatPrice(pricing.cash_total_cents)}</strong>{" "}
               no dinheiro ou pix
             </p>
           </div>
@@ -130,7 +130,7 @@ function TierRow({
       </div>
 
       {tier.note && (
-        <p className="mt-2 text-center text-xs italic text-nutrir-emerald/55">{tier.note}</p>
+        <p className="mt-2 text-center text-xs italic text-nutrir-ink/55">{tier.note}</p>
       )}
     </div>
   );
@@ -171,10 +171,10 @@ export function KitCard({ kit }: Props) {
             </div>
           </div>
 
-          <div className="flex min-w-0 flex-1 flex-col bg-nutrir-nude p-5 md:p-6">
+          <div className="flex min-w-0 flex-1 flex-col bg-nutrir-canvas p-5 md:p-6">
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-nutrir-emerald/70">
+                <span className="text-xs font-bold uppercase tracking-wider text-nutrir-ink/70">
                   Tamanho:
                 </span>
                 <div className="flex gap-2">
@@ -186,20 +186,20 @@ export function KitCard({ kit }: Props) {
                       className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                         size === s
                           ? "bg-nutrir-burgundy text-nutrir-nude shadow-[0_1px_4px_rgb(92_34_44/0.28)]"
-                          : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
+                          : "bg-nutrir-emerald/10 text-nutrir-ink hover:bg-nutrir-emerald/20"
                       }`}
                     >
                       {s}
                     </button>
                   ))}
                 </div>
-                <span className="text-xs text-nutrir-emerald/50">
+                <span className="text-xs text-nutrir-ink/50">
                   Total: {MARMITA_WEIGHT_G[size]}g
                 </span>
               </div>
 
               {kit.id === "misto" && (
-                <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-nutrir-burgundy/12 bg-nutrir-cream/70 px-3 py-2.5 text-left text-sm leading-snug text-nutrir-emerald transition-colors hover:border-nutrir-burgundy/25">
+                <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-nutrir-burgundy/12 bg-nutrir-canvas-alt/70 px-3 py-2.5 text-left text-sm leading-snug text-nutrir-ink transition-colors hover:border-nutrir-burgundy/25">
                   <input
                     type="checkbox"
                     checked={includeVeg}
@@ -223,7 +223,7 @@ export function KitCard({ kit }: Props) {
               ))}
             </div>
 
-            <p className="mt-3 text-center text-xs text-nutrir-emerald/70">
+            <p className="mt-3 text-center text-xs text-nutrir-ink/70">
               Deseja uma quantidade de marmitas diferente? Então:{" "}
               <button
                 type="button"

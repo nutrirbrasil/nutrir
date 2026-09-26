@@ -87,11 +87,11 @@ export function CouponField({ applied, onApply, onRemove, cpf, token }: Props) {
     return (
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Cupom aplicado</p>
-          <p className="font-semibold text-nutrir-emerald">
+          <p className="text-xs font-bold uppercase text-nutrir-ink/60">Cupom aplicado</p>
+          <p className="font-semibold text-nutrir-ink">
             {applied.code}
             {applied.label && (
-              <span className="ml-1.5 text-sm font-normal text-nutrir-emerald/70">
+              <span className="ml-1.5 text-sm font-normal text-nutrir-ink/70">
                 ({applied.label})
               </span>
             )}
@@ -110,7 +110,7 @@ export function CouponField({ applied, onApply, onRemove, cpf, token }: Props) {
 
   return (
     <div>
-      <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Cupom de desconto</p>
+      <p className="text-xs font-bold uppercase text-nutrir-ink/60">Cupom de desconto</p>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           type="text"

@@ -219,7 +219,7 @@ export function ReviewStep() {
           <div className="card divide-y divide-nutrir-nude-dark/40 p-0">
             <section className="space-y-2 p-5">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-bold uppercase text-nutrir-emerald/60">
+                <p className="text-xs font-bold uppercase text-nutrir-ink/60">
                   {isDelivery ? "Entrega" : "Retirada"}
                 </p>
                 <Link href="/agendar" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
@@ -228,12 +228,12 @@ export function ReviewStep() {
               </div>
               {isDelivery ? (
                 <>
-                  <p className="font-semibold text-nutrir-emerald">
+                  <p className="font-semibold text-nutrir-ink">
                     {d.delivery_selection
                       ? formatDeliverySummary(d.delivery_bairro_id, d.delivery_selection)
                       : d.pickup_display}
                   </p>
-                  <p className="text-sm leading-relaxed text-nutrir-emerald/70">
+                  <p className="text-sm leading-relaxed text-nutrir-ink/70">
                     {composeDeliveryAddressPreview(
                       d.delivery_bairro_id ?? "",
                       d.delivery_street ?? "",
@@ -245,7 +245,7 @@ export function ReviewStep() {
                 </>
               ) : (
                 <>
-                  <div className="space-y-2 font-semibold text-nutrir-emerald">
+                  <div className="space-y-2 font-semibold text-nutrir-ink">
                     {pickupLines.map((line, i) => (
                       <div key={i}>
                         {line.label && <p>{line.label}</p>}
@@ -255,7 +255,7 @@ export function ReviewStep() {
                       </div>
                     ))}
                   </div>
-                  <p className="text-sm leading-relaxed text-nutrir-emerald/70">
+                  <p className="text-sm leading-relaxed text-nutrir-ink/70">
                     {NUTRIR_STORE_ADDRESS}
                   </p>
                 </>
@@ -264,12 +264,12 @@ export function ReviewStep() {
 
             <section className="space-y-2 p-5">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Pagamento</p>
+                <p className="text-xs font-bold uppercase text-nutrir-ink/60">Pagamento</p>
                 <Link href="/checkout/pagamento" className="shrink-0 text-xs font-bold uppercase text-nutrir-burgundy">
                   Trocar
                 </Link>
               </div>
-              <p className="font-semibold text-nutrir-emerald">
+              <p className="font-semibold text-nutrir-ink">
                 {PAYMENT_METHOD_SHORT_LABELS[method]}
               </p>
             </section>

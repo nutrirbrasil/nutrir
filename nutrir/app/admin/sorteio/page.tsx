@@ -79,8 +79,8 @@ function SorteioTool() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Sorteio Nutrir</h1>
-      <p className="mt-1 text-sm text-nutrir-emerald/60">
+      <h1 className="font-display text-2xl font-bold text-nutrir-ink">Sorteio Nutrir</h1>
+      <p className="mt-1 text-sm text-nutrir-ink/60">
         Ferramenta de sorteio Nutrir Piçarras. {TOTAL_TICKETS_STATIC * 5} rifas em disputa entre{" "}
         {TOTAL_PARTICIPANTS_STATIC * 3} participantes.
       </p>
@@ -91,13 +91,13 @@ function SorteioTool() {
             className={`font-display text-2xl font-bold ${
               !isDrawing && winners.length > 0 && winners[winners.length - 1].handle === display
                 ? "text-nutrir-burgundy"
-                : "text-nutrir-emerald"
+                : "text-nutrir-ink"
             }`}
           >
             {display}
           </p>
         ) : (
-          <p className="text-sm text-nutrir-emerald/50">Clique em sortear para começar.</p>
+          <p className="text-sm text-nutrir-ink/50">Clique em sortear para começar.</p>
         )}
         {!isDrawing && winners.length > 0 && winners[winners.length - 1].handle === display && (
           <p className="mt-1 text-xs font-bold uppercase tracking-wide text-nutrir-burgundy">
@@ -122,10 +122,10 @@ function SorteioTool() {
 
       {winners.length > 0 && (
         <div className="card mt-6">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-ink/55">
             Ganhadores
           </p>
-          <ol className="space-y-1 text-sm text-nutrir-emerald">
+          <ol className="space-y-1 text-sm text-nutrir-ink">
             {winners.map((w, i) => (
               <li key={`${w.handle}-${i}`}>
                 {i + 1}º — {w.handle}
@@ -141,11 +141,11 @@ function SorteioTool() {
           onClick={() => setShowParticipants((v) => !v)}
           className="flex w-full items-center justify-between text-left"
         >
-          <span className="text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
+          <span className="text-xs font-bold uppercase tracking-wide text-nutrir-ink/55">
             Participantes ({TOTAL_PARTICIPANTS_STATIC * 3})
           </span>
           <span
-            className={`text-nutrir-emerald/55 transition-transform ${showParticipants ? "rotate-180" : ""}`}
+            className={`text-nutrir-ink/55 transition-transform ${showParticipants ? "rotate-180" : ""}`}
             aria-hidden
           >
             ▾
@@ -156,10 +156,10 @@ function SorteioTool() {
             {remaining.map((e) => (
               <li
                 key={e.handle}
-                className="flex items-center justify-between rounded-lg bg-nutrir-cream/60 px-3 py-2 text-sm"
+                className="flex items-center justify-between rounded-lg bg-nutrir-canvas-alt/60 px-3 py-2 text-sm"
               >
-                <span className="text-nutrir-emerald">{e.handle}</span>
-                <span className="text-xs text-nutrir-emerald/60">
+                <span className="text-nutrir-ink">{e.handle}</span>
+                <span className="text-xs text-nutrir-ink/60">
                   {((e.tickets / totalTickets) * 100).toFixed(1)}%
                 </span>
               </li>

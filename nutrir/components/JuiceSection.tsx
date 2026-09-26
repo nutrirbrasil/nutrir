@@ -9,7 +9,7 @@ function ComingSoonCard() {
   return (
     <article className="card flex flex-col items-center justify-center border-dashed py-10 text-center sm:py-16">
       <span className="text-4xl opacity-60">✨</span>
-      <p className="mt-4 font-display text-lg font-bold text-nutrir-emerald sm:text-xl">
+      <p className="mt-4 font-display text-lg font-bold text-nutrir-ink sm:text-xl">
         Em breve
       </p>
     </article>
@@ -33,7 +33,7 @@ export function JuiceSection({ category }: Props) {
             ))}
           </div>
           {category.note && (
-            <p className="mt-4 text-center text-xs italic text-nutrir-emerald/55">
+            <p className="mt-4 text-center text-xs italic text-nutrir-ink/55">
               {category.note}
             </p>
           )}

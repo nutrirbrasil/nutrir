@@ -98,11 +98,11 @@ export function PaymentMethodStep() {
     >
       <div className="card space-y-4">
         {paymentBanner && (
-          <p className="rounded-lg bg-nutrir-emerald/5 p-3 text-sm text-nutrir-emerald/80">
+          <p className="rounded-lg bg-nutrir-emerald/5 p-3 text-sm text-nutrir-ink/80">
             {paymentBanner}
           </p>
         )}
-        <p className="text-sm font-semibold text-nutrir-emerald">Forma de pagamento</p>
+        <p className="text-sm font-semibold text-nutrir-ink">Forma de pagamento</p>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {options.map((option) => (
             <button
@@ -111,8 +111,8 @@ export function PaymentMethodStep() {
               onClick={() => setMethod(option.id)}
               className={`relative rounded-xl border-2 px-3 py-3 text-left transition sm:px-4 sm:py-4 ${
                 method === option.id
-                  ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                  : "border-nutrir-burgundy/30 bg-nutrir-nude hover:border-nutrir-burgundy"
+                  ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"
+                  : "border-nutrir-burgundy/30 bg-nutrir-canvas hover:border-nutrir-burgundy"
               }`}
             >
               {option.badge && (

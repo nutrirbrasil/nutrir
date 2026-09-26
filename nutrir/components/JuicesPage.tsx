@@ -31,7 +31,7 @@ export function JuicesPage() {
             <JuiceSection category={category} />
           </Reveal>
         ))}
-        <p className="text-center text-xs leading-relaxed text-nutrir-emerald/55">
+        <p className="text-center text-xs leading-relaxed text-nutrir-ink/55">
           *Valor promocional válido apenas para pagamentos em dinheiro ou pix
         </p>
       </div>

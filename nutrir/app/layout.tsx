@@ -28,9 +28,22 @@ export const metadata: Metadata = {
   },
 };
 
+// Aplica a classe "dark" em <html> antes do React hidratar, senão a página
+// pisca no tema errado (claro) por um instante quando o usuário já escolheu escuro.
+const THEME_INIT_SCRIPT = `
+try {
+  var t = localStorage.getItem("nutrir-theme");
+  if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  if (t === "dark") document.documentElement.classList.add("dark");
+} catch (e) {}
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${dmSans.variable} ${fraunces.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       {/*
         Alturas do "chrome" (faixa do Instagram, cabeçalho, menu inferior no
         celular) como variáveis: o main e páginas de tela cheia (home) usam

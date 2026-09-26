@@ -276,12 +276,12 @@ function SubitemAmountInput({
         value={Math.round(displayed * 100) / 100}
         onChange={(e) => handleInput(Number(e.target.value))}
       />
-      <span className="text-xs text-nutrir-emerald/60">{isPercent ? "%" : "g"}</span>
+      <span className="text-xs text-nutrir-ink/60">{isPercent ? "%" : "g"}</span>
       <button
         type="button"
         onClick={onToggleMode}
         className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-          isPercent ? "bg-nutrir-burgundy text-nutrir-nude" : "bg-nutrir-emerald/10 text-nutrir-emerald"
+          isPercent ? "bg-nutrir-burgundy text-nutrir-nude" : "bg-nutrir-emerald/10 text-nutrir-ink"
         }`}
         title="Alternar entre gramas e % da porção alvo do item principal"
       >
@@ -332,13 +332,13 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
     <div className="rounded-2xl border-2 border-nutrir-emerald/15 bg-white/70 p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-lg font-bold text-nutrir-emerald sm:text-xl">
+          <h3 className="font-display text-lg font-bold text-nutrir-ink sm:text-xl">
             {item.food.display_name}
             {item.note && (
-              <span className="ml-2 text-xs font-normal text-nutrir-emerald/50">({item.note})</span>
+              <span className="ml-2 text-xs font-normal text-nutrir-ink/50">({item.note})</span>
             )}
           </h3>
-          <p className="text-[11px] text-nutrir-emerald/50">
+          <p className="text-[11px] text-nutrir-ink/50">
             {ingredientCount} {ingredientCount === 1 ? "ingrediente" : "ingredientes"}
           </p>
         </div>
@@ -349,12 +349,12 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
 
       <ul className="mt-3 space-y-1.5 border-t border-nutrir-nude-dark/30 pt-3">
         <li className="flex items-center justify-between gap-3 text-sm">
-          <span className="text-nutrir-emerald/85">
-            <span className="text-nutrir-emerald/40">•</span> {item.food.display_name}
+          <span className="text-nutrir-ink/85">
+            <span className="text-nutrir-ink/40">•</span> {item.food.display_name}
           </span>
-          <span className="shrink-0 tabular-nums font-semibold text-nutrir-emerald">
+          <span className="shrink-0 tabular-nums font-semibold text-nutrir-ink">
             {fmt(item.grams * batchCount)} g{cruHint(item.food, item.grams * batchCount)}{" "}
-            <span className="font-normal text-nutrir-emerald/50">({ownPct.toFixed(1)}%)</span>
+            <span className="font-normal text-nutrir-ink/50">({ownPct.toFixed(1)}%)</span>
           </span>
         </li>
         {item.children.map((child) => {
@@ -365,13 +365,13 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
             const multiplier = cru > 0 ? child.grams / cru : 0;
             return (
               <li key={child.id} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-nutrir-emerald/85">
-                  <span className="text-nutrir-emerald/40">•</span> {child.food.display_name}
-                  <span className="ml-1 text-[10px] text-nutrir-emerald/50">(não conta no total, evapora)</span>
+                <span className="text-nutrir-ink/85">
+                  <span className="text-nutrir-ink/40">•</span> {child.food.display_name}
+                  <span className="ml-1 text-[10px] text-nutrir-ink/50">(não conta no total, evapora)</span>
                 </span>
-                <span className="shrink-0 tabular-nums font-semibold text-nutrir-emerald">
+                <span className="shrink-0 tabular-nums font-semibold text-nutrir-ink">
                   {fmt(childTotal)} ml{" "}
-                  <span className="font-normal text-nutrir-emerald/50">
+                  <span className="font-normal text-nutrir-ink/50">
                     ({multiplier.toFixed(1).replace(".", ",")}x)
                   </span>
                 </span>
@@ -389,15 +389,15 @@ function CookingIngredientCard({ item, batchCount }: { item: RecipeIngredient; b
 
           return (
             <li key={child.id} className="flex items-center justify-between gap-3 text-sm">
-              <span className="text-nutrir-emerald/85">
-                <span className="text-nutrir-emerald/40">•</span> {child.food.display_name}
+              <span className="text-nutrir-ink/85">
+                <span className="text-nutrir-ink/40">•</span> {child.food.display_name}
                 {child.food.is_reference_only && (
-                  <span className="ml-1 text-[10px] text-nutrir-emerald/50">(não conta no total)</span>
+                  <span className="ml-1 text-[10px] text-nutrir-ink/50">(não conta no total)</span>
                 )}
               </span>
-              <span className="shrink-0 tabular-nums font-semibold text-nutrir-emerald">
+              <span className="shrink-0 tabular-nums font-semibold text-nutrir-ink">
                 {fmt(childTotal)} g{cruHint(child.food, childTotal)}{" "}
-                <span className="font-normal text-nutrir-emerald/50">({pct.toFixed(1)}%)</span>
+                <span className="font-normal text-nutrir-ink/50">({pct.toFixed(1)}%)</span>
               </span>
             </li>
           );
@@ -415,7 +415,7 @@ function sortByCookedTotalDesc(items: RecipeIngredient[]): RecipeIngredient[] {
 /** Visão de cozinha: bonita, grande, só leitura — o que o Pedro vai olhar com a mão suja de tempero. */
 function RecipeCookingView({ recipe, batchCount }: { recipe: Recipe; batchCount: number }) {
   if (recipe.ingredients.length === 0) {
-    return <p className="text-sm text-nutrir-emerald/60">Nenhum ingrediente cadastrado ainda.</p>;
+    return <p className="text-sm text-nutrir-ink/60">Nenhum ingrediente cadastrado ainda.</p>;
   }
 
   const ordered = sortByCookedTotalDesc(recipe.ingredients);
@@ -423,7 +423,7 @@ function RecipeCookingView({ recipe, batchCount }: { recipe: Recipe; batchCount:
 
   return (
     <div className="space-y-3">
-      <p className="text-right text-sm font-bold text-nutrir-emerald/70">
+      <p className="text-right text-sm font-bold text-nutrir-ink/70">
         Peso total da marmita: {fmt(grandTotal)} g
       </p>
       {ordered.map((item) => (
@@ -433,7 +433,7 @@ function RecipeCookingView({ recipe, batchCount }: { recipe: Recipe; batchCount:
       {recipe.observations && (
         <div className="rounded-2xl border-2 border-nutrir-burgundy/20 bg-nutrir-burgundy/5 p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-nutrir-burgundy">Modo de preparo</p>
-          <p className="mt-1 whitespace-pre-line text-sm text-nutrir-emerald/90">{recipe.observations}</p>
+          <p className="mt-1 whitespace-pre-line text-sm text-nutrir-ink/90">{recipe.observations}</p>
         </div>
       )}
     </div>
@@ -533,8 +533,8 @@ function RecipeEditor({
         {pending.map((item) => (
           <div key={item.key} className="rounded-xl border border-nutrir-nude-dark/40 p-2.5">
             <div className="flex items-center gap-2">
-              <span className="flex-1 text-sm text-nutrir-emerald">{item.food.display_name}</span>
-              <label className="text-[10px] text-nutrir-emerald/50">Total cozido</label>
+              <span className="flex-1 text-sm text-nutrir-ink">{item.food.display_name}</span>
+              <label className="text-[10px] text-nutrir-ink/50">Total cozido</label>
               <input
                 type="number"
                 min={0}
@@ -545,7 +545,7 @@ function RecipeEditor({
                   setPending((prev) => updateNodeByKey(prev, item.key, { grams: Number(e.target.value) }))
                 }
               />
-              <span className="text-xs text-nutrir-emerald/60">g</span>
+              <span className="text-xs text-nutrir-ink/60">g</span>
               <button
                 type="button"
                 onClick={() => setPending((prev) => removeNodeByKey(prev, item.key))}
@@ -555,7 +555,7 @@ function RecipeEditor({
               </button>
             </div>
             {item.children.length > 0 && (
-              <p className="mt-1 text-[10px] text-nutrir-emerald/45">
+              <p className="mt-1 text-[10px] text-nutrir-ink/45">
                 = {fmt(ownPortionGrams(item))} g de {item.food.display_name} puro
                 {cruHint(item.food, ownPortionGrams(item))}
               </p>
@@ -575,7 +575,7 @@ function RecipeEditor({
               onClick={() =>
                 setPending((prev) => updateNodeByKey(prev, item.key, { showChildren: !item.showChildren }))
               }
-              className="mt-2 text-xs font-bold text-nutrir-emerald underline underline-offset-2"
+              className="mt-2 text-xs font-bold text-nutrir-ink underline underline-offset-2"
             >
               {item.showChildren
                 ? "Esconder subitens"
@@ -593,7 +593,7 @@ function RecipeEditor({
                     : `${pctOfTarget(item, child.grams).toFixed(1)}%`;
                   return (
                     <div key={child.key} className="flex items-center gap-2">
-                      <span className="flex-1 text-xs text-nutrir-emerald">{child.food.display_name}</span>
+                      <span className="flex-1 text-xs text-nutrir-ink">{child.food.display_name}</span>
                       <SubitemAmountInput
                         parent={item}
                         child={child}
@@ -608,7 +608,7 @@ function RecipeEditor({
                           )
                         }
                       />
-                      <span className="w-14 shrink-0 text-right text-[10px] text-nutrir-emerald/40">
+                      <span className="w-14 shrink-0 text-right text-[10px] text-nutrir-ink/40">
                         {hint}
                       </span>
                       <button
@@ -632,12 +632,12 @@ function RecipeEditor({
           </div>
         ))}
         {pending.length === 0 && (
-          <p className="text-sm text-nutrir-emerald/60">Nenhum ingrediente ainda.</p>
+          <p className="text-sm text-nutrir-ink/60">Nenhum ingrediente ainda.</p>
         )}
       </div>
 
       <div className="rounded-xl border-2 border-dashed border-nutrir-emerald/30 p-3">
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/60">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-ink/60">
           + Novo ingrediente principal (não é subitem de nenhum outro)
         </p>
         <AddIngredientControl
@@ -652,10 +652,10 @@ function RecipeEditor({
 
       {showNewFood && (
         <div className="space-y-3 rounded-xl border border-nutrir-nude-dark/40 p-3">
-          <p className="text-sm font-bold text-nutrir-emerald">Novo ingrediente</p>
+          <p className="text-sm font-bold text-nutrir-ink">Novo ingrediente</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-medium text-nutrir-emerald">
+              <label className="mb-1 block text-xs font-medium text-nutrir-ink">
                 Nome no rótulo (ex: cebola)
               </label>
               <input
@@ -665,7 +665,7 @@ function RecipeEditor({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-nutrir-emerald">
+              <label className="mb-1 block text-xs font-medium text-nutrir-ink">
                 Nome de referência (fonte)
               </label>
               <input
@@ -677,14 +677,14 @@ function RecipeEditor({
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-nutrir-emerald">Fonte (opcional)</label>
+            <label className="mb-1 block text-xs font-medium text-nutrir-ink">Fonte (opcional)</label>
             <input
               className="input-field"
               value={newFood.source ?? ""}
               onChange={(e) => setNewFood({ ...newFood, source: e.target.value })}
             />
           </div>
-          <p className="text-xs text-nutrir-emerald/60">Valores por 100 g (peso pronto/consumido):</p>
+          <p className="text-xs text-nutrir-ink/60">Valores por 100 g (peso pronto/consumido):</p>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
             {(
               [
@@ -697,7 +697,7 @@ function RecipeEditor({
               ] as [keyof FoodInput, string][]
             ).map(([field, label]) => (
               <div key={field}>
-                <label className="mb-1 block text-[10px] font-medium text-nutrir-emerald">{label}</label>
+                <label className="mb-1 block text-[10px] font-medium text-nutrir-ink">{label}</label>
                 <input
                   type="number"
                   step="0.1"
@@ -709,7 +709,7 @@ function RecipeEditor({
             ))}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-nutrir-emerald">
+            <label className="mb-1 block text-xs font-medium text-nutrir-ink">
               Fator de cocção (peso pronto ÷ peso cru, 1 se não muda)
             </label>
             <input
@@ -721,7 +721,7 @@ function RecipeEditor({
             />
           </div>
           <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2 text-sm text-nutrir-emerald">
+            <label className="flex items-center gap-2 text-sm text-nutrir-ink">
               <input
                 type="checkbox"
                 checked={newFood.contains_gluten ?? false}
@@ -729,7 +729,7 @@ function RecipeEditor({
               />
               Contém glúten
             </label>
-            <label className="flex items-center gap-2 text-sm text-nutrir-emerald">
+            <label className="flex items-center gap-2 text-sm text-nutrir-ink">
               <input
                 type="checkbox"
                 checked={newFood.contains_lactose ?? false}
@@ -738,7 +738,7 @@ function RecipeEditor({
               Contém lactose
             </label>
           </div>
-          <label className="flex items-center gap-2 text-sm text-nutrir-emerald">
+          <label className="flex items-center gap-2 text-sm text-nutrir-ink">
             <input
               type="checkbox"
               checked={newFood.is_reference_only ?? false}
@@ -753,7 +753,7 @@ function RecipeEditor({
       )}
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-nutrir-emerald">
+        <label className="mb-1 block text-sm font-medium text-nutrir-ink">
           Modo de preparo / observações gerais
         </label>
         <textarea
@@ -765,8 +765,8 @@ function RecipeEditor({
       </div>
 
       <div className="rounded-xl border border-nutrir-nude-dark/40 p-3">
-        <p className="text-sm font-bold text-nutrir-emerald">Lista de ingredientes do rótulo</p>
-        <p className="mt-1 text-xs text-nutrir-emerald/70">
+        <p className="text-sm font-bold text-nutrir-ink">Lista de ingredientes do rótulo</p>
+        <p className="mt-1 text-xs text-nutrir-ink/70">
           {mergedTotals.length > 0
             ? mergedTotals.map((m) => m.food.display_name).join(", ") + "."
             : "Nenhum ingrediente ainda."}
@@ -775,7 +775,7 @@ function RecipeEditor({
 
       {previewFacts && (
         <div>
-          <p className="mb-1 text-sm font-medium text-nutrir-emerald">Prévia da tabela nutricional</p>
+          <p className="mb-1 text-sm font-medium text-nutrir-ink">Prévia da tabela nutricional</p>
           <NutritionTable facts={previewFacts} />
         </div>
       )}
@@ -832,7 +832,7 @@ function RecipeDetail({
           />
         )}
         <div>
-          <h1 className="font-display text-xl font-bold text-nutrir-emerald sm:text-2xl">{item.itemName}</h1>
+          <h1 className="font-display text-xl font-bold text-nutrir-ink sm:text-2xl">{item.itemName}</h1>
           <div className="mt-2 flex gap-2">
             {(["P", "G"] as MarmitaSize[]).map((s) => (
               <button
@@ -843,7 +843,7 @@ function RecipeDetail({
                   setMode("cook");
                 }}
                 className={`rounded-full px-4 py-1 text-sm font-bold transition ${
-                  size === s ? "bg-nutrir-emerald text-nutrir-cream" : "bg-nutrir-emerald/10 text-nutrir-emerald"
+                  size === s ? "bg-nutrir-emerald text-nutrir-cream" : "bg-nutrir-emerald/10 text-nutrir-ink"
                 }`}
               >
                 {s}
@@ -855,7 +855,7 @@ function RecipeDetail({
 
       {mode === "cook" && (
         <div className="flex items-center gap-3 rounded-2xl border-2 border-nutrir-emerald/15 bg-nutrir-emerald/5 p-3">
-          <label className="text-sm font-bold text-nutrir-emerald">Porções</label>
+          <label className="text-sm font-bold text-nutrir-ink">Porções</label>
           <button
             type="button"
             onClick={() => setBatchCount((n) => Math.max(1, n - 1))}
@@ -877,11 +877,11 @@ function RecipeDetail({
           >
             +
           </button>
-          <span className="text-xs text-nutrir-emerald/60">marmita(s) de {size}</span>
+          <span className="text-xs text-nutrir-ink/60">marmita(s) de {size}</span>
         </div>
       )}
 
-      {!recipe && <p className="text-sm text-nutrir-emerald/60">Carregando receita...</p>}
+      {!recipe && <p className="text-sm text-nutrir-ink/60">Carregando receita...</p>}
 
       {recipe && mode === "cook" && (
         <>
@@ -930,16 +930,16 @@ export default function FichasTecnicasPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       {!selectedItem ? (
         <>
-          <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+          <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-ink/70 hover:text-nutrir-ink">
             ← Voltar
           </Link>
-          <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Fichas técnicas</h1>
-          <p className="mt-1 text-sm text-nutrir-emerald/60">
+          <h1 className="font-display text-2xl font-bold text-nutrir-ink">Fichas técnicas</h1>
+          <p className="mt-1 text-sm text-nutrir-ink/60">
             Toque numa marmita pra ver a receita pronta pra cozinha: cru, cozido, temperos e água, em
             gramas e porcentagem.
           </p>
 
-          {loading && <p className="mt-6 text-sm text-nutrir-emerald/60">Carregando...</p>}
+          {loading && <p className="mt-6 text-sm text-nutrir-ink/60">Carregando...</p>}
 
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {ITEM_LIST.map((item) => (
@@ -957,7 +957,7 @@ export default function FichasTecnicasPage() {
                     sizes="200px"
                   />
                 )}
-                <span className="text-sm font-bold text-nutrir-emerald">{item.itemName}</span>
+                <span className="text-sm font-bold text-nutrir-ink">{item.itemName}</span>
               </button>
             ))}
           </div>

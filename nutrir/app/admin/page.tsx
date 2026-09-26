@@ -44,14 +44,14 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Admin</h1>
-      <p className="mt-1 text-sm text-nutrir-emerald/60">Páginas de gerenciamento do Nutrir.</p>
+      <h1 className="font-display text-2xl font-bold text-nutrir-ink">Admin</h1>
+      <p className="mt-1 text-sm text-nutrir-ink/60">Páginas de gerenciamento do Nutrir.</p>
 
       <div className="mt-6 space-y-3">
         {ADMIN_PAGES.map((page) => (
           <Link key={page.href} href={page.href} className="card card-lift block">
-            <p className="font-display text-lg font-bold text-nutrir-emerald">{page.label}</p>
-            <p className="mt-1 text-sm text-nutrir-emerald/70">{page.description}</p>
+            <p className="font-display text-lg font-bold text-nutrir-ink">{page.label}</p>
+            <p className="mt-1 text-sm text-nutrir-ink/70">{page.description}</p>
           </Link>
         ))}
       </div>

@@ -111,9 +111,9 @@ export function CardapioPage() {
           style={{ animationDelay: "200ms" }}
           aria-hidden
         >
-          <span className="h-px w-10 bg-nutrir-nude/25" />
-          <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-nude/45" />
-          <span className="h-px w-10 bg-nutrir-nude/25" />
+          <span className="h-px w-10 bg-nutrir-canvas/25" />
+          <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-canvas/45" />
+          <span className="h-px w-10 bg-nutrir-canvas/25" />
         </div>
 
         <p
@@ -151,7 +151,7 @@ export function CardapioPage() {
               className={`rounded-full px-8 py-3 text-sm font-bold tracking-wide transition-all duration-200 ${
                 tab === t.id
                   ? "bg-nutrir-burgundy text-nutrir-nude shadow-[0_2px_6px_rgb(92_34_44/0.3),0_10px_24px_rgb(92_34_44/0.28)]"
-                  : "border border-nutrir-nude/25 text-nutrir-nude/90 hover:border-nutrir-nude/45 hover:bg-nutrir-nude/10"
+                  : "border border-nutrir-nude/25 text-nutrir-nude/90 hover:border-nutrir-nude/45 hover:bg-nutrir-canvas/10"
               }`}
             >
               {t.label}
@@ -172,7 +172,7 @@ export function CardapioPage() {
             ))}
 
             <Reveal className="pt-4 text-center">
-              <p className="text-nutrir-emerald/70">Não encontrou o que procurava?</p>
+              <p className="text-nutrir-ink/70">Não encontrou o que procurava?</p>
               <button
                 type="button"
                 onClick={() => selectTab("montar")}

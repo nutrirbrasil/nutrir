@@ -4,21 +4,24 @@ import { CartProvider } from "@/lib/cart-context";
 import { CheckoutProvider } from "@/lib/checkout-context";
 import { ProfileProvider } from "@/lib/profile-context";
 import { AddonsFlowProvider } from "@/lib/addons-flow-context";
+import { ThemeProvider } from "@/lib/theme-context";
 import { CartSidebar } from "@/components/CartSidebar";
 import { AuthHashRedirect } from "@/components/AuthHashRedirect";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <ProfileProvider>
-      <CheckoutProvider>
-        <CartProvider>
-          <AddonsFlowProvider>
-            <AuthHashRedirect />
-            {children}
-            <CartSidebar />
-          </AddonsFlowProvider>
-        </CartProvider>
-      </CheckoutProvider>
-    </ProfileProvider>
+    <ThemeProvider>
+      <ProfileProvider>
+        <CheckoutProvider>
+          <CartProvider>
+            <AddonsFlowProvider>
+              <AuthHashRedirect />
+              {children}
+              <CartSidebar />
+            </AddonsFlowProvider>
+          </CartProvider>
+        </CheckoutProvider>
+      </ProfileProvider>
+    </ThemeProvider>
   );
 }

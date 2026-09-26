@@ -10,7 +10,7 @@ import type { StockRow } from "@/lib/stock-db";
 
 function SizeBadge({ children }: { children: ReactNode }) {
   return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald/10 text-xs font-bold text-nutrir-emerald">
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-nutrir-emerald/10 text-xs font-bold text-nutrir-ink">
       {children}
     </span>
   );
@@ -30,15 +30,15 @@ function StockRowLine({
       className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
         available > 0
           ? "border-nutrir-emerald/30 bg-nutrir-emerald/10"
-          : "border-nutrir-nude-dark/50 bg-nutrir-nude-dark/10"
+          : "border-nutrir-nude-dark/50 bg-nutrir-canvas-alt/10"
       }`}
     >
       <SizeBadge>{label}</SizeBadge>
       <div className="min-w-0 flex-1">
-        <p className={`font-semibold ${available > 0 ? "text-nutrir-emerald" : "text-nutrir-emerald/50 line-through"}`}>
+        <p className={`font-semibold ${available > 0 ? "text-nutrir-ink" : "text-nutrir-ink/50 line-through"}`}>
           {formatPrice(price)}
         </p>
-        <p className="text-[11px] text-nutrir-emerald/60">
+        <p className="text-[11px] text-nutrir-ink/60">
           {available > 0
             ? `${available} ${available === 1 ? "unidade disponível" : "unidades disponíveis"}`
             : "Esgotado"}
@@ -55,7 +55,7 @@ function StockItemCard({ item, stock }: { item: StockCatalogItem; stock: StockRo
         <MarmitaPhoto src={item.imageSrc} alt={item.name} className="h-16 w-16 shrink-0" sizes="64px" />
       )}
       <div className="min-w-0 flex-1">
-        <p className="font-display text-base font-bold text-nutrir-emerald">{item.name}</p>
+        <p className="font-display text-base font-bold text-nutrir-ink">{item.name}</p>
         <div className="mt-2 space-y-2">
           {item.sizes.map((s) => (
             <StockRowLine
@@ -93,7 +93,7 @@ export default function EstoquePage() {
       <div className="mx-auto max-w-3xl px-4 py-8">
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
         {!stock && !error && (
-          <p className="text-center text-sm text-nutrir-emerald/60">Carregando estoque…</p>
+          <p className="text-center text-sm text-nutrir-ink/60">Carregando estoque…</p>
         )}
 
         {stock && (
@@ -104,7 +104,7 @@ export default function EstoquePage() {
               const title = kind === "marmita" ? "Marmitas" : kind === "suco" ? "Sucos" : "Bebidas";
               return (
                 <section key={kind}>
-                  <h2 className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-nutrir-emerald/60">
+                  <h2 className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-nutrir-ink/60">
                     <FiCheckCircle aria-hidden />
                     {title}
                   </h2>

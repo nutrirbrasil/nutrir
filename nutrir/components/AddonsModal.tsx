@@ -54,7 +54,7 @@ function QtyStepper({
       >
         −
       </button>
-      <span className="min-w-[1.25rem] text-center text-sm font-bold tabular-nums text-nutrir-emerald">
+      <span className="min-w-[1.25rem] text-center text-sm font-bold tabular-nums text-nutrir-ink">
         {qty}
       </span>
       <button
@@ -81,7 +81,7 @@ function SubstitutionToggle({ selected, onToggle }: { selected: boolean; onToggl
       className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold transition ${
         selected
           ? "bg-nutrir-burgundy text-nutrir-nude"
-          : "border border-nutrir-emerald/30 text-nutrir-emerald hover:bg-nutrir-emerald/5"
+          : "border border-nutrir-emerald/30 text-nutrir-ink hover:bg-nutrir-emerald/5"
       }`}
     >
       {selected ? "Selecionado" : "Selecionar"}
@@ -114,18 +114,18 @@ function AddonCard({
 }) {
   const unitCents = getAddonUnitPriceCents(addon);
   return (
-    <div className="flex flex-col gap-1.5 rounded-xl border border-nutrir-nude-dark/60 bg-nutrir-cream/50 px-2.5 py-2.5">
+    <div className="flex flex-col gap-1.5 rounded-xl border border-nutrir-nude-dark/60 bg-nutrir-canvas-alt/50 px-2.5 py-2.5">
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <AddonThumb addon={addon} />
-          <p className="text-sm font-semibold text-nutrir-emerald">{addon.name}</p>
+          <p className="text-sm font-semibold text-nutrir-ink">{addon.name}</p>
         </div>
         <span className="shrink-0 text-sm font-bold text-nutrir-burgundy">
           {formatAddonPriceTag(unitCents)}
         </span>
       </div>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-nutrir-emerald/60">{addon.portionLabel}</span>
+        <span className="text-xs text-nutrir-ink/60">{addon.portionLabel}</span>
         <QtyStepper qty={qty} onDec={onDec} onInc={onInc} />
       </div>
     </div>
@@ -145,13 +145,13 @@ function SubstitutionCard({
   return (
     <div className="flex flex-col gap-1.5 rounded-xl border border-nutrir-nude-dark/60 bg-white px-2.5 py-2.5">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-nutrir-emerald">{addon.name}</p>
+        <p className="text-sm font-semibold text-nutrir-ink">{addon.name}</p>
         <span className="shrink-0 text-sm font-bold text-nutrir-burgundy">
           {formatAddonPriceTag(unitCents)}
         </span>
       </div>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-nutrir-emerald/60">{addon.portionLabel}</span>
+        <span className="text-xs text-nutrir-ink/60">{addon.portionLabel}</span>
         <SubstitutionToggle selected={selected} onToggle={onToggle} />
       </div>
     </div>
@@ -202,7 +202,7 @@ function AddonPicker({
     <div className="space-y-4">
       {substitutionAddons.length > 0 && (
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-ink/55">
             Substituições
           </p>
           <div className="space-y-2">
@@ -222,7 +222,7 @@ function AddonPicker({
       )}
       {regularAddons.length > 0 && (
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-ink/55">
             Adicionais
           </p>
           <div className={`grid gap-2 ${gridClass}`}>
@@ -252,7 +252,7 @@ function MealSidebar({
   onSelect: (index: number) => void;
 }) {
   return (
-    <aside className="flex w-[7.5rem] shrink-0 flex-col gap-1 overflow-y-auto border-r border-nutrir-nude-dark/40 bg-nutrir-nude/70 p-2 sm:w-36">
+    <aside className="flex w-[7.5rem] shrink-0 flex-col gap-1 overflow-y-auto border-r border-nutrir-nude-dark/40 bg-nutrir-canvas/70 p-2 sm:w-36">
       {labels.map((label, index) => {
         const thumbSrc = getMarmitaImageFromLabel(label, true);
         const active = activeIndex === index;
@@ -280,7 +280,7 @@ function MealSidebar({
             </div>
             <span
               className={`line-clamp-2 text-[10px] font-semibold leading-tight ${
-                active ? "text-nutrir-burgundy" : "text-nutrir-emerald"
+                active ? "text-nutrir-burgundy" : "text-nutrir-ink"
               }`}
             >
               {shortMealLabel(label)}
@@ -344,19 +344,19 @@ export function AddonsModal({
       <div
         role="dialog"
         aria-modal="true"
-        className={`fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-cream shadow-2xl ${
+        className={`fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl ${
           isCustomStep ? "w-[min(96vw,760px)]" : "w-[min(92vw,480px)]"
         }`}
       >
         <header className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 px-5 py-4">
           <div>
-            <h2 className="font-display text-xl font-bold text-nutrir-emerald">{title}</h2>
-            <p className="mt-1 text-sm text-nutrir-emerald/65">{pending.baseItem.name}</p>
+            <h2 className="font-display text-xl font-bold text-nutrir-ink">{title}</h2>
+            <p className="mt-1 text-sm text-nutrir-ink/65">{pending.baseItem.name}</p>
             {isCustomStep && (
               <button
                 type="button"
                 onClick={onChooseSameMode}
-                className="mt-1.5 text-xs font-semibold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-emerald"
+                className="mt-1.5 text-xs font-semibold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-ink"
               >
                 Adicionar mesmo adicional em todas
               </button>
@@ -365,7 +365,7 @@ export function AddonsModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-nutrir-emerald/20 text-nutrir-emerald/70 hover:bg-nutrir-emerald/5"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-nutrir-emerald/20 text-nutrir-ink/70 hover:bg-nutrir-emerald/5"
           >
             <FiX />
           </button>
@@ -392,7 +392,7 @@ export function AddonsModal({
                   onChange={onSameSelectionChange}
                 />
                 {previewSameTotal > 0 && (
-                  <p className="mt-4 text-center text-sm text-nutrir-emerald/70">
+                  <p className="mt-4 text-center text-sm text-nutrir-ink/70">
                     Total adicionais:{" "}
                     <strong className="text-nutrir-burgundy">
                       {formatPrice(previewSameTotal)}
@@ -404,7 +404,7 @@ export function AddonsModal({
 
             {isCustomStep && (
               <>
-                <p className="mb-2 text-sm font-semibold text-nutrir-emerald">
+                <p className="mb-2 text-sm font-semibold text-nutrir-ink">
                   {shortMealLabel(pending.mealLabels[activeMealIndex] ?? "")}
                 </p>
                 <AddonPicker
@@ -418,7 +418,7 @@ export function AddonsModal({
                   }}
                 />
                 {previewCustomTotal > 0 && (
-                  <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+                  <p className="mt-3 text-center text-sm text-nutrir-ink/70">
                     Total adicionais:{" "}
                     <strong className="text-nutrir-burgundy">
                       {formatPrice(previewCustomTotal)}
@@ -426,7 +426,7 @@ export function AddonsModal({
                   </p>
                 )}
                 {perMealTotal > 0 && (
-                  <p className="mt-1 text-center text-xs text-nutrir-emerald/55">
+                  <p className="mt-1 text-center text-xs text-nutrir-ink/55">
                     Esta marmita: {formatPrice(perMealTotal)}
                   </p>
                 )}

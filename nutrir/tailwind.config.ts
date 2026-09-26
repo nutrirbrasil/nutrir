@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -22,6 +23,17 @@ const config: Config = {
             dark: "#E8D5C4",
           },
           cream: "#FAF6F1",
+          // Tokens adaptáveis: mudam de valor no modo escuro (via CSS var em globals.css),
+          // diferente de emerald/burgundy/nude/cream acima, que são fixos nos dois temas
+          // (cor de marca, usada como fundo sólido de botões/cabeçalho/rodapé).
+          canvas: {
+            DEFAULT: "rgb(var(--nutrir-canvas) / <alpha-value>)",
+            alt: "rgb(var(--nutrir-canvas-alt) / <alpha-value>)",
+          },
+          ink: {
+            DEFAULT: "rgb(var(--nutrir-ink) / <alpha-value>)",
+            muted: "rgb(var(--nutrir-ink-muted) / <alpha-value>)",
+          },
         },
       },
       fontFamily: {

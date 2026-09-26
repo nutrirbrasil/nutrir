@@ -49,7 +49,7 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
 
   return (
     <aside className="card sticky top-4">
-      <h2 className="font-display text-lg font-bold text-nutrir-emerald">
+      <h2 className="font-display text-lg font-bold text-nutrir-ink">
         Sua sacola tem{" "}
         <span className="text-nutrir-burgundy">
           {draft.items.reduce((s, i) => s + i.quantity, 0)} itens
@@ -79,15 +79,15 @@ export function OrderSummarySidebar({ draft }: { draft: CheckoutDraft }) {
                   <MarmitaPhoto src={imageSrc} alt={item.name} className="h-full w-full" sizes="48px" />
                 )}
               </div>
-              <span className="flex-1 text-nutrir-emerald">
+              <span className="flex-1 text-nutrir-ink">
                 {item.quantity}x {item.name}
-                <span className="mt-0.5 block text-xs text-nutrir-emerald/55">
+                <span className="mt-0.5 block text-xs text-nutrir-ink/55">
                   {formatItemAddonsLabel(item)}
                 </span>
               </span>
               <span className="shrink-0 text-right">
                 {hasDiscount && (
-                  <span className="block text-xs text-nutrir-emerald/45 line-through">
+                  <span className="block text-xs text-nutrir-ink/45 line-through">
                     {formatPrice(listCents)}
                   </span>
                 )}

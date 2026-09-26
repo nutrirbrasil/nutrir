@@ -45,10 +45,10 @@ export function JuiceCard({ item }: Props) {
       </div>
 
       <div className="flex flex-1 flex-col p-2.5 sm:p-4">
-        <h3 className="line-clamp-2 font-display text-sm font-bold leading-tight text-nutrir-emerald sm:text-base lg:text-lg">
+        <h3 className="line-clamp-2 font-display text-sm font-bold leading-tight text-nutrir-ink sm:text-base lg:text-lg">
           {item.name}
         </h3>
-        <p className="mt-1 text-[10px] text-nutrir-emerald/60 sm:text-sm">
+        <p className="mt-1 text-[10px] text-nutrir-ink/60 sm:text-sm">
           {pricing.ml}ml
         </p>
 
@@ -61,7 +61,7 @@ export function JuiceCard({ item }: Props) {
               className={`flex-1 rounded-lg py-1.5 text-center text-[10px] font-bold transition sm:py-2 sm:text-sm ${
                 size === s
                   ? "bg-nutrir-burgundy text-nutrir-nude"
-                  : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
+                  : "bg-nutrir-emerald/10 text-nutrir-ink hover:bg-nutrir-emerald/20"
               }`}
             >
               {s}
@@ -70,15 +70,15 @@ export function JuiceCard({ item }: Props) {
         </div>
 
         <div className="mt-2 flex flex-col gap-1.5 border-t border-nutrir-nude-dark/50 pt-2 sm:mt-3 sm:gap-2 sm:pt-3">
-          <div className="text-[10px] text-nutrir-emerald/70 sm:text-sm">
+          <div className="text-[10px] text-nutrir-ink/70 sm:text-sm">
             <p>
               De{" "}
-              <span className="line-through text-nutrir-emerald/60">
+              <span className="line-through text-nutrir-ink/60">
                 {formatPrice(pricing.card_cents)}
               </span>
             </p>
             <p className="leading-snug">
-              Por <strong className="text-nutrir-emerald">{formatPrice(pricing.cash_cents)}</strong>{" "}
+              Por <strong className="text-nutrir-ink">{formatPrice(pricing.cash_cents)}</strong>{" "}
               (dinheiro ou pix)
             </p>
           </div>

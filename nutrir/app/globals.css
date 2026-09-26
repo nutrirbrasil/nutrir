@@ -12,6 +12,16 @@
     --nutrir-nude-dark: #e8d5c4;
     --nutrir-cream: #faf6f1;
 
+    /* Tokens adaptáveis (modo claro/escuro): fundo de página/cards e texto padrão.
+       Diferente das cores acima (fixas, sempre a mesma cor de marca), estas mudam
+       de valor no modo escuro, ver ".dark" abaixo. Formato "R G B" (sem vírgula,
+       sem rgb()) pra funcionar com o modificador de opacidade do Tailwind
+       (bg-nutrir-canvas/50 etc). */
+    --nutrir-canvas: 243 232 220; /* = nude no claro */
+    --nutrir-canvas-alt: 250 246 241; /* = cream no claro */
+    --nutrir-ink: 10 58 44; /* = emerald-dark no claro */
+    --nutrir-ink-muted: 15 77 58; /* = emerald no claro */
+
     /* Linha fina de contorno: bordô bem discreto, marca sem peso visual. */
     --nutrir-hairline: rgb(122 46 58 / 0.14);
     --nutrir-hairline-strong: rgb(122 46 58 / 0.22);
@@ -27,28 +37,39 @@
     --ease-lux: cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
+  /* Modo escuro: só os tokens adaptáveis mudam. Emerald/burgundy/nude/cream continuam
+     fixos (cor de marca em botões, cabeçalho, rodapé, badges), senão perderiam contraste
+     entre si (ex.: texto nude sobre fundo bordô). */
+  :root.dark {
+    --nutrir-canvas: 20 26 23;
+    --nutrir-canvas-alt: 28 36 32;
+    --nutrir-ink: 237 231 222;
+    --nutrir-ink-muted: 196 205 199;
+  }
+
   html {
     font-size: 80%;
   }
 
   html {
-    background-color: var(--nutrir-nude);
+    background-color: rgb(var(--nutrir-canvas));
   }
 
   body {
     @apply font-sans antialiased;
-    background-color: var(--nutrir-nude);
-    /* Textura de papel/linho sobre o nude, dá profundidade ao fundo sólido. */
+    background-color: rgb(var(--nutrir-canvas));
+    /* Textura de papel/linho sobre o fundo, dá profundidade ao fundo sólido. */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.065'/%3E%3C/svg%3E");
-    color: var(--nutrir-emerald-dark);
+    color: rgb(var(--nutrir-ink));
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   /* Foco visível consistente e discreto em toda a navegação por teclado. */
   :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--nutrir-cream), 0 0 0 4px var(--nutrir-emerald);
+    box-shadow: 0 0 0 2px rgb(var(--nutrir-canvas)), 0 0 0 4px var(--nutrir-emerald);
     border-radius: 0.5rem;
   }
 }
@@ -97,14 +118,14 @@
   .btn-secondary {
     @apply rounded-full border px-6 py-2.5 text-sm font-semibold transition-all;
     border-color: var(--nutrir-hairline-strong);
-    background-color: var(--nutrir-nude);
-    color: var(--nutrir-emerald);
+    background-color: rgb(var(--nutrir-canvas));
+    color: rgb(var(--nutrir-ink));
     box-shadow: var(--shadow-xs);
     transition-duration: 220ms;
     transition-timing-function: var(--ease-lux);
   }
   .btn-secondary:hover {
-    @apply bg-nutrir-cream;
+    @apply bg-nutrir-canvas-alt;
     border-color: var(--nutrir-emerald);
     transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
@@ -128,7 +149,7 @@
   .card {
     @apply rounded-2xl p-6;
     border: 1px solid var(--nutrir-hairline);
-    background-color: var(--nutrir-nude);
+    background-color: rgb(var(--nutrir-canvas));
     box-shadow: var(--shadow-md);
   }
 
@@ -163,9 +184,9 @@
   }
 
   .input-field {
-    @apply block w-full rounded-xl border bg-nutrir-nude px-4 py-2.5 transition-all focus:outline-none;
-    border-color: var(--nutrir-nude-dark);
-    color: var(--nutrir-emerald-dark);
+    @apply block w-full rounded-xl border bg-nutrir-canvas px-4 py-2.5 transition-all focus:outline-none;
+    border-color: rgb(var(--nutrir-canvas-alt));
+    color: rgb(var(--nutrir-ink));
     font-size: 16px;
     box-shadow: inset 0 1px 2px rgb(10 58 44 / 0.04);
     transition-duration: 180ms;

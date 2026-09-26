@@ -443,7 +443,7 @@ export function ProfilePage() {
 
   if (authLoading) {
     return (
-      <div className="mx-auto max-w-md px-4 py-16 text-center text-nutrir-emerald/70">
+      <div className="mx-auto max-w-md px-4 py-16 text-center text-nutrir-ink/70">
         Carregando…
       </div>
     );
@@ -452,10 +452,10 @@ export function ProfilePage() {
   if (passwordRecovery) {
     return (
       <div className="mx-auto max-w-md px-4 py-10">
-        <h1 className="text-center font-display text-2xl font-bold text-nutrir-emerald">
+        <h1 className="text-center font-display text-2xl font-bold text-nutrir-ink">
           Nova senha
         </h1>
-        <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+        <p className="mt-3 text-center text-sm text-nutrir-ink/70">
           Escolha uma nova senha para sua conta.
         </p>
 
@@ -490,10 +490,10 @@ export function ProfilePage() {
   if (authStep === "forgot") {
     return (
       <div className="mx-auto max-w-md px-4 py-10">
-        <h1 className="text-center font-display text-2xl font-bold text-nutrir-emerald">
+        <h1 className="text-center font-display text-2xl font-bold text-nutrir-ink">
           Esqueci minha senha
         </h1>
-        <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+        <p className="mt-3 text-center text-sm text-nutrir-ink/70">
           Informe seu e-mail para receber o código de redefinição.
         </p>
 
@@ -507,7 +507,7 @@ export function ProfilePage() {
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
+          {info && <p className="text-sm text-nutrir-ink">{info}</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button type="submit" disabled={loading || !authConfigured} className="btn-primary w-full py-3">
@@ -520,12 +520,12 @@ export function ProfilePage() {
               setError("");
               setInfo("");
             }}
-            className="w-full text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald"
+            className="w-full text-sm text-nutrir-ink/60 hover:text-nutrir-ink"
           >
             ← Voltar ao login
           </button>
 
-          <p className="text-center text-xs leading-relaxed text-nutrir-emerald/60">
+          <p className="text-center text-xs leading-relaxed text-nutrir-ink/60">
             Caso tenha criado a conta com telefone e ainda não tenha adicionado um e-mail, entre
             em contato conosco pelo{" "}
             <a
@@ -546,10 +546,10 @@ export function ProfilePage() {
   if (authStep === "reset") {
     return (
       <div className="mx-auto max-w-md px-4 py-10">
-        <h1 className="text-center font-display text-2xl font-bold text-nutrir-emerald">
+        <h1 className="text-center font-display text-2xl font-bold text-nutrir-ink">
           Redefinir senha
         </h1>
-        <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+        <p className="mt-3 text-center text-sm text-nutrir-ink/70">
           Digite o código enviado para <strong>{email}</strong> e escolha uma nova senha.
         </p>
 
@@ -581,7 +581,7 @@ export function ProfilePage() {
             onChange={(e) => setConfirmNewPassword(e.target.value)}
           />
 
-          {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
+          {info && <p className="text-sm text-nutrir-ink">{info}</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button type="submit" disabled={loading} className="btn-primary w-full py-3">
@@ -605,7 +605,7 @@ export function ProfilePage() {
               setError("");
               setInfo("");
             }}
-            className="w-full text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald"
+            className="w-full text-sm text-nutrir-ink/60 hover:text-nutrir-ink"
           >
             ← Voltar ao login
           </button>
@@ -634,21 +634,21 @@ export function ProfilePage() {
 
         {partner.isPartner && (
           <div className="card mt-6 space-y-2">
-            <h2 className="font-bold text-nutrir-emerald">Seus pontos de Parceiro Nutrir</h2>
-            <p className="text-sm text-nutrir-emerald/70">
+            <h2 className="font-bold text-nutrir-ink">Seus pontos de Parceiro Nutrir</h2>
+            <p className="text-sm text-nutrir-ink/70">
               Seu Cupom: <strong>{partner.couponCode}</strong>
             </p>
-            <p className="text-sm text-nutrir-emerald/70">
+            <p className="text-sm text-nutrir-ink/70">
               Cada pedido feito com seu cupom te dá pontos equivalentes a 5% do valor total do
               pedido.
             </p>
-            <p className="text-sm text-nutrir-emerald/70">Compartilhe seu cupom!</p>
+            <p className="text-sm text-nutrir-ink/70">Compartilhe seu cupom!</p>
             <p className="mt-2 text-2xl font-bold text-nutrir-burgundy">
               Saldo: {formatPoints(partner.pointsBalanceCents ?? 0)} pontos
             </p>
           </div>
         )}
-        <p className="mt-2 text-center text-sm text-nutrir-emerald/70">
+        <p className="mt-2 text-center text-sm text-nutrir-ink/70">
           Complete seus dados para agilizar a retirada.
         </p>
 
@@ -676,7 +676,7 @@ export function ProfilePage() {
               placeholder="(47) 99999-9999"
             />
             {session?.user.phone && (
-              <p className="mt-1 text-xs text-nutrir-emerald/60">
+              <p className="mt-1 text-xs text-nutrir-ink/60">
                 ✓ Você também pode entrar com esse telefone.
               </p>
             )}
@@ -710,24 +710,24 @@ export function ProfilePage() {
             <label className="mb-1 block text-sm font-medium">E-mail</label>
             <input
               type="email"
-              className={`input-field ${session?.user.email ? "bg-nutrir-nude-dark/20" : ""}`}
+              className={`input-field ${session?.user.email ? "bg-nutrir-canvas-alt/20" : ""}`}
               value={profile.email}
               readOnly={!!session?.user.email}
               onChange={(e) => !session?.user.email && updateProfile({ email: e.target.value })}
               placeholder="seuemail@exemplo.com"
             />
             {session?.user.email ? (
-              <p className="mt-1 text-xs text-nutrir-emerald/60">
+              <p className="mt-1 text-xs text-nutrir-ink/60">
                 ✓ Você também pode entrar com esse e-mail.
               </p>
             ) : (
-              <p className="mt-1 text-xs text-nutrir-emerald/60">
+              <p className="mt-1 text-xs text-nutrir-ink/60">
                 Opcional. Preencha e clique em "Salvar dados" pra poder entrar com e-mail também.
               </p>
             )}
           </div>
           {saved && (
-            <p className="text-sm font-medium text-nutrir-emerald">Dados salvos com sucesso!</p>
+            <p className="text-sm font-medium text-nutrir-ink">Dados salvos com sucesso!</p>
           )}
           {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -743,7 +743,7 @@ export function ProfilePage() {
 
         <section className="card mt-6 space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-lg font-bold text-nutrir-emerald">Senha</h2>
+            <h2 className="font-display text-lg font-bold text-nutrir-ink">Senha</h2>
             {!showChangePass && (
               <button
                 type="button"
@@ -759,7 +759,7 @@ export function ProfilePage() {
           </div>
 
           {passSaved && (
-            <p className="text-sm font-medium text-nutrir-emerald">Senha alterada com sucesso!</p>
+            <p className="text-sm font-medium text-nutrir-ink">Senha alterada com sucesso!</p>
           )}
 
           {showChangePass && (
@@ -811,9 +811,9 @@ export function ProfilePage() {
 
         {isLoggedIn && (session?.user.email ?? profile.email) && (
           <section className="card mt-8">
-            <h2 className="font-display text-lg font-bold text-nutrir-emerald">Últimos pedidos</h2>
+            <h2 className="font-display text-lg font-bold text-nutrir-ink">Últimos pedidos</h2>
             {recentOrders.length === 0 ? (
-              <p className="mt-3 text-sm text-nutrir-emerald/60">
+              <p className="mt-3 text-sm text-nutrir-ink/60">
                 Sem histórico. Você ainda não realizou nenhum pedido.
               </p>
             ) : (
@@ -833,11 +833,11 @@ export function ProfilePage() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-xs text-nutrir-emerald/60">{dateStr}</p>
-                          <p className="mt-1 font-semibold text-nutrir-emerald">
+                          <p className="text-xs text-nutrir-ink/60">{dateStr}</p>
+                          <p className="mt-1 font-semibold text-nutrir-ink">
                             {formatPrice(order.total_cents)}
                           </p>
-                          <p className="text-xs text-nutrir-emerald/60">
+                          <p className="text-xs text-nutrir-ink/60">
                             {PAYMENT_LABELS[order.payment_method]}
                           </p>
                         </div>
@@ -852,7 +852,7 @@ export function ProfilePage() {
                       <button
                         type="button"
                         onClick={() => setDetailOrder(order)}
-                        className="mt-3 text-sm font-semibold text-nutrir-emerald underline underline-offset-4 decoration-nutrir-emerald/40 hover:decoration-nutrir-burgundy"
+                        className="mt-3 text-sm font-semibold text-nutrir-ink underline underline-offset-4 decoration-nutrir-emerald/40 hover:decoration-nutrir-burgundy"
                       >
                         Ver mais detalhes
                       </button>
@@ -884,19 +884,19 @@ export function ProfilePage() {
   if (authStep === "verify") {
     return (
       <div className="mx-auto max-w-md px-4 py-10">
-        <h1 className="text-center font-display text-2xl font-bold text-nutrir-emerald">
+        <h1 className="text-center font-display text-2xl font-bold text-nutrir-ink">
           Confirme seu e-mail
         </h1>
-        <p className="mt-3 text-center text-sm text-nutrir-emerald/70">
+        <p className="mt-3 text-center text-sm text-nutrir-ink/70">
           Enviamos um link para <strong>{email}</strong>. Abra o e-mail e clique em{" "}
           <strong>Confirm email address</strong> para ativar sua conta.
         </p>
-        <p className="mt-2 text-center text-xs text-nutrir-emerald/55">
+        <p className="mt-2 text-center text-xs text-nutrir-ink/55">
           O link expira em poucos minutos. Depois de clicar, você será logado automaticamente.
         </p>
 
         <div className="mt-8 space-y-4">
-          {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
+          {info && <p className="text-sm text-nutrir-ink">{info}</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button
@@ -909,7 +909,7 @@ export function ProfilePage() {
           </button>
 
           <details className="rounded-lg border border-nutrir-nude-dark/50 p-4 text-sm">
-            <summary className="cursor-pointer font-medium text-nutrir-emerald">
+            <summary className="cursor-pointer font-medium text-nutrir-ink">
               Recebeu um código numérico? (opcional)
             </summary>
             <form onSubmit={handleVerify} className="mt-3 space-y-3">
@@ -936,7 +936,7 @@ export function ProfilePage() {
               setError("");
               setInfo("");
             }}
-            className="w-full text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald"
+            className="w-full text-sm text-nutrir-ink/60 hover:text-nutrir-ink"
           >
             ← Voltar
           </button>
@@ -947,7 +947,7 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-10">
-      <h1 className="text-center font-display text-2xl font-bold uppercase tracking-tight text-nutrir-emerald md:text-3xl">
+      <h1 className="text-center font-display text-2xl font-bold uppercase tracking-tight text-nutrir-ink md:text-3xl">
         {mode === "register" ? "Crie sua conta e vamos às compras" : "Entrar na sua conta"}
       </h1>
 
@@ -983,7 +983,7 @@ export function ProfilePage() {
           <button
             type="button"
             onClick={() => setShowPass(!showPass)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-nutrir-emerald/40"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-nutrir-ink/40"
           >
             {showPass ? <FiEyeOff /> : <FiEye />}
           </button>
@@ -1005,11 +1005,11 @@ export function ProfilePage() {
           </div>
         )}
 
-        {info && <p className="text-sm text-nutrir-emerald">{info}</p>}
+        {info && <p className="text-sm text-nutrir-ink">{info}</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {mode === "register" && (
-          <p className="text-xs leading-relaxed text-nutrir-emerald/60">
+          <p className="text-xs leading-relaxed text-nutrir-ink/60">
             Ao criar sua conta, você declara estar de acordo com os{" "}
             <Link href="/termos-de-uso" className="font-medium text-nutrir-burgundy hover:underline">
               Termos de Uso
@@ -1028,22 +1028,22 @@ export function ProfilePage() {
       </form>
 
       <div className="my-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-nutrir-nude-dark" />
-        <span className="text-sm text-nutrir-emerald/50">ou</span>
-        <div className="h-px flex-1 bg-nutrir-nude-dark" />
+        <div className="h-px flex-1 bg-nutrir-canvas-alt" />
+        <span className="text-sm text-nutrir-ink/50">ou</span>
+        <div className="h-px flex-1 bg-nutrir-canvas-alt" />
       </div>
 
       <button
         type="button"
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-nutrir-cream text-sm font-semibold text-gray-700 transition hover:bg-white disabled:opacity-50"
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-nutrir-canvas-alt text-sm font-semibold text-gray-700 transition hover:bg-white disabled:opacity-50"
       >
         <FcGoogle className="text-xl" aria-hidden />
         Continuar com Google
       </button>
 
-      <p className="mt-3 text-center text-xs leading-relaxed text-nutrir-emerald/60">
+      <p className="mt-3 text-center text-xs leading-relaxed text-nutrir-ink/60">
         Ao continuar com Google, você declara estar de acordo com os{" "}
         <Link href="/termos-de-uso" className="font-medium text-nutrir-burgundy hover:underline">
           Termos de Uso
@@ -1056,7 +1056,7 @@ export function ProfilePage() {
       </p>
 
       {!authConfigured && (
-        <p className="mt-2 text-center text-xs text-nutrir-emerald/50">
+        <p className="mt-2 text-center text-xs text-nutrir-ink/50">
           Configure Supabase e o provedor Google para ativar este botão.
         </p>
       )}
@@ -1068,12 +1068,12 @@ export function ProfilePage() {
           setError("");
           setInfo("");
         }}
-        className="mt-4 w-full rounded-full border-2 border-nutrir-emerald py-3 text-sm font-semibold text-nutrir-emerald transition hover:bg-nutrir-emerald/5"
+        className="mt-4 w-full rounded-full border-2 border-nutrir-emerald py-3 text-sm font-semibold text-nutrir-ink transition hover:bg-nutrir-emerald/5"
       >
         {mode === "register" ? "Já tenho uma conta" : "Criar nova conta"}
       </button>
 
-      <p className="mt-6 text-center text-sm text-nutrir-emerald/60">
+      <p className="mt-6 text-center text-sm text-nutrir-ink/60">
         <Link href="/" className="font-medium text-nutrir-burgundy hover:underline">
           ← Voltar ao cardápio
         </Link>

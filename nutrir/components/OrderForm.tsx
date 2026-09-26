@@ -294,7 +294,7 @@ export function OrderForm() {
 
   const stockWarning = showStockWarning && (
     <div className="space-y-2 rounded-lg border border-nutrir-burgundy/30 bg-nutrir-burgundy/5 p-2.5">
-      <p className="flex items-start gap-1.5 text-xs font-medium text-nutrir-emerald">
+      <p className="flex items-start gap-1.5 text-xs font-medium text-nutrir-ink">
         <FiAlertTriangle className="mt-0.5 shrink-0 text-nutrir-burgundy" aria-hidden />
         <span>
           Um ou mais itens em sua sacola não estão disponíveis para{" "}
@@ -309,7 +309,7 @@ export function OrderForm() {
           return (
             <li key={`${item.name}-${index}`}>
               <div className="flex flex-wrap items-center justify-between gap-1.5">
-                <span className="text-xs text-nutrir-emerald">
+                <span className="text-xs text-nutrir-ink">
                   {item.name} × {item.quantity}
                   {available > 0 && (
                     <span className="ml-1 text-[10px] text-gray-400">
@@ -321,7 +321,7 @@ export function OrderForm() {
                   <button
                     type="button"
                     onClick={() => removeUnavailableExcess(index)}
-                    className="text-nutrir-emerald/70 underline hover:text-nutrir-emerald"
+                    className="text-nutrir-ink/70 underline hover:text-nutrir-ink"
                   >
                     Remover
                   </button>
@@ -344,12 +344,12 @@ export function OrderForm() {
                       key={`${opt.itemId}-${opt.size}`}
                       type="button"
                       onClick={() => applySubstitute(index, opt)}
-                      className="rounded-lg border border-nutrir-emerald/30 bg-nutrir-nude px-2 py-1.5 text-left text-[11px] hover:border-nutrir-emerald"
+                      className="rounded-lg border border-nutrir-emerald/30 bg-nutrir-canvas px-2 py-1.5 text-left text-[11px] hover:border-nutrir-emerald"
                     >
-                      <span className="block font-semibold text-nutrir-emerald">
+                      <span className="block font-semibold text-nutrir-ink">
                         {opt.name} ({opt.size})
                       </span>
-                      <span className="text-nutrir-emerald/60">
+                      <span className="text-nutrir-ink/60">
                         {formatPrice(opt.priceCents)} · {opt.available} disponíveis
                       </span>
                     </button>
@@ -367,13 +367,13 @@ export function OrderForm() {
     <form onSubmit={handleContinue} className="space-y-6">
       {items.length > 0 && (
         <div className="card">
-          <h3 className="font-semibold text-nutrir-emerald">Itens do pedido</h3>
+          <h3 className="font-semibold text-nutrir-ink">Itens do pedido</h3>
           <ul className="mt-3 space-y-2">
             {items.map((item, i) => (
               <li key={`${item.name}-${i}`} className="flex items-center justify-between text-sm">
                 <span className="mr-2 flex-1">
                   {item.name}
-                  <span className="mt-0.5 block text-xs text-nutrir-emerald/55">
+                  <span className="mt-0.5 block text-xs text-nutrir-ink/55">
                     {formatItemAddonsLabel(item)}
                   </span>
                 </span>
@@ -397,15 +397,15 @@ export function OrderForm() {
       )}
 
       <div className="card space-y-3">
-        <p className="text-sm font-medium text-nutrir-emerald">Como você quer receber o pedido?</p>
+        <p className="text-sm font-medium text-nutrir-ink">Como você quer receber o pedido?</p>
         <div className="grid gap-2 sm:grid-cols-2">
           <button
             type="button"
             onClick={() => setFulfillmentType("pickup")}
             className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
               fulfillmentType === "pickup"
-                ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"
+                : "border-nutrir-burgundy/30 bg-nutrir-canvas text-nutrir-ink hover:border-nutrir-burgundy"
             }`}
           >
             Retirar na loja
@@ -415,8 +415,8 @@ export function OrderForm() {
             onClick={() => setFulfillmentType("delivery")}
             className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
               fulfillmentType === "delivery"
-                ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"
+                : "border-nutrir-burgundy/30 bg-nutrir-canvas text-nutrir-ink hover:border-nutrir-burgundy"
             }`}
           >
             Receber em casa
@@ -427,10 +427,10 @@ export function OrderForm() {
       {fulfillmentType === "delivery" ? (
         <div className="card space-y-6">
           <div>
-            <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-emerald">
+            <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-ink">
               Agende sua entrega
             </h2>
-            <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
+            <p className="mt-2 text-xs leading-relaxed text-nutrir-ink/60">
               Os dias e horários de entrega dependem do bairro.{" "}
               {requiredLeadDays > 0
                 ? "Combos grandes precisam de no mínimo 48 horas de antecedência."
@@ -459,10 +459,10 @@ export function OrderForm() {
       ) : (
         <div className="card space-y-6">
           <div>
-            <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-emerald">
+            <h2 className="font-display text-xl font-bold uppercase tracking-wide text-nutrir-ink">
               Agende sua retirada
             </h2>
-            <p className="mt-2 text-xs leading-relaxed text-nutrir-emerald/60">
+            <p className="mt-2 text-xs leading-relaxed text-nutrir-ink/60">
               Retirada de Segunda a Sexta.
               <br />
               {requiredLeadDays > 0
@@ -487,7 +487,7 @@ export function OrderForm() {
 
       <div className="card grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Nome</label>
+          <label className="mb-1 block text-sm font-medium text-nutrir-ink">Nome</label>
           <input
             required
             className="input-field"

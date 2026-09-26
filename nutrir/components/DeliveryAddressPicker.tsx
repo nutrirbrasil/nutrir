@@ -146,7 +146,7 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
   }
 
   if (!initialized && (loading || !loaded)) {
-    return <p className="text-sm text-nutrir-emerald/60">Carregando endereços salvos...</p>;
+    return <p className="text-sm text-nutrir-ink/60">Carregando endereços salvos...</p>;
   }
 
   if (mode === "summary") {
@@ -160,9 +160,9 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
     return (
       <div className="space-y-3 rounded-xl border-2 border-nutrir-burgundy/20 p-3">
         {selectedAddress && (
-          <p className="text-sm font-bold text-nutrir-emerald">{selectedAddress.label}</p>
+          <p className="text-sm font-bold text-nutrir-ink">{selectedAddress.label}</p>
         )}
-        <p className="text-sm text-nutrir-emerald/80">{preview}</p>
+        <p className="text-sm text-nutrir-ink/80">{preview}</p>
         <button
           type="button"
           onClick={() => (addresses.length > 1 ? setMode("picker") : startNewAddress())}
@@ -177,7 +177,7 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
   if (mode === "picker") {
     return (
       <div className="space-y-3">
-        <p className="text-sm font-medium text-nutrir-emerald">Escolha o endereço de entrega</p>
+        <p className="text-sm font-medium text-nutrir-ink">Escolha o endereço de entrega</p>
         <ul className="space-y-2">
           {addresses.map((address) => (
             <li key={address.id}>
@@ -190,11 +190,11 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
                     : "border-nutrir-burgundy/20 hover:border-nutrir-burgundy"
                 }`}
               >
-                <span className="block font-bold text-nutrir-emerald">
+                <span className="block font-bold text-nutrir-ink">
                   {address.label}
                   {address.is_default ? " · Padrão" : ""}
                 </span>
-                <span className="block text-nutrir-emerald/70">{addressSummary(address)}</span>
+                <span className="block text-nutrir-ink/70">{addressSummary(address)}</span>
               </button>
             </li>
           ))}
@@ -215,7 +215,7 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
     <div className="space-y-4">
       <DeliveryAddressForm value={value} onChange={onChange} />
 
-      <label className="flex items-center gap-2 text-sm text-nutrir-emerald">
+      <label className="flex items-center gap-2 text-sm text-nutrir-ink">
         <input
           type="checkbox"
           checked={saveNew && addresses.length < MAX_SAVED_ADDRESSES}
@@ -226,14 +226,14 @@ export function DeliveryAddressPicker({ value, onChange }: Props) {
       </label>
 
       {addresses.length >= MAX_SAVED_ADDRESSES ? (
-        <p className="text-xs text-nutrir-emerald/60">
+        <p className="text-xs text-nutrir-ink/60">
           Limite de {MAX_SAVED_ADDRESSES} endereços salvos atingido. Remova um no seu perfil para
           salvar este.
         </p>
       ) : (
         saveNew && (
           <div>
-            <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Título</label>
+            <label className="mb-1 block text-sm font-medium text-nutrir-ink">Título</label>
             <input
               className="input-field"
               maxLength={30}

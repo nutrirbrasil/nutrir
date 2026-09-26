@@ -32,7 +32,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-nutrir-nude-dark/60 bg-nutrir-cream/95 shadow-[0_-4px_24px_rgba(28,28,28,0.08)] backdrop-blur-md md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-nutrir-nude-dark/60 bg-nutrir-canvas-alt/95 shadow-[0_-4px_24px_rgba(28,28,28,0.08)] backdrop-blur-md md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <ul className="mx-auto flex max-w-lg">
@@ -44,7 +44,7 @@ export function MobileBottomNav() {
               <Link
                 href={tab.href}
                 className={`flex flex-col items-center gap-0.5 px-2 py-2.5 text-[10px] font-bold uppercase tracking-wide transition ${
-                  active ? "text-nutrir-burgundy" : "text-nutrir-emerald/55"
+                  active ? "text-nutrir-burgundy" : "text-nutrir-ink/55"
                 }`}
               >
                 <span

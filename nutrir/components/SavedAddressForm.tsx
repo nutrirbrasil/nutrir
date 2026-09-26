@@ -44,7 +44,7 @@ export function SavedAddressForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Título</label>
+        <label className="mb-1 block text-sm font-medium text-nutrir-ink">Título</label>
         <input
           required
           maxLength={30}

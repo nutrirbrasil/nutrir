@@ -36,18 +36,18 @@ export function NavDropdown({
     variant === "desktop"
       ? `inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition ${
           active
-            ? "bg-nutrir-nude text-nutrir-burgundy"
-            : "text-nutrir-nude/85 hover:bg-nutrir-nude/10 hover:text-nutrir-nude"
+            ? "bg-nutrir-canvas text-nutrir-burgundy"
+            : "text-nutrir-nude/85 hover:bg-nutrir-canvas/10 hover:text-nutrir-nude"
         }`
       : `flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition ${
           active || open
-            ? "bg-nutrir-nude text-nutrir-burgundy"
-            : "text-nutrir-nude/90 hover:bg-nutrir-nude/10"
+            ? "bg-nutrir-canvas text-nutrir-burgundy"
+            : "text-nutrir-nude/90 hover:bg-nutrir-canvas/10"
         }`;
 
   const panelClass =
     variant === "desktop"
-      ? `min-w-[15.5rem] rounded-2xl border border-nutrir-nude-dark/50 bg-nutrir-cream p-2 shadow-xl transition duration-200 ${
+      ? `min-w-[15.5rem] rounded-2xl border border-nutrir-nude-dark/50 bg-nutrir-canvas-alt p-2 shadow-xl transition duration-200 ${
           open ? "visible opacity-100" : "invisible opacity-0"
         }`
       : `mt-1 space-y-1 overflow-hidden rounded-xl border border-nutrir-nude/20 bg-nutrir-burgundy-dark/40 p-2 transition-all ${
@@ -56,8 +56,8 @@ export function NavDropdown({
 
   const linkClass =
     variant === "desktop"
-      ? "block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald transition hover:bg-nutrir-nude hover:text-nutrir-burgundy"
-      : "block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-emerald/90 transition hover:bg-nutrir-nude/10";
+      ? "block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-ink transition hover:bg-nutrir-canvas hover:text-nutrir-burgundy"
+      : "block rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-nutrir-ink/90 transition hover:bg-nutrir-canvas/10";
 
   const items = children({
     open,

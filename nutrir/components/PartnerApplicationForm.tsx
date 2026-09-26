@@ -30,11 +30,11 @@ export function PartnerApplicationForm() {
   if (partner.isPartner) {
     return (
       <div className="rounded-2xl border-2 border-nutrir-emerald bg-nutrir-emerald/10 p-5 text-center">
-        <p className="font-display text-lg font-bold text-nutrir-emerald">
+        <p className="font-display text-lg font-bold text-nutrir-ink">
           Você já é parceiro Nutrir! 💚
         </p>
         {partner.couponCode && (
-          <p className="mt-1 text-sm text-nutrir-emerald/80">
+          <p className="mt-1 text-sm text-nutrir-ink/80">
             Seu cupom: <strong>{partner.couponCode}</strong>
           </p>
         )}
@@ -45,10 +45,10 @@ export function PartnerApplicationForm() {
   if (sent) {
     return (
       <div className="rounded-2xl border-2 border-nutrir-emerald bg-nutrir-emerald/10 p-5 text-center">
-        <p className="font-display text-lg font-bold text-nutrir-emerald">
+        <p className="font-display text-lg font-bold text-nutrir-ink">
           Inscrição enviada! 🎉
         </p>
-        <p className="mt-1 text-sm text-nutrir-emerald/80">
+        <p className="mt-1 text-sm text-nutrir-ink/80">
           Vamos analisar seu perfil e entrar em contato em breve.
         </p>
       </div>
@@ -114,9 +114,9 @@ export function PartnerApplicationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-nutrir-burgundy/15 bg-nutrir-cream/60 p-5">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-nutrir-burgundy/15 bg-nutrir-canvas-alt/60 p-5">
       <div>
-        <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Nome completo</label>
+        <label className="mb-1 block text-sm font-medium text-nutrir-ink">Nome completo</label>
         <input
           className="input-field"
           value={name}
@@ -125,7 +125,7 @@ export function PartnerApplicationForm() {
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Endereço</label>
+        <label className="mb-1 block text-sm font-medium text-nutrir-ink">Endereço</label>
         <input
           className="input-field"
           placeholder="Rua, número, bairro, cidade"
@@ -135,7 +135,7 @@ export function PartnerApplicationForm() {
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-nutrir-emerald">CPF</label>
+        <label className="mb-1 block text-sm font-medium text-nutrir-ink">CPF</label>
         <input
           className="input-field"
           value={cpf}
@@ -145,7 +145,7 @@ export function PartnerApplicationForm() {
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-nutrir-emerald">E-mail</label>
+        <label className="mb-1 block text-sm font-medium text-nutrir-ink">E-mail</label>
         <input
           type="email"
           className="input-field"
@@ -155,7 +155,7 @@ export function PartnerApplicationForm() {
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-nutrir-emerald">@ do Instagram</label>
+        <label className="mb-1 block text-sm font-medium text-nutrir-ink">@ do Instagram</label>
         <input
           className="input-field"
           placeholder="@seuinstagram"

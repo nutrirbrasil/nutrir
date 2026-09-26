@@ -26,7 +26,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
         Altura mínima = tela menos o chrome (o menu inferior fica dentro do
         padding). Sem isso sobra uma faixa do main abaixo da home.
       */}
-      <main className="min-h-[calc(100dvh-var(--bar-h)-var(--nav-h)-var(--bottom-h))] bg-nutrir-nude pb-[4.75rem] md:pb-0">
+      <main className="min-h-[calc(100dvh-var(--bar-h)-var(--nav-h)-var(--bottom-h))] bg-nutrir-canvas pb-[4.75rem] md:pb-0">
         {children}
       </main>
       <MobileBottomNav />

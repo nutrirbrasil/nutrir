@@ -25,7 +25,7 @@ export function NutritionLabelPrint({ itemId, itemName, size }: Props) {
 
   return (
     <div
-      className="flex break-inside-avoid flex-col overflow-hidden rounded-xl border-2 border-nutrir-emerald bg-nutrir-cream text-nutrir-emerald print:break-after-page print:rounded-none"
+      className="flex break-inside-avoid flex-col overflow-hidden rounded-xl border-2 border-nutrir-emerald bg-nutrir-canvas-alt text-nutrir-ink print:break-after-page print:rounded-none"
       style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact", aspectRatio: "2 / 1" }}
     >
       <div className="bg-nutrir-emerald px-3 py-1.5 text-nutrir-cream">

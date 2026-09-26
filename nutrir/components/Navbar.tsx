@@ -8,6 +8,7 @@ import { FiMenu, FiShoppingBag, FiUser } from "react-icons/fi";
 import { CombosNavMenu } from "@/components/CombosNavMenu";
 import { MobileNavDrawer } from "@/components/MobileNavDrawer";
 import { NutrirNavMenu } from "@/components/NutrirNavMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/api";
 import { logoUrl } from "@/lib/brand-assets";
@@ -31,8 +32,8 @@ export function Navbar() {
     const active = pathname === href;
     return `rounded-full px-4 py-2 text-sm font-medium transition ${
       active
-        ? "bg-nutrir-nude text-nutrir-burgundy"
-        : "text-nutrir-nude/85 hover:bg-nutrir-nude/10 hover:text-nutrir-nude"
+        ? "bg-nutrir-canvas text-nutrir-burgundy"
+        : "text-nutrir-nude/85 hover:bg-nutrir-canvas/10 hover:text-nutrir-nude"
     }`;
   }
 
@@ -71,13 +72,15 @@ export function Navbar() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <ThemeToggle className="hidden text-nutrir-nude hover:bg-nutrir-canvas/10 md:flex" />
+
             <Link
               href="/perfil"
               aria-label="Perfil"
               className={`hidden h-10 w-10 items-center justify-center rounded-full transition md:flex ${
                 pathname.startsWith("/perfil")
-                  ? "bg-nutrir-nude text-nutrir-burgundy"
-                  : "text-nutrir-nude hover:bg-nutrir-nude/10"
+                  ? "bg-nutrir-canvas text-nutrir-burgundy"
+                  : "text-nutrir-nude hover:bg-nutrir-canvas/10"
               }`}
             >
               <FiUser className="text-xl" />
@@ -86,7 +89,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={openCart}
-              className="flex items-center gap-2 rounded-full bg-nutrir-nude px-2.5 py-2 text-nutrir-burgundy shadow-md transition hover:bg-nutrir-cream sm:px-4"
+              className="flex items-center gap-2 rounded-full bg-nutrir-canvas px-2.5 py-2 text-nutrir-burgundy shadow-md transition hover:bg-nutrir-canvas-alt sm:px-4"
             >
               <FiShoppingBag className="shrink-0 text-lg" />
               {itemCount > 0 ? (
@@ -108,7 +111,7 @@ export function Navbar() {
               type="button"
               aria-label="Abrir menu"
               onClick={() => setDrawerOpen(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-nutrir-nude transition hover:bg-nutrir-nude/10 md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-nutrir-nude transition hover:bg-nutrir-canvas/10 md:hidden"
             >
               <FiMenu className="text-2xl" />
             </button>

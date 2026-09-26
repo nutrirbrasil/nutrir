@@ -20,11 +20,11 @@ export function LegalPage({ title, children }: Props) {
 
       <Reveal>
         <article className="mx-auto max-w-3xl px-4 py-12 md:py-16">
-          <div className="card space-y-6 text-sm leading-relaxed text-nutrir-emerald/85">
+          <div className="card space-y-6 text-sm leading-relaxed text-nutrir-ink/85">
             {children}
           </div>
 
-          <p className="mt-8 text-center text-sm text-nutrir-emerald/60">
+          <p className="mt-8 text-center text-sm text-nutrir-ink/60">
             <Link
               href="/politica-de-privacidade"
               className="font-medium hover:text-nutrir-burgundy hover:underline"
@@ -52,7 +52,7 @@ export function LegalPage({ title, children }: Props) {
 export function LegalSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="font-display text-lg font-bold text-nutrir-emerald">{title}</h2>
+      <h2 className="font-display text-lg font-bold text-nutrir-ink">{title}</h2>
       <div className="mt-3 space-y-3">{children}</div>
     </section>
   );

@@ -28,14 +28,14 @@ export function NutrirNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
         NUTRIR_MENU_LINKS.map((item) => {
           // Paciente VIP se destaca em bordô, diferente dos outros links (verde).
           const baseClass =
-            item.href === "/beneficios" ? linkClass.replace(/text-nutrir-emerald(\/\d+)?/, "text-nutrir-burgundy") : linkClass;
+            item.href === "/beneficios" ? linkClass.replace(/text-nutrir-ink(\/\d+)?/, "text-nutrir-burgundy") : linkClass;
           return (
             <li key={item.href} role="none">
               <Link
                 href={item.href}
                 role="menuitem"
                 className={`${baseClass}${
-                  isActive(item.href) ? " bg-nutrir-nude text-nutrir-burgundy" : ""
+                  isActive(item.href) ? " bg-nutrir-canvas text-nutrir-burgundy" : ""
                 }`}
               >
                 {item.label}

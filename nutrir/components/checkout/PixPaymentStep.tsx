@@ -91,18 +91,18 @@ export function PixPaymentStep() {
   return (
     <CheckoutShell title="Pague com Pix">
       <div className="card mx-auto max-w-md space-y-6">
-        {loading && <p className="text-center text-nutrir-emerald/70">Carregando dados do Pix…</p>}
+        {loading && <p className="text-center text-nutrir-ink/70">Carregando dados do Pix…</p>}
 
         {error && !loading && <p className="text-center text-sm text-red-600">{error}</p>}
 
         {!loading && !error && copiaCola && (
           <>
             <div className="text-center">
-              <p className="text-sm text-nutrir-emerald/70">Valor a pagar</p>
+              <p className="text-sm text-nutrir-ink/70">Valor a pagar</p>
               <p className="font-display text-3xl font-bold text-nutrir-burgundy">
                 {formatPrice(amountCents)}
               </p>
-              <p className="mt-1 text-xs text-nutrir-emerald/60">Beneficiário: {receiverName}</p>
+              <p className="mt-1 text-xs text-nutrir-ink/60">Beneficiário: {receiverName}</p>
             </div>
 
             <div className="flex justify-center p-2">
@@ -116,12 +116,12 @@ export function PixPaymentStep() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs font-bold uppercase text-nutrir-emerald/60">Pix copia e cola</p>
+              <p className="text-xs font-bold uppercase text-nutrir-ink/60">Pix copia e cola</p>
               <textarea
                 readOnly
                 value={copiaCola}
                 rows={4}
-                className="w-full resize-none rounded-lg border border-nutrir-nude-dark/40 bg-nutrir-nude/50 p-3 text-xs text-nutrir-emerald"
+                className="w-full resize-none rounded-lg border border-nutrir-nude-dark/40 bg-nutrir-canvas/50 p-3 text-xs text-nutrir-ink"
               />
               <button
                 type="button"
@@ -132,12 +132,12 @@ export function PixPaymentStep() {
               </button>
             </div>
 
-            <p className="text-center text-sm leading-relaxed text-nutrir-emerald/80">
+            <p className="text-center text-sm leading-relaxed text-nutrir-ink/80">
               Após efetuar o pagamento clique no botão &ldquo;Já paguei&rdquo;. Seremos notificados do
               pedido e ao confirmar o pagamento seu pedido já entra automaticamente na fila de
               produção.
             </p>
-            <p className="text-center text-xs text-nutrir-emerald/55">Pedido {orderLabel}</p>
+            <p className="text-center text-xs text-nutrir-ink/55">Pedido {orderLabel}</p>
 
             <button
               type="button"
@@ -153,7 +153,7 @@ export function PixPaymentStep() {
 
         <Link
           href="/"
-          className="block text-center text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald"
+          className="block text-center text-sm text-nutrir-ink/60 hover:text-nutrir-ink"
         >
           Voltar ao cardápio
         </Link>

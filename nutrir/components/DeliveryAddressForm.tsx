@@ -25,7 +25,7 @@ export function DeliveryAddressForm({ value, onChange }: Props) {
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Cidade</label>
+          <label className="mb-1 block text-sm font-medium text-nutrir-ink">Cidade</label>
           <select
             required
             className="input-field"
@@ -45,7 +45,7 @@ export function DeliveryAddressForm({ value, onChange }: Props) {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Bairro</label>
+          <label className="mb-1 block text-sm font-medium text-nutrir-ink">Bairro</label>
           <select
             required
             className="input-field"
@@ -67,7 +67,7 @@ export function DeliveryAddressForm({ value, onChange }: Props) {
 
       <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
         <div>
-          <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Rua</label>
+          <label className="mb-1 block text-sm font-medium text-nutrir-ink">Rua</label>
           <input
             required
             className="input-field"
@@ -76,7 +76,7 @@ export function DeliveryAddressForm({ value, onChange }: Props) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Número</label>
+          <label className="mb-1 block text-sm font-medium text-nutrir-ink">Número</label>
           <input
             required
             className="input-field"
@@ -87,7 +87,7 @@ export function DeliveryAddressForm({ value, onChange }: Props) {
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium text-nutrir-emerald">
+          <label className="mb-1 block text-sm font-medium text-nutrir-ink">
             Complemento (opcional)
           </label>
           <input
@@ -98,7 +98,7 @@ export function DeliveryAddressForm({ value, onChange }: Props) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-nutrir-emerald">
+          <label className="mb-1 block text-sm font-medium text-nutrir-ink">
             Ponto de referência (opcional)
           </label>
           <input

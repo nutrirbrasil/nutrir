@@ -41,15 +41,15 @@ export default function AdminCuponsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+      <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-ink/70 hover:text-nutrir-ink">
         ← Voltar
       </Link>
-      <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Cupons</h1>
-      <p className="mt-1 text-sm text-nutrir-emerald/60">
+      <h1 className="font-display text-2xl font-bold text-nutrir-ink">Cupons</h1>
+      <p className="mt-1 text-sm text-nutrir-ink/60">
         Todos os cupons ativos no site, pra consulta rápida sem precisar mexer no código.
       </p>
 
-      <h2 className="mt-8 text-xs font-bold uppercase tracking-widest text-nutrir-emerald/55">
+      <h2 className="mt-8 text-xs font-bold uppercase tracking-widest text-nutrir-ink/55">
         Cupons fixos
       </h2>
       <div className="mt-3 space-y-3">
@@ -58,7 +58,7 @@ export default function AdminCuponsPage() {
           return (
             <div key={coupon.code} className="card space-y-1.5">
               <div className="flex items-center justify-between gap-3">
-                <span className="font-display text-lg font-bold text-nutrir-emerald">
+                <span className="font-display text-lg font-bold text-nutrir-ink">
                   {coupon.code}
                 </span>
                 <span className="rounded-full bg-nutrir-burgundy/10 px-3 py-1 text-sm font-bold text-nutrir-burgundy">
@@ -74,51 +74,51 @@ export default function AdminCuponsPage() {
                 </span>
               </div>
               {restrictions.length > 0 ? (
-                <ul className="space-y-0.5 text-sm text-nutrir-emerald/70">
+                <ul className="space-y-0.5 text-sm text-nutrir-ink/70">
                   {restrictions.map((r) => (
                     <li key={r}>• {r}</li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-nutrir-emerald/50">Sem restrição, qualquer cliente pode usar.</p>
+                <p className="text-sm text-nutrir-ink/50">Sem restrição, qualquer cliente pode usar.</p>
               )}
             </div>
           );
         })}
       </div>
 
-      <h2 className="mt-8 text-xs font-bold uppercase tracking-widest text-nutrir-emerald/55">
+      <h2 className="mt-8 text-xs font-bold uppercase tracking-widest text-nutrir-ink/55">
         Cupons de parceiro
       </h2>
-      <p className="mt-1 text-xs text-nutrir-emerald/50">
+      <p className="mt-1 text-xs text-nutrir-ink/50">
         5% de desconto pro cliente, mais pontos creditados pro parceiro em cada pedido pago.
       </p>
 
-      {loading && <p className="mt-3 text-sm text-nutrir-emerald/60">Carregando…</p>}
+      {loading && <p className="mt-3 text-sm text-nutrir-ink/60">Carregando…</p>}
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-3 space-y-3">
         {partners.map((partner) => (
           <div key={partner.id} className="card space-y-1.5">
             <div className="flex items-center justify-between gap-3">
-              <span className="font-display text-lg font-bold text-nutrir-emerald">
+              <span className="font-display text-lg font-bold text-nutrir-ink">
                 {partner.coupon_code}
               </span>
               <span className="rounded-full bg-nutrir-burgundy/10 px-3 py-1 text-sm font-bold text-nutrir-burgundy">
                 5% de desconto
               </span>
             </div>
-            <p className="text-sm text-nutrir-emerald/70">
+            <p className="text-sm text-nutrir-ink/70">
               {partner.name} · {partner.email}
             </p>
-            <p className="text-xs text-nutrir-emerald/50">
+            <p className="text-xs text-nutrir-ink/50">
               Saldo de pontos: {formatPrice(partner.points_balance_cents)}
             </p>
           </div>
         ))}
 
         {!loading && partners.length === 0 && (
-          <p className="text-sm text-nutrir-emerald/60">Nenhum parceiro cadastrado.</p>
+          <p className="text-sm text-nutrir-ink/60">Nenhum parceiro cadastrado.</p>
         )}
       </div>
     </div>

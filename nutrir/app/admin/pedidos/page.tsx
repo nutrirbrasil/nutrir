@@ -31,7 +31,7 @@ const FILTER_TABS: { id: StatusFilter; label: string }[] = [
 ];
 
 function statusBadgeClass(status: OrderStatus): string {
-  if (status === "delivered") return "bg-nutrir-emerald/15 text-nutrir-emerald";
+  if (status === "delivered") return "bg-nutrir-emerald/15 text-nutrir-ink";
   if (status === "paid") return "bg-nutrir-burgundy/15 text-nutrir-burgundy";
   return "bg-amber-100 text-amber-800";
 }
@@ -53,10 +53,10 @@ function formatShortDate(iso: string): string {
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-1.5 text-sm">
-      <span className="font-bold uppercase tracking-wide text-nutrir-emerald/55 text-[11px]">
+      <span className="font-bold uppercase tracking-wide text-nutrir-ink/55 text-[11px]">
         {label}:
       </span>
-      <span className="text-nutrir-emerald">{value}</span>
+      <span className="text-nutrir-ink">{value}</span>
     </div>
   );
 }
@@ -87,10 +87,10 @@ function OrderCard({
     <div className="card space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <span className="font-display text-lg font-bold text-nutrir-emerald">
+          <span className="font-display text-lg font-bold text-nutrir-ink">
             {formatOrderLabel(order.id)}
           </span>
-          <span className="ml-2 text-sm text-nutrir-emerald/60">
+          <span className="ml-2 text-sm text-nutrir-ink/60">
             {formatOrderDateTime(order.created_at)}
           </span>
           {order.is_stock_order && (
@@ -110,7 +110,7 @@ function OrderCard({
             onClick={onDelete}
             disabled={deleting}
             title="Excluir pedido (cancelado ou de teste) — apaga do banco, sem volta"
-            className="rounded-full p-1.5 text-nutrir-emerald/40 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+            className="rounded-full p-1.5 text-nutrir-ink/40 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
           >
             <FiTrash2 className="text-base" />
           </button>
@@ -118,9 +118,9 @@ function OrderCard({
       </div>
 
       <div>
-        <p className="font-semibold text-nutrir-emerald">
+        <p className="font-semibold text-nutrir-ink">
           {order.customer_name}{" "}
-          <span className="font-normal text-nutrir-emerald/55">({order.customer_phone})</span>
+          <span className="font-normal text-nutrir-ink/55">({order.customer_phone})</span>
         </p>
         {order.is_patient && (
           <p className="mt-0.5 text-sm font-semibold text-amber-700">
@@ -129,14 +129,14 @@ function OrderCard({
         )}
       </div>
 
-      <div className="rounded-xl border border-nutrir-hairline bg-nutrir-cream/60 p-3">
-        <ul className="space-y-1.5 text-sm text-nutrir-emerald">
+      <div className="rounded-xl border border-nutrir-hairline bg-nutrir-canvas-alt/60 p-3">
+        <ul className="space-y-1.5 text-sm text-nutrir-ink">
           {order.items.map((item, i) => {
             const { paidCents, discountCents } = pricingByItem[i];
             return (
               <li key={i} className="flex items-baseline justify-between gap-3">
                 <span className="flex gap-1.5">
-                  <span className="text-nutrir-emerald/40">•</span>
+                  <span className="text-nutrir-ink/40">•</span>
                   <span>
                     {item.quantity}× {item.name}
                   </span>
@@ -153,7 +153,7 @@ function OrderCard({
             );
           })}
         </ul>
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 border-t border-nutrir-hairline pt-2 text-xs font-semibold text-nutrir-emerald/70">
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 border-t border-nutrir-hairline pt-2 text-xs font-semibold text-nutrir-ink/70">
           <span>Total de produtos: {order.items.length}</span>
           <span>Total de marmitas: {mealCount}</span>
         </div>
@@ -161,10 +161,10 @@ function OrderCard({
 
       {addonsLines.length > 0 && (
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wide text-nutrir-emerald/55">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-nutrir-ink/55">
             Adicionais
           </p>
-          <ul className="mt-1 space-y-0.5 text-sm text-nutrir-emerald/80">
+          <ul className="mt-1 space-y-0.5 text-sm text-nutrir-ink/80">
             {addonsLines.map((line, i) => (
               <li key={i}>{line}</li>
             ))}
@@ -201,8 +201,8 @@ function OrderCard({
       </div>
 
       {isDelivery && order.delivery_address && (
-        <p className="text-sm text-nutrir-emerald/70">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-nutrir-emerald/55">
+        <p className="text-sm text-nutrir-ink/70">
+          <span className="text-[11px] font-bold uppercase tracking-wide text-nutrir-ink/55">
             Endereço:{" "}
           </span>
           {order.delivery_address}
@@ -306,11 +306,11 @@ export default function AdminPedidosPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+      <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-ink/70 hover:text-nutrir-ink">
         ← Voltar
       </Link>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Pedidos</h1>
+        <h1 className="font-display text-2xl font-bold text-nutrir-ink">Pedidos</h1>
         <button type="button" onClick={load} className="btn-secondary px-4 py-2 text-sm">
           Atualizar
         </button>
@@ -325,7 +325,7 @@ export default function AdminPedidosPage() {
             className={`rounded-full px-4 py-1.5 text-sm font-bold transition ${
               filter === tab.id
                 ? "bg-nutrir-burgundy text-nutrir-nude"
-                : "bg-nutrir-emerald/10 text-nutrir-emerald hover:bg-nutrir-emerald/20"
+                : "bg-nutrir-emerald/10 text-nutrir-ink hover:bg-nutrir-emerald/20"
             }`}
           >
             {tab.label}
@@ -334,7 +334,7 @@ export default function AdminPedidosPage() {
       </div>
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-      {loading && <p className="text-sm text-nutrir-emerald/60">Carregando…</p>}
+      {loading && <p className="text-sm text-nutrir-ink/60">Carregando…</p>}
 
       <div className="space-y-4">
         {orders.map((order) => (
@@ -349,7 +349,7 @@ export default function AdminPedidosPage() {
         ))}
 
         {!loading && orders.length === 0 && (
-          <p className="text-sm text-nutrir-emerald/60">Nenhum pedido encontrado.</p>
+          <p className="text-sm text-nutrir-ink/60">Nenhum pedido encontrado.</p>
         )}
       </div>
     </div>

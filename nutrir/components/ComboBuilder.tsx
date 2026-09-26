@@ -40,7 +40,7 @@ function SizeQtyControl({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="w-4 text-center text-xs font-bold text-nutrir-emerald/70">{size}</span>
+      <span className="w-4 text-center text-xs font-bold text-nutrir-ink/70">{size}</span>
       <button
         type="button"
         onClick={onDec}
@@ -49,7 +49,7 @@ function SizeQtyControl({
       >
         −
       </button>
-      <span className="min-w-[1.5rem] text-center text-sm font-bold tabular-nums text-nutrir-emerald">
+      <span className="min-w-[1.5rem] text-center text-sm font-bold tabular-nums text-nutrir-ink">
         {qty}
       </span>
       <button
@@ -151,10 +151,10 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
       {step === "total" ? (
         <div className="card space-y-6 text-center">
           <div>
-            <h3 className="font-display text-xl font-bold text-nutrir-emerald">
+            <h3 className="font-display text-xl font-bold text-nutrir-ink">
               Quantas marmitas no combo?
             </h3>
-            <p className="mt-1 text-sm text-nutrir-emerald/60">
+            <p className="mt-1 text-sm text-nutrir-ink/60">
               Escolha de 5 a 28 unidades para o seu combo personalizado
             </p>
           </div>
@@ -168,7 +168,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
             >
               −
             </button>
-            <span className="min-w-[4rem] font-display text-5xl font-bold tabular-nums text-nutrir-emerald">
+            <span className="min-w-[4rem] font-display text-5xl font-bold tabular-nums text-nutrir-ink">
               {targetTotal}
             </span>
             <button
@@ -187,12 +187,12 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-nutrir-burgundy/15 bg-nutrir-nude px-5 py-4 shadow-[0_1px_2px_rgb(10_58_44/0.04),0_6px_18px_rgb(10_58_44/0.08)]">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-nutrir-burgundy/15 bg-nutrir-canvas px-5 py-4 shadow-[0_1px_2px_rgb(10_58_44/0.04),0_6px_18px_rgb(10_58_44/0.08)]">
             <div>
-              <p className="text-sm text-nutrir-emerald/70">Combo de {targetTotal} marmitas</p>
-              <p className="font-display text-2xl font-bold text-nutrir-emerald">
+              <p className="text-sm text-nutrir-ink/70">Combo de {targetTotal} marmitas</p>
+              <p className="font-display text-2xl font-bold text-nutrir-ink">
                 {build.totalMeals}{" "}
-                <span className="text-base font-normal text-nutrir-emerald/60">
+                <span className="text-base font-normal text-nutrir-ink/60">
                   / {targetTotal} escolhidas
                 </span>
               </p>
@@ -209,7 +209,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
           <div className="space-y-8">
             {sections.map((section) => (
               <section key={section.id} className="card">
-                <h3 className="mb-4 flex items-center gap-3 border-b border-nutrir-nude-dark pb-2 font-display text-lg font-bold text-nutrir-emerald">
+                <h3 className="mb-4 flex items-center gap-3 border-b border-nutrir-nude-dark pb-2 font-display text-lg font-bold text-nutrir-ink">
                   <div className="relative h-10 w-10 shrink-0">
                     {SECTION_KIT[section.id] && (
                       <MarmitaPhoto
@@ -230,7 +230,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                     return (
                       <div
                         key={item.item_id}
-                        className="flex flex-col gap-3 rounded-xl border border-nutrir-nude-dark bg-nutrir-cream/50 px-4 py-3 shadow-[0_1px_2px_rgb(10_58_44/0.04)] sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-3 rounded-xl border border-nutrir-nude-dark bg-nutrir-canvas-alt/50 px-4 py-3 shadow-[0_1px_2px_rgb(10_58_44/0.04)] sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex min-w-0 items-center gap-3">
                           {getMarmitaImageSrc(item.item_id) && (
@@ -243,7 +243,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                               />
                             </div>
                           )}
-                          <p className="min-w-0 font-semibold text-nutrir-emerald">{item.name}</p>
+                          <p className="min-w-0 font-semibold text-nutrir-ink">{item.name}</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-4 sm:justify-end">
                           <SizeQtyControl
@@ -274,16 +274,16 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
           {build.totalMeals > 0 && (
             <div className="card space-y-4 !border-nutrir-emerald">
               {build.remaining > 0 && (
-                <p className="text-center text-sm text-nutrir-emerald/70">
+                <p className="text-center text-sm text-nutrir-ink/70">
                   Faltam {build.remaining} marmita{build.remaining === 1 ? "" : "s"} para completar
                 </p>
               )}
 
-              <ul className="space-y-1.5 text-sm text-nutrir-emerald">
+              <ul className="space-y-1.5 text-sm text-nutrir-ink">
                 {build.lines.map((line) => (
                   <li key={line.option.id}>
                     {line.option.displayName}{" "}
-                    <span className="text-nutrir-emerald/50">×{line.quantity}</span>
+                    <span className="text-nutrir-ink/50">×{line.quantity}</span>
                   </li>
                 ))}
               </ul>

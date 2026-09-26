@@ -78,7 +78,7 @@ export function FiscalDataStep() {
       backLabel="Alterar pagamento"
     >
       <div className="card space-y-4">
-        <h2 className="font-bold text-nutrir-emerald">Dados para a nota fiscal:</h2>
+        <h2 className="font-bold text-nutrir-ink">Dados para a nota fiscal:</h2>
 
         <div>
           <label className="mb-1 block text-sm font-medium">Qual o seu nome e sobrenome?</label>
@@ -102,7 +102,7 @@ export function FiscalDataStep() {
             onChange={(e) => setCpf(formatCpf(e.target.value))}
             placeholder="000.000.000-00"
           />
-          <p className="mt-1 text-xs text-nutrir-emerald/60">
+          <p className="mt-1 text-xs text-nutrir-ink/60">
             Precisamos do seu CPF para emitir a nota fiscal do seu pedido.
           </p>
         </div>

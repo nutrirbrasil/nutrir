@@ -159,21 +159,21 @@ export default function CalculadoraProducaoPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+      <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-ink/70 hover:text-nutrir-ink">
         ← Voltar
       </Link>
-      <h1 className="font-display text-2xl font-bold text-nutrir-emerald">Calculadora de produção</h1>
-      <p className="mt-1 text-sm text-nutrir-emerald/60">
+      <h1 className="font-display text-2xl font-bold text-nutrir-ink">Calculadora de produção</h1>
+      <p className="mt-1 text-sm text-nutrir-ink/60">
         Adicione as marmitas do dia e veja o total de cada ingrediente pra preparar, cru e pronto.
       </p>
 
-      {loading && <p className="mt-6 text-sm text-nutrir-emerald/60">Carregando fichas técnicas…</p>}
+      {loading && <p className="mt-6 text-sm text-nutrir-ink/60">Carregando fichas técnicas…</p>}
 
       {!loading && (
         <>
           <div className="card mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="min-w-0 flex-1">
-              <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Marmita</label>
+              <label className="mb-1 block text-sm font-medium text-nutrir-ink">Marmita</label>
               <select
                 className="input-field"
                 value={selectedKey}
@@ -190,7 +190,7 @@ export default function CalculadoraProducaoPage() {
               </select>
             </div>
             <div className="w-24">
-              <label className="mb-1 block text-sm font-medium text-nutrir-emerald">Qtd</label>
+              <label className="mb-1 block text-sm font-medium text-nutrir-ink">Qtd</label>
               <input
                 type="number"
                 min={1}
@@ -206,19 +206,19 @@ export default function CalculadoraProducaoPage() {
 
           {lines.length > 0 && (
             <div className="card mt-4 space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-nutrir-emerald/70">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-nutrir-ink/70">
                 Marmitas do pedido
               </h2>
               <ul className="space-y-2">
                 {lines.map((line) => (
                   <li key={line.key} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="flex-1 text-nutrir-emerald">{line.label}</span>
+                    <span className="flex-1 text-nutrir-ink">{line.label}</span>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center rounded-lg border-2 border-nutrir-emerald/30">
                         <button
                           type="button"
                           onClick={() => updateQty(line.key, -1)}
-                          className="px-2 py-1 text-nutrir-emerald hover:bg-nutrir-emerald/5"
+                          className="px-2 py-1 text-nutrir-ink hover:bg-nutrir-emerald/5"
                         >
                           −
                         </button>
@@ -226,7 +226,7 @@ export default function CalculadoraProducaoPage() {
                         <button
                           type="button"
                           onClick={() => updateQty(line.key, 1)}
-                          className="px-2 py-1 text-nutrir-emerald hover:bg-nutrir-emerald/5"
+                          className="px-2 py-1 text-nutrir-ink hover:bg-nutrir-emerald/5"
                         >
                           +
                         </button>
@@ -247,13 +247,13 @@ export default function CalculadoraProducaoPage() {
 
           {totals.length > 0 && (
             <div className="card mt-4 space-y-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-nutrir-emerald/70">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-nutrir-ink/70">
                 Total de ingredientes
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-nutrir-nude-dark/40 text-left text-xs font-bold uppercase tracking-wide text-nutrir-emerald/60">
+                    <tr className="border-b border-nutrir-nude-dark/40 text-left text-xs font-bold uppercase tracking-wide text-nutrir-ink/60">
                       <th className="py-2 pr-2">Ingrediente</th>
                       <th className="py-2 pr-2 text-right">Pronto/cozido</th>
                       <th className="py-2 text-right">Cru</th>
@@ -262,11 +262,11 @@ export default function CalculadoraProducaoPage() {
                   <tbody>
                     {totals.map((group) => (
                       <Fragment key={group.food.id}>
-                        <tr className="border-b border-nutrir-nude-dark/20 bg-nutrir-nude-dark/10">
-                          <td className="py-2 pr-2 font-bold uppercase text-nutrir-emerald">
+                        <tr className="border-b border-nutrir-nude-dark/20 bg-nutrir-canvas-alt/10">
+                          <td className="py-2 pr-2 font-bold uppercase text-nutrir-ink">
                             {group.food.display_name}
                           </td>
-                          <td className="py-2 pr-2 text-right font-semibold text-nutrir-emerald">
+                          <td className="py-2 pr-2 text-right font-semibold text-nutrir-ink">
                             {fmtGrams(group.preparedGrams)}
                           </td>
                           <td className="py-2 text-right text-nutrir-burgundy">
@@ -279,18 +279,18 @@ export default function CalculadoraProducaoPage() {
                             className="border-b border-nutrir-nude-dark/20 last:border-0"
                           >
                             <td
-                              className={`py-2 pr-2 pl-6 uppercase text-nutrir-emerald ${
+                              className={`py-2 pr-2 pl-6 uppercase text-nutrir-ink ${
                                 child.food.is_reference_only ? "" : "font-bold"
                               }`}
                             >
                               {child.food.display_name}
                               {child.food.is_reference_only && (
-                                <span className="ml-1 text-xs normal-case text-nutrir-emerald/45">
+                                <span className="ml-1 text-xs normal-case text-nutrir-ink/45">
                                   (referência)
                                 </span>
                               )}
                             </td>
-                            <td className="py-2 pr-2 text-right font-semibold text-nutrir-emerald">
+                            <td className="py-2 pr-2 text-right font-semibold text-nutrir-ink">
                               {fmtGrams(child.preparedGrams)}
                             </td>
                             <td className="py-2 text-right text-nutrir-burgundy">
@@ -303,7 +303,7 @@ export default function CalculadoraProducaoPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-nutrir-emerald/50">
+              <p className="text-xs text-nutrir-ink/50">
                 Cada ingrediente principal (arroz, frango, massa...) vem com seus secundários logo
                 abaixo (ex: molho e sal), separados por prato, já que a quantidade muda de um pra
                 outro. "Cru" usa o fator de cocção de cada ingrediente (peso pronto ÷ fator). Itens
@@ -314,7 +314,7 @@ export default function CalculadoraProducaoPage() {
           )}
 
           {lines.length === 0 && (
-            <p className="mt-6 text-center text-sm text-nutrir-emerald/50">
+            <p className="mt-6 text-center text-sm text-nutrir-ink/50">
               Adicione marmitas acima pra ver o total de ingredientes.
             </p>
           )}

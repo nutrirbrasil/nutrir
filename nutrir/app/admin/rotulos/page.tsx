@@ -40,13 +40,13 @@ export default function RotulosPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="print:hidden">
-        <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-emerald/70 hover:text-nutrir-emerald">
+        <Link href="/admin" className="mb-4 inline-block text-sm font-semibold text-nutrir-ink/70 hover:text-nutrir-ink">
           ← Voltar
         </Link>
-        <h1 className="font-display text-2xl font-bold text-nutrir-emerald">
+        <h1 className="font-display text-2xl font-bold text-nutrir-ink">
           Rótulos nutricionais
         </h1>
-        <p className="mt-1 text-sm text-nutrir-emerald/60">
+        <p className="mt-1 text-sm text-nutrir-ink/60">
           Gere o rótulo para impressão (ANVISA RDC 429/2020 + IN 75/2020). Lote e validade ficam em
           branco para preencher à mão na hora de embalar.
         </p>
@@ -54,7 +54,7 @@ export default function RotulosPage() {
         <div className="mt-6 space-y-2">
           {ALL_TARGETS.filter((t) => t.size === "P").map((t) => (
             <div key={t.itemId} className="card flex items-center justify-between gap-3">
-              <p className="font-medium text-nutrir-emerald">{t.itemName}</p>
+              <p className="font-medium text-nutrir-ink">{t.itemName}</p>
               <div className="flex gap-2">
                 {(["P", "G"] as MarmitaSize[]).map((size) => (
                   <button

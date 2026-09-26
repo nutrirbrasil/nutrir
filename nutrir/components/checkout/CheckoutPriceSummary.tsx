@@ -56,7 +56,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
 
   return (
     <div className={compact ? "space-y-2" : "space-y-3"}>
-      {!compact && <h3 className="font-bold text-nutrir-emerald">Resumo da compra</h3>}
+      {!compact && <h3 className="font-bold text-nutrir-ink">Resumo da compra</h3>}
 
       {(!compact || pricing.show_coupon_discount || pricing.show_pix_discount) && (
         <div className="flex justify-between text-sm">
@@ -75,7 +75,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
       {pricing.show_pix_discount &&
         (hasExtraDiscount ? (
           <>
-            <div className="flex justify-between text-sm text-nutrir-emerald/75">
+            <div className="flex justify-between text-sm text-nutrir-ink/75">
               <span>
                 {discountLabel} ({formatPercent(BASE_DISCOUNT_PERCENT)})
               </span>
@@ -87,7 +87,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
             </div>
           </>
         ) : (
-          <div className="flex justify-between text-sm text-nutrir-emerald/75">
+          <div className="flex justify-between text-sm text-nutrir-ink/75">
             <span>
               {discountLabel}
               {discountPercent >= BASE_DISCOUNT_PERCENT - 0.05
@@ -99,7 +99,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
         ))}
 
       {pricing.show_coupon_discount && (
-        <div className="flex justify-between text-sm text-nutrir-emerald/75">
+        <div className="flex justify-between text-sm text-nutrir-ink/75">
           <span>
             Cupom {pricing.coupon_code}
             {pricing.coupon_percent ? ` (${formatPercent(pricing.coupon_percent)})` : ""}
@@ -110,7 +110,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
       )}
 
       {pricing.show_points_discount && (
-        <div className="flex justify-between text-sm text-nutrir-emerald/75">
+        <div className="flex justify-between text-sm text-nutrir-ink/75">
           <span>Pontos</span>
           <span>− {formatPrice(pricing.points_discount_cents)}</span>
         </div>
@@ -132,11 +132,11 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
           !!pricing.free_delivery_shortfall_cents) && (
           <div className="mt-3 space-y-2">
             {achievedFreeDelivery ? (
-              <p className="text-sm font-bold text-nutrir-emerald">
+              <p className="text-sm font-bold text-nutrir-ink">
                 Parabéns! Você atingiu o valor necessário para receber Frete Grátis.
               </p>
             ) : (
-              <p className="text-sm text-nutrir-emerald">
+              <p className="text-sm text-nutrir-ink">
                 Adicione mais{" "}
                 <strong className="font-bold text-nutrir-burgundy">
                   {formatPrice(
@@ -149,7 +149,7 @@ export function CheckoutPriceSummary({ pricing, method, compact = false }: Props
                 </strong>
               </p>
             )}
-            <div className="relative h-2 rounded-full bg-nutrir-nude-dark/40">
+            <div className="relative h-2 rounded-full bg-nutrir-canvas-alt/40">
               <div
                 className="h-2 rounded-full bg-nutrir-burgundy transition-[width]"
                 style={{ width: `${Math.round((pricing.free_delivery_progress_fraction ?? 0) * 100)}%` }}

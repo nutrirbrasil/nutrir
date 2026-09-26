@@ -54,8 +54,8 @@ function whatsappMessage(orderId: string, order: Order | null, view: ViewState):
 function PauliUpsell() {
   return (
     <div className="space-y-3 border-t border-nutrir-nude-dark/40 pt-6 text-left">
-      <p className="text-xs font-bold uppercase tracking-wide text-nutrir-emerald/55">Você sabia?</p>
-      <p className="text-sm leading-relaxed text-nutrir-emerald/80">
+      <p className="text-xs font-bold uppercase tracking-wide text-nutrir-ink/55">Você sabia?</p>
+      <p className="text-sm leading-relaxed text-nutrir-ink/80">
         Quem é <strong>paciente da nutricionista Paula Pastorino</strong> tem benefícios exclusivos
         no Nutrir: cupons especiais, produção prioritária, opção de pagar na retirada e marmitas com
         quantidades personalizadas.
@@ -64,7 +64,7 @@ function PauliUpsell() {
         href={PAULI_SITE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex w-full items-center justify-center rounded-xl border-2 border-nutrir-emerald py-3 text-sm font-bold text-nutrir-emerald transition hover:bg-nutrir-emerald/5"
+        className="inline-flex w-full items-center justify-center rounded-xl border-2 border-nutrir-emerald py-3 text-sm font-bold text-nutrir-ink transition hover:bg-nutrir-emerald/5"
       >
         Conheça a Paula
       </a>
@@ -91,7 +91,7 @@ function PayOnlineOptions({
 }) {
   return (
     <div className="space-y-3 border-t border-nutrir-nude-dark/40 pt-6">
-      <p className="text-sm font-semibold text-nutrir-emerald">Prefere pagar agora pelo site?</p>
+      <p className="text-sm font-semibold text-nutrir-ink">Prefere pagar agora pelo site?</p>
       <button
         type="button"
         disabled={loading !== null}
@@ -104,7 +104,7 @@ function PayOnlineOptions({
         type="button"
         disabled={loading !== null}
         onClick={() => onPay("card")}
-        className="w-full rounded-xl border-2 border-nutrir-emerald py-3.5 text-sm font-bold text-nutrir-emerald transition hover:bg-nutrir-emerald/5"
+        className="w-full rounded-xl border-2 border-nutrir-emerald py-3.5 text-sm font-bold text-nutrir-ink transition hover:bg-nutrir-emerald/5"
       >
         {loading === "card" ? "Abrindo…" : "Quero pagar no Cartão"}
       </button>
@@ -202,7 +202,7 @@ export function OrderThankYouStep() {
     return (
       <CheckoutShell title="Aguarde…">
         <div className="card mx-auto max-w-md text-center">
-          <p className="text-nutrir-emerald/70">Confirmando seu pedido…</p>
+          <p className="text-nutrir-ink/70">Confirmando seu pedido…</p>
         </div>
       </CheckoutShell>
     );
@@ -231,7 +231,7 @@ export function OrderThankYouStep() {
           <p className="text-4xl" aria-hidden>
             ⏳
           </p>
-          <p className="text-sm leading-relaxed text-nutrir-emerald/75">
+          <p className="text-sm leading-relaxed text-nutrir-ink/75">
             Pedido <strong>{orderLabel}</strong>, ainda estamos confirmando o pagamento com cartão.
             Se você já concluiu no checkout, aguarde alguns instantes e atualize esta página.
           </p>
@@ -243,7 +243,7 @@ export function OrderThankYouStep() {
           >
             Receber atualizações do pedido no WhatsApp
           </a>
-          <Link href="/" className="block text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald">
+          <Link href="/" className="block text-sm text-nutrir-ink/60 hover:text-nutrir-ink">
             Voltar ao cardápio
           </Link>
         </div>
@@ -259,10 +259,10 @@ export function OrderThankYouStep() {
             ✓
           </p>
           <div className="space-y-2">
-            <h2 className="font-display text-xl font-bold text-nutrir-emerald">
+            <h2 className="font-display text-xl font-bold text-nutrir-ink">
               Recebemos seu pedido
             </h2>
-            <p className="text-sm leading-relaxed text-nutrir-emerald/75">
+            <p className="text-sm leading-relaxed text-nutrir-ink/75">
               Pedido <strong>{orderLabel}</strong> registrado. Como <strong>paciente VIP</strong>, a
               produção será <strong>prioritária</strong>. O pagamento em dinheiro ou cartão físico
               pode ser feito <strong>na retirada</strong>.
@@ -285,7 +285,7 @@ export function OrderThankYouStep() {
             onPay={payOnline}
           />
 
-          <Link href="/" className="block text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald">
+          <Link href="/" className="block text-sm text-nutrir-ink/60 hover:text-nutrir-ink">
             Voltar ao cardápio
           </Link>
         </div>
@@ -301,10 +301,10 @@ export function OrderThankYouStep() {
             ✓
           </p>
           <div className="space-y-2">
-            <h2 className="font-display text-xl font-bold text-nutrir-emerald">
+            <h2 className="font-display text-xl font-bold text-nutrir-ink">
               Recebemos seu pedido
             </h2>
-            <p className="text-sm leading-relaxed text-nutrir-emerald/75">
+            <p className="text-sm leading-relaxed text-nutrir-ink/75">
               Pedido <strong>{orderLabel}</strong> registrado. Efetue o pagamento{" "}
               <strong>no local na retirada</strong>, dentro de <strong>48 horas</strong>, para
               iniciarmos a produção.
@@ -329,7 +329,7 @@ export function OrderThankYouStep() {
 
           {showUpsell && <PauliUpsell />}
 
-          <Link href="/" className="block text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald">
+          <Link href="/" className="block text-sm text-nutrir-ink/60 hover:text-nutrir-ink">
             Voltar ao cardápio
           </Link>
         </div>
@@ -346,10 +346,10 @@ export function OrderThankYouStep() {
           {isPixPending ? "✓" : "✅"}
         </p>
         <div className="space-y-2">
-          <h2 className="font-display text-xl font-bold text-nutrir-emerald">
+          <h2 className="font-display text-xl font-bold text-nutrir-ink">
             {isPixPending ? "Recebemos seu pedido" : "Pagamento confirmado!"}
           </h2>
-          <p className="text-sm leading-relaxed text-nutrir-emerald/75">
+          <p className="text-sm leading-relaxed text-nutrir-ink/75">
             {isPixPending ? (
               <>
                 Pedido <strong>{orderLabel}</strong> registrado. Assim que o pagamento Pix for
@@ -375,7 +375,7 @@ export function OrderThankYouStep() {
 
         {showUpsell && <PauliUpsell />}
 
-        <Link href="/" className="block text-sm text-nutrir-emerald/60 hover:text-nutrir-emerald">
+        <Link href="/" className="block text-sm text-nutrir-ink/60 hover:text-nutrir-ink">
           Voltar ao cardápio
         </Link>
       </div>

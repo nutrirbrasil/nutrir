@@ -76,10 +76,10 @@ export function SavedAddressesManager() {
 
   return (
     <section className="card mt-6 space-y-4">
-      <h2 className="font-display text-lg font-bold text-nutrir-emerald">Endereços de entrega</h2>
+      <h2 className="font-display text-lg font-bold text-nutrir-ink">Endereços de entrega</h2>
 
       {loading && addresses.length === 0 && (
-        <p className="text-sm text-nutrir-emerald/60">Carregando...</p>
+        <p className="text-sm text-nutrir-ink/60">Carregando...</p>
       )}
 
       {addresses.length > 0 && (
@@ -87,25 +87,25 @@ export function SavedAddressesManager() {
           {addresses.map((address) => (
             <li key={address.id} className="rounded-xl border-2 border-nutrir-burgundy/20 p-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-bold text-nutrir-emerald">{address.label}</span>
+                <span className="font-bold text-nutrir-ink">{address.label}</span>
                 {address.is_default && (
-                  <span className="rounded-full bg-nutrir-emerald/10 px-2 py-0.5 text-xs font-bold text-nutrir-emerald">
+                  <span className="rounded-full bg-nutrir-emerald/10 px-2 py-0.5 text-xs font-bold text-nutrir-ink">
                     Padrão
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-sm text-nutrir-emerald/70">{addressSummary(address)}</p>
+              <p className="mt-1 text-sm text-nutrir-ink/70">{addressSummary(address)}</p>
               <div className="mt-2 flex flex-wrap gap-3 text-sm font-bold">
                 {!address.is_default && (
                   <button
                     type="button"
                     onClick={() => handleSetDefault(address.id)}
-                    className="text-nutrir-emerald"
+                    className="text-nutrir-ink"
                   >
                     Tornar padrão
                   </button>
                 )}
-                <button type="button" onClick={() => setFormMode(address.id)} className="text-nutrir-emerald">
+                <button type="button" onClick={() => setFormMode(address.id)} className="text-nutrir-ink">
                   Editar
                 </button>
                 <button type="button" onClick={() => handleDelete(address.id)} className="text-nutrir-burgundy">
@@ -118,7 +118,7 @@ export function SavedAddressesManager() {
       )}
 
       {!loading && addresses.length === 0 && formMode === "none" && (
-        <p className="text-sm text-nutrir-emerald/60">
+        <p className="text-sm text-nutrir-ink/60">
           Nenhum endereço salvo ainda. Adicione até {MAX_SAVED_ADDRESSES} para agilizar suas
           próximas entregas.
         </p>

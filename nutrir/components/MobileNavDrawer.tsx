@@ -7,6 +7,7 @@ import { FiChevronDown, FiX } from "react-icons/fi";
 import { ComboNavLink } from "@/components/CombosNavMenu";
 import { COMBO_MENU_LINKS } from "@/lib/combo-nav-links";
 import { NUTRIR_MENU_LINKS } from "@/components/NutrirNavMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const mainLinks = [
   { href: "/marmitas", label: "Marmitas" },
@@ -37,13 +38,13 @@ function DrawerAccordion({
         type="button"
         aria-expanded={open}
         onClick={onToggle}
-        className="flex w-full items-center justify-between rounded-xl px-4 py-2 transition hover:bg-nutrir-nude/60"
+        className="flex w-full items-center justify-between rounded-xl px-4 py-2 transition hover:bg-nutrir-canvas/60"
       >
-        <span className="text-sm font-bold uppercase tracking-wide text-nutrir-emerald">
+        <span className="text-sm font-bold uppercase tracking-wide text-nutrir-ink">
           {title}
         </span>
         <FiChevronDown
-          className={`text-base text-nutrir-emerald transition-transform ${open ? "rotate-180" : ""}`}
+          className={`text-base text-nutrir-ink transition-transform ${open ? "rotate-180" : ""}`}
           aria-hidden
         />
       </button>
@@ -92,17 +93,20 @@ export function MobileNavDrawer({ open, onClose }: Props) {
         onClick={onClose}
       />
 
-      <aside className="absolute right-0 top-0 flex h-full w-[min(100%,20rem)] flex-col bg-nutrir-cream shadow-2xl">
+      <aside className="absolute right-0 top-0 flex h-full w-[min(100%,20rem)] flex-col bg-nutrir-canvas-alt shadow-2xl">
         <div className="flex items-center justify-between border-b border-nutrir-nude-dark/50 px-5 py-4">
           <p className="font-display text-lg font-bold uppercase tracking-wide text-nutrir-burgundy">Menu</p>
-          <button
-            type="button"
-            aria-label="Fechar"
-            onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-nutrir-emerald transition hover:bg-nutrir-nude"
-          >
-            <FiX className="text-xl" />
-          </button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle className="text-nutrir-ink hover:bg-nutrir-canvas" />
+            <button
+              type="button"
+              aria-label="Fechar"
+              onClick={onClose}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-nutrir-ink transition hover:bg-nutrir-canvas"
+            >
+              <FiX className="text-xl" />
+            </button>
+          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-4 py-4">
@@ -115,7 +119,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
               <Link
                 href="/combos"
                 onClick={onClose}
-                className="block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-nutrir-emerald/85 transition hover:bg-nutrir-nude"
+                className="block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-nutrir-ink/85 transition hover:bg-nutrir-canvas"
               >
                 Ver todos
               </Link>
@@ -126,7 +130,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
                   href={link.href}
                   sectionId={link.sectionId}
                   label={link.label}
-                  className="block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-nutrir-emerald/85 transition hover:bg-nutrir-nude"
+                  className="block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-nutrir-ink/85 transition hover:bg-nutrir-canvas"
                   onNavigate={onClose}
                 />
               </li>
@@ -143,7 +147,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
                     pathname === link.href ||
                     (link.href === "/perfil" && pathname.startsWith("/perfil"))
                       ? "bg-nutrir-burgundy text-nutrir-nude"
-                      : "text-nutrir-emerald hover:bg-nutrir-nude"
+                      : "text-nutrir-ink hover:bg-nutrir-canvas"
                   }`}
                 >
                   {link.label}
@@ -166,7 +170,7 @@ export function MobileNavDrawer({ open, onClose }: Props) {
                     className={`block rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide transition ${
                       pathname === link.href
                         ? "bg-nutrir-burgundy/10 text-nutrir-burgundy"
-                        : "text-nutrir-emerald/85 hover:bg-nutrir-nude"
+                        : "text-nutrir-ink/85 hover:bg-nutrir-canvas"
                     }`}
                   >
                     {link.label}

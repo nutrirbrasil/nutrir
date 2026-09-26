@@ -46,9 +46,9 @@ export function PageHero({ eyebrow, title, tagline, subtitle }: Props) {
         style={{ animationDelay: "200ms" }}
         aria-hidden
       >
-        <span className="h-px w-10 bg-nutrir-nude/25" />
-        <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-nude/45" />
-        <span className="h-px w-10 bg-nutrir-nude/25" />
+        <span className="h-px w-10 bg-nutrir-canvas/25" />
+        <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-canvas/45" />
+        <span className="h-px w-10 bg-nutrir-canvas/25" />
       </div>
 
       {tagline && (

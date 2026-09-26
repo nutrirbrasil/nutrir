@@ -73,7 +73,7 @@ export default function ComoFuncionaPage() {
         <p>De segunda a sexta, das 09:00 às 12:00 ou das 14:00 às 19:30.</p>
       </InfoSection>
 
-      <p className="text-center font-display text-base italic text-nutrir-emerald md:text-lg">
+      <p className="text-center font-display text-base italic text-nutrir-ink md:text-lg">
         Apenas se organize para pedir que nós organizamos sua semana!
       </p>
 

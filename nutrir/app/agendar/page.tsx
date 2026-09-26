@@ -21,7 +21,7 @@ export default function AgendarPage() {
 
   if (!authReady) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 text-center text-nutrir-emerald/70">
+      <div className="mx-auto max-w-3xl px-4 py-10 text-center text-nutrir-ink/70">
         Carregando…
       </div>
     );
@@ -32,7 +32,7 @@ export default function AgendarPage() {
       <div className="mb-8 text-center">
         <p className="eyebrow text-nutrir-burgundy/70">Nutrir · Seu pedido</p>
         <h1 className="section-title mt-2">Agendar retirada</h1>
-        <p className="mt-2 text-sm text-nutrir-emerald/70">
+        <p className="mt-2 text-sm text-nutrir-ink/70">
           Escolha a data e confirme seus dados para retirar na Nutrir.
         </p>
         <Link href="/marmitas" className="mt-4 inline-block text-sm font-medium text-nutrir-burgundy hover:underline">
@@ -41,7 +41,7 @@ export default function AgendarPage() {
       </div>
       {!hasItems ? (
         <div className="card text-center">
-          <p className="text-nutrir-emerald/70">Sua sacola está vazia.</p>
+          <p className="text-nutrir-ink/70">Sua sacola está vazia.</p>
           <Link href="/marmitas" className="btn-primary mt-4 inline-block">
             Ver cardápio
           </Link>

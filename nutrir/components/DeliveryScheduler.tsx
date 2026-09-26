@@ -49,7 +49,7 @@ export function DeliveryScheduler({
 
   if (!group) {
     return (
-      <p className="text-sm text-nutrir-emerald/70">
+      <p className="text-sm text-nutrir-ink/70">
         Escolha o bairro de entrega abaixo para ver as datas disponíveis.
       </p>
     );
@@ -58,17 +58,17 @@ export function DeliveryScheduler({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-sm font-medium text-nutrir-emerald">Selecione a data da entrega</p>
+        <p className="text-sm font-medium text-nutrir-ink">Selecione a data da entrega</p>
 
         {dates.length === 0 && !showDisabledToday ? (
-          <p className="mt-2 text-sm text-nutrir-emerald/70">
+          <p className="mt-2 text-sm text-nutrir-ink/70">
             Nenhuma data disponível no momento. Tente novamente mais tarde.
           </p>
         ) : (
           <div className="mt-3 grid grid-cols-5 gap-2">
             {showDisabledToday && (
               <div
-                className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-nude-dark/10 px-1 py-3 text-center text-nutrir-emerald/40"
+                className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-canvas-alt/10 px-1 py-3 text-center text-nutrir-ink/40"
                 title="Um ou mais itens da sacola não estão disponíveis para entrega hoje"
               >
                 <span className="block text-xl font-bold">Hoje</span>
@@ -86,12 +86,12 @@ export function DeliveryScheduler({
                   onClick={() => selectDate(iso)}
                   className={`rounded-xl border-2 px-1 py-3 text-center transition ${
                     selected
-                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-emerald"
-                      : "border-nutrir-burgundy/30 bg-nutrir-nude text-nutrir-emerald hover:border-nutrir-burgundy"
+                      ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"
+                      : "border-nutrir-burgundy/30 bg-nutrir-canvas text-nutrir-ink hover:border-nutrir-burgundy"
                   }`}
                 >
                   <span className="block text-xl font-bold">{day}</span>
-                  <span className="block text-[10px] capitalize text-nutrir-emerald/70">{weekday}</span>
+                  <span className="block text-[10px] capitalize text-nutrir-ink/70">{weekday}</span>
                 </button>
               );
             })}
@@ -100,16 +100,16 @@ export function DeliveryScheduler({
       </div>
 
       {value?.date && (
-        <p className="text-sm text-nutrir-emerald/70">
+        <p className="text-sm text-nutrir-ink/70">
           Janela de entrega:{" "}
-          <strong className="text-nutrir-emerald">
+          <strong className="text-nutrir-ink">
             {getDeliveryWindow(group, parseISODate(value.date).getDay()).label}
           </strong>
         </p>
       )}
 
       {value?.date && (
-        <p className="text-sm font-medium text-nutrir-emerald">
+        <p className="text-sm font-medium text-nutrir-ink">
           {formatDeliverySummary(bairroId, value)}
         </p>
       )}
