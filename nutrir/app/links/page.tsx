@@ -4,7 +4,6 @@ import Link from "next/link";
 import type { IconType } from "react-icons";
 import { FaGoogle, FaHandshake, FaInstagram, FaUserDoctor, FaWhatsapp } from "react-icons/fa6";
 import { SiIfood } from "react-icons/si";
-import { FiShoppingBag } from "react-icons/fi";
 import { whatsappContactUrl } from "@/lib/legal";
 import { logoUrl } from "@/lib/brand-assets";
 
@@ -22,24 +21,42 @@ const IFOOD_URL =
 interface LinkButtonProps {
   href: string;
   external?: boolean;
-  icon: IconType;
-  iconColorClass: string;
+  icon?: IconType;
+  imageSrc?: string;
+  iconColorClass?: string;
   title: string;
+  subtitle: string;
   highlighted?: boolean;
 }
 
-function LinkButton({ href, external, icon: Icon, iconColorClass, title, highlighted }: LinkButtonProps) {
-  const className = `flex items-center gap-4 rounded-full border px-4 py-3.5 transition hover:-translate-y-0.5 ${
+function LinkButton({
+  href,
+  external,
+  icon: Icon,
+  imageSrc,
+  iconColorClass,
+  title,
+  subtitle,
+  highlighted,
+}: LinkButtonProps) {
+  const className = `flex items-center gap-4 rounded-2xl border px-4 py-3 transition hover:-translate-y-0.5 ${
     highlighted
-      ? "border-nutrir-burgundy bg-nutrir-burgundy/20 hover:bg-nutrir-burgundy/30"
+      ? "border-nutrir-burgundy bg-nutrir-burgundy/25 hover:bg-nutrir-burgundy/35"
       : "border-white/10 bg-white/5 hover:bg-white/10"
   }`;
   const content = (
     <>
-      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg ${iconColorClass}`}>
-        <Icon />
+      <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-3xl">
+        {imageSrc ? (
+          <Image src={imageSrc} alt="" width={64} height={64} className="h-full w-full object-cover" unoptimized />
+        ) : (
+          Icon && <Icon className={iconColorClass} />
+        )}
       </span>
-      <span className="flex-1 text-center font-display text-sm font-bold text-white">{title}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-display text-base font-bold text-white">{title}</span>
+        <span className="mt-0.5 block text-xs leading-snug text-white/70">{subtitle}</span>
+      </span>
     </>
   );
 
@@ -75,24 +92,26 @@ export default function LinksPage() {
 
         <div className="mt-8 w-full space-y-3">
           <LinkButton
+            href="/marmitas"
+            imageSrc="/links/nosso-site.png"
+            title="Nosso Site"
+            subtitle="Ver Cardápio | Faça seu Pedido."
+            highlighted
+          />
+          <LinkButton
             href="/parceiro"
             icon={FaHandshake}
             iconColorClass="text-nutrir-burgundy"
             title="Seja Parceiro"
-            highlighted
-          />
-          <LinkButton
-            href="/marmitas"
-            icon={FiShoppingBag}
-            iconColorClass="text-nutrir-ink"
-            title="Faça seu pedido"
+            subtitle="Ver Requisitos | Inscrever-se"
           />
           <LinkButton
             href={whatsappContactUrl()}
             external
             icon={FaWhatsapp}
             iconColorClass="text-[#25D366]"
-            title="Nosso WhatsApp"
+            title="WhatsApp"
+            subtitle="Tire suas dúvidas | Faça seu Pedido."
           />
           <LinkButton
             href={GOOGLE_REVIEW_URL}
@@ -100,6 +119,7 @@ export default function LinksPage() {
             icon={FaGoogle}
             iconColorClass="text-[#4285F4]"
             title="Avalie no Google"
+            subtitle="Gostou? Nos avalie com 5 estrelas!"
           />
           <LinkButton
             href={INSTAGRAM_URL}
@@ -107,6 +127,15 @@ export default function LinksPage() {
             icon={FaInstagram}
             iconColorClass="text-[#E1306C]"
             title="Instagram"
+            subtitle="Nos siga e fique por dentro das novidades e promoções."
+          />
+          <LinkButton
+            href={PAULI_URL}
+            external
+            icon={FaUserDoctor}
+            iconColorClass="text-nutrir-emerald"
+            title="Conheça a Nutricionista"
+            subtitle="Conheça o trabalho da nutricionista fundadora do Nutrir."
           />
           <LinkButton
             href={IFOOD_URL}
@@ -114,13 +143,7 @@ export default function LinksPage() {
             icon={SiIfood}
             iconColorClass="text-[#EA1D2C]"
             title="Peça no iFood"
-          />
-          <LinkButton
-            href={PAULI_URL}
-            external
-            icon={FaUserDoctor}
-            iconColorClass="text-nutrir-ink"
-            title="Conheça a Nutricionista"
+            subtitle="Faça seu pedido no iFood."
           />
         </div>
       </div>
