@@ -71,6 +71,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [step, setStep] = useState<"total" | "pick">("total");
   const [customCode, setCustomCode] = useState("");
+  const [showCustomCode, setShowCustomCode] = useState(false);
 
   const customConfig = COMBO_CUSTOM_CODES[customCode.trim()];
 
@@ -199,30 +200,42 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
             Escolher marmitas
           </button>
 
-          <div className="mx-auto max-w-md rounded-xl border border-dashed border-nutrir-burgundy/30 bg-nutrir-canvas-alt/50 p-4 text-left">
-            <p className="text-xs leading-relaxed text-nutrir-ink/70">
-              Marmitas personalizadas? Envie as alterações que deseja fazer em nosso Whatsapp e cole
-              o código recebido para você mesmo montar e ter o orçamento do seu combo personalizado.
-            </p>
-            <input
-              type="text"
-              value={customCode}
-              onChange={(e) => handleCustomCodeChange(e.target.value)}
-              placeholder="Código (opcional)"
-              className="input-field mt-2"
-            />
-            {customCode.trim() && (
-              <p
-                className={`mt-1.5 text-xs font-semibold ${
-                  customConfig ? "text-nutrir-burgundy" : "text-nutrir-ink/50"
-                }`}
-              >
-                {customConfig
-                  ? `Código aplicado: marmitas personalizadas (+${formatPrice(
-                      customConfig.surchargeCents
-                    )} por marmita).`
-                  : "Código não encontrado."}
-              </p>
+          <div className="mx-auto max-w-md text-center">
+            <button
+              type="button"
+              onClick={() => setShowCustomCode((v) => !v)}
+              className="text-xs font-semibold text-nutrir-ink/60 underline underline-offset-2 hover:text-nutrir-burgundy"
+            >
+              Marmitas Personalizadas? Clique aqui
+            </button>
+
+            {showCustomCode && (
+              <div className="mt-2 space-y-2">
+                <p className="text-xs leading-relaxed text-nutrir-ink/60">
+                  Envie as alterações que deseja fazer em nosso Whatsapp e cole o código recebido
+                  para você mesmo montar e ter o orçamento do seu combo personalizado.
+                </p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={customCode}
+                  onChange={(e) => handleCustomCodeChange(e.target.value)}
+                  placeholder="Código"
+                  maxLength={3}
+                  className="input-field mx-auto w-20 text-center"
+                />
+                {customCode.trim() && (
+                  <p
+                    className={`text-xs font-semibold ${
+                      customConfig ? "text-nutrir-burgundy" : "text-nutrir-ink/50"
+                    }`}
+                  >
+                    {customConfig
+                      ? 'Código válido, clique no botão "Escolher marmitas" acima.'
+                      : "Código não encontrado."}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
