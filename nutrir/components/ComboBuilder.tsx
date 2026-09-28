@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
+import { whatsappContactUrl } from "@/lib/legal";
 import {
   COMBO_CUSTOM_CODES,
   COMBO_MEAL_MAX,
@@ -212,8 +213,19 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
             {showCustomCode && (
               <div className="mt-2 space-y-2">
                 <p className="text-xs leading-relaxed text-nutrir-ink/60">
-                  Envie as alterações que deseja fazer em nosso Whatsapp e cole o código recebido
-                  para você mesmo montar e ter o orçamento do seu combo personalizado.
+                  Envie as alterações que deseja fazer em nosso{" "}
+                  <a
+                    href={whatsappContactUrl(
+                      "Gostaria de fazer um pedido de combo personalizado e preciso do código. O pedido seria o seguinte:"
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-nutrir-burgundy underline underline-offset-2"
+                  >
+                    Whatsapp
+                  </a>{" "}
+                  e cole o código recebido para você mesmo montar e ter o orçamento do seu combo
+                  personalizado.
                 </p>
                 <input
                   type="text"
@@ -222,7 +234,8 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                   onChange={(e) => handleCustomCodeChange(e.target.value)}
                   placeholder="Código"
                   maxLength={3}
-                  className="input-field mx-auto w-20 text-center"
+                  style={{ fontSize: "12px" }}
+                  className="input-field mx-auto w-20 px-2 text-center"
                 />
                 {customCode.trim() && (
                   <p
