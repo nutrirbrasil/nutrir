@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import {
+  COMBO_CUSTOM_CODES,
   COMBO_MEAL_MAX,
   COMBO_MEAL_MIN,
   calculateComboBuild,
@@ -13,7 +14,6 @@ import {
   getComboSectionsWithOptions,
 } from "@/lib/combo-builder-data";
 import type { ComboMarmitaOption } from "@/lib/combo-builder-data";
-import type { MarmitaSize } from "@/lib/menu-data";
 import { KIT_IMAGES, getMarmitaImageSrc } from "@/lib/marmita-images";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
@@ -24,14 +24,14 @@ const SECTION_KIT: Record<string, keyof typeof KIT_IMAGES> = {
 };
 
 function SizeQtyControl({
-  size,
+  label,
   option,
   qty,
   atLimit,
   onDec,
   onInc,
 }: {
-  size: MarmitaSize;
+  label: string;
   option: ComboMarmitaOption;
   qty: number;
   atLimit: boolean;
@@ -40,7 +40,7 @@ function SizeQtyControl({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="w-4 text-center text-xs font-bold text-nutrir-ink/70">{size}</span>
+      <span className="text-center text-xs font-bold text-nutrir-ink/70">{label}</span>
       <button
         type="button"
         onClick={onDec}
@@ -70,9 +70,15 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
   const [targetTotal, setTargetTotal] = useState<number>(14);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [step, setStep] = useState<"total" | "pick">("total");
+  const [customCode, setCustomCode] = useState("");
+
+  const customConfig = COMBO_CUSTOM_CODES[customCode.trim()];
 
   const sections = useMemo(() => getComboSectionsWithOptions(), []);
-  const build = useMemo(() => calculateComboBuild(quantities, targetTotal), [quantities, targetTotal]);
+  const build = useMemo(
+    () => calculateComboBuild(quantities, targetTotal, customConfig?.surchargeCents ?? 0),
+    [quantities, targetTotal, customConfig]
+  );
   const cardTotalCents = getComboCardTotalCents(build.total_cents);
 
   function clampTarget(value: number) {
@@ -109,6 +115,13 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
     setStep("pick");
   }
 
+  function handleCustomCodeChange(value: string) {
+    setCustomCode(value);
+    // Trocar de código muda a regra de preço/tamanho, então reseta o que já
+    // tinha sido escolhido pra não deixar quantidades num modo que não existe mais.
+    setQuantities({});
+  }
+
   function handleChangeTotal() {
     setStep("total");
   }
@@ -130,6 +143,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
       },
     });
     setQuantities({});
+    setCustomCode("");
     setStep("total");
   }
 
@@ -184,6 +198,33 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
           <button type="button" onClick={handleConfirmTotal} className="btn-primary w-full sm:w-auto sm:px-12">
             Escolher marmitas
           </button>
+
+          <div className="mx-auto max-w-md rounded-xl border border-dashed border-nutrir-burgundy/30 bg-nutrir-canvas-alt/50 p-4 text-left">
+            <p className="text-xs leading-relaxed text-nutrir-ink/70">
+              Marmitas personalizadas? Envie as alterações que deseja fazer em nosso Whatsapp e cole
+              o código recebido para você mesmo montar e ter o orçamento do seu combo personalizado.
+            </p>
+            <input
+              type="text"
+              value={customCode}
+              onChange={(e) => handleCustomCodeChange(e.target.value)}
+              placeholder="Código (opcional)"
+              className="input-field mt-2"
+            />
+            {customCode.trim() && (
+              <p
+                className={`mt-1.5 text-xs font-semibold ${
+                  customConfig ? "text-nutrir-burgundy" : "text-nutrir-ink/50"
+                }`}
+              >
+                {customConfig
+                  ? `Código aplicado: marmitas personalizadas (+${formatPrice(
+                      customConfig.surchargeCents
+                    )} por marmita).`
+                  : "Código não encontrado."}
+              </p>
+            )}
+          </div>
         </div>
       ) : (
         <>
@@ -246,22 +287,35 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                           <p className="min-w-0 font-semibold text-nutrir-ink">{item.name}</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-4 sm:justify-end">
-                          <SizeQtyControl
-                            size="P"
-                            option={item.bySize.P}
-                            qty={qtyP}
-                            atLimit={atLimit}
-                            onDec={() => setQty(item.bySize.P.id, qtyP - 1)}
-                            onInc={() => addOne(item.bySize.P.id)}
-                          />
-                          <SizeQtyControl
-                            size="G"
-                            option={item.bySize.G}
-                            qty={qtyG}
-                            atLimit={atLimit}
-                            onDec={() => setQty(item.bySize.G.id, qtyG - 1)}
-                            onInc={() => addOne(item.bySize.G.id)}
-                          />
+                          {customConfig ? (
+                            <SizeQtyControl
+                              label="Personalizado"
+                              option={item.bySize.G}
+                              qty={qtyG}
+                              atLimit={atLimit}
+                              onDec={() => setQty(item.bySize.G.id, qtyG - 1)}
+                              onInc={() => addOne(item.bySize.G.id)}
+                            />
+                          ) : (
+                            <>
+                              <SizeQtyControl
+                                label="P"
+                                option={item.bySize.P}
+                                qty={qtyP}
+                                atLimit={atLimit}
+                                onDec={() => setQty(item.bySize.P.id, qtyP - 1)}
+                                onInc={() => addOne(item.bySize.P.id)}
+                              />
+                              <SizeQtyControl
+                                label="G"
+                                option={item.bySize.G}
+                                qty={qtyG}
+                                atLimit={atLimit}
+                                onDec={() => setQty(item.bySize.G.id, qtyG - 1)}
+                                onInc={() => addOne(item.bySize.G.id)}
+                              />
+                            </>
+                          )}
                         </div>
                       </div>
                     );
