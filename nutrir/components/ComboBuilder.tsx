@@ -232,9 +232,8 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                   inputMode="numeric"
                   value={customCode}
                   onChange={(e) => handleCustomCodeChange(e.target.value)}
-                  placeholder="Código"
+                  placeholder="000"
                   maxLength={3}
-                  style={{ fontSize: "12px" }}
                   className="input-field mx-auto w-20 px-2 text-center"
                 />
                 {customCode.trim() && (
