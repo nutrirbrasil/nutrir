@@ -2,7 +2,9 @@ import { KIT_PRODUCTS, MENU_SECTIONS, type MarmitaSize } from "./menu-data";
 import type { MenuSectionId } from "./types";
 
 export const COMBO_MEAL_MIN = 5;
-export const COMBO_MEAL_MAX = 28;
+export const COMBO_MEAL_MAX = 60;
+/** O desconto progressivo por marmita só cresce até esse tanto de marmitas no combo, marmitas além disso não aumentam mais o desconto. */
+export const COMBO_DISCOUNT_PROGRESSIVE_MAX = 28;
 
 export interface ComboMarmitaOption {
   id: string;
@@ -57,9 +59,11 @@ function getMinKitPerMealCentsBySize(): Record<MarmitaSize, number> {
 const MIN_KIT_PER_MEAL_CENTS = getMinKitPerMealCentsBySize();
 
 export function getComboDiscountPerMealCents(targetTotal: number): number {
-  // Regra: a cada marmita no combo, desconto de R$0,15 por marmita.
-  // Ex: 5 marmitas => 75 centavos off por marmita; 20 => R$3,00 off por marmita.
-  return Math.max(0, Math.floor(targetTotal) * 15);
+  // Regra: a cada marmita no combo, desconto de R$0,15 por marmita, progressivo
+  // só até COMBO_DISCOUNT_PROGRESSIVE_MAX marmitas. Combos maiores que isso mantêm
+  // o mesmo desconto por marmita do teto, sem crescer mais.
+  const cappedTotal = Math.min(Math.floor(targetTotal), COMBO_DISCOUNT_PROGRESSIVE_MAX);
+  return Math.max(0, cappedTotal * 15);
 }
 
 export function getDiscountedUnitPriceCents(option: ComboMarmitaOption, targetTotal: number): number {

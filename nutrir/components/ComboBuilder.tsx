@@ -155,7 +155,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
               Quantas marmitas no combo?
             </h3>
             <p className="mt-1 text-sm text-nutrir-ink/60">
-              Escolha de 5 a 28 unidades para o seu combo personalizado
+              Escolha de {COMBO_MEAL_MIN} a {COMBO_MEAL_MAX} unidades para o seu combo personalizado
             </p>
           </div>
 
