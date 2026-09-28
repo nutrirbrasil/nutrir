@@ -49,10 +49,10 @@ const ACTION_HINTS: Record<SubstitutionAction, string> = {
   missing_food: "Escolha o alimento que falta e adicione o que você tem no lugar.",
 };
 
-const ACTION_CARDS: { id: SubstitutionAction; tag: string; symbol: string; desc: string }[] = [
-  { id: "ate_different", tag: "Past", symbol: "←", desc: "Registre o que comeu e ajustamos o resto do dia." },
-  { id: "will_eat_different", tag: "Future", symbol: "→", desc: "Planeje uma refeição fora do plano antes de comer." },
-  { id: "missing_food", tag: "Help", symbol: "?", desc: "Troque um alimento que não tem por outro equivalente." },
+const ACTION_CARDS: { id: SubstitutionAction; tag: string; desc: string }[] = [
+  { id: "ate_different", tag: "Past", desc: "Registre o que comeu e ajustamos o resto do dia." },
+  { id: "will_eat_different", tag: "Future", desc: "Planeje uma refeição fora do plano antes de comer." },
+  { id: "missing_food", tag: "Now", desc: "Troque um alimento que não tem por outro equivalente." },
 ];
 
 /** "A, B e C" (e não "A, B, C"), pro resumo soar como frase escrita. */
@@ -436,15 +436,12 @@ function SubstituirForm({ token, meals }: { token: string; meals: Meal[] }) {
             key={c.id}
             type="button"
             onClick={() => switchAction(c.id)}
-            className="group card card-hover relative overflow-hidden text-left"
+            className="group card card-hover relative overflow-hidden text-center"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-nootr-wine/30 font-display text-2xl text-nootr-bordoSoft transition-colors group-hover:text-nootr-cream">
-              {c.symbol}
-            </span>
-            <p className="mt-4 text-[10px] font-semibold uppercase tracking-caps text-nootr-bordo">
+            <p className="text-lg font-semibold uppercase tracking-caps text-nootr-bordo">
               {c.tag}
             </p>
-            <h3 className="mt-1 text-[15px] font-semibold text-nootr-cream">{ACTION_LABELS[c.id]}</h3>
+            <h3 className="mt-2 text-[15px] font-semibold text-nootr-cream">{ACTION_LABELS[c.id]}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-nootr-muted">{c.desc}</p>
             <span className="mt-4 inline-block text-xs font-medium text-nootr-bordoSoft opacity-0 transition-opacity group-hover:opacity-100">
               Começar →

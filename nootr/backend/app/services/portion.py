@@ -367,14 +367,34 @@ def _parse_quantity_and_unit(text: str, food_hint: str = "") -> tuple[float, str
     certo depois de recalcular a contagem, sem perder o qualificador."""
     norm = _normalize(text)
     hint_norm = _normalize(food_hint)
+    matches = list(re.finditer(r"(\d+(?:[.,]\d+)?)\s*([a-z]+)", norm))
 
     # 1) Número seguido de unidade: "150 g", "2 fatias", "1.5 xicara".
-    for match in re.finditer(r"(\d+(?:[.,]\d+)?)\s*([a-z]+)", norm):
+    for i, match in enumerate(matches):
         qty = float(match.group(1).replace(",", "."))
         unit = match.group(2)
         resolved = _resolve_unit(unit, norm, match.end(), hint_norm)
         if resolved is not None:
             grams, key = resolved
+            # Achado testando ao vivo: o próprio formato que esta função gera
+            # em `rescale_quantity` ("3 unidades (180g)") sempre volta como
+            # entrada na PRÓXIMA chamada (a app reprocessa o rótulo já
+            # existente a cada reescalonamento). Se o total real entre
+            # parênteses diverge da tabela genérica por alimento (ex: "ovo"
+            # -> 50g fixo, mas esse item específico tem 60g/unidade de
+            # verdade, 180g em 3), ignorar esse total e recalcular do zero
+            # pela tabela produz uma contagem presa (3 unidades permanece 3
+            # mesmo escalando pra 150g) com um peso por unidade que muda
+            # sozinho de rótulo pro rótulo, como se o alimento tivesse
+            # encolhido. Prefere o total explícito do texto (mais específico
+            # que a tabela genérica) sempre que aparecer logo depois.
+            if key not in _WEIGHT_UNIT_KEYS.values() and qty > 0 and i + 1 < len(matches):
+                later = matches[i + 1]
+                later_resolved = _resolve_unit(later.group(2), norm, later.end(), hint_norm)
+                if later_resolved is not None and later_resolved[1] in _WEIGHT_UNIT_KEYS.values():
+                    later_qty = float(later.group(1).replace(",", "."))
+                    explicit_total = later_qty * later_resolved[0]
+                    grams = explicit_total / qty
             return qty, key, grams
 
     # 2) Quantidade por extenso seguida de unidade: "duas fatias", "meia xicara".

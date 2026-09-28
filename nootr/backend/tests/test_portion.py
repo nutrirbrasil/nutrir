@@ -110,6 +110,26 @@ def test_rescale_quantity_shrinking_is_never_blocked_by_growth_cap():
     assert label == "3 unidades (150g)"
 
 
+def test_rescale_quantity_prefers_explicit_total_over_generic_table():
+    # Achado testando ao vivo: a própria função gera rótulos como "3 unidades
+    # (180g)" (ver diet_engine._scale_food, que sempre reprocessa o rótulo já
+    # existente a cada reescalonamento do dia). Esse alimento específico tem
+    # 60g/unidade de verdade (180g em 3), mas a tabela genérica por alimento
+    # ("ovo" -> 50g fixo) discordava, e ignorar o total explícito entre
+    # parênteses produzia um rótulo que não bate consigo mesmo: a contagem
+    # ficava travada em 3 mesmo escalando pra 150g (que não é múltiplo de
+    # 50g nem de 60g em 3 unidades), como se cada ovo tivesse encolhido de
+    # 60g pra 50g de um turno pro outro, sem a contagem mudar.
+    grams, label = rescale_quantity("3 unidades (180g)", 150.0, food_hint="Ovo, de galinha, inteiro, cru")
+    assert label == "2 unidades (120g)"
+    assert grams == 120.0
+
+    # Sem o total explícito (texto "cru", como digitado por uma pessoa ou
+    # pela IA), continua usando a tabela genérica normalmente.
+    grams, label = rescale_quantity("3 unidades", 150.0, food_hint="Ovo, de galinha, inteiro, cru")
+    assert label == "3 unidades (150g)"
+
+
 def test_rescale_quantity_small_unit_food_not_capped_like_egg():
     # Uva (5g/unidade) não pode ser tratada com o mesmo teto de "poucas
     # unidades" que faz sentido pra ovo, o teto é em GRAMAS (~200g), não numa

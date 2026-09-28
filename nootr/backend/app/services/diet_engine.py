@@ -295,6 +295,81 @@ def _solve_group_factors(
     return factors
 
 
+def _gap_aware_targets(
+    remaining: list[dict], weights: list[float], need_cal: float, need_prot: float, need_fat: float,
+) -> tuple[list[float], list[float], list[float]]:
+    """
+    Alvo por refeição pra cada macro (calorias, proteína, gordura), usando o
+    peso de papel só como REFERÊNCIA de quem está devendo, nunca como valor
+    que precisa bater exato (pedido explícito: o peso de papel decide ONDE
+    entra uma adição, não de onde tirar).
+
+    Pra cada macro, calcula o "ideal" de cada refeição (peso de papel × o que
+    falta distribuir entre as refeições AJUSTÁVEIS, `need_X`, não a meta do
+    dia inteiro, já que uma refeição não ajustável pode já ter consumido uma
+    parte) e compara com o que ela JÁ TEM. Se o dia precisa adicionar
+    (`need > 0`), só as refeições ABAIXO do próprio ideal entram na jogada,
+    recebendo a adição proporcional ao próprio gap (quem está mais longe
+    recebe mais, mas ninguém recebe tudo sozinho); quem já está no ideal ou
+    acima fica exatamente como está, nunca encolhe pra "compensar". Se
+    precisar tirar (`need < 0`, ex: a pessoa comeu algo a mais), o espelho:
+    só encolhe quem está ACIMA do ideal, proporcional ao excesso, nunca cresce
+    quem está abaixo.
+
+    Quando a quantidade a distribuir é MAIOR que a soma de todos os gaps (ex:
+    um desvio grande, sem "espaço de sobra" suficiente nas refeições
+    carentes), o excedente é rateado pelo peso de papel entre TODAS as
+    refeições (mesmo as que já estavam no ideal), em vez de empilhar tudo
+    numa só refeição carente, que criaria um desequilíbrio novo no sentido
+    contrário.
+
+    Devolve (alvo_calorias, alvo_proteina, alvo_gordura) por refeição, na
+    mesma ordem de `remaining`.
+    """
+    def _distribute(need_total: float, ideals: list[float], currents: list[float]) -> list[float]:
+        # O que precisa ENTRAR ou SAIR do conjunto de refeições ajustáveis é
+        # a diferença entre a meta agregada (`need_total`) e o que elas JÁ
+        # TÊM somadas, não `need_total` em si (que já inclui o que elas já
+        # têm, ver docstring). Confundir os dois inflava a adição pro
+        # tamanho do alvo inteiro em vez do que realmente falta.
+        delta = need_total - sum(currents)
+        if delta > 0:
+            gaps = [max(0.0, ideal - cur) for ideal, cur in zip(ideals, currents)]
+        elif delta < 0:
+            gaps = [max(0.0, cur - ideal) for ideal, cur in zip(ideals, currents)]
+        else:
+            return list(currents)
+
+        total_gap = sum(gaps)
+        amount = abs(delta)
+        if total_gap <= 1e-9:
+            # Ninguém do lado certo pra preferir (todo mundo já no ideal, ou
+            # além dele no sentido que importaria): rateia pelo peso de papel
+            # de forma ADITIVA sobre o que cada refeição já tem, nunca
+            # substitui o que ela já tinha por um valor absoluto.
+            return [cur + delta * w for cur, w in zip(currents, weights)]
+
+        within_gap = min(amount, total_gap)
+        leftover = amount - within_gap
+        result = []
+        for cur, w, gap in zip(currents, weights, gaps):
+            add = within_gap * (gap / total_gap) + leftover * w
+            result.append(cur + add if delta > 0 else cur - add)
+        return result
+
+    ideal_cal = [w * need_cal for w in weights]
+    ideal_prot = [w * need_prot for w in weights]
+    ideal_fat = [w * need_fat for w in weights]
+    current_cal = [_meal_macros(m)["calories"] for m in remaining]
+    current_prot = [_meal_macros(m)["protein_g"] for m in remaining]
+    current_fat = [_meal_macros(m)["fat_g"] for m in remaining]
+
+    target_cal = _distribute(need_cal, ideal_cal, current_cal)
+    target_prot = _distribute(need_prot, ideal_prot, current_prot)
+    target_fat = _distribute(need_fat, ideal_fat, current_fat)
+    return target_cal, target_prot, target_fat
+
+
 def _meals_after(meals: list[dict], meal_id: str) -> set[str]:
     """IDs das refeições que vêm depois de `meal_id` na ordem da lista."""
     idx = next(i for i, m in enumerate(meals) if m["id"] == meal_id)
@@ -764,17 +839,18 @@ def _rebalance(
     weights = meal_planning.role_weights(
         [m["name"] for m in remaining], all_meal_names=[m["name"] for m in meals],
     )
+    target_cal, target_prot, target_fat = _gap_aware_targets(
+        remaining, weights, need_cal, need_prot, need_fat,
+    )
 
     adjusted_by_id: dict[str, dict] = {}
     changed = False
     solvable_ids: list[str] = []
 
-    # 1ª passada: aloca a fatia-alvo de cada refeição (proporcional ao papel)
-    # e resolve individualmente.
-    for m, w in zip(remaining, weights):
-        target_cal_m = need_cal * w
-        target_prot_m = need_prot * w
-        target_fat_m = need_fat * w
+    # 1ª passada: aloca a fatia-alvo de cada refeição (peso de papel só decide
+    # ONDE entra a diferença, nunca de onde tirar, ver _gap_aware_targets) e
+    # resolve individualmente.
+    for m, target_cal_m, target_prot_m, target_fat_m in zip(remaining, target_cal, target_prot, target_fat):
         factors = _solve_group_factors(m["foods"], target_cal_m, target_prot_m, target_fat_m)
         if factors is None:
             # Refeição vazia ou só com alimentos de baixa densidade, sua
@@ -805,29 +881,39 @@ def _rebalance(
     residual_fat = targets["fat_g"] - achieved_fat
 
     if solvable_ids and (abs(residual_cal) > 3 or abs(residual_prot) > 1):
-        cur_cal = cur_prot = cur_fat = 0.0
-        all_foods: list[dict] = []
-        positions: list[tuple[str, int]] = []
-        for mid in solvable_ids:
-            foods = adjusted_by_id[mid]["foods"]
-            mm = _meal_macros(adjusted_by_id[mid])
-            cur_cal += mm["calories"]
-            cur_prot += mm["protein_g"]
-            cur_fat += mm["fat_g"]
-            for idx in range(len(foods)):
-                positions.append((mid, idx))
-            all_foods.extend(foods)
-        fix_factors = _solve_group_factors(
-            all_foods, cur_cal + residual_cal, cur_prot + residual_prot, cur_fat + residual_fat,
+        # Mesma lógica gap-aware da 1ª passada (nunca encolhe quem já está no
+        # próprio ideal ou acima), não um solve combinado de todos os
+        # alimentos num pool só: um fator único por grupo aplicado a TODAS as
+        # refeições ajustáveis juntas (o que fazia antes) reintroduzia
+        # exatamente o encolhimento que a 1ª passada tinha acabado de evitar
+        # (ex: o resíduo de arredondamento de unidade discreta reabria espaço
+        # pra "corrigir" a proteína do jantar de volta pro peso de papel).
+        solvable_meals = [adjusted_by_id[mid] for mid in solvable_ids]
+        solvable_weights = meal_planning.role_weights(
+            [m["name"] for m in solvable_meals], all_meal_names=[m["name"] for m in meals],
         )
-        if fix_factors is not None:
+        # _gap_aware_targets espera a meta AGREGADA do conjunto (não o
+        # resíduo isolado), pra calcular internamente delta = meta - o que
+        # elas já têm somadas; soma o resíduo de volta ao que as solváveis já
+        # têm agora pra reconstituir essa meta agregada.
+        solvable_cal_now = sum(_meal_macros(m)["calories"] for m in solvable_meals)
+        solvable_prot_now = sum(_meal_macros(m)["protein_g"] for m in solvable_meals)
+        solvable_fat_now = sum(_meal_macros(m)["fat_g"] for m in solvable_meals)
+        fix_target_cal, fix_target_prot, fix_target_fat = _gap_aware_targets(
+            solvable_meals, solvable_weights,
+            solvable_cal_now + residual_cal, solvable_prot_now + residual_prot, solvable_fat_now + residual_fat,
+        )
+        for mid, t_cal, t_prot, t_fat in zip(solvable_ids, fix_target_cal, fix_target_prot, fix_target_fat):
+            foods = adjusted_by_id[mid]["foods"]
+            fix_factors = _solve_group_factors(foods, t_cal, t_prot, t_fat)
+            if fix_factors is None:
+                continue
             if any(abs(fac - 1) >= 0.001 for fac in fix_factors):
                 changed = True
-            new_foods_by_mid = {mid: list(adjusted_by_id[mid]["foods"]) for mid in solvable_ids}
-            for flat_idx, (mid, idx) in enumerate(positions):
-                new_foods_by_mid[mid][idx] = _scale_food(all_foods[flat_idx], fix_factors[flat_idx])
-            for mid in solvable_ids:
-                adjusted_by_id[mid] = {**adjusted_by_id[mid], "foods": new_foods_by_mid[mid]}
+            adjusted_by_id[mid] = {
+                **adjusted_by_id[mid],
+                "foods": [_scale_food(f, fac) for f, fac in zip(foods, fix_factors)],
+            }
 
     if _apply_floor_pass(remaining, adjusted_by_id, solvable_ids, targets):
         changed = True

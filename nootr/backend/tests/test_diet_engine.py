@@ -128,6 +128,60 @@ def test_rebalance_favors_meal_furthest_below_its_own_target(diet):
     assert (cafe_before == lower_before) == (cafe_growth == higher_growth)
 
 
+def test_rebalance_never_shrinks_a_meal_already_above_its_role_share():
+    # Achado testando ao vivo: tirar um alimento majoritariamente carboidrato
+    # (pão) do café, que quase não mexe na proteína/gordura do dia, não podia
+    # fazer o jantar (que já tinha MAIS que sua fatia-alvo de proteína, mero
+    # desbalanceamento pré-existente na dieta) PERDER proteína pra "bater" o
+    # peso de papel de 37,5% exato. O peso de papel só decide ONDE entra uma
+    # adição (favorecendo quem está abaixo do próprio ideal), nunca justifica
+    # encolher quem já está no ideal ou acima (ver _gap_aware_targets).
+    cafe_bread = {"name": "Pão de forma", "calories": 130.0, "protein_g": 2.0, "carbs_g": 26.0, "fat_g": 2.0, "grams": 50.0, "quantity": "2 fatias (50g)"}
+    cafe_egg = {"name": "Ovo", "calories": 150.0, "protein_g": 12.0, "carbs_g": 1.0, "fat_g": 10.0, "grams": 100.0, "quantity": "100g"}
+    almoco_rice = {"name": "Arroz", "calories": 300.0, "protein_g": 6.0, "carbs_g": 65.0, "fat_g": 1.0, "grams": 290.0, "quantity": "290g"}
+    almoco_chicken = {"name": "Frango almoço", "calories": 250.0, "protein_g": 50.0, "carbs_g": 0.0, "fat_g": 5.0, "grams": 180.0, "quantity": "180g"}
+    lanche_milk = {"name": "Leite", "calories": 150.0, "protein_g": 8.0, "carbs_g": 12.0, "fat_g": 8.0, "grams": 300.0, "quantity": "300g"}
+    lanche_banana = {"name": "Banana", "calories": 90.0, "protein_g": 1.0, "carbs_g": 23.0, "fat_g": 0.0, "grams": 60.0, "quantity": "1 unidade (60g)"}
+    lanche_cheese = {"name": "Queijo", "calories": 80.0, "protein_g": 8.0, "carbs_g": 1.0, "fat_g": 6.0, "grams": 30.0, "quantity": "30g"}
+    jantar_rice = {"name": "Arroz jantar", "calories": 250.0, "protein_g": 5.0, "carbs_g": 55.0, "fat_g": 0.0, "grams": 200.0, "quantity": "200g"}
+    jantar_chicken = {"name": "Frango jantar", "calories": 250.0, "protein_g": 50.0, "carbs_g": 0.0, "fat_g": 5.0, "grams": 180.0, "quantity": "180g"}
+    jantar_egg = {"name": "Ovo jantar", "calories": 260.0, "protein_g": 24.0, "carbs_g": 1.0, "fat_g": 17.0, "grams": 180.0, "quantity": "3 unidades (180g)"}
+
+    # Lanche precisa começar ACIMA do próprio piso (10% do dia, ver
+    # meal_planning.meal_floor_share) pra este teste isolar só o
+    # comportamento de _gap_aware_targets: um lanche abaixo do próprio piso
+    # aciona _apply_floor_pass (mecanismo à parte, existente antes desta
+    # mudança, que legitimamente pode mover proteína de QUALQUER refeição
+    # acima do próprio piso, ideal ou não, pra evitar uma refeição catastrófica
+    # abaixo do piso, ver test_rebalance_floor_pass_raises_meal_far_below_role_floor).
+    diet = {
+        "id": "d", "user_id": "u", "name": "Teste",
+        "daily_calories": 1910, "daily_protein_g": 166, "daily_carbs_g": 184, "daily_fat_g": 54,
+        "meals": [
+            {"id": "meal-1", "name": "Café da manhã", "time": "07:00", "foods": [cafe_bread, cafe_egg]},
+            {"id": "meal-2", "name": "Almoço", "time": "12:00", "foods": [almoco_rice, almoco_chicken]},
+            {"id": "meal-3", "name": "Lanche da tarde", "time": "16:00", "foods": [lanche_milk, lanche_banana, lanche_cheese]},
+            {"id": "meal-4", "name": "Jantar", "time": "20:00", "foods": [jantar_rice, jantar_chicken, jantar_egg]},
+        ],
+    }
+    jantar_protein_before = jantar_rice["protein_g"] + jantar_chicken["protein_g"] + jantar_egg["protein_g"]
+
+    r = diet_engine.log_ate_different(diet, ["Pão de forma"], [], "meal-1")
+
+    jantar_after = next(m for m in r["adjusted_meals"] if m["id"] == "meal-4")
+    jantar_protein_after = sum(f["protein_g"] for f in jantar_after["foods"])
+    assert jantar_protein_after >= jantar_protein_before - 0.5
+
+    # Almoço e lanche (abaixo da própria fatia-alvo de proteína) é que
+    # recebem a pequena sobra de proteína que precisava entrar no dia.
+    almoco_after = next(m for m in r["adjusted_meals"] if m["id"] == "meal-2")
+    lanche_after = next(m for m in r["adjusted_meals"] if m["id"] == "meal-3")
+    almoco_protein_after = sum(f["protein_g"] for f in almoco_after["foods"])
+    lanche_protein_after = sum(f["protein_g"] for f in lanche_after["foods"])
+    assert almoco_protein_after >= almoco_rice["protein_g"] + almoco_chicken["protein_g"] - 0.5
+    assert lanche_protein_after >= lanche_milk["protein_g"] + lanche_banana["protein_g"] - 0.5
+
+
 def test_rebalance_floor_pass_raises_meal_far_below_role_floor():
     # Jantar (papel "dinner", piso de 25% do dia) começa artificialmente
     # pequeno (50 kcal) num dia de 2000 kcal, o piso é 500 kcal. As passadas 1
