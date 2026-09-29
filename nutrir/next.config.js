@@ -13,6 +13,12 @@ const nextConfig = {
         destination: "https://g.page/r/CXJ5WKkcHYgMEAI/review",
         permanent: false,
       },
+      {
+        source: "/ifood",
+        destination:
+          "https://www.ifood.com.br/delivery/balneario-picarras-sc/nutrir-picarras---marmitas-saudaveis-centro/8bf60ae3-a177-49fb-aefc-8e033cf4ea82",
+        permanent: false,
+      },
     ];
   },
 };
