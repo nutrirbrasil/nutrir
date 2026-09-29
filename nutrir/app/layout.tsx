@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppProviders } from "@/components/AppProviders";
 import { SiteChrome } from "@/components/SiteChrome";
 import { logoUrl } from "@/lib/brand-assets";
+import { legal } from "@/lib/legal";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -19,6 +20,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(legal.siteUrl),
   title: "Nutrir Piçarras | Marmitas Saudáveis & Combos",
   description:
     "Marmitas saudáveis em Piçarras. Combos, marmitas avulsas, monte seu combo e peça online.",
