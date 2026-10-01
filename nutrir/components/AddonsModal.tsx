@@ -1,6 +1,6 @@
 "use client";
 
-import { FiX } from "react-icons/fi";
+import { FiCheck, FiX } from "react-icons/fi";
 import { formatPrice } from "@/lib/api";
 import {
   computeSameModeAddonsCents,
@@ -63,19 +63,17 @@ function formatAddonPriceTag(unitCents: number): string {
   return unitCents > 0 ? `+${formatPrice(unitCents)}` : formatPrice(unitCents);
 }
 
-function SubstitutionToggle({ selected, onToggle }: { selected: boolean; onToggle: () => void }) {
+function CircularCheck({ selected }: { selected: boolean }) {
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold transition ${
+    <span
+      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
         selected
-          ? "bg-nutrir-burgundy text-nutrir-nude"
-          : "border border-nutrir-emerald/30 text-nutrir-ink hover:bg-nutrir-emerald/5"
+          ? "border-nutrir-burgundy bg-nutrir-burgundy text-nutrir-nude"
+          : "border-nutrir-ink/25 text-transparent"
       }`}
     >
-      {selected ? "Selecionado" : "Selecionar"}
-    </button>
+      <FiCheck className="h-3.5 w-3.5" strokeWidth={3} />
+    </span>
   );
 }
 
@@ -128,18 +126,26 @@ function SubstitutionCard({
 }) {
   const unitCents = getAddonUnitPriceCents(addon);
   return (
-    <div className="flex flex-col gap-1.5 rounded-xl border border-nutrir-nude-dark/60 bg-white px-2.5 py-2.5">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-nutrir-ink">{addon.name}</p>
-        <span className="shrink-0 text-sm font-bold text-nutrir-burgundy">
-          {formatAddonPriceTag(unitCents)}
-        </span>
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`flex w-full items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
+        selected
+          ? "border-nutrir-burgundy bg-nutrir-burgundy/5"
+          : "border-nutrir-nude-dark/60 bg-white hover:border-nutrir-burgundy/30"
+      }`}
+    >
+      <CircularCheck selected={selected} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm font-semibold text-nutrir-ink">{addon.name}</p>
+          <span className="shrink-0 text-sm font-bold text-nutrir-burgundy">
+            {formatAddonPriceTag(unitCents)}
+          </span>
+        </div>
+        <p className="mt-0.5 text-xs text-nutrir-ink/60">{addon.portionLabel}</p>
       </div>
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-nutrir-ink/60">{addon.portionLabel}</span>
-        <SubstitutionToggle selected={selected} onToggle={onToggle} />
-      </div>
-    </div>
+    </button>
   );
 }
 
@@ -188,11 +194,11 @@ export function AddonsModal({
   const title =
     step === "substitution"
       ? isMultiMeal
-        ? "Substituições em todas as marmitas"
-        : "Substituições"
-      : "Adicionais";
+        ? "Deseja alguma substituição em todas as marmitas?"
+        : "Deseja alguma substituição?"
+      : "Deseja algum adicional?";
 
-  const skipLabel = step === "substitution" ? "Não desejo Substituição" : "Não desejo Adicional";
+  const skipLabel = step === "substitution" ? "Não desejo substituições" : "Não desejo adicionais";
   const continueLabel = hasSelectionInStep ? "Continuar" : skipLabel;
 
   return (
@@ -209,10 +215,7 @@ export function AddonsModal({
         className="fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] w-[min(92vw,480px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl"
       >
         <header className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 px-5 py-4">
-          <div>
-            <h2 className="font-display text-xl font-bold text-nutrir-ink">{title}</h2>
-            <p className="mt-1 text-sm text-nutrir-ink/65">{pending.baseItem.name}</p>
-          </div>
+          <h2 className="font-display text-xl font-bold text-nutrir-ink">{title}</h2>
           <button
             type="button"
             onClick={onClose}
