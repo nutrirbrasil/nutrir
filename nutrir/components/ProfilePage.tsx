@@ -17,6 +17,7 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { formatPoints } from "@/lib/points";
 import { useCart } from "@/lib/cart-context";
 import {
+  fetchCustomerByPhone,
   fetchRecentOrdersForEmail,
   syncCustomerToServer,
   type SavedOrder,
@@ -161,6 +162,19 @@ export function ProfilePage() {
         setPassword("");
         goToPendingNext();
         return;
+      }
+
+      if (resolved.credential.type === "phone") {
+        // Esse telefone já pode ter uma conta por e-mail (telefone e e-mail são
+        // contas separadas no Supabase Auth, não dá pra ligar automaticamente).
+        const existing = await fetchCustomerByPhone(resolved.credential.phone);
+        if (existing?.email) {
+          setError(
+            `Esse telefone já tem conta com o e-mail ${existing.email}. Entre com esse e-mail em vez de criar uma conta nova.`
+          );
+          setLoading(false);
+          return;
+        }
       }
 
       const { needsVerification } = await register(resolved.credential, password);

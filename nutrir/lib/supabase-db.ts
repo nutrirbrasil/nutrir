@@ -196,6 +196,52 @@ function buildCustomerPatch(input: {
   };
 }
 
+const CUSTOMER_COLUMNS = "id, phone, whatsapp, name, email, cpf, address, instagram";
+
+/** Index único de CPF (022_nutrir_customers_cpf_unique) — ver comentário abaixo. */
+function isCpfConflict(error: { code?: string; message: string }): boolean {
+  return error.code === "23505" && error.message.includes("nutrir_customers_cpf_unique");
+}
+
+/**
+ * Grava o patch (update por id, ou insert quando id é null). Se o CPF já
+ * pertencer a outra conta (índice único nutrir_customers_cpf_unique), grava
+ * de novo sem o CPF em vez de perder o cliente/pedido inteiro — mais
+ * importante salvar o pedido do que recusar por causa de um CPF repetido
+ * (provavelmente a mesma pessoa com duas contas, caso que o checkout já
+ * não resolve sozinho).
+ */
+async function writeCustomerPatch(
+  db: ReturnType<typeof getSupabaseAdmin>,
+  id: string | null,
+  patch: ReturnType<typeof buildCustomerPatch>
+): Promise<CustomerRecord | null> {
+  if (!db) return null;
+
+  const run = (p: typeof patch) =>
+    id
+      ? db.from("nutrir_customers").update(p).eq("id", id).select(CUSTOMER_COLUMNS).single()
+      : db
+          .from("nutrir_customers")
+          .insert({ ...p, name: p.name ?? "" })
+          .select(CUSTOMER_COLUMNS)
+          .single();
+
+  const { data, error } = await run(patch);
+  if (!error) return data as CustomerRecord;
+
+  if (isCpfConflict(error) && patch.cpf) {
+    console.error(`[Supabase] upsertCustomer: CPF ${patch.cpf} já usado em outra conta, salvando sem CPF.`);
+    const retry = await run({ ...patch, cpf: undefined });
+    if (!retry.error) return retry.data as CustomerRecord;
+    console.error("[Supabase] upsertCustomer (retry sem CPF):", retry.error.message);
+    return null;
+  }
+
+  console.error("[Supabase] upsertCustomer:", error.message);
+  return null;
+}
+
 export async function upsertCustomer(input: {
   phone: string;
   whatsapp?: string;
@@ -214,53 +260,13 @@ export async function upsertCustomer(input: {
   const email = input.email?.trim().toLowerCase();
   if (email) {
     const existing = await getCustomerByEmail(email);
-    if (existing) {
-      const { data, error } = await db
-        .from("nutrir_customers")
-        .update(patch)
-        .eq("id", existing.id)
-        .select("id, phone, whatsapp, name, email, cpf, address, instagram")
-        .single();
-
-      if (error) {
-        console.error("[Supabase] upsertCustomer (email):", error.message);
-        return null;
-      }
-      return data as CustomerRecord;
-    }
+    if (existing) return writeCustomerPatch(db, existing.id, patch);
   }
 
   const byPhone = await getCustomerByPhone(patch.phone);
-  if (byPhone) {
-    const { data, error } = await db
-      .from("nutrir_customers")
-      .update(patch)
-      .eq("id", byPhone.id)
-      .select("id, phone, whatsapp, name, email, cpf, address, instagram")
-      .single();
+  if (byPhone) return writeCustomerPatch(db, byPhone.id, patch);
 
-    if (error) {
-      console.error("[Supabase] upsertCustomer (phone):", error.message);
-      return null;
-    }
-    return data as CustomerRecord;
-  }
-
-  const { data, error } = await db
-    .from("nutrir_customers")
-    .insert({
-      ...patch,
-      name: patch.name ?? "",
-    })
-    .select("id, phone, whatsapp, name, email, cpf, address, instagram")
-    .single();
-
-  if (error) {
-    console.error("[Supabase] upsertCustomer (insert):", error.message);
-    return null;
-  }
-
-  return data as CustomerRecord;
+  return writeCustomerPatch(db, null, patch);
 }
 
 export async function getCustomerByEmail(email: string): Promise<CustomerRecord | null> {
