@@ -57,6 +57,7 @@ _COMMON_FOODS: dict[str, tuple[float, float, float, float, float]] = {
     "pastel": (280, 7, 25, 17, 90),
     "empada": (280, 6, 24, 17, 80),
     "pao frances": (150, 5, 30, 1, 50),
+    "cacetinho": (150, 5, 30, 1, 50),  # apelido bem comum de "pão francês"
     # doces / sobremesas
     "sorvete": (220, 4, 28, 10, 120),          # 2 bolas
     "milkshake": (450, 9, 68, 15, 300),
@@ -500,6 +501,21 @@ def _match_common(query: str) -> tuple[str, tuple[float, float, float, float, fl
     return None
 
 
+def common_food_signature(text: str) -> tuple[float, float, float, float, float] | None:
+    """Tupla de macros por porção típica (ver _COMMON_FOODS) que bate em
+    `text`, ou None. Duas descrições diferentes que resolvem pra essa MESMA
+    tupla são apelidos do mesmo alimento (ex: "cacetinho" e "pão francês"),
+    mesmo com chaves de nome diferentes. Público pra quem precisa comparar se
+    o texto ORIGINAL da pessoa (que pode usar um apelido) se refere ao mesmo
+    alimento comum que a IA já resolveu com outra palavra, ver
+    routes/nootr/noo._resolve_added (`user_named_it`): a IA às vezes
+    normaliza um apelido pro nome "oficial" antes de devolver o item, o que
+    fazia a checagem de segurança contra alergia (que exige a PRÓPRIA pessoa
+    ter nomeado o alimento) perder a menção literal dela."""
+    match = _match_common(text)
+    return match[1] if match else None
+
+
 def _extract_count(query_norm: str, name: str) -> float:
     """Quantidade que precede o nome do item comum (ex: '3 coxinhas' -> 3). Padrão 1."""
     toks = query_norm.split()
@@ -762,8 +778,8 @@ def matches_allergen(food_name: str, allergies: list[str]) -> bool:
     Checagem determinística (não depende da IA seguir a instrução do prompt)
     aplicada como última barreira antes de qualquer sugestão AUTOMÁTICA da IA
     (geração de dieta, coringa, ajuste de fim de dia, "buscar outros
-    alimentos", decomposição de prato em "Descrever com IA", ver
-    routes/nootr/ai._match_items) chegar no usuário. A escolha manual direta
+    alimentos", decomposição de prato no Noo, ver routes/nootr/noo._resolve_added)
+    chegar no usuário. A escolha manual direta
     (picker de alimento por busca) não passa por aqui, é a própria pessoa
     escolhendo o alimento exato, não a IA interpretando/decompondo por ela.
 

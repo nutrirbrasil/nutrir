@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.config import get_settings
-from backend.app.routes.nootr import diets, substitutions, foods, profile, ai, preferences, recipes, admin, stats, noo
+from backend.app.routes.nootr import diets, substitutions, foods, profile, preferences, recipes, admin, stats, noo
 
 app = FastAPI(
     title="Nootr API",
@@ -33,7 +33,6 @@ app.include_router(diets.router)
 app.include_router(substitutions.router)
 app.include_router(foods.router)
 app.include_router(profile.router)
-app.include_router(ai.router)
 app.include_router(preferences.router)
 app.include_router(recipes.router)
 app.include_router(admin.router)

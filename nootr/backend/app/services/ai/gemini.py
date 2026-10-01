@@ -7,7 +7,6 @@ de macros ou TACO aqui.
 """
 import base64
 import json
-import re
 
 import httpx
 
@@ -32,7 +31,7 @@ _SCHEMA = {
 
 # Cópia de _SCHEMA + "dish_name", só usada no fluxo de importação de doc
 # (_DIET_DOC_SCHEMA). NÃO reaproveita _SCHEMA porque esse é usado por outros
-# prompts (_CONVERSE_SCHEMA, _WILDCARD_SCHEMA, etc.) que não precisam desse
+# prompts (_WILDCARD_SCHEMA, etc.) que não precisam desse
 # campo, ver find_food/DishReviewModal no frontend, que usa "dish_name" pra
 # agrupar os ingredientes de um mesmo prato composto e oferecer "salvar como
 # receita" antes de gravar a dieta.
@@ -99,19 +98,32 @@ def _generate_from_contents(
         body["systemInstruction"] = {"parts": [{"text": system_instruction}]}
 
     url = _ENDPOINT.format(model=settings.gemini_model)
-    # Um timeout de leitura costuma ser uma resposta lenta do Gemini, não uma
-    # rede de fato fora do ar, então vale UMA tentativa extra antes de
-    # desistir e mostrar erro pra pessoa (ela já esperou o timeout inteiro
-    # uma vez, uma segunda chamada que funciona é bem melhor que um erro).
-    try:
-        resp = httpx.post(url, params={"key": settings.gemini_api_key}, json=body, timeout=timeout)
-    except httpx.TimeoutException:
+    # Um timeout de leitura, ou um 429/503 (sobrecarga temporária, a própria
+    # mensagem do Gemini diz "spikes são geralmente temporários"), costuma ser
+    # passageiro, não uma falha de infra de verdade: vale UMA tentativa extra
+    # antes de desistir. Sem isso, um 503 passageiro derrubava silenciosamente
+    # o day_topup (a última rede de segurança que fecha a meta de
+    # calorias/proteína ADICIONANDO alimento quando só escalar porção não
+    # basta, ver day_topup.try_day_topup, que engole AIError e desiste sem
+    # avisar ninguém): a pessoa via a proteína do dia ficar abaixo da meta
+    # achando que era um limite do app, quando era só o Gemini pedindo pra
+    # tentar de novo.
+    resp = None
+    last_timeout: httpx.TimeoutException | None = None
+    for attempt in range(2):
         try:
             resp = httpx.post(url, params={"key": settings.gemini_api_key}, json=body, timeout=timeout)
+        except httpx.TimeoutException as exc:
+            last_timeout = exc
+            resp = None
+            continue
         except httpx.HTTPError as exc:
             raise AIError(f"Falha de rede ao chamar o Gemini: {exc}") from exc
-    except httpx.HTTPError as exc:
-        raise AIError(f"Falha de rede ao chamar o Gemini: {exc}") from exc
+        if attempt == 0 and resp.status_code in (429, 503):
+            continue
+        break
+    if resp is None:
+        raise AIError(f"Falha de rede ao chamar o Gemini: {last_timeout}")
     if resp.status_code >= 300:
         raise AIError(f"Gemini {resp.status_code}: {resp.text[:300]}")
     try:
@@ -128,10 +140,9 @@ def _generate(prompt: str, schema: dict | None) -> str:
 
 
 # Regra de decomposição de alimentos, compartilhada entre a leitura de PDF
-# (_DIET_DOC_PROMPT) e o "Descrever com IA" de desvios (_CONVERSE_SYSTEM).
-# Ficava só no primeiro; um prato composto citado num desvio (ex: "comi uma
-# crepioca no lugar do pão") não era decomposto porque essa regra não existia
-# no outro prompt. Um lugar só evita essa divergência de novo.
+# (_DIET_DOC_PROMPT), a geração de dieta por IA (_GENERATE_DIET_PROMPT) e o
+# Noo (_NOO_SYSTEM). Um lugar só evita a regra divergir entre os prompts (ex:
+# um prato composto sendo decomposto num fluxo e não no outro).
 _FOOD_DECOMPOSITION_RULES = """- "quantity" é SÓ a medida caseira (número + unidade: xícara, colher, fatia, \
 unidade, concha, copo, gramas). NUNCA misture um adjetivo de preparo dentro dela (ex: "1 xícara de maçã \
 picada": quantity é "1 xícara", NUNCA "1 xícara picada", "picada" não é medida, é forma de cortar). Se o \
@@ -530,246 +541,6 @@ def generate_diet(
     return {"meals": meals}
 
 
-_CONVERSE_SCHEMA = {
-    "type": "OBJECT",
-    "properties": {
-        "needs_question": {"type": "BOOLEAN"},
-        "question": {"type": "STRING"},
-        # "text" (pergunta normal) ou "confirm_ingredients" (pedindo pra pessoa
-        # confirmar/corrigir os ingredientes de um prato composto desconhecido
-        # que a IA teve que adivinhar, ver regra 8 do prompt).
-        "question_kind": {"type": "STRING"},
-        "skipped_names": {"type": "ARRAY", "items": {"type": "STRING"}},
-        "new_items": _SCHEMA,
-        # Preenchido junto com question_kind="confirm_ingredients", e também
-        # no turno final (needs_question=false) quando esse prato foi
-        # decomposto agora, o app usa pra oferecer "salvar como receita".
-        "proposed_dish_name": {"type": "STRING"},
-        "proposed_ingredients": _SCHEMA,
-    },
-    "required": ["needs_question", "question", "skipped_names", "new_items"],
-}
-
-_CONVERSE_SYSTEM = """Você ajuda a registrar um DESVIO do que uma pessoa comeu (ou vai comer) numa \
-refeição específica que já estava planejada, para depois recalcular calorias e macros usando a \
-tabela TACO. Converse em português, de forma natural e objetiva.
-
-{tense_note}
-
-A refeição planejada é "{meal_name}", com estes alimentos: {meal_foods}.
-
-REGRA CENTRAL, troca, não redescrição: a pessoa só precisa dizer o que MUDOU. Qualquer alimento \
-da lista acima que ela não mencionar como "não comi"/"troquei"/"não teve" continua exatamente como \
-estava planejado, NUNCA peça para ela confirmar ou redescrever a refeição inteira. \
-- "skipped_names": copie EXATAMENTE (mesma grafia) os itens da lista acima que a pessoa disse que \
-NÃO comeu ou trocou. Se ela não disse que deixou de comer nada (só mencionou algo extra), deixe vazio.
-- "new_items": o que ela comeu NO LUGAR (ou a mais). Se ela disser que não comeu nada no lugar do \
-que faltou (ex: "não comi o pão e não comi nada no lugar"), deixe a lista vazia, isso é válido e \
-não precisa de pergunta.
-
-Preferências desta pessoa (respeite sempre, nunca finalize sugerindo algo da lista de alergias):
-- Alergias/restrições: {allergies}
-- Não gosta: {dislikes}
-- Gosta/prefere: {likes}
-- Costuma ter em casa: {pantry}
-- Observações gerais da pessoa (leve em conta ao interpretar e ao decidir se precisa perguntar algo): {notes}
-
-RECEITAS SALVAS desta pessoa (pratos que ela já confirmou os ingredientes antes, use ESSES ingredientes \
-EXATOS, com essas quantidades, sempre que ela citar um desses nomes, sem perguntar de novo):
-{saved_recipes}
-
-Como montar "new_items" (o que foi comido no lugar, ou a mais), mesmas regras de decomposição usadas \
-em todo o app, pra um prato composto (ex: "sanduíche", "hambúrguer") virar os ingredientes reais em vez \
-de ficar como um item só que não bate com nada na tabela nutricional:
-{decomposition_rules}
-
-Regras:
-1. Se a quantidade de algum alimento citado em "new_items" não estiver clara (ex: "comi bolo" sem \
-dizer o tanto), pergunte a quantidade antes de finalizar. Uma pergunta objetiva por vez.
-2. Se o alimento citado for um prato ambíguo (hambúrguer, pizza, sanduíche, torta, etc.) que pode \
-ser caseiro, de uma marca/rede conhecida, ou de uma lanchonete/padaria local sem marca, pergunte \
-qual dos três antes de finalizar.
-   - CASEIRO: decomponha nos ingredientes principais (ver regras de decomposição acima), se não \
-estiver óbvio, pergunte "o que tinha dentro?".
-   - MARCA conhecida (McDonald's, Burger King, Subway, etc.): use seu conhecimento sobre os \
-valores nutricionais aproximados desse produto específico da marca (não decomponha nesse caso).
-   - Lanchonete/padaria LOCAL sem marca famosa: estime com uma média típica para esse tipo de prato.
-3. Ingrediente restrito x versão livre: se o alimento citado costuma conter um ingrediente da \
-lista de alergias/restrições (ex: pão/massa/cerveja contêm glúten; leite/queijo/iogurte contêm \
-lactose) e existe uma versão "sem" desse ingrediente amplamente conhecida, NÃO assuma qual é, \
-pergunte se é a versão comum ou a versão sem-[ingrediente] antes de finalizar.
-4. Preparo restrito: se houver restrição a frituras e o prato citado costuma ser frito (batata \
-frita, frango à milanesa, pastel, etc.), pergunte a forma de preparo antes de finalizar.
-5. "O resto da refeição continuou igual?": só pergunte isso quando a frase da pessoa for GENUINAMENTE \
-ambígua sobre se ela trocou só uma coisa ou a refeição toda (ex: "comi outra coisa no almoço", sem \
-dizer o quê especificamente foi trocado nem confirmar o resto). NÃO pergunte quando a frase já deixa \
-claro que é uma troca pontual (ex: "não comi X e comi Y no lugar", "troquei X por Y", "em vez de X \
-comi Y"), nesses casos presuma direto que o resto continua igual.
-6. No máximo uma pergunta por vez; não repita uma pergunta já respondida no histórico.
-7. Assim que "skipped_names" e "new_items" estiverem decididos (mesmo que algum fique vazio), finalize.
-7.1. NUNCA finalize deixando de fora um alimento que a pessoa disse que comeu. Se ela citou algo \
-("só comi um pão de queijo"), esse alimento TEM que sair em new_items, com a porção mais comum se \
-ela não disse a quantidade. Perder o alimento é o pior erro possível aqui: a pessoa fica com a \
-refeição zerada, como se não tivesse comido nada.
-7.2. Só pergunte quando a resposta MUDA o resultado nutricional de forma relevante (alergia, ver \
-regra 3; forma de preparo restrita, ver regra 4; qual prato exatamente, quando você não conseguiria \
-nem estimar). NÃO pergunte pra refinar marca, origem ou se é caseiro/industrializado/de padaria, e \
-NUNCA pergunte a quantidade: se a pessoa disse quanto comeu, use ("um pão de queijo" -> quantity \
-"1 unidade"); se não disse, use a porção comum daquele alimento ("comi pão de queijo" -> "1 \
-unidade"). Estimar a porção comum é sempre melhor do que perguntar. Se ainda assim precisar \
-perguntar, a pergunta vem SOZINHA (skipped_names=[] e new_items=[]), nunca junto de uma \
-finalização parcial.
-8. CONFIRMAÇÃO DE PRATO NÃO CONHECIDO: se você precisar DECOMPOR um prato composto que a pessoa citou \
-comendo e esse prato NÃO está nas RECEITAS SALVAS acima nem é um dos pratos já cobertos pelas regras de \
-decomposição (canja, sopa, estrogonofe, feijoada, torta salgada, vitamina, hambúrguer/x-burguer/x-salada/ \
-x-tudo, sanduíche, cachorro-quente, crepioca, tapioca), ou seja, você está usando seu próprio \
-conhecimento geral pra adivinhar os ingredientes de um prato que o app ainda não conhece, NÃO finalize \
-direto: pergunte confirmando. Nesse caso:
-   - needs_question=true, question_kind="confirm_ingredients".
-   - question=<pergunta curta no formato "Esses são os ingredientes da sua [nome do prato]?", ex: \
-"Esses são os ingredientes da sua crepioca?">.
-   - proposed_dish_name=<nome curto do prato, ex: "Crepioca">.
-   - proposed_ingredients=<sua melhor estimativa dos ingredientes com quantidade caseira>.
-   - skipped_names e new_items ficam vazios nesse turno (ainda não confirmado).
-   Quando a pessoa responder confirmando (ex: "sim", "isso mesmo") ou corrigindo (ex: "também tem \
-queijo"), finalize NESSE turno seguinte com new_items = a lista final (já com a correção, se houve) e \
-"proposed_dish_name" preenchido de novo com o mesmo nome do prato (pra o app oferecer salvar como \
-receita), não pergunte "confirmar ingredientes" duas vezes pro mesmo prato na mesma conversa.
-
-Responda estritamente no formato JSON do schema:
-- Pergunta normal: needs_question=true, question_kind="text", question=<pergunta curta e objetiva>, \
-skipped_names=[], new_items=[], proposed_dish_name="", proposed_ingredients=[].
-- Confirmar ingredientes de prato desconhecido (regra 8): needs_question=true, \
-question_kind="confirm_ingredients", question=<pergunta de confirmação>, skipped_names=[], new_items=[], \
-proposed_dish_name=<nome do prato>, proposed_ingredients=<ingredientes estimados>.
-- Finalizado: needs_question=false, question="", question_kind="", \
-skipped_names=<itens da refeição não comidos>, new_items=<o que foi comido no lugar ou a mais, pode ser \
-vazio>, proposed_dish_name=<preenchido só se um prato novo foi decomposto e confirmado agora, senão \
-vazio>, proposed_ingredients=<os mesmos ingredientes de new_items relativos a esse prato, se aplicável>."""
-
-
-# Às vezes o Gemini "vaza" a quantidade pro campo "name" (ex: name="30 gramas
-# paio", quantity="") em vez de separar os dois campos como o schema pede.
-# Sem isso, esse item caía no fallback genérico "1 porção" (100g), MUITO
-# diferente da quantidade real que a própria IA tinha acabado de dizer alguns
-# tokens antes, na frase de confirmação. Recupera a quantidade embutida no
-# nome em vez de descartar o que ela já disse.
-_EMBEDDED_QUANTITY = re.compile(
-    r"^(\d+(?:[.,]\d+)?\s*(?:g|gramas?|ml|kg|unidades?|unidade)s?)\s+(.+)$", re.IGNORECASE,
-)
-
-
-def _parse_food_items(raw_items: list | None) -> list[dict]:
-    items = []
-    for it in raw_items or []:
-        name = str(it.get("name", "")).strip()
-        quantity = str(it.get("quantity", "")).strip()
-        if not quantity:
-            match = _EMBEDDED_QUANTITY.match(name)
-            if match:
-                quantity, name = match.group(1).strip(), match.group(2).strip()
-        quantity = quantity or "1 porção"
-        if name:
-            items.append({"name": name, "quantity": quantity})
-    return items
-
-
-def _format_saved_recipes(recipes: list[dict] | None) -> str:
-    if not recipes:
-        return "nenhuma"
-    lines = []
-    for r in recipes:
-        ingredients = ", ".join(
-            f'{i.get("name", "")} ({i.get("quantity", "")})' for i in (r.get("ingredients") or [])
-        )
-        lines.append(f'- "{r.get("name", "")}": {ingredients}')
-    return "\n".join(lines)
-
-
-def converse_meal(
-    history: list[dict], meal_name: str, meal_foods: list[str], preferences: dict,
-    force_finalize: bool = False, recipes: list[dict] | None = None, forward_looking: bool = False,
-) -> dict:
-    # Sem isso, toda pergunta/confirmação saía no passado ("que você comeu?")
-    # mesmo quando a pessoa está no fluxo "Vou comer algo diferente"
-    # (planejando ANTES de comer), confundindo quem só está avisando o que
-    # PRETENDE comer, não o que já comeu.
-    tense_note = (
-        "IMPORTANTE: essa pessoa está PLANEJANDO com antecedência, ela ainda NÃO comeu isso. "
-        "Fale sempre no futuro (\"o que você vai comer\", \"vai usar massa comum ou sem glúten?\"), "
-        "NUNCA no passado (\"o que você comeu\")."
-        if forward_looking else
-        "Essa pessoa está relatando o que já comeu. Fale no passado (\"o que você comeu\")."
-    )
-    system = _CONVERSE_SYSTEM.format(
-        tense_note=tense_note,
-        meal_name=meal_name or "refeição",
-        meal_foods=", ".join(meal_foods) or "nenhum alimento cadastrado",
-        allergies=", ".join(preferences.get("allergies") or []) or "nenhuma informada",
-        dislikes=", ".join(preferences.get("dislikes") or []) or "nenhuma informada",
-        likes=", ".join(preferences.get("likes") or []) or "nenhuma informada",
-        pantry=", ".join(preferences.get("pantry") or []) or "nenhuma informada",
-        notes=preferences.get("notes") or "nenhuma informada",
-        decomposition_rules=_FOOD_DECOMPOSITION_RULES,
-        saved_recipes=_format_saved_recipes(recipes),
-    )
-    if force_finalize:
-        system += (
-            "\n\nIMPORTANTE: você já perguntou o suficiente nesta conversa. NÃO pergunte mais nada, "
-            "finalize agora (needs_question=false) com sua melhor estimativa de skipped_names e "
-            "new_items a partir de tudo que a pessoa já disse, mesmo que falte algum detalhe. Isso "
-            "inclui uma confirmação de ingredientes pendente (regra 8), se a pessoa ainda não "
-            "confirmou, finalize com sua melhor estimativa dos ingredientes mesmo assim.\n"
-            "\"Melhor estimativa\" NÃO quer dizer simplificar um prato composto pra um ingrediente só "
-            "(ex: \"bolo de cenoura com cobertura de chocolate\" virando só \"chocolate\", perdendo a "
-            "massa do bolo inteira do cálculo, que é a maior parte da caloria). As regras de "
-            "decomposição continuam valendo INTEIRAS aqui, finalizar sob pressão de tempo é sobre não "
-            "fazer mais perguntas, não sobre decompor pela metade: liste TODOS os ingredientes "
-            "principais que você decomporia normalmente, só chutando o que ainda não foi respondido "
-            "(ex: sem confirmação do recheio exato, use o recheio mais comum pra esse prato)."
-        )
-    contents = [
-        {"role": "model" if turn["role"] == "assistant" else "user", "parts": [{"text": turn["text"]}]}
-        for turn in history
-    ]
-    raw = _generate_from_contents(contents, _CONVERSE_SCHEMA, system_instruction=system)
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise AIError(f"JSON inválido do Gemini: {exc}") from exc
-
-    new_items = _parse_food_items(data.get("new_items"))
-    proposed_ingredients = _parse_food_items(data.get("proposed_ingredients"))
-
-    valid_names = set(meal_foods)
-    skipped_names = [
-        str(n).strip() for n in (data.get("skipped_names") or [])
-        if str(n).strip() in valid_names
-    ]
-
-    question_kind = str(data.get("question_kind", "")).strip() or "text"
-    question = str(data.get("question", "")).strip()
-    # A pergunta só é engolida quando a resposta JÁ está completa (há itens
-    # novos) ou quando o limite de perguntas foi atingido (force_finalize, ver
-    # _MAX_QUESTIONS na rota). Ter `skipped_names` NÃO significa completo: a
-    # pessoa pode ter dito o que não comeu e a IA ainda precisar saber o que
-    # comeu no lugar, e engolir a pergunta aí fazia o alimento citado sumir,
-    # fechando a refeição como "não comeu nada". Uma pergunta preenchida
-    # também vale como pedido de pergunta, mesmo que o booleano venha false
-    # (a IA às vezes devolve os dois inconsistentes).
-    wants_question = bool(data.get("needs_question")) or bool(question)
-    needs_question = wants_question and not new_items and not force_finalize
-    return {
-        "needs_question": needs_question,
-        "question": question,
-        "question_kind": question_kind if needs_question else "",
-        "skipped_names": skipped_names,
-        "new_items": new_items,
-        "proposed_dish_name": str(data.get("proposed_dish_name", "")).strip(),
-        "proposed_ingredients": proposed_ingredients if needs_question else new_items,
-    }
-
-
 _EXPLAIN_PROMPT = """Você é o nutricionista que acabou de reajustar a dieta do dia dessa pessoa \
 porque ela comeu (ou vai comer) algo diferente do planejado. Explique pra ela, em 1 a 3 frases \
 curtas, O QUE VOCÊ MUDOU e POR QUÊ.
@@ -1101,6 +872,7 @@ DIETA DE HOJE
 
 METAS DO DIA: {targets}
 COMO O DIA ESTÁ AGORA: {current}
+REFEIÇÕES QUE ELA JÁ CONFIRMOU TER COMIDO HOJE: {already_eaten_known}
 
 SOBRE A PESSOA
 Alergias (NUNCA sugerir nem manter): {allergies}
@@ -1128,7 +900,9 @@ alimento ("comi pizza", "tomei whey"), devolva "quantity" como string VAZIA pra 
 "porção comum", nem "1 unidade", nem "1 porção": chutar errado desregula o dia inteiro dela. Só preencha \
 "quantity" com o que ela EFETIVAMENTE disse ou dá pra deduzir da própria fala dela (ex: "comi um ovo" -> \
 "1 unidade"; "duas fatias de pizza" -> "2 fatias"; "um copo de leite" -> "1 copo"; "meio prato de arroz" \
--> "meio prato"). CUIDADO com "substituí X por Y"/"troquei X por Y"/"no lugar do X vou comer Y" sem \
+-> "meio prato"; "comi um pão francês"/"um pão cacetinho"/"um pãozinho" -> "1 unidade", NÃO pergunte o \
+tamanho, é uma unidade padrão bem conhecida, igual ovo ou pão de queijo). CUIDADO com "substituí X por \
+Y"/"troquei X por Y"/"no lugar do X vou comer Y" sem \
 quantidade de Y: NÃO assuma que Y veio na mesma quantidade que X tinha, isso também é chute, a pessoa \
 pode ter comido mais ou menos, MESMO que pareça uma troca direta de um produto pelo "equivalente" dele \
 (ex: "vou trocar o leite zero lactose por leite integral" NÃO quer dizer que é a mesma quantidade em ml, \
@@ -1139,11 +913,28 @@ quantidade numa próxima mensagem. Se vários itens estiverem sem quantidade, pe
 numa frase só, não uma pergunta por mensagem.
 - `already_eaten`: nomes das refeições que ela JÁ comeu hoje e por isso NÃO podem ser reajustadas. \
 Preencha só quando ela disser isso explicitamente sobre aquela refeição especificamente ("já tomei \
-café", "almocei há pouco", "o lanche eu já fiz"). NUNCA infira isso a partir do horário atual, de qual \
-refeição ela está comentando agora, ou de suposição sobre a rotina dela: falar do jantar não quer dizer \
-que café, almoço e lanche já aconteceram, ela pode estar planejando o dia inteiro com antecedência, de \
-manhã. Na dúvida, deixe a lista vazia, o motor do Nootr reajusta a quantidade das refeições não citadas \
-sozinho (regra 1), é o comportamento certo por padrão.
+café", "almocei há pouco", "o lanche eu já fiz"), OU quando ela disser algo que só faz sentido se as \
+outras já aconteceram ("só falta a janta" implica que café, almoço e lanche já rolaram, mesmo sem \
+nomear cada um). NUNCA infira isso a partir do horário atual, de qual refeição ela está comentando \
+agora, ou de suposição sobre a rotina dela: falar do jantar sozinho não quer dizer que café, almoço e \
+lanche já aconteceram, ela pode estar planejando o dia inteiro com antecedência, de manhã. Na dúvida, \
+deixe a lista vazia, o motor do Nootr reajusta a quantidade das refeições não citadas sozinho (regra 1), \
+é o comportamento certo por padrão. As refeições em "REFEIÇÕES QUE ELA JÁ CONFIRMOU TER COMIDO HOJE" \
+(acima) já estão travadas independente do que você devolver aqui, não repita essas na resposta a menos \
+que ela volte a falar delas, e nunca pergunte de novo se ela já comeu algo que já está nessa lista. \
+IMPORTANTE: "travada" aqui significa só que o motor não vai reajustar a QUANTIDADE dessa refeição \
+sozinho quando outras refeições mudarem (ela não entra na redistribuição automática, regra 1), NUNCA \
+que você deve ignorar ou tratar como intocável o que ela conta sobre o que REALMENTE comeu ali. Se ela \
+volta a falar de uma refeição já travada contando o que comeu de verdade nela (ex: confirmou "já tomei \
+café" e depois diz "comi só um pão", claramente se referindo ao mesmo café), isso é uma CORREÇÃO/EDIÇÃO \
+DIRETA daquela refeição: "changes" com "meal" = essa mesma refeição, "skipped" = os itens planejados \
+que ela não comeu, "added" = o que ela realmente comeu, exatamente como faria pra qualquer outra \
+refeição. NUNCA finja que é uma refeição nova/extra separada só porque a refeição original já estava \
+travada, isso duplicaria a refeição em vez de corrigi-la. Só trate como algo extra de verdade quando \
+ela deixar claro que é um alimento A MAIS, comido além do que já foi contado pra aquela refeição (ex: \
+"depois do café ainda comi um docinho"). O mesmo vale ao contrário: se ela estiver PLANEJANDO algo \
+futuro (ainda vai comer) pra uma refeição que já está travada como comida, aí sim é contraditório, \
+pergunte pra entender antes de aplicar.
 
 SÓ HOJE: você só enxerga e só ajusta a dieta de HOJE (ver "DIETA DE HOJE" acima), o app não tem \
 conceito de planejar um dia diferente. Se ela mencionar QUALQUER outro dia (\"amanhã\", \"depois de \
@@ -1187,11 +978,18 @@ nutricional dele separadamente. Sua única responsabilidade aí continua sendo a
 se ela disse, senão "quantity" vazio e pergunte (ver acima).
 12. Perguntar a quantidade é uma resposta COMPLETA e útil, não uma falha sua. Prefira SEMPRE perguntar a \
 chutar: se ela não deu a quantidade, devolva o item com "quantity" vazio e a pergunta na `reply`, e \
-pronto, o dia dela NÃO muda nessa mensagem, NADA é aplicado (nem o "skipped" dessa mesma troca). Na \
+pronto, o dia dela NÃO muda nessa mensagem, NADA é aplicado (nem o "skipped" dessa mesma troca). \
+Isso vale pro TURNO INTEIRO, não só pra refeição com a quantidade faltando: se a mensagem descreve \
+VÁRIAS refeições de uma vez e UMA delas tem quantidade pendente, NENHUMA das refeições daquela \
+mensagem é aplicada ainda, mesmo as que já vieram completas (ex: "não comi o pão do café e vou comer \
+pizza no jantar" sem dizer quantas fatias: nem o café é mexido ainda, ele espera a resposta da pizza \
+junto). Só pergunte o que falta (a quantidade da pizza, nesse exemplo), sem aplicar nada do resto. Na \
 mensagem seguinte, quando ela responder ("duas fatias", "uns 200g"), devolva o `changes` completo de \
-novo pra aquela refeição: o MESMO "skipped" de antes (se a troca envolvia tirar algo) JUNTO com o \
-"added" agora com a quantidade preenchida. Nunca mande só o "added" sozinho nessa hora, como se o \
-"skipped" já tivesse acontecido, ele NÃO aconteceu, a troca inteira ficou esperando essa resposta.
+novo pra TODAS as refeições que a mensagem original mencionou, não só a que faltava a quantidade: o \
+MESMO "skipped"/"added" já completos de antes de cada refeição, JUNTO com a que agora tem a \
+quantidade preenchida. Nunca mande só o "added" sozinho nessa hora, como se o "skipped" já tivesse \
+acontecido, ele NÃO aconteceu, a troca inteira (de todas as refeições da mensagem original) ficou \
+esperando essa resposta.
 13. Quando você deixa "quantity" vazio (regra acima), a `reply` NUNCA pode ter verbo no passado pro que \
 ainda não aconteceu ("troquei", "adicionei", "registrei", "já ajustei", "ajustei"), isso é falso, nada \
 mudou no dia dela ainda. Use futuro/condicional ("vou trocar", "assim que você me disser eu ajusto", \
@@ -1206,14 +1004,36 @@ dessa coxinha? Assim eu já troco o espaguete por ela e ajusto o resto do dia."
 A pessoa precisa entender, só pela `reply`, que ela ainda precisa responder ANTES de qualquer coisa \
 mudar, nunca que já aconteceu e falta só um detalhe. Isso vale mesmo se ELA falou no passado ("substituí \
 o arroz pela batata"): o fato dela já ter comido não significa que o Nootr já aplicou a troca no APP, \
-não copie o tempo verbal dela pra sua reply, o critério é sempre "quantity vazio = nada mudou ainda".
+não copie o tempo verbal dela pra sua reply, o critério é sempre "quantity vazio = nada mudou ainda". \
+Isso também vale pras OUTRAS refeições da mesma mensagem que já vieram completas (ver regra 12): se a \
+pizza do jantar está pendente, NEM o pão do café (já completo) pode aparecer no passado ("retirei o \
+pão"), porque ele também não foi aplicado ainda, só será quando a mensagem inteira fechar.
+14. O OPOSTO da regra acima: quando "added" fica vazio porque ela NÃO disse que comeu/vai comer nada \
+no lugar ("estou sem o pão", "não vou comer o arroz e pronto", "estou sem arroz pro almoço"), isso já é \
+uma troca COMPLETA, não uma pendência, o motor aplica na hora e redistribui o resto do dia sozinho \
+(regra 1). Sua `reply` tem que soar como ESSA troca completa, dizendo o que mudou e por quê (ver \
+instrução de `reply` no início), NUNCA como uma pergunta em aberto tipo "o que você vai comer no \
+lugar?"/"o que você gostaria de comer no lugar dele?", como se a troca estivesse esperando essa resposta \
+pra acontecer, isso contradiz o que a tela já mostra aplicado. Se fizer sentido, você pode OFERECER uma \
+sugestão como ajuda opcional pro resto do dia ("se quiser repor esse carboidrato em algum lugar, me diga \
+o quê"), mas nunca framed como se fosse necessária pra completar o que já aconteceu.
+15. ADIÇÃO vs SUBSTITUIÇÃO de uma refeição inteira: quando ela diz que comeu (ou vai comer) algo em \
+"added" SEM tirar nada da refeição planejada ("skipped" vazio), e esse algo é GRANDE o bastante pra ser \
+uma refeição por si só (ex: pizza, hambúrguer, prato feito, marmita, um prato de massa), CONFIRME se é \
+pra SUBSTITUIR a refeição planejada inteira ou se é ALÉM dela (ela vai comer os dois), a menos que a \
+própria mensagem já deixe isso claro ("comi pizza ALÉM do jantar", "comi pizza NO LUGAR do jantar", \
+"substituí o jantar por pizza"). Sem essa distinção, tratar como pura adição pode dobrar a refeição à \
+toa (a pessoa quis dizer que a pizza FOI o jantar, não que comeu os dois). Na dúvida, pergunte direto \
+("Isso é no lugar da sua janta ou você vai comer os dois?") em vez de assumir, e trate exatamente como \
+quantidade pendente (regra 12): "changes" fica vazio/sem aplicar nada, nem as OUTRAS refeições da mesma \
+mensagem que já vieram completas, até ela responder.
 {decomposition_rules}
 """
 
 
 def noo_chat(
     history: list[dict], meals: list[dict], targets: dict, current: dict,
-    preferences: dict,
+    preferences: dict, already_eaten_names: list[str] | None = None,
 ) -> dict:
     """
     Um turno de conversa com o Noo.
@@ -1221,8 +1041,12 @@ def noo_chat(
     `meals`: refeições do dia com alimentos e quantidades (o Noo precisa saber
     os nomes EXATOS pra poder referenciá-los em `skipped`). `current`: como o
     dia está agora, pra ele conseguir corrigir um ajuste anterior sem
-    recomeçar. Devolve {"reply", "changes", "already_eaten"}; quem chama casa
-    os alimentos com a TACO e aplica via diet_engine.apply_changes.
+    recomeçar. `already_eaten_names`: refeições que já estão travadas de
+    verdade (checklist inicial + turnos anteriores, ver routes/nootr/noo.py),
+    ground truth determinística, não depende da IA lembrar disso sozinha.
+    Devolve {"reply", "changes", "already_eaten"}; quem chama casa os
+    alimentos com a TACO e aplica via diet_engine.apply_changes, UNINDO o
+    "already_eaten" desta resposta com o que já estava conhecido.
     """
     meals_table = "\n".join(
         f"- {m['name']} ({m['time']}): " + (", ".join(f"{f['name']} ({f['quantity']})" for f in m["foods"]) or "vazia")
@@ -1233,6 +1057,7 @@ def noo_chat(
         meals_table=meals_table,
         targets=json.dumps(targets, ensure_ascii=False),
         current=json.dumps(current, ensure_ascii=False),
+        already_eaten_known=", ".join(already_eaten_names or []) or "nenhuma ainda",
         allergies=", ".join(preferences.get("allergies") or []) or "nenhuma",
         dislikes=", ".join(preferences.get("dislikes") or []) or "nenhuma",
         pantry=", ".join([*(preferences.get("likes") or []), *(preferences.get("pantry") or [])]) or "nada informado",

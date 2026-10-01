@@ -4,7 +4,8 @@ mesmos valores em lib/plan.ts (mantidos em sincronia à mão, sem codegen).
 Ver enforcement em routes/nootr/substitutions.py, recipes.py e noo.py.
 """
 
-# Substituições ("Descrever com IA" / troca manual) por dia no Basic.
+# Substituições manuais (comi diferente / vou comer diferente / estou em
+# falta) por dia no Basic.
 BASIC_DAILY_SUBSTITUTIONS = 3
 # Receitas salvas no Basic.
 BASIC_MAX_RECIPES = 5

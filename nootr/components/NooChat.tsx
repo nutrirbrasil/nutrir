@@ -159,14 +159,39 @@ function DayView({ day }: { day: NooDayView }) {
  * aplica tudo junto, explicando o que fez. Cada mensagem é uma chamada de IA,
  * por isso o limite diário por plano (ver plan_limits.NOO_DAILY_MESSAGES).
  */
+
+/** "Noo está digitando…", os mesmos 3 pontinhos pulsantes usados enquanto uma
+ * mensagem de verdade está a caminho (ver `sending` mais abaixo), reusado
+ * pra fingir a chegada dos 2 primeiros balões em estágios (ver introStep). */
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-2" aria-label="Noo está digitando">
+      <Image src="/noo-icon.png" alt="" width={24} height={24} className="shrink-0" />
+      <div className="flex items-center gap-1.5 text-nootr-faint">
+        {[0, 150, 300].map((delay) => (
+          <span
+            key={delay}
+            className="h-1.5 w-1.5 animate-pulse rounded-full bg-current"
+            style={{ animationDelay: `${delay}ms` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function NooChat({
-  token, onApplied, meals = [],
+  token, onApplied, meals = [], currentMeals = [],
 }: {
   token: string;
   onApplied?: () => void;
   // Dieta ORIGINAL (template, sem ajustes de hoje), só usada pros exemplos
   // da tela vazia, ver buildSuggestions.
   meals?: Meal[];
+  // Refeições de HOJE (com ajustes já aplicados), usada só pro checklist
+  // inicial ("quais refeições você já fez hoje"): precisa dos IDs reais do
+  // day_plan pra poder travar a refeição certa (ver nootrApi.noo.setAlreadyEaten).
+  currentMeals?: Meal[];
 }) {
   const SUGGESTIONS = useMemo(() => buildSuggestions(meals), [meals]);
   const [messages, setMessages] = useState<NooMessage[]>([]);
@@ -178,6 +203,18 @@ export function NooChat({
   const [plan, setPlan] = useState<Plan>("basic");
   const [error, setError] = useState("");
   const [resetting, setResetting] = useState(false);
+  // Checklist inicial: null = ainda não perguntamos (mostra o checklist),
+  // array = já perguntamos hoje nesta conversa (mesmo vazio).
+  const [alreadyEatenIds, setAlreadyEatenIds] = useState<string[] | null>(null);
+  const [checklistSelection, setChecklistSelection] = useState<string[]>([]);
+  const [checklistSubmitting, setChecklistSubmitting] = useState(false);
+  // Revelação em estágios dos 2 primeiros balões do Noo (saudação + checklist),
+  // como se ele estivesse digitando e mandando de verdade: 0 = nada ainda,
+  // 1 = só a saudação, 2 = os dois. Só anima numa conversa GENUINAMENTE nova
+  // (ver useEffect abaixo); numa conversa já em andamento (reabriu a página,
+  // ou já respondeu o checklist antes) os balões aparecem prontos, sem
+  // replay da animação a cada carregamento.
+  const [introStep, setIntroStep] = useState<0 | 1 | 2>(0);
   // Ação destrutiva (desfaz o dia inteiro), então pede confirmação inline
   // antes de executar, em vez de agir no primeiro clique.
   const [confirmingReset, setConfirmingReset] = useState(false);
@@ -193,6 +230,10 @@ export function NooChat({
   // true entre clicar em "cancelar" e o MediaRecorder de fato parar: o
   // onstop precisa saber que é pra descartar o áudio em vez de mandar.
   const cancelledRef = useRef(false);
+  // true depois que já decidiu (uma vez) se anima ou não a chegada dos 2
+  // primeiros balões, ver o useEffect de introStep. "Reiniciar Noo" zera de
+  // novo, pra animar mais uma vez numa conversa genuinamente nova.
+  const introDecidedRef = useRef(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -212,6 +253,7 @@ export function NooChat({
         setRemaining(c.remaining);
         setLimit(c.limit);
         setPlan(c.plan);
+        setAlreadyEatenIds(c.already_eaten_ids);
       })
       .catch(() => active && setError("Não consegui abrir a conversa com o Noo."))
       .finally(() => active && setLoading(false));
@@ -221,8 +263,46 @@ export function NooChat({
   }, [token]);
 
   useEffect(() => {
+    if (loading || introDecidedRef.current) return;
+    introDecidedRef.current = true;
+    // Conversa já em andamento (checklist já respondido, ou já tem
+    // histórico): os 2 balões são HISTÓRICO, aparecem prontos, sem fingir
+    // que estão chegando agora.
+    if (alreadyEatenIds !== null || messages.length > 0) {
+      setIntroStep(2);
+      return;
+    }
+    // Conversa genuinamente nova: revela em estágios, como se o Noo
+    // estivesse digitando e mandando cada balão de verdade.
+    const t1 = setTimeout(() => setIntroStep(1), 700);
+    const t2 = setTimeout(() => setIntroStep(2), 1900);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [loading, alreadyEatenIds, messages.length]);
+
+  useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, sending]);
+  }, [messages, sending, alreadyEatenIds, introStep]);
+
+  function toggleChecklistMeal(id: string) {
+    setChecklistSelection((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  async function submitChecklist() {
+    if (checklistSubmitting) return;
+    setChecklistSubmitting(true);
+    setError("");
+    try {
+      const r = await nootrApi.noo.setAlreadyEaten(token, checklistSelection);
+      setAlreadyEatenIds(r.already_eaten_ids);
+    } catch {
+      setError("Não consegui salvar isso agora, tenta de novo.");
+    } finally {
+      setChecklistSubmitting(false);
+    }
+  }
 
   async function send(content: string) {
     const trimmed = content.trim();
@@ -422,6 +502,14 @@ export function NooChat({
       setMessages([]);
       setRemaining(r.remaining);
       setLimit(r.limit);
+      // A conversa recomeça do zero: pergunta de novo quais refeições já
+      // rolaram hoje (o backend também zera isso, ver reset_day_plan).
+      setAlreadyEatenIds(null);
+      setChecklistSelection([]);
+      // Reanima a chegada dos 2 primeiros balões, é uma conversa nova de
+      // verdade (ver useEffect de introStep).
+      introDecidedRef.current = false;
+      setIntroStep(0);
       // A dieta voltou pro original: quem embute o chat recarrega.
       onApplied?.();
     } catch {
@@ -433,6 +521,9 @@ export function NooChat({
 
   const isEmpty = messages.length === 0;
   const outOfMessages = remaining <= 0 && !loading;
+  // Antes de liberar a conversa de verdade, a pessoa precisa responder o
+  // checklist inicial (quais refeições já fez hoje), ver alreadyEatenIds.
+  const needsChecklist = !loading && alreadyEatenIds === null;
 
   return (
     <div className="card flex h-[min(70vh,640px)] flex-col p-0">
@@ -490,21 +581,107 @@ export function NooChat({
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
         {loading && <div className="h-16 animate-pulse rounded-lg bg-nootr-line/40" />}
 
-        {!loading && isEmpty && (
-          <div className="py-6 text-center">
-            <Image src="/noo-icon.png" alt="Noo" width={64} height={64} className="mx-auto" priority />
-            <p className="mt-2 font-display text-xl text-nootr-cream">Oi, eu sou o Noo.</p>
-            <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-nootr-muted">
-              Comeu algo fora do plano? Vai comer algo diferente na janta? Acabou algum ingrediente?
-              Me conta o seu problema que eu reajusto para suas metas continuarem batendo.
-            </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
-              {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" onClick={() => send(s)} className="chip" disabled={outOfMessages}>
-                  {s}
-                </button>
-              ))}
+        {/* As duas primeiras mensagens do Noo (saudação + checklist inicial)
+            ficam permanentes no topo da conversa, como se ele tivesse
+            mandado de verdade, nunca somem depois que a pessoa manda uma
+            mensagem real (ver alreadyEatenIds). O checklist em si só é
+            interativo enquanto não foi respondido, depois vira um resumo
+            fixo do que foi marcado. Numa conversa GENUINAMENTE nova, os dois
+            balões chegam em estágios (ver introStep), com um "digitando"
+            entre eles, como se o Noo estivesse mandando de verdade; numa
+            conversa já em andamento eles só aparecem prontos. */}
+        {!loading && introStep === 0 && <TypingDots />}
+        {!loading && introStep >= 1 && (
+          <>
+            <div className="rise-in flex items-end gap-2">
+              <Image src="/noo-icon.png" alt="" width={24} height={24} className="mb-1 shrink-0" />
+              <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-nootr-black px-3.5 py-2.5">
+                <p className="text-sm leading-relaxed text-nootr-cream">
+                  Oi, eu sou Noo, estou aqui para ajudar você com os problemas na dieta.
+                </p>
+              </div>
             </div>
+            {introStep === 1 && <TypingDots />}
+          </>
+        )}
+        {!loading && introStep >= 2 && (
+          <>
+            <div className="rise-in flex items-end gap-2">
+              <Image src="/noo-icon.png" alt="" width={24} height={24} className="mb-1 shrink-0" />
+              <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-nootr-black px-3.5 py-2.5">
+                <p className="text-sm leading-relaxed text-nootr-cream">
+                  Antes de mais nada, me conte quais refeições você já fez hoje.
+                </p>
+                {alreadyEatenIds === null ? (
+                  <>
+                    {currentMeals.length > 0 && (
+                      <div className="mt-3 space-y-1.5">
+                        {currentMeals.map((m) => {
+                          const checked = checklistSelection.includes(m.id);
+                          return (
+                            <label
+                              key={m.id}
+                              className="flex cursor-pointer items-center gap-2.5 rounded-lg bg-nootr-wine/20 px-3 py-2 text-sm"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleChecklistMeal(m.id)}
+                                className="h-4 w-4 accent-nootr-bordo"
+                              />
+                              <span className="text-nootr-cream">{m.name}</span>
+                              <span className="ml-auto shrink-0 text-xs text-nootr-faint">{m.time}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={submitChecklist}
+                      disabled={checklistSubmitting}
+                      className="btn-primary mt-3 w-full py-2 text-xs disabled:opacity-60"
+                    >
+                      {checklistSubmitting
+                        ? "…"
+                        : checklistSelection.length
+                        ? "Continuar"
+                        : "Não comi nada ainda, continuar"}
+                    </button>
+                  </>
+                ) : (
+                  <p className="mt-1.5 text-xs text-nootr-faint">
+                    {alreadyEatenIds.length > 0
+                      ? `Você marcou: ${currentMeals
+                          .filter((m) => alreadyEatenIds!.includes(m.id))
+                          .map((m) => m.name)
+                          .join(", ")}.`
+                      : "Você disse que ainda não tinha comido nada."}
+                  </p>
+                )}
+              </div>
+            </div>
+            {alreadyEatenIds !== null && (
+              <div className="flex items-end gap-2">
+                <Image src="/noo-icon.png" alt="" width={24} height={24} className="mb-1 shrink-0" />
+                <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-nootr-black px-3.5 py-2.5">
+                  <p className="text-sm leading-relaxed text-nootr-cream">
+                    Perfeito, agora me conta o que aconteceu. Comeu algo fora do plano? Vai comer algo
+                    diferente na janta? Acabou algum ingrediente?
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {!loading && isEmpty && alreadyEatenIds !== null && (
+          <div className="flex flex-wrap gap-2 pl-8">
+            {SUGGESTIONS.map((s) => (
+              <button key={s} type="button" onClick={() => send(s)} className="chip" disabled={outOfMessages}>
+                {s}
+              </button>
+            ))}
           </div>
         )}
 
@@ -560,7 +737,11 @@ export function NooChat({
       <footer className="border-t border-nootr-line px-5 py-3.5">
         {error && <p className="mb-2 text-xs text-nootr-bordoSoft">{error}</p>}
 
-        {outOfMessages ? (
+        {needsChecklist ? (
+          <p className="py-1 text-center text-xs text-nootr-faint">
+            Responda o checklist acima pra começar a conversa.
+          </p>
+        ) : outOfMessages ? (
           <div className="rounded-lg bg-nootr-wine/25 px-3.5 py-3 text-center">
             <p className="text-sm text-nootr-cream">Você usou suas mensagens de hoje.</p>
             <p className="mt-1 text-xs text-nootr-muted">

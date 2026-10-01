@@ -20,9 +20,8 @@ export interface Meal {
   foods: Food[];
 }
 
-// Prato composto salvo pelo usuário (ex: "Crepioca"), confirmado uma vez no
-// fluxo de "Descrever com IA" ou criado manualmente no Perfil. Reaproveitado
-// depois: a IA usa os ingredientes salvos direto, sem perguntar de novo.
+// Prato composto salvo pelo usuário (ex: "Crepioca"), montado à mão em
+// /receitas com os ingredientes reais.
 export type ApprovalStatus = "pending" | "approved" | "rejected";
 
 export interface Recipe {
@@ -217,59 +216,6 @@ export interface Preferences {
   meal_times: string[];
 }
 
-export interface ConverseTurn {
-  role: "user" | "assistant";
-  text: string;
-}
-
-export interface AIMatchedFood {
-  taco_id: number | null;
-  name: string;
-  quantity: string;
-  grams: number;
-  calories: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
-  match_confidence: "alta" | "media" | "baixa";
-}
-
-// Ingrediente proposto pela IA ao decompor um prato composto desconhecido,
-// ainda não casado com a TACO (isso só acontece depois de confirmado).
-export interface ProposedIngredient {
-  name: string;
-  quantity: string;
-}
-
-export type ParseMealResponse =
-  | {
-      status: "question";
-      question: string;
-      // "confirm_ingredients": a IA decompôs um prato que não conhecia (não
-      // está nas receitas salvas nem na lista já coberta) e quer confirmação
-      // antes de finalizar, mostra proposed_dish_name/proposed_ingredients.
-      question_kind: "text" | "confirm_ingredients";
-      proposed_dish_name: string;
-      proposed_ingredients: ProposedIngredient[];
-      history: ConverseTurn[];
-    }
-  | {
-      status: "done";
-      // nomes dos alimentos planejados da refeição que a IA entendeu que não
-      // foram comidos (esquema de troca, o resto da refeição fica intacto)
-      skipped_names: string[];
-      foods: AIMatchedFood[]; // o que foi comido no lugar (ou a mais), pode ser vazio
-      history: ConverseTurn[];
-      // preenchido quando um prato composto novo foi decomposto e confirmado
-      // agora, o app oferece "salvar como receita" usando `foods` acima.
-      proposed_dish_name: string;
-      // nomes de ingredientes que a IA decompôs mas o backend barrou por
-      // baterem com alergia/restrição cadastrada (ex: "torta de frango" ->
-      // farinha, pra alguém com restrição a glúten): não entraram em `foods`,
-      // mostra um aviso em vez de só sumir com o item sem explicação.
-      blocked_allergens: string[];
-    };
-
 export interface FoodInput {
   grams: number;
   quantity_label?: string;
@@ -453,6 +399,9 @@ export interface NooConversation {
   limit: number;
   remaining: number;
   plan: Plan;
+  // null = ainda não perguntamos quais refeições ela já fez hoje (mostra o
+  // checklist inicial); lista (mesmo vazia) = já perguntamos.
+  already_eaten_ids: string[] | null;
 }
 
 export interface NooReply {

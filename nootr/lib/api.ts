@@ -1,7 +1,6 @@
 import type {
   AdminPendingDiet,
   BarcodeFood,
-  ConverseTurn,
   CustomFood,
   CustomFoodInput,
   Diet,
@@ -12,7 +11,6 @@ import type {
   Meal,
   MealInput,
   PantryMatch,
-  ParseMealResponse,
   Plan,
   Preferences,
   Profile,
@@ -123,6 +121,13 @@ export const nootrApi = {
   // backend routes/nootr/noo.py). Limite diário por plano.
   noo: {
     getConversation: (token: string) => api<NooConversation>("/nootr/noo", token),
+    // Checklist inicial ("quais refeições você já fez hoje"), ver
+    // components/NooChat.tsx. Não é uma mensagem de chat, não consome o
+    // limite diário. Devolve o conjunto acumulado (une com o que já existia).
+    setAlreadyEaten: (token: string, mealIds: string[]) =>
+      api<{ already_eaten_ids: string[] }>("/nootr/noo/already-eaten", token, {
+        method: "PUT", body: JSON.stringify({ meal_ids: mealIds }),
+      }),
     send: (token: string, text: string) =>
       api<NooReply>("/nootr/noo", token, { method: "POST", body: JSON.stringify({ text }) }),
     // Pro: mesma conversa, falada. O áudio é transcrito no backend e o texto
@@ -228,26 +233,7 @@ export const nootrApi = {
   deleteCustomFood: (token: string, foodId: string) =>
     api<{ ok: boolean }>(`/nootr/foods/custom/${foodId}`, token, { method: "DELETE" }),
 
-  // IA conversacional: registra um desvio de uma refeição específica já
-  // planejada (esquema de troca), pode devolver uma pergunta de
-  // esclarecimento em vez de fechar direto.
-  parseMeal: (
-    token: string,
-    text: string,
-    history: ConverseTurn[],
-    mealName: string,
-    mealFoods: string[],
-    forwardLooking: boolean = false
-  ) =>
-    api<ParseMealResponse>("/nootr/ai/parse-meal", token, {
-      method: "POST",
-      body: JSON.stringify({
-        text, history, meal_name: mealName, meal_foods: mealFoods, forward_looking: forwardLooking,
-      }),
-    }),
-
-  // receitas próprias (pratos compostos salvos, ex: "Crepioca"), reaproveitadas
-  // pela IA no "Descrever com IA" sem precisar confirmar os ingredientes de novo
+  // receitas próprias (pratos compostos salvos à mão, ex: "Crepioca")
   listRecipes: (token: string) => api<{ results: Recipe[] }>("/nootr/recipes", token),
   // Receitas aprovadas de outros usuários (ver /aprovar), "receitas da comunidade".
   listGlobalRecipes: (token: string) => api<{ results: Recipe[] }>("/nootr/recipes/global", token),

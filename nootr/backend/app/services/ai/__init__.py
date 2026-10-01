@@ -31,30 +31,6 @@ def _provider():
     raise AIError(f"Provedor de IA desconhecido: {name!r}")
 
 
-def converse_meal(
-    history: list[dict], meal_name: str, meal_foods: list[str], preferences: dict | None = None,
-    force_finalize: bool = False, recipes: list[dict] | None = None, forward_looking: bool = False,
-) -> dict:
-    """
-    Turno conversacional pra registrar um DESVIO de uma refeição específica já
-    planejada (`meal_name` + `meal_foods`, os nomes dos alimentos do plano). A
-    IA pode devolver uma pergunta de esclarecimento em vez de fechar direto,
-    a menos que `force_finalize=True` (limite de perguntas atingido), quando
-    ela é instruída a fechar com a melhor estimativa em vez de insistir.
-    `recipes`: receitas salvas do usuário [{"name","ingredients":[{"name","quantity"}]}]
-, quando um prato citado bate com uma delas, a IA usa os ingredientes
-    salvos direto, sem perguntar de novo.
-    Devolve:
-      {"needs_question": bool, "question": str, "question_kind": "text"|"confirm_ingredients"|"",
-       "skipped_names": [str, ...],        # itens de `meal_foods` que não foram comidos
-       "new_items": [{"name","quantity"}], # o que foi comido no lugar (ou a mais)
-       "proposed_dish_name": str,          # nome do prato decomposto agora (pra oferecer salvar)
-       "proposed_ingredients": [{"name","quantity"}]}  # ingredientes propostos/confirmados desse prato
-    `history` é uma lista de turnos [{"role": "user"|"assistant", "text": str}].
-    """
-    return _provider().converse_meal(
-        history, meal_name, meal_foods, preferences or {}, force_finalize, recipes, forward_looking,
-    )
 
 
 def parse_diet_document(text: str) -> dict:
@@ -171,16 +147,18 @@ def suggest_day_topup(
 
 def noo_chat(
     history: list[dict], meals: list[dict], targets: dict, current: dict,
-    preferences: dict | None = None,
+    preferences: dict | None = None, already_eaten_names: list[str] | None = None,
 ) -> dict:
     """
     Um turno do Noo, o chat do Nootr: a pessoa conta o que mudou (em qualquer
     combinação de refeições) e ele devolve a resposta + as mudanças a aplicar.
     Diferente das três funções manuais, um único turno pode mexer em várias
     refeições de uma vez (ver diet_engine.apply_changes).
+    `already_eaten_names`: refeições já travadas de verdade (checklist inicial
+    + turnos anteriores), pra IA não sugerir mexer nelas nem perguntar de novo.
     Devolve {"reply", "changes", "already_eaten"}.
     """
-    return _provider().noo_chat(history, meals, targets, current, preferences or {})
+    return _provider().noo_chat(history, meals, targets, current, preferences or {}, already_eaten_names or [])
 
 
 def transcribe_audio(audio: bytes, mime_type: str) -> str:

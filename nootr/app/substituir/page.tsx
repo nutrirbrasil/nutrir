@@ -54,7 +54,7 @@ function SubstituirContent({ token }: { token: string }) {
             {/* Recarrega a dieta quando o Noo aplica alguma mudança, pro
                 painel manual (que trabalha em cima das refeições de hoje)
                 não continuar com a versão antiga. */}
-            <NooChat token={token} onApplied={load} meals={originalMeals} />
+            <NooChat token={token} onApplied={load} meals={originalMeals} currentMeals={meals} />
 
             <div>
               <p className="label-caps mb-4">Ajuste manual</p>

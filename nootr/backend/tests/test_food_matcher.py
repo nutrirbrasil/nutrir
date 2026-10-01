@@ -131,6 +131,16 @@ def test_common_food_match():
     assert m.calories == 520.0
 
 
+def test_cacetinho_matches_pao_frances():
+    # Achado testando ao vivo: "cacetinho" é apelido bem comum de "pão
+    # francês", sem esse sinônimo "pão cacetinho" caía num match genérico da
+    # TACO (não bate com "pao frances" por substring, ver _match_common) em
+    # vez do peso real de referência (~50g/unidade).
+    m = fm.find_food("comi um pão cacetinho")
+    assert m.source == "common"
+    assert m.grams == 50.0
+
+
 def test_search_taco_ignores_colher_de_sopa_as_a_food_word():
     # Achado testando ao vivo: "colher de sopa"/"colher de chá" é MEDIDA, não
     # o alimento "sopa"/"chá". Sem tirar a frase inteira antes de tokenizar,

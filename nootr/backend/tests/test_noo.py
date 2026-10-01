@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from backend.app.main import app
 from backend.app.auth import CurrentUser, get_current_user
 from backend.app.data.taco import load_taco_foods
-from backend.app.services import ai, repository
+from backend.app.services import ai, food_matcher, repository
 from backend.app.services.nutrition import scale_food
 
 
@@ -50,8 +50,18 @@ def client(monkeypatch, day_plan):
         day_plan["noo_reset_count"] = reset_count
         return dict(day_plan)
 
+    def fake_update_already_eaten(user, dp_id, meal_ids):
+        day_plan["noo_already_eaten"] = meal_ids
+        return {"id": dp_id, "noo_already_eaten": meal_ids}
+
+    def fake_reset_with_already_eaten(user, dp_id, original_meals, reset_count):
+        result = fake_reset(user, dp_id, original_meals, reset_count)
+        day_plan["noo_already_eaten"] = None
+        return result
+
     monkeypatch.setattr(repository, "record_noo_message_used", fake_record_used)
-    monkeypatch.setattr(repository, "reset_day_plan", fake_reset)
+    monkeypatch.setattr(repository, "reset_day_plan", fake_reset_with_already_eaten)
+    monkeypatch.setattr(repository, "update_noo_already_eaten", fake_update_already_eaten)
     app.dependency_overrides[get_current_user] = lambda: CurrentUser(id="u1", email="t@t.com", token="tok")
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -270,6 +280,29 @@ def test_allergy_barrier_catches_allergen_lost_in_generic_match(client, monkeypa
     jantar = next(m for m in body["day"]["meals"] if m["id"] == "m3")
     assert not any("chocolate" in f["name"].lower() for f in jantar["foods"])
     assert "bate com uma alergia" in body["reply"].lower()
+
+
+def test_allergy_exception_recognizes_nickname_the_ai_normalized_away(client, monkeypatch):
+    # Achado testando ao vivo: a pessoa disse "pão cacetinho" (apelido), mas
+    # a IA devolveu o item já normalizado pro nome "oficial" ("pão francês")
+    # em `added`. Nem `item["name"]` nem `match.name` continham "cacetinho",
+    # então a checagem antiga (`user_named_it` por palavra em comum) não
+    # reconhecia que a PRÓPRIA pessoa tinha nomeado esse alimento, e ele era
+    # bloqueado por alergia a glúten mesmo tendo sido pedido explicitamente.
+    monkeypatch.setattr(repository, "get_preferences", lambda user: {
+        "allergies": ["glúten"], "dislikes": [], "likes": [], "pantry": [], "notes": "",
+    })
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Registrei o pão francês no seu café da manhã.",
+        "changes": [{"meal": "Café da manhã", "skipped": [], "added": [{"name": "pão francês", "quantity": "1 unidade"}]}],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "comi um pão cacetinho no café"})
+    assert resp.status_code == 200
+    body = resp.json()
+    cafe = next(m for m in body["day"]["meals"] if m["id"] == "m1")
+    assert any("frances" in food_matcher.normalize(f["name"]) for f in cafe["foods"])
+    assert "bate com uma alergia" not in body["reply"].lower()
 
 
 def test_blank_quantity_asks_instead_of_guessing(client, monkeypatch):
@@ -523,3 +556,241 @@ def test_answering_the_quantity_applies_the_full_swap_at_once(client, monkeypatc
     assert by_name["ovo de galinha"] == "removed"
     assert by_name["pão de forma integral"] == "removed"
     assert any(kind == "added" and "pão" in name for name, kind in by_name.items())
+
+
+def test_pending_quantity_in_one_meal_blocks_other_complete_meals_too(client, monkeypatch, day_plan):
+    # Achado testando ao vivo: "não comi o pão do café e na janta vou comer
+    # pizza" (pizza sem quantidade) aplicava o café na hora (skip completo,
+    # sem "added") e só deixava o jantar pendente. A pessoa espera que NADA
+    # mude até responder a quantidade da pizza, a mensagem inteira é uma
+    # troca só (ver regra 12 do prompt), não duas trocas independentes.
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Quantas fatias de pizza e qual o sabor, pra eu ajustar tudo junto?",
+        "changes": [
+            {"meal": "Café da manhã", "skipped": ["Pão de forma integral"], "added": []},
+            {"meal": "Jantar", "skipped": [], "added": [{"name": "pizza", "quantity": ""}]},
+        ],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "não comi o pão do café e na janta vou comer pizza"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is None
+    assert "quant" in body["reply"].lower() or "fatia" in body["reply"].lower()
+    # Nenhuma das duas refeições foi tocada, nem a que já estava completa.
+    cafe = next(m for m in day_plan["meals"] if m["id"] == "m1")
+    assert len(cafe["foods"]) == 2
+    assert any(f["name"] == "Pão de forma integral" for f in cafe["foods"])
+
+
+# ---------- Adição grande e ambígua (substituiu a refeição ou foi além dela?) ----------
+
+
+def _fake_pizza_match(calories: float):
+    # taco_id=None + source="common": resolve_food monta um alimento próprio
+    # com essas macros direto, sem depender de um id real existir na TACO.
+    return lambda *a, **k: food_matcher.MatchResult(
+        name="Pizza", calories=calories, protein_g=40.0, carbs_g=120.0, fat_g=35.0,
+        grams=800.0, source="common", confidence="alta", taco_id=None,
+    )
+
+
+def test_big_addition_without_skip_asks_before_applying(client, monkeypatch, day_plan):
+    # Achado real: "vou comer pizza no jantar" sem tirar nada do jantar
+    # planejado, a IA tratou como pura adição (skipped vazio), mas a pizza
+    # sozinha já passava a caloria do jantar inteiro. A pessoa quis dizer que
+    # a pizza FOI o jantar, não que comeu os dois.
+    monkeypatch.setattr(food_matcher, "find_food", _fake_pizza_match(1000.0))
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Beleza, adicionei a pizza no seu jantar.",
+        "changes": [{"meal": "Jantar", "skipped": [], "added": [{"name": "pizza", "quantity": "4 fatias"}]}],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "vou comer pizza no jantar"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is None
+    assert "lugar" in body["reply"].lower() or "substitu" in body["reply"].lower()
+    jantar = next(m for m in day_plan["meals"] if m["id"] == "m3")
+    assert len(jantar["foods"]) == 2  # intacto, nada aplicado ainda
+
+
+def test_big_addition_applies_when_message_says_besides(client, monkeypatch, day_plan):
+    # "também"/"além" já desambigua: a pessoa quis dizer os dois, aplica
+    # normalmente sem perguntar.
+    monkeypatch.setattr(food_matcher, "find_food", _fake_pizza_match(1000.0))
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Beleza, adicionei a pizza além do seu jantar.",
+        "changes": [{"meal": "Jantar", "skipped": [], "added": [{"name": "pizza", "quantity": "4 fatias"}]}],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "vou comer pizza também no jantar, além do que já ia comer"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is not None
+    jantar = next(m for m in body["day"]["meals"] if m["id"] == "m3")
+    assert any(f["kind"] == "added" and "pizza" in f["name"].lower() for f in jantar["foods"])
+
+
+def test_big_addition_applies_when_message_says_instead(client, monkeypatch, day_plan):
+    # "no lugar"/"em vez" também desambigua (o oposto: é substituição).
+    monkeypatch.setattr(food_matcher, "find_food", _fake_pizza_match(1000.0))
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Beleza, coloquei a pizza no lugar do seu jantar.",
+        "changes": [{
+            "meal": "Jantar",
+            "skipped": ["Pescada, filé, frito", "Arroz, tipo 1, cozido"],
+            "added": [{"name": "pizza", "quantity": "4 fatias"}],
+        }],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "vou comer pizza no lugar do jantar"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is not None
+
+
+def test_small_addition_without_skip_does_not_ask(client, monkeypatch, day_plan):
+    # Um extra pequeno (bem abaixo de 70% da refeição) não é ambíguo, aplica
+    # direto sem perguntar, como sempre funcionou.
+    monkeypatch.setattr(food_matcher, "find_food", _fake_pizza_match(60.0))
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Beleza, adicionei a banana no seu jantar.",
+        "changes": [{"meal": "Jantar", "skipped": [], "added": [{"name": "banana", "quantity": "1 unidade"}]}],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "comi uma banana a mais no jantar"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is not None
+
+
+def test_big_addition_with_explicit_skip_does_not_ask(client, monkeypatch, day_plan):
+    # Se a IA já mandou "skipped" preenchido, já é uma troca clara (não uma
+    # pura adição), não precisa perguntar de novo.
+    monkeypatch.setattr(food_matcher, "find_food", _fake_pizza_match(1000.0))
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Beleza, troquei seu jantar pela pizza.",
+        "changes": [{
+            "meal": "Jantar",
+            "skipped": ["Pescada, filé, frito", "Arroz, tipo 1, cozido"],
+            "added": [{"name": "pizza", "quantity": "4 fatias"}],
+        }],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "troquei o jantar por pizza"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is not None
+
+
+def test_can_directly_edit_a_meal_already_marked_as_eaten(client, monkeypatch, day_plan):
+    # Achado testando ao vivo: uma refeição "travada" (já confirmada como
+    # comida, ver noo_already_eaten) só deveria impedir o motor de
+    # REDISTRIBUIR a quantidade dela automaticamente quando outras refeições
+    # mudam, nunca impedir a pessoa de corrigir/detalhar o que ela realmente
+    # comeu ali. O backend já suportava isso (não bloqueia "changes" mirando
+    # uma refeição travada, ver stored_eaten_ids em _run_turn), esse teste
+    # trava esse contrato pra não regredir.
+    day_plan["noo_already_eaten"] = ["m1"]  # café já confirmado
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Entendi, ajustei o café da manhã pra refletir o que você realmente comeu.",
+        "changes": [{
+            "meal": "Café da manhã",
+            "skipped": ["Pão de forma integral", "Ovo de galinha"],
+            "added": [{"name": "pão francês", "quantity": "1 unidade"}],
+        }],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "na verdade comi só um pão francês no café"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["day"] is not None
+    cafe = next(m for m in body["day"]["meals"] if m["id"] == "m1")
+    kinds = [f["kind"] for f in cafe["foods"]]
+    assert "removed" in kinds
+    assert "added" in kinds
+
+
+# ---------- Checklist inicial: "quais refeições você já fez hoje" ----------
+
+
+def test_get_conversation_reports_unasked_when_nothing_stored_yet(client):
+    # `None` sinaliza pro front mostrar o checklist inicial (ver
+    # components/NooChat.tsx); ainda não existe nenhuma resposta hoje.
+    resp = client.get("/nootr/noo")
+    assert resp.status_code == 200
+    assert resp.json()["already_eaten_ids"] is None
+
+
+def test_already_eaten_endpoint_stores_the_checklist_answer(client, day_plan):
+    resp = client.put("/nootr/noo/already-eaten", json={"meal_ids": ["m1"]})
+    assert resp.status_code == 200
+    assert resp.json()["already_eaten_ids"] == ["m1"]
+    assert day_plan["noo_already_eaten"] == ["m1"]
+
+    # `[]` explícito (ninguém marcado) já conta como "perguntado".
+    resp_get = client.get("/nootr/noo")
+    assert resp_get.json()["already_eaten_ids"] == ["m1"]
+
+
+def test_already_eaten_endpoint_merges_instead_of_replacing(client, day_plan):
+    day_plan["noo_already_eaten"] = ["m1"]
+    resp = client.put("/nootr/noo/already-eaten", json={"meal_ids": ["m2"]})
+    assert sorted(resp.json()["already_eaten_ids"]) == ["m1", "m2"]
+
+
+def test_already_eaten_endpoint_ignores_unknown_meal_ids(client):
+    resp = client.put("/nootr/noo/already-eaten", json={"meal_ids": ["m1", "refeicao-que-nao-existe"]})
+    assert resp.json()["already_eaten_ids"] == ["m1"]
+
+
+def test_run_turn_informs_the_ai_which_meals_are_already_confirmed(client, monkeypatch, day_plan):
+    # A checklist (ou um turno anterior) já travou o café; o Noo precisa saber
+    # disso pra não sugerir mexer nele nem perguntar de novo se já comeu.
+    day_plan["noo_already_eaten"] = ["m1"]
+    seen = {}
+
+    def fake_chat(history, meals, targets, current, prefs, already_eaten_names=None):
+        seen["already_eaten_names"] = already_eaten_names
+        return {"reply": "ok", "changes": [], "already_eaten": []}
+
+    monkeypatch.setattr(ai, "noo_chat", fake_chat)
+    resp = client.post("/nootr/noo", json={"text": "oi"})
+    assert resp.status_code == 200
+    assert seen["already_eaten_names"] == ["Café da manhã"]
+
+
+def test_run_turn_keeps_a_previously_confirmed_meal_locked_across_turns(client, monkeypatch, day_plan):
+    # Achado real: `already_eaten` antigamente só valia DENTRO do turno atual
+    # (o que a IA devolvia nesta mensagem), então uma refeição confirmada num
+    # turno anterior (ou pela checklist) podia ser reajustada de novo num
+    # turno seguinte que nem repetisse a confirmação. O café foi confirmado
+    # ANTES desta mensagem (checklist), e a IA desta mensagem não menciona
+    # nada em `already_eaten`: mesmo assim o café não pode ser tocado.
+    day_plan["noo_already_eaten"] = ["m1"]
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Tirei o arroz do jantar.",
+        "changes": [{"meal": "Jantar", "skipped": ["Arroz, tipo 1, cozido"], "added": []}],
+        "already_eaten": [],
+    })
+    resp = client.post("/nootr/noo", json={"text": "não vou comer o arroz do jantar"})
+    assert resp.status_code == 200
+    body = resp.json()
+    cafe = next(m for m in body["day"]["meals"] if m["id"] == "m1")
+    assert all(f["kind"] is None for f in cafe["foods"])
+
+
+def test_run_turn_persists_new_already_eaten_meals_learned_from_the_message(client, monkeypatch, day_plan):
+    # O inverso do teste acima: quando a pessoa fala algo novo na conversa
+    # ("já almocei"), isso precisa ATUALIZAR o conhecimento acumulado, não só
+    # valer pra esta mensagem (ver a clarificação do usuário: reabrir o Noo
+    # mais tarde no mesmo dia e contar algo novo precisa mesmo atualizar).
+    monkeypatch.setattr(ai, "noo_chat", lambda *a, **k: {
+        "reply": "Beleza, anotei que você já almoçou.",
+        "changes": [],
+        "already_eaten": ["Almoço"],
+    })
+    resp = client.post("/nootr/noo", json={"text": "já almocei"})
+    assert resp.status_code == 200
+    assert day_plan["noo_already_eaten"] == ["m2"]

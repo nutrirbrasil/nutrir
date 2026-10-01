@@ -179,7 +179,7 @@ def suggest_alternatives(body: AlternativesRequest, user: CurrentUser = CurrentU
     # o nome que a IA propôs JUNTO com o alimento casado (concatenados, não
     # um OR de duas checagens separadas): sem isso, um "sem X" que só a
     # descrição original declarava se perdia quando o matcher caía num item
-    # genérico (mesmo raciocínio em ai._match_items).
+    # genérico (mesmo raciocínio em noo._resolve_added).
     # EXCETO quando a sugestão é um alimento que a própria pessoa já tem nos
     # favoritos/despensa (`preferred_ids`, calculado acima pro desempate de
     # busca): a despensa já não passa pela barreira de alergia em nenhum

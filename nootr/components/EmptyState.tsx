@@ -9,8 +9,8 @@ import { Icon, type IconName } from "@/components/Icon";
  * o que a funcionalidade faz e como começar.
  *
  * `action` vira um botão (link interno) quando há um próximo passo claro;
- * quando o preenchimento acontece em outro fluxo (ex: receitas nascem do
- * "Descrever com IA"), fica só a explicação.
+ * quando não há nenhum destino óbvio pra mandar a pessoa, fica só a
+ * explicação.
  */
 export function EmptyState({
   icon,

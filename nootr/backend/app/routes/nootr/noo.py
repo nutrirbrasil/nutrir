@@ -34,6 +34,30 @@ _AUDIO_MIME_TYPES = {
 # almoço"), não um áudio longo, e o limite protege o custo da transcrição.
 _MAX_AUDIO_BYTES = 4 * 1024 * 1024
 
+# Quando um "added" sozinho (sem nenhum "skipped" junto) já passa dessa fração
+# das calorias da refeição planejada, ele é grande o bastante pra SER a
+# refeição, não só um extra nela (ver regra 15 do prompt e o uso em
+# _run_turn). Pedido explícito: "comi pizza no jantar" é ambíguo entre "a
+# pizza substituiu o jantar" e "comi a pizza além do jantar inteiro", e só a
+# segunda leitura é uma pura adição.
+_AMBIGUOUS_ADDITION_RATIO = 0.7
+
+# Frases que já desambiguam sozinhas, sem precisar perguntar (ver
+# _disambiguates_addition_vs_replacement). Comparadas contra o texto
+# NORMALIZADO (sem acento, minúsculo, ver food_matcher.normalize), por isso
+# aqui também vêm sem acento.
+_ADDITION_CLEAR_PHRASES = ("alem", "tambem", "junto com", "a mais", "de sobremesa", "extra")
+_REPLACEMENT_CLEAR_PHRASES = (
+    "no lugar", "em vez", "ao inves", "em substituicao", "substitu", "troquei", "trocando",
+)
+
+
+def _disambiguates_addition_vs_replacement(text_norm: str) -> bool:
+    """True se a própria mensagem já deixa claro se um alimento grande citado
+    é pra ENTRAR NO LUGAR da refeição planejada ou ALÉM dela, dispensando a
+    pergunta de esclarecimento (ver _AMBIGUOUS_ADDITION_RATIO)."""
+    return any(p in text_norm for p in (*_ADDITION_CLEAR_PHRASES, *_REPLACEMENT_CLEAR_PHRASES))
+
 
 class NooMessageIn(BaseModel):
     text: str = Field(min_length=1, max_length=1000)
@@ -80,8 +104,7 @@ def _resolve_added(
     mente sobre o que aconteceu de verdade pra alguém com restrição real.
 
     Propositalmente NÃO usa a preferência da despensa (`preferred_taco_ids`)
-    pra desempatar o match, pelo mesmo motivo documentado em
-    `ai._match_items`: aqui é uma descrição de um evento real específico, e
+    pra desempatar o match: aqui é uma descrição de um evento real específico, e
     a despensa pode ter justamente a versão "sem alérgeno" de um alimento
     (ex: "Pão de forma sem glúten" de quem é alérgico a glúten), o que
     esconderia silenciosamente o alérgeno de verdade quando a pessoa descreve
@@ -123,13 +146,22 @@ def _resolve_added(
             w for w in food_matcher.normalize(item["name"] + " " + match.name).split() if len(w) > 3
         ]
         user_named_it = any(w in text_norm_history for w in candidate_words)
+        # Mesmo raciocínio acima, mas pra apelido (ex: "cacetinho"): a IA
+        # normaliza o nome pro alimento "oficial" (ex: "pão francês") antes
+        # de devolver o item, então nem a palavra que a IA propôs nem a do
+        # alimento casado batem contra o texto original, que só tem o
+        # apelido. Duas descrições que resolvem pra EXATAMENTE a mesma
+        # macro-assinatura de _COMMON_FOODS são apelidos do mesmo alimento,
+        # mesmo com chaves de nome diferentes (ver food_matcher.common_food_signature).
+        if not user_named_it and match.source == "common":
+            user_named_it = food_matcher.common_food_signature(text_norm_history) == food_matcher.common_food_signature(item["name"])
         # Checa o nome que o Noo propôs (`item["name"]`) JUNTO com o alimento
         # casado (`match.name`), concatenados na mesma string, não um OR de
         # duas checagens separadas: quando o matcher cai num item comum/
         # estimativa genérica, o nome final pode perder a palavra que
-        # denunciava o alérgeno (ver mesmo raciocínio em ai._match_items) OU
-        # perder um "sem X" que a descrição original declarava (ex:
-        # "hambúrguer sem pão" casando com o item genérico "Hamburguer", que
+        # denunciava o alérgeno OU perder um "sem X" que a descrição original
+        # declarava (ex: "hambúrguer sem pão" casando com o item genérico
+        # "Hamburguer", que
         # por padrão conta como glúten). Concatenado, o "sem pão" e o
         # "hamburguer" ficam visíveis juntos pra `matches_allergen` decidir.
         blocks = food_matcher.matches_allergen(f"{match.name} {item['name']}", allergies)
@@ -162,7 +194,12 @@ def _resolve_added(
 
 @router.get("")
 def get_conversation(user: CurrentUser = CurrentUserDep):
-    """Conversa de hoje + quanto ainda resta de mensagens no plano."""
+    """Conversa de hoje + quanto ainda resta de mensagens no plano.
+
+    `already_eaten_ids`: `None` quando ainda não perguntamos quais refeições
+    já rolaram hoje (o front mostra o checklist inicial nesse caso, ver
+    components/NooChat.tsx), uma lista (mesmo vazia) quando já perguntamos.
+    """
     profile = repository.get_profile(user)
     day_plan = repository.get_or_create_day_plan(user)
     used = (day_plan or {}).get("noo_messages_used") or 0
@@ -173,7 +210,34 @@ def get_conversation(user: CurrentUser = CurrentUserDep):
         "limit": limit,
         "remaining": max(limit - used, 0),
         "plan": (profile or {}).get("plan", "basic"),
+        "already_eaten_ids": (day_plan or {}).get("noo_already_eaten"),
     }
+
+
+class AlreadyEatenIn(BaseModel):
+    meal_ids: list[str] = Field(default_factory=list)
+
+
+@router.put("/already-eaten")
+def set_already_eaten(body: AlreadyEatenIn, user: CurrentUser = CurrentUserDep):
+    """
+    Checklist inicial do Noo: quais refeições a pessoa já comeu hoje, ANTES
+    de começar a conversa de verdade (ver components/NooChat.tsx). Não é uma
+    mensagem de chat (não consome o limite diário de IA, não é uma chamada de
+    IA), só grava a informação determinística que os turnos seguintes do Noo
+    (e o motor de rebalanceamento) vão respeitar (ver _run_turn abaixo).
+
+    Une com o que já estava marcado em vez de substituir (mesmo raciocínio de
+    `_run_turn`: só ADICIONA conhecimento, nunca destrava de volta uma
+    refeição que já tinha sido confirmada como comida).
+    """
+    day_plan = repository.get_or_create_day_plan(user)
+    if day_plan is None:
+        raise HTTPException(status_code=409, detail="Monte sua dieta primeiro em /dieta.")
+    known_ids = {m["id"] for m in day_plan["meals"]}
+    merged = sorted({*(day_plan.get("noo_already_eaten") or []), *(body.meal_ids)} & known_ids)
+    repository.update_noo_already_eaten(user, day_plan["id"], merged)
+    return {"already_eaten_ids": merged}
 
 
 @router.post("")
@@ -282,20 +346,6 @@ def _run_turn(
         for m in repository.list_noo_messages_today(user)
     ] + [{"role": "user", "text": text}]
 
-    try:
-        answer = ai.noo_chat(
-            history, day_plan["meals"], targets,
-            diet_engine.day_macros(day_plan["meals"]), prefs,
-        )
-    except ai.AIError as exc:
-        raise HTTPException(
-            status_code=502, detail="Não consegui falar com o Noo agora, tente de novo em instantes.",
-        ) from exc
-
-    # A mensagem do usuário só é gravada depois da IA responder: se a chamada
-    # falhar, ela não consome uma das mensagens do dia.
-    repository.insert_noo_message(user, "user", text, audio=audio)
-
     # Casa os nomes de refeição que o Noo citou com as refeições reais.
     def find_meal(label: str) -> dict | None:
         """Casa pelo nome normalizado. Tolera o Noo devolver o rótulo da
@@ -306,6 +356,31 @@ def _run_turn(
             if key == name or key.startswith(name) or name.startswith(key):
                 return meal
         return None
+
+    # Refeições já travadas de VERDADE (checklist inicial + turnos anteriores
+    # de hoje, ver PUT /already-eaten e o merge logo abaixo), a fonte
+    # determinística que o motor de rebalanceamento respeita. Diferente do
+    # `already_eaten` que a IA devolve a cada turno (só o que ELA entendeu
+    # NESTA mensagem): aqui é o conhecimento ACUMULADO, nunca esquecido entre
+    # mensagens, nem quando a pessoa reabre o Noo mais tarde no mesmo dia sem
+    # repetir o que já tinha dito.
+    stored_eaten_ids = set(day_plan.get("noo_already_eaten") or [])
+    meals_by_id = {m["id"]: m for m in day_plan["meals"]}
+    already_eaten_names = [meals_by_id[mid]["name"] for mid in stored_eaten_ids if mid in meals_by_id]
+
+    try:
+        answer = ai.noo_chat(
+            history, day_plan["meals"], targets,
+            diet_engine.day_macros(day_plan["meals"]), prefs, already_eaten_names,
+        )
+    except ai.AIError as exc:
+        raise HTTPException(
+            status_code=502, detail="Não consegui falar com o Noo agora, tente de novo em instantes.",
+        ) from exc
+
+    # A mensagem do usuário só é gravada depois da IA responder: se a chamada
+    # falhar, ela não consome uma das mensagens do dia.
+    repository.insert_noo_message(user, "user", text, audio=audio)
 
     def new_meal(name: str, time: str) -> dict:
         """Cria uma refeição que ainda não existe no dia (ver regra 8 do
@@ -336,15 +411,56 @@ def _run_turn(
     unresolved_foods: list[str] = []
     unresolved_meal_names: list[str] = []
     blocked_allergen_foods: list[str] = []
-    for change in answer["changes"]:
-        # Se algum item de "added" ainda não tem quantidade definida, a troca
-        # INTEIRA dessa refeição fica pendente: nem tira o que ela disse que
-        # não comeu (skipped), nem adiciona o que já tinha quantidade certa.
-        # É uma troca só ("pão no lugar do X"), tirar o X antes de saber
-        # quanto entra no lugar desregula o dia duas vezes, uma agora e outra
-        # quando a quantidade enfim chegar (ver quantity vazio no prompt).
-        if any(not a["quantity"].strip() for a in change["added"]):
-            continue
+    # Rede de segurança determinística pra regra 12 do prompt: se QUALQUER
+    # refeição desta mensagem tem um item de "added" sem quantidade, a
+    # mensagem INTEIRA fica pendente, nenhuma refeição é aplicada ainda,
+    # mesmo as que vieram completas. Achado testando ao vivo: sem isso, uma
+    # mensagem como "não comi o pão do café e vou comer pizza no jantar"
+    # (pizza sem quantidade) aplicava o café na hora e só deixava o jantar
+    # pendente, quando a pessoa espera responder a pizza ANTES de qualquer
+    # coisa mudar (a `reply` da IA já narra dessa forma, ver regra 13).
+    has_pending_quantity = any(
+        not a["quantity"].strip() for change in answer["changes"] for a in change["added"]
+    )
+    # Mesma rede de segurança da regra 15 do prompt: um "added" GRANDE o
+    # bastante pra ser a refeição inteira em si (ex: pizza, hambúrguer),
+    # numa refeição sem nenhum "skipped" (a IA tratou como PURA adição, não
+    # troca), é ambíguo por padrão, a pessoa pode ter dito "comi pizza no
+    # jantar" querendo dizer que a pizza FOI o jantar, não que comeu a pizza
+    # JUNTO com o jantar inteiro planejado (que dobraria a refeição à toa).
+    # Só confia na adição pura quando a MENSAGEM já desambiguou sozinha (ver
+    # `_disambiguates_addition_vs_replacement`). Estimativa de calorias aqui
+    # é só pra decidir se pergunta, não precisa do match fino de variedade
+    # que `_resolve_added` faz de verdade (roda de novo lá embaixo).
+    ambiguous_addition: dict | None = None  # {"meal_name", "food_names"} da 1ª refeição ambígua encontrada
+    if not has_pending_quantity and not _disambiguates_addition_vs_replacement(text_norm):
+        for change in answer["changes"]:
+            if change["skipped"] or not change["added"]:
+                continue
+            meal = find_meal(change["meal"])
+            if meal is None or not meal["foods"]:
+                continue
+            meal_calories = sum(f["calories"] for f in meal["foods"])
+            if meal_calories <= 0:
+                continue
+            matches = [food_matcher.find_food(f"{a['quantity']} {a['name']}".strip()) for a in change["added"]]
+            # Alimento que a busca determinística não reconhece ("estimate",
+            # ver food_matcher.find_food) não tem um número de calorias em
+            # que confiar pra essa conta: deixa pro caminho normal decidir
+            # (ou vira "não conheço esse alimento" mais abaixo, ou a IA de
+            # estimativa resolve). Perguntar "substituiu ou foi além?" com
+            # base numa caloria chutada seria pior que não perguntar.
+            if any(m.source == "estimate" for m in matches):
+                continue
+            added_calories = sum(m.calories or 0.0 for m in matches)
+            if added_calories / meal_calories > _AMBIGUOUS_ADDITION_RATIO:
+                ambiguous_addition = {
+                    "meal_name": meal["name"],
+                    "food_names": [a["name"] for a in change["added"]],
+                }
+                break
+    is_pending = has_pending_quantity or ambiguous_addition is not None
+    for change in [] if is_pending else answer["changes"]:
         meal = find_meal(change["meal"])
         newly_created_meal = meal is None
         if newly_created_meal:
@@ -396,11 +512,18 @@ def _run_turn(
             "new_foods": new_foods,
         })
 
+    # O que a IA entendeu NESTA mensagem some no conhecimento acumulado (nunca
+    # substitui, só adiciona, ver docstring de `stored_eaten_ids` acima):
+    # persiste só quando há algo novo, pra não gravar à toa em todo turno.
+    turn_eaten_ids = {m["id"] for m in (find_meal(n) for n in answer["already_eaten"]) if m}
+    merged_eaten_ids = stored_eaten_ids | turn_eaten_ids
+    if turn_eaten_ids - stored_eaten_ids:
+        repository.update_noo_already_eaten(user, day_plan["id"], sorted(merged_eaten_ids))
+
     result = None
     day_view = None
     if changes:
-        already_eaten = [m["id"] for m in (find_meal(n) for n in answer["already_eaten"]) if m]
-        result = diet_engine.apply_changes(day_plan, changes, already_eaten, targets)
+        result = diet_engine.apply_changes(day_plan, changes, list(merged_eaten_ids), targets)
         # Se o rebalanceamento normal não fechou a meta de calorias sozinho
         # (ex: teto de crescimento por alimento sem mais espaço, ver
         # diet_engine.calorie_tolerance), tenta um ajuste extra antes de
@@ -429,7 +552,20 @@ def _run_turn(
     # explícito que essa parte específica NÃO aconteceu ainda, pra não soar
     # como um lembrete secundário enquanto o resto já mudou.
     reply = answer["reply"]
-    if unresolved_foods:
+    if ambiguous_addition:
+        # A `reply` da IA foi gerada sem saber do valor calórico real (ela não
+        # recebe números de macro no prompt, só nomes/quantidades), então
+        # provavelmente já narra a adição como se fosse só "a mais". Substitui
+        # inteira em vez de só anexar: nada foi aplicado (`is_pending` acima
+        # travou o turno inteiro), manter o texto antigo junto confundiria
+        # sobre o que já mudou.
+        names = ", ".join(ambiguous_addition["food_names"])
+        reply = (
+            f"Antes de mexer no seu dia: {names} vai substituir a {ambiguous_addition['meal_name']} "
+            f"planejada, ou você vai comer os dois (o que já estava no plano MAIS isso)? Me diga que eu "
+            f"ajusto certinho."
+        )
+    elif unresolved_foods:
         food_names = ", ".join(dict.fromkeys(unresolved_foods))  # sem duplicata, mantém ordem
         meal_names = ", ".join(dict.fromkeys(unresolved_meal_names))
         foods_plural = len(set(unresolved_foods)) > 1

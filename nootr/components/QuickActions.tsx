@@ -15,7 +15,7 @@ const actions = [
   },
   {
     href: "/substituir?acao=missing_food",
-    tag: "Help",
+    tag: "Now",
     title: "Estou em falta",
     desc: "Troque um alimento que não tem por outro equivalente.",
   },
@@ -28,12 +28,12 @@ export function QuickActions() {
         <Link
           key={action.href}
           href={action.href}
-          className="group card card-hover relative overflow-hidden"
+          className="group card card-hover relative overflow-hidden text-center"
         >
-          <p className="text-center text-sm font-semibold uppercase tracking-caps text-nootr-bordo">
+          <p className="text-lg font-semibold uppercase tracking-caps text-nootr-bordo">
             {action.tag}
           </p>
-          <h3 className="mt-3 text-[15px] font-semibold text-nootr-cream">{action.title}</h3>
+          <h3 className="mt-2 text-[15px] font-semibold text-nootr-cream">{action.title}</h3>
           <p className="mt-1.5 text-sm leading-relaxed text-nootr-muted">{action.desc}</p>
           <span className="mt-4 inline-block text-xs font-medium text-nootr-bordoSoft opacity-0 transition-opacity group-hover:opacity-100">
             Começar →

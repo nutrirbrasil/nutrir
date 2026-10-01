@@ -40,7 +40,7 @@ _DIET_FIELDS = "id,name,weekday,daily_calories,daily_protein_g,daily_carbs_g,dai
 _ADMIN_DIET_FIELDS = _DIET_FIELDS + ",user_id,created_at"
 _DAY_PLAN_FIELDS = (
     "id,diet_id,plan_date,name,daily_calories,daily_protein_g,daily_carbs_g,daily_fat_g,"
-    "meals,previous_meals,original_meals,noo_messages_used,noo_reset_count"
+    "meals,previous_meals,original_meals,noo_messages_used,noo_reset_count,noo_already_eaten"
 )
 _CUSTOM_FOOD_FIELDS = "id,user_id,name,kcal_100g,protein_100g,carbs_100g,fat_100g,fiber_100g,sodium_100mg,status,created_at"
 _RECIPE_FIELDS = "id,user_id,name,ingredients,status,created_at"
@@ -421,10 +421,9 @@ def search_global_custom_foods(user: CurrentUser, query: str, limit: int = 8) ->
 
 
 # ---------- receitas (pratos compostos salvos pelo usuário) ----------
-# Um "atalho" reaproveitável: a pessoa confirma os ingredientes de um prato
-# que a IA decompôs (ex: crepioca) e pode salvar pra não precisar confirmar
-# de novo da próxima vez, ver ai.gemini._CONVERSE_SYSTEM (recebe as receitas
-# salvas como contexto e usa os ingredientes exatos em vez de adivinhar).
+# Pratos que a pessoa monta manualmente e salva pra reaproveitar depois (ver
+# /receitas), nascem `pending` até um admin aprovar (ver routes/nootr/admin.py
+# e /aprovar) pra virarem visíveis pra outros usuários também.
 
 def list_recipes(user: CurrentUser) -> list[dict]:
     return supabase_client.select(
@@ -666,13 +665,35 @@ def reset_day_plan(user: CurrentUser, day_plan_id: str, original_meals: list[dic
     "último ajuste" pra desfazer depois de um reset completo). `reset_count`
     é o número de vezes que a pessoa já reiniciou hoje, usado só pra calcular
     o bônus de mensagens (ver plan_limits.NOO_RESET_BONUS_CAP), não afeta
-    `noo_messages_used`.
+    `noo_messages_used`. Também zera `noo_already_eaten` pra `None`: a
+    conversa recomeça do zero, então o Noo pergunta de novo quais refeições
+    já rolaram hoje (ver routes/nootr/noo.py, checklist inicial).
     """
     return supabase_client.update(
         "day_plans",
         user.token,
         {"id": f"eq.{day_plan_id}", "user_id": f"eq.{user.id}"},
-        {"meals": original_meals, "previous_meals": None, "noo_reset_count": reset_count},
+        {
+            "meals": original_meals, "previous_meals": None, "noo_reset_count": reset_count,
+            "noo_already_eaten": None,
+        },
+    )
+
+
+def update_noo_already_eaten(user: CurrentUser, day_plan_id: str, meal_ids: list[str]) -> dict:
+    """
+    Grava quais refeições do dia a pessoa já confirmou ter comido (checklist
+    inicial do Noo, ver routes/nootr/noo.py). Guardado à parte da conversa em
+    si (`noo_messages`), porque precisa sobreviver mesmo se a pessoa reabrir
+    o Noo mais tarde no mesmo dia sem ter mandado nenhuma mensagem ainda
+    (`[]` nesta coluna já significa "perguntado, nada marcado", diferente de
+    `None` = "ainda não perguntado", ver a migração da coluna).
+    """
+    return supabase_client.update(
+        "day_plans",
+        user.token,
+        {"id": f"eq.{day_plan_id}", "user_id": f"eq.{user.id}"},
+        {"noo_already_eaten": meal_ids},
     )
 
 

@@ -97,7 +97,7 @@ def try_day_topup(result: dict, user: CurrentUser, original_meals: list[dict] | 
             # "hambúrguer sem pão" casando com o item genérico "Hamburguer",
             # que por padrão conta como glúten) se perdia, e a checagem
             # isolada em `match.name` bloqueava mesmo com a ausência
-            # declarada (ver mesmo raciocínio em ai._match_items).
+            # declarada (ver mesmo raciocínio em noo._resolve_added).
             if food_matcher.matches_allergen(f"{match.name} {item['name']}", allergies):
                 continue
             # Se já existe um alimento de mesmo nome na refeição e ele é de

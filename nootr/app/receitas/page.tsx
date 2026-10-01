@@ -9,9 +9,9 @@ import { FoodAdder, AddedFoodList, addedFoodToInput, type AddedFood } from "@/co
 import { nootrApi } from "@/lib/api";
 import type { Recipe } from "@/lib/types";
 
-/** Pratos compostos salvos pelo usuário (ex: "Crepioca"), confirmados no
- * fluxo de "Descrever com IA" ou criados aqui à mão. Reaproveitados depois:
- * a IA usa os ingredientes salvos direto, sem precisar adivinhar de novo. */
+/** Pratos compostos salvos pelo usuário (ex: "Crepioca"), montados aqui à
+ * mão com os ingredientes reais. Nascem `pending` até um admin aprovar (ver
+ * /aprovar), aí viram visíveis também pra outros usuários. */
 const RECIPE_STATUS_LABEL: Record<Recipe["status"], string> = {
   pending: "pendente",
   approved: "aprovada",
@@ -176,8 +176,7 @@ function ReceitasContent({ token }: { token: string }) {
             <div className="border-t border-nootr-line pt-4">
               <p className="label-caps">Receitas da comunidade</p>
               <p className="mt-1 text-xs text-nootr-muted">
-                Pratos aprovados que outras pessoas já salvaram, o Nootr também reconhece esses nomes no
-                &ldquo;Descrever com IA&rdquo;.
+                Pratos aprovados que outras pessoas já salvaram, veja os ingredientes antes de montar o seu.
               </p>
               <ul className="mt-3 divide-y divide-nootr-line/40">
                 {globalRecipes.map((r) => (
