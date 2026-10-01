@@ -51,7 +51,7 @@ const EMPTY_DELIVERY_ADDRESS: DeliveryAddressValue = {
 export function OrderForm() {
   const router = useRouter();
   const cart = useCart();
-  const { profile } = useProfile();
+  const { profile, updateProfile } = useProfile();
   const { setDraft } = useCheckout();
 
   const items = cart.items;
@@ -199,13 +199,21 @@ export function OrderForm() {
     }
 
     const phone = formatPhoneBR(form.customer_phone);
+    const name = form.customer_name.trim();
+    const email = form.customer_email?.trim() || undefined;
     const isDelivery = fulfillmentType === "delivery";
+
+    // Salva nome/telefone/e-mail no perfil (local e no servidor, via
+    // updateProfile) assim que a pessoa segue pro pagamento, pra já vir
+    // preenchido no próximo pedido. Só sobrescreve o e-mail se foi digitado
+    // algo, pra não apagar um e-mail já salvo por causa de um campo vazio.
+    updateProfile({ name, phone, ...(email ? { email } : {}) });
 
     setDraft({
       items: [...items],
-      customer_name: form.customer_name.trim(),
+      customer_name: name,
       customer_phone: phone,
-      customer_email: form.customer_email?.trim() || undefined,
+      customer_email: email,
       customer_cpf: profile.cpf || undefined,
       delivery_address: isDelivery
         ? composeDeliveryAddressPreview(
