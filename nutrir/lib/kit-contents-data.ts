@@ -13,37 +13,43 @@ export interface KitContentOptions {
 
 const FRANGO_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Frango da Casa", count: 3 },
+    { label: "Frango da Casa", count: 2 },
     { label: "Frango ao Sugo", count: 2 },
     { label: "Escondidinho de Frango", count: 2 },
+    { label: "Strogonoff de Frango", count: 1 },
   ],
   14: [
-    { label: "Frango da Casa", count: 5 },
-    { label: "Frango ao Sugo", count: 5 },
-    { label: "Escondidinho de Frango", count: 4 },
+    { label: "Frango da Casa", count: 4 },
+    { label: "Frango ao Sugo", count: 4 },
+    { label: "Escondidinho de Frango", count: 3 },
+    { label: "Strogonoff de Frango", count: 3 },
   ],
   28: [
-    { label: "Frango da Casa", count: 10 },
-    { label: "Frango ao Sugo", count: 10 },
-    { label: "Escondidinho de Frango", count: 8 },
+    { label: "Frango da Casa", count: 8 },
+    { label: "Frango ao Sugo", count: 7 },
+    { label: "Escondidinho de Frango", count: 7 },
+    { label: "Strogonoff de Frango", count: 6 },
   ],
 };
 
 const CARNE_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Carne da Casa", count: 3 },
+    { label: "Carne da Casa", count: 2 },
     { label: "Ragu à Bolonhesa", count: 2 },
     { label: "Escondidinho de Carne", count: 2 },
+    { label: "Strogonoff de Carne", count: 1 },
   ],
   14: [
-    { label: "Carne da Casa", count: 5 },
-    { label: "Ragu à Bolonhesa", count: 5 },
-    { label: "Escondidinho de Carne", count: 4 },
+    { label: "Carne da Casa", count: 4 },
+    { label: "Ragu à Bolonhesa", count: 4 },
+    { label: "Escondidinho de Carne", count: 3 },
+    { label: "Strogonoff de Carne", count: 3 },
   ],
   28: [
-    { label: "Carne da Casa", count: 10 },
-    { label: "Ragu à Bolonhesa", count: 10 },
-    { label: "Escondidinho de Carne", count: 8 },
+    { label: "Carne da Casa", count: 8 },
+    { label: "Ragu à Bolonhesa", count: 7 },
+    { label: "Escondidinho de Carne", count: 7 },
+    { label: "Strogonoff de Carne", count: 6 },
   ],
 };
 
@@ -66,29 +72,37 @@ const VEG_LINES: Record<number, KitContentLine[]> = {
 };
 
 const MISTO_LINES: Record<number, KitContentLine[]> = {
+  // No tier de 7 marmitas não cabem as 8 opções (4 de frango + 4 de carne) com
+  // pelo menos 1 cada, então o Escondidinho de Carne fica de fora só nesse
+  // tier (ainda disponível avulso, no Kit Carne e no Monte seu Combo).
   7: [
-    { label: "Frango da Casa", count: 2 },
+    { label: "Frango da Casa", count: 1 },
     { label: "Frango ao Sugo", count: 1 },
     { label: "Escondidinho de Frango", count: 1 },
+    { label: "Strogonoff de Frango", count: 1 },
     { label: "Carne da Casa", count: 1 },
     { label: "Ragu à Bolonhesa", count: 1 },
-    { label: "Escondidinho de Carne", count: 1 },
+    { label: "Strogonoff de Carne", count: 1 },
   ],
   14: [
-    { label: "Frango da Casa", count: 3 },
-    { label: "Frango ao Sugo", count: 3 },
+    { label: "Frango da Casa", count: 2 },
+    { label: "Frango ao Sugo", count: 2 },
     { label: "Escondidinho de Frango", count: 2 },
+    { label: "Strogonoff de Frango", count: 1 },
     { label: "Carne da Casa", count: 2 },
     { label: "Ragu à Bolonhesa", count: 2 },
     { label: "Escondidinho de Carne", count: 2 },
+    { label: "Strogonoff de Carne", count: 1 },
   ],
   28: [
-    { label: "Frango da Casa", count: 5 },
-    { label: "Frango ao Sugo", count: 5 },
-    { label: "Escondidinho de Frango", count: 5 },
-    { label: "Carne da Casa", count: 5 },
+    { label: "Frango da Casa", count: 4 },
+    { label: "Frango ao Sugo", count: 4 },
+    { label: "Escondidinho de Frango", count: 3 },
+    { label: "Strogonoff de Frango", count: 3 },
+    { label: "Carne da Casa", count: 4 },
     { label: "Ragu à Bolonhesa", count: 4 },
-    { label: "Escondidinho de Carne", count: 4 },
+    { label: "Escondidinho de Carne", count: 3 },
+    { label: "Strogonoff de Carne", count: 3 },
   ],
 };
 
