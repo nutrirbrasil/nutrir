@@ -6,7 +6,7 @@ const COM_FUNDO = "/marmitas/V3";
 const SEM_FUNDO = "/marmitas/Sem fundo";
 
 /** Incremente ao trocar as fotos em public/marmitas para forçar atualização no navegador. */
-export const MARMITA_IMAGES_VERSION = "7";
+export const MARMITA_IMAGES_VERSION = "8";
 
 function imagePath(name: string): string {
   return `${encodeURI(`${COM_FUNDO}/${name}.png`)}?v=${MARMITA_IMAGES_VERSION}`;
