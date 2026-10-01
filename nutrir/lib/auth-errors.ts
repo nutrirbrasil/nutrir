@@ -1,16 +1,18 @@
 import type { AuthError } from "@supabase/supabase-js";
 
-export function mapAuthError(error: AuthError | Error): string {
+export function mapAuthError(error: AuthError | Error, identifierType?: "email" | "phone"): string {
   const msg = error.message.toLowerCase();
 
   if (msg.includes("invalid login credentials")) {
-    return "E-mail ou senha incorretos.";
+    return identifierType === "phone" ? "Número ou senha incorretos." : "E-mail ou senha incorretos.";
   }
   if (msg.includes("email not confirmed")) {
     return "Confirme seu e-mail pelo link enviado antes de entrar.";
   }
   if (msg.includes("user already registered") || msg.includes("already been registered")) {
-    return "Este e-mail já está cadastrado. Faça login ou recupere a senha.";
+    return identifierType === "phone"
+      ? "Este número já está cadastrado. Faça login ou recupere a senha."
+      : "Este e-mail já está cadastrado. Faça login ou recupere a senha.";
   }
   if (msg.includes("email link is invalid") || msg.includes("otp_expired")) {
     return "Link inválido ou expirado. Peça um novo e-mail e clique assim que receber.";

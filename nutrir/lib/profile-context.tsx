@@ -215,7 +215,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       credential.type === "email"
         ? await supabase.auth.signInWithPassword({ email: credential.email, password })
         : await supabase.auth.signInWithPassword({ phone: credential.phone, password });
-    if (error) throw new Error(mapAuthError(error));
+    if (error) throw new Error(mapAuthError(error, credential.type));
   }, [authConfigured]);
 
   const register = useCallback(async (credential: AuthCredential, password: string) => {
@@ -231,7 +231,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
             options: { emailRedirectTo: redirectTo },
           })
         : await supabase.auth.signUp({ phone: credential.phone, password });
-    if (error) throw new Error(mapAuthError(error));
+    if (error) throw new Error(mapAuthError(error, credential.type));
 
     return { needsVerification: Boolean(data.user && !data.session) };
   }, [authConfigured]);

@@ -962,7 +962,7 @@ export function ProfilePage() {
   return (
     <div className="mx-auto max-w-md px-4 py-10">
       <h1 className="text-center font-display text-2xl font-bold uppercase tracking-tight text-nutrir-ink md:text-3xl">
-        {mode === "register" ? "Crie sua conta e vamos às compras" : "Entrar na sua conta"}
+        {mode === "register" ? "Crie sua conta em menos de 30 segundos!" : "Entrar na sua conta"}
       </h1>
 
       {!authConfigured && (
