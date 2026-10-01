@@ -203,7 +203,7 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
     P: [
       "arroz",
       "peito de frango",
-      "creme de leite leve",
+      "creme de leite leve zero lactose",
       "champignon",
       "tomate",
       "cebola",
@@ -217,7 +217,7 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
     G: [
       "arroz",
       "peito de frango",
-      "creme de leite leve",
+      "creme de leite leve zero lactose",
       "champignon",
       "tomate",
       "cebola",
@@ -233,7 +233,7 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
     P: [
       "arroz",
       "patinho",
-      "creme de leite leve",
+      "creme de leite leve zero lactose",
       "champignon",
       "tomate",
       "cebola",
@@ -247,7 +247,7 @@ export const LABEL_INGREDIENTS: Record<string, Record<MarmitaSize, string[]>> = 
     G: [
       "arroz",
       "patinho",
-      "creme de leite leve",
+      "creme de leite leve zero lactose",
       "champignon",
       "tomate",
       "cebola",
@@ -295,14 +295,14 @@ const LABEL_ALLERGEN_CATEGORY: Record<string, AllergenCategory> = {
   "frg-arroz": "none",
   "frg-massa": "gluten",
   "frg-batata": "lactose",
-  "frg-estrogonofe": "lactose",
+  "frg-estrogonofe": "none",
   "car-arroz": "none",
   "car-massa": "gluten",
   "car-batata": "lactose",
-  "car-estrogonofe": "lactose",
+  "car-estrogonofe": "none",
   "veg-ervilha": "none",
   "veg-grao": "none",
-  "veg-cogumelo": "lactose",
+  "veg-cogumelo": "none",
 };
 
 export interface LabelAllergenInfo {

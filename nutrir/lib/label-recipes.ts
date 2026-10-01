@@ -41,6 +41,15 @@ const TACO_FOODS: Record<string, TacoNutrientsPer100g> = {
     sodium_mg: 40,
     saturated_fat_g: 9.5,
   },
+  mix_de_sementes: {
+    kcal: 540,
+    protein_g: 20,
+    carbs_g: 20,
+    fat_g: 44,
+    fiber_g: 12,
+    sodium_mg: 10,
+    saturated_fat_g: 5,
+  },
 };
 
 type FoodId = keyof typeof TACO_FOODS;
@@ -199,13 +208,13 @@ const RECIPES: Record<string, RecipeBuilder> = {
       { food: "cogumelo", grams: 80 },
       { food: "molho_de_tomate", grams: 10 },
       { food: "batata", grams: 140 },
-      { food: "queijo", grams: 10 },
+      { food: "mix_de_sementes", grams: 10 },
     ],
     G: [
       { food: "cogumelo", grams: 110 },
       { food: "molho_de_tomate", grams: 10 },
       { food: "batata", grams: 250 },
-      { food: "queijo", grams: 10 },
+      { food: "mix_de_sementes", grams: 10 },
     ],
   },
   "veg-ervilha": {
