@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   buildAddonsNote,
+  collectAddonIds,
   computeMealAddonsCents,
   type AddonSelectionMap,
 } from "@/lib/addons-data";
@@ -64,6 +65,7 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
 
       const addons_cents = computeMealAddonsCents(mode, pending.mealLabels, same, perMeal);
       const addons_note = buildAddonsNote(mode, pending.mealLabels, same, perMeal);
+      const addon_ids = collectAddonIds(mode, same, perMeal);
 
       const menuSuffix =
         addons_cents > 0
@@ -75,6 +77,7 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
         menu_id: `${pending.baseItem.menu_id ?? pending.baseItem.name}${menuSuffix}`,
         addons_cents: addons_cents > 0 ? addons_cents : undefined,
         addons_note,
+        addon_ids: addon_ids.length > 0 ? addon_ids : undefined,
       });
       close();
     },

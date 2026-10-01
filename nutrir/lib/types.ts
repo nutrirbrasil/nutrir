@@ -14,6 +14,8 @@ export interface OrderItem {
   addons_cents?: number;
   /** Detalhes dos adicionais para pedido / sacola */
   addons_note?: string;
+  /** Ids dos adicionais/substituições escolhidos (lib/addons-data.ts), usado pra saber se o item bloqueia pronta entrega. */
+  addon_ids?: string[];
   /** Total de marmitas dentro de um kit/combo (ex.: 28), usado pra exigir 48h de antecedência em combos grandes. Não se aplica a itens avulsos. */
   meal_count?: number;
 }

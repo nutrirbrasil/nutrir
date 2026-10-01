@@ -15,6 +15,7 @@ import {
 import { isDeliveryDateEligible } from "@/lib/delivery-schedule";
 import { isBeforeTodayCutoff, isDayEligible, parseISODate, toISODate } from "@/lib/pickup-schedule";
 import { findUnavailableCartItems, getRequiredLeadDays } from "@/lib/order-stock-check";
+import { hasSameDayBlockingAddons } from "@/lib/addons-data";
 import { listStock } from "@/lib/stock-db";
 import { computeOrderPricing, getChargedItems, validateCatalogItemPrice } from "@/lib/order-pricing";
 import {
@@ -147,7 +148,8 @@ export async function POST(request: Request) {
   ) {
     const stock = await listStock();
     const hasStockIssue = findUnavailableCartItems(body.items ?? [], stock).length > 0;
-    if (!hasStockIssue) {
+    const hasBlockingAddons = hasSameDayBlockingAddons(body.items ?? []);
+    if (!hasStockIssue && !hasBlockingAddons) {
       allowTodayPickup = fulfillment_type === "pickup";
       allowTodayDelivery =
         fulfillment_type === "delivery" &&

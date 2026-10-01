@@ -1,4 +1,6 @@
-export type MealStarchType = "massa" | "arroz" | "batata" | "batata-cogumelo";
+import type { OrderItem } from "./types";
+
+export type MealStarchType = "massa" | "arroz" | "batata" | "batata-cogumelo" | "cremoso";
 
 export interface MealAddon {
   id: string;
@@ -146,12 +148,22 @@ export const MEAL_ADDONS: MealAddon[] = [
     id: "add-leite-vegetal",
     name: "Leite Vegetal",
     baseCost: 0.1,
-    additionalPrice: 2.9,
+    additionalPrice: 3.9,
     portionLabel: "Desejo substituir Leite Zero Lactose por Leite Vegetal",
     portionUnit: "porção",
     portionUnitPlural: "porções",
     forStarch: ["batata", "batata-cogumelo"],
     imageSrc: "/addons/sem-lactose.png",
+  },
+  {
+    id: "add-creme-aveia",
+    name: "Creme de Aveia",
+    baseCost: 0.1,
+    additionalPrice: 4.0,
+    portionLabel: "Desejo substituir Creme de Leite por Creme de Aveia",
+    portionUnit: "porção",
+    portionUnitPlural: "porções",
+    forStarch: ["cremoso"],
   },
   {
     id: "add-remover-queijo",
@@ -206,6 +218,9 @@ export function getMealStarchType(hint: string): MealStarchType | undefined {
   const lower = hint.toLowerCase();
   if (lower.includes("cogu")) {
     return "batata-cogumelo";
+  }
+  if (lower.includes("estrogonofe") || lower.includes("strogonoff")) {
+    return "cremoso";
   }
   if (lower.includes("escondidinho") || lower.includes("batata")) {
     return "batata";
@@ -370,4 +385,52 @@ export function buildAddonsNote(
 
   if (lines.length === 0) return undefined;
   return `Adicionais por marmita:\n${lines.join("\n")}`;
+}
+
+/** Ids de todos os adicionais (não substituição) escolhidos, usado pra decidir se o item bloqueia pronta entrega. */
+export function collectAddonIds(
+  mode: "same" | "custom" | "single",
+  same?: AddonSelectionMap,
+  perMeal?: AddonSelectionMap[]
+): string[] {
+  if (mode === "single" || mode === "same") {
+    return Object.entries(same ?? {})
+      .filter(([, portions]) => portions > 0)
+      .map(([id]) => id);
+  }
+
+  const ids = new Set<string>();
+  for (const meal of perMeal ?? []) {
+    for (const [id, portions] of Object.entries(meal)) {
+      if (portions > 0) ids.add(id);
+    }
+  }
+  return Array.from(ids);
+}
+
+/**
+ * Adicionais que, mesmo não sendo substituição (forStarch), exigem preparo e
+ * por isso travam a pronta entrega (hoje): queijo, ervilha, lentilha e grão
+ * de bico. Molhos e temperos (azeite, ketchup, mostarda, molho da casa) não
+ * travam, continuam disponíveis pra pronta entrega.
+ */
+const SAME_DAY_BLOCKING_ADDON_IDS = new Set([
+  "add-queijo",
+  "add-queijo-cogumelo",
+  "add-ervilha",
+  "add-lentilha",
+  "add-grao",
+]);
+
+/** Qualquer substituição (forStarch) trava pronta entrega, além dos adicionais acima. */
+export function isSameDayBlockingAddon(id: string): boolean {
+  const addon = getAddonById(id);
+  if (!addon) return false;
+  if (addon.forStarch) return true;
+  return SAME_DAY_BLOCKING_ADDON_IDS.has(id);
+}
+
+/** Verdadeiro se algum item da sacola tem adicional/substituição que exige preparo e trava pronta entrega. */
+export function hasSameDayBlockingAddons(items: OrderItem[]): boolean {
+  return items.some((item) => (item.addon_ids ?? []).some(isSameDayBlockingAddon));
 }

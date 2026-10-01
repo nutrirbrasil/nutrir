@@ -390,7 +390,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "frg-estrogonofe",
         name: "Strogonoff de Frango",
         description:
-          "Frango em cubos ao molho cremoso de champignon, com creme de leite leve, acompanhado de arroz branco.",
+          "Frango em cubos ao molho especial cremoso com champignon, feito com creme de leite leve (reduzido em gordura e zero lactose), acompanhado de arroz branco.",
         prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
         glutenFree: true,
         lactoseFree: true,
@@ -428,7 +428,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "car-estrogonofe",
         name: "Strogonoff de Carne",
         description:
-          "Patinho em cubos ao molho cremoso de champignon, com creme de leite leve, acompanhado de arroz branco.",
+          "Carne magra (patinho) em cubos ao molho especial cremoso com champignon, feito com creme de leite leve (reduzido em gordura e zero lactose), acompanhado de arroz branco.",
         prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
         glutenFree: true,
         lactoseFree: true,
@@ -499,7 +499,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "frg-estrogonofe",
         name: "Strogonoff de Frango",
         description:
-          "Frango em cubos ao molho cremoso de champignon, com creme de leite leve, acompanhado de arroz branco.",
+          "Frango em cubos ao molho especial cremoso com champignon, feito com creme de leite leve (reduzido em gordura e zero lactose), acompanhado de arroz branco.",
         prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
         glutenFree: true,
         lactoseFree: true,
@@ -508,7 +508,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "car-estrogonofe",
         name: "Strogonoff de Carne",
         description:
-          "Patinho em cubos ao molho cremoso de champignon, com creme de leite leve, acompanhado de arroz branco.",
+          "Carne magra (patinho) em cubos ao molho especial cremoso com champignon, feito com creme de leite leve (reduzido em gordura e zero lactose), acompanhado de arroz branco.",
         prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
         glutenFree: true,
         lactoseFree: true,

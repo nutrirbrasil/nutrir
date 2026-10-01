@@ -34,15 +34,10 @@ import {
   isSameDayDeliveryEligible,
 } from "@/lib/delivery-fees";
 import { getItemCashTotalCents } from "@/lib/order-pricing";
-import { getMarmitaCartSectionId } from "@/lib/menu-data";
 import { resolvePickupAddress } from "@/lib/store-info";
 import type { StockRow } from "@/lib/stock-db";
-import {
-  findUnavailableCartItems,
-  getRequiredLeadDays,
-  getSubstituteOptions,
-  type SubstituteOption,
-} from "@/lib/order-stock-check";
+import { findUnavailableCartItems, getRequiredLeadDays } from "@/lib/order-stock-check";
+import { hasSameDayBlockingAddons } from "@/lib/addons-data";
 import type { FulfillmentType } from "@/lib/types";
 
 const EMPTY_DELIVERY_ADDRESS: DeliveryAddressValue = {
@@ -75,7 +70,6 @@ export function OrderForm() {
   });
 
   const [stock, setStock] = useState<StockRow[] | null>(null);
-  const [expandedSubstitute, setExpandedSubstitute] = useState<number | null>(null);
 
   useEffect(() => {
     nutrirApi
@@ -89,12 +83,14 @@ export function OrderForm() {
     [items, stock]
   );
   const hasStockIssue = unavailableItems.length > 0;
+  const hasBlockingAddons = useMemo(() => hasSameDayBlockingAddons(items), [items]);
+  const blocksToday = hasStockIssue || hasBlockingAddons;
   const beforeCutoff = isBeforeTodayCutoff(new Date());
   const requiredLeadDays = useMemo(() => getRequiredLeadDays(items), [items]);
-  const allowTodayPickup = stock !== null && !hasStockIssue && beforeCutoff && requiredLeadDays === 0;
+  const allowTodayPickup = stock !== null && !blocksToday && beforeCutoff && requiredLeadDays === 0;
   const allowTodayDelivery =
     stock !== null &&
-    !hasStockIssue &&
+    !blocksToday &&
     beforeCutoff &&
     requiredLeadDays === 0 &&
     isSameDayDeliveryEligible(deliveryAddress.bairroId);
@@ -146,52 +142,6 @@ export function OrderForm() {
     parts.push("Retirada na loja");
 
     return parts.filter(Boolean).join(" · ") || undefined;
-  }
-
-  function applySubstitute(index: number, opt: SubstituteOption) {
-    const original = items[index];
-    // Se parte da quantidade pedida já tem estoque do item original, mantém
-    // essa parte como está e substitui só o excedente — não faz sentido trocar
-    // as 2 unidades que já cabem no estoque só porque a 3ª não cabe.
-    const entry = unavailableItems.find((u) => u.index === index);
-    const keepQty = entry ? Math.min(entry.available, original.quantity) : 0;
-    const substituteQty = original.quantity - keepQty;
-
-    const substituteItem = {
-      ...original,
-      item_id: opt.itemId,
-      name: `${opt.name} (${opt.size})`,
-      size: opt.size as typeof original.size,
-      price_cents: opt.priceCents,
-      quantity: substituteQty,
-      menu_id: `${opt.itemId}-${opt.size}`,
-      section_id: getMarmitaCartSectionId(opt.itemId),
-      addons_cents: undefined,
-      addons_note: undefined,
-    };
-
-    if (keepQty > 0) {
-      cart.updateItem(index, { ...original, quantity: keepQty });
-      cart.addItem(substituteItem);
-    } else {
-      cart.updateItem(index, substituteItem);
-    }
-
-    setExpandedSubstitute(null);
-  }
-
-  function removeUnavailableExcess(index: number) {
-    // Mesma lógica do substituir: se parte da quantidade já cabe no estoque,
-    // remove só o excedente em vez do item inteiro.
-    const original = items[index];
-    const entry = unavailableItems.find((u) => u.index === index);
-    const keepQty = entry ? Math.min(entry.available, original.quantity) : 0;
-
-    if (keepQty > 0) {
-      cart.updateItem(index, { ...original, quantity: keepQty });
-    } else {
-      cart.removeItem(index);
-    }
   }
 
   function getPrimaryDeliveryDate(): string {
@@ -289,78 +239,17 @@ export function OrderForm() {
   // (Balneário Piçarras e Centro de Penha) — nos demais bairros a entrega nunca é no mesmo dia, então
   // "não disponível pra entrega imediata" não se aplica e o aviso não deve aparecer.
   const showStockWarning =
-    hasStockIssue &&
+    blocksToday &&
     (fulfillmentType === "pickup" || isSameDayDeliveryEligible(deliveryAddress.bairroId));
 
   const stockWarning = showStockWarning && (
-    <div className="space-y-2 rounded-lg border border-nutrir-burgundy/30 bg-nutrir-burgundy/5 p-2.5">
-      <p className="flex items-start gap-1.5 text-xs font-medium text-nutrir-ink">
-        <FiAlertTriangle className="mt-0.5 shrink-0 text-nutrir-burgundy" aria-hidden />
-        <span>
-          Um ou mais itens em sua sacola não estão disponíveis para{" "}
-          {fulfillmentType === "delivery" ? "entrega" : "retirada"} imediata. Você ainda pode
-          agendar o pedido ou substituir esse item.
-        </span>
-      </p>
-      <ul className="space-y-1.5 pl-5">
-        {unavailableItems.map(({ index, item, available }) => {
-          const substitutes = stock ? getSubstituteOptions(item, stock, items, index) : [];
-          const expanded = expandedSubstitute === index;
-          return (
-            <li key={`${item.name}-${index}`}>
-              <div className="flex flex-wrap items-center justify-between gap-1.5">
-                <span className="text-xs text-nutrir-ink">
-                  {item.name} × {item.quantity}
-                  {available > 0 && (
-                    <span className="ml-1 text-[10px] text-gray-400">
-                      (apenas {available} {available === 1 ? "item" : "itens"} em estoque)
-                    </span>
-                  )}
-                </span>
-                <div className="flex shrink-0 gap-3 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={() => removeUnavailableExcess(index)}
-                    className="text-nutrir-ink/70 underline hover:text-nutrir-ink"
-                  >
-                    Remover
-                  </button>
-                  {substitutes.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setExpandedSubstitute(expanded ? null : index)}
-                      className="font-bold text-nutrir-burgundy underline"
-                    >
-                      Substituir
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {expanded && (
-                <div className="mt-1.5 grid gap-1 sm:grid-cols-2">
-                  {substitutes.map((opt) => (
-                    <button
-                      key={`${opt.itemId}-${opt.size}`}
-                      type="button"
-                      onClick={() => applySubstitute(index, opt)}
-                      className="rounded-lg border border-nutrir-emerald/30 bg-nutrir-canvas px-2 py-1.5 text-left text-[11px] hover:border-nutrir-emerald"
-                    >
-                      <span className="block font-semibold text-nutrir-ink">
-                        {opt.name} ({opt.size})
-                      </span>
-                      <span className="text-nutrir-ink/60">
-                        {formatPrice(opt.priceCents)} · {opt.available} disponíveis
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+    <p className="flex items-start gap-1.5 text-xs font-medium text-nutrir-burgundy">
+      <FiAlertTriangle className="mt-0.5 shrink-0" aria-hidden />
+      <span>
+        Um ou mais itens em sua sacola não estão disponíveis para entrega imediata, agende seu
+        pedido ou consulte nosso estoque.
+      </span>
+    </p>
   );
 
   return (
@@ -452,7 +341,7 @@ export function OrderForm() {
             value={deliverySelection}
             onChange={setDeliverySelection}
             allowToday={allowTodayDelivery}
-            todayBlockedByStock={hasStockIssue && isSameDayDeliveryEligible(deliveryAddress.bairroId)}
+            todayBlockedByStock={blocksToday && isSameDayDeliveryEligible(deliveryAddress.bairroId)}
             extraDays={requiredLeadDays}
           />
         </div>
@@ -479,7 +368,7 @@ export function OrderForm() {
             value={pickupUnified}
             onChange={setPickupUnified}
             allowToday={allowTodayPickup}
-            todayBlockedByStock={hasStockIssue}
+            todayBlockedByStock={blocksToday}
             extraDays={requiredLeadDays}
           />
         </div>
