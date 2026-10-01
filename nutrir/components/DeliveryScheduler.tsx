@@ -16,10 +16,10 @@ interface Props {
   value: DeliverySelection | null;
   onChange: (value: DeliverySelection | null) => void;
   now?: Date;
-  /** true quando a sacola inteira está no estoque de hoje (e o bairro é elegível pra entrega no mesmo dia) — libera "hoje" como opção normal. */
+  /** Reservado pra um futuro "hoje" self-service; hoje em dia sempre false, pronta entrega é só por WhatsApp. */
   allowToday?: boolean;
-  /** Mostra um "Hoje" desabilitado (cinza) explicando que algum item da sacola não está disponível pra entrega imediata. */
-  todayBlockedByStock?: boolean;
+  /** Mostra um "Hoje" desabilitado (cinza) indicando que dá pra consultar entrega hoje pelo WhatsApp (só quando o bairro é elegível pra entrega no mesmo dia). */
+  todayUnavailable?: boolean;
   /** Dias extras de antecedência exigidos (combos grandes = 1, ou seja 48h em vez de 24h). */
   extraDays?: number;
 }
@@ -30,7 +30,7 @@ export function DeliveryScheduler({
   onChange,
   now = new Date(),
   allowToday = false,
-  todayBlockedByStock = false,
+  todayUnavailable = false,
   extraDays = 0,
 }: Props) {
   const option = getDeliveryBairroOption(bairroId);
@@ -41,7 +41,7 @@ export function DeliveryScheduler({
     [group, now, allowToday, extraDays]
   );
 
-  const showDisabledToday = todayBlockedByStock && !allowToday;
+  const showDisabledToday = todayUnavailable && !allowToday;
 
   function selectDate(iso: string) {
     onChange({ date: iso });
@@ -69,7 +69,7 @@ export function DeliveryScheduler({
             {showDisabledToday && (
               <div
                 className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-canvas-alt/10 px-1 py-3 text-center text-nutrir-ink/40"
-                title="Um ou mais itens da sacola não estão disponíveis para entrega hoje"
+                title="Consulte disponibilidade de entrega hoje pelo WhatsApp"
               >
                 <span className="block text-xl font-bold">Hoje</span>
                 <span className="block text-[10px]">Indisponível</span>

@@ -1,5 +1,3 @@
-import type { OrderItem } from "./types";
-
 export type MealStarchType = "massa" | "arroz" | "batata" | "batata-cogumelo" | "cremoso";
 
 export interface MealAddon {
@@ -406,31 +404,4 @@ export function collectAddonIds(
     }
   }
   return Array.from(ids);
-}
-
-/**
- * Adicionais que, mesmo não sendo substituição (forStarch), exigem preparo e
- * por isso travam a pronta entrega (hoje): queijo, ervilha, lentilha e grão
- * de bico. Molhos e temperos (azeite, ketchup, mostarda, molho da casa) não
- * travam, continuam disponíveis pra pronta entrega.
- */
-const SAME_DAY_BLOCKING_ADDON_IDS = new Set([
-  "add-queijo",
-  "add-queijo-cogumelo",
-  "add-ervilha",
-  "add-lentilha",
-  "add-grao",
-]);
-
-/** Qualquer substituição (forStarch) trava pronta entrega, além dos adicionais acima. */
-export function isSameDayBlockingAddon(id: string): boolean {
-  const addon = getAddonById(id);
-  if (!addon) return false;
-  if (addon.forStarch) return true;
-  return SAME_DAY_BLOCKING_ADDON_IDS.has(id);
-}
-
-/** Verdadeiro se algum item da sacola tem adicional/substituição que exige preparo e trava pronta entrega. */
-export function hasSameDayBlockingAddons(items: OrderItem[]): boolean {
-  return items.some((item) => (item.addon_ids ?? []).some(isSameDayBlockingAddon));
 }

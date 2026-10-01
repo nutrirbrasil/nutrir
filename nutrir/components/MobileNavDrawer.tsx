@@ -12,7 +12,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 const mainLinks = [
   { href: "/marmitas", label: "Marmitas" },
   { href: "/sucos", label: "Sucos" },
-  { href: "/estoque", label: "Estoque" },
   { href: "/perfil", label: "Perfil" },
 ] as const;
 

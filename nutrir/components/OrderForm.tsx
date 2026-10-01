@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatPrice, nutrirApi } from "@/lib/api";
+import { formatPrice } from "@/lib/api";
 import { formatPhoneBR, phoneValidationMessage } from "@/lib/br-fields";
 import { useCart } from "@/lib/cart-context";
 import { useCheckout } from "@/lib/checkout-context";
@@ -15,7 +15,6 @@ import { formatItemAddonsLabel } from "@/lib/item-addons-label";
 import {
   formatPickupShort,
   formatPickupSummary,
-  isBeforeTodayCutoff,
   type PickupSelection,
 } from "@/lib/pickup-schedule";
 import {
@@ -34,9 +33,7 @@ import {
 } from "@/lib/delivery-fees";
 import { getItemCashTotalCents } from "@/lib/order-pricing";
 import { resolvePickupAddress } from "@/lib/store-info";
-import type { StockRow } from "@/lib/stock-db";
-import { findUnavailableCartItems, getRequiredLeadDays } from "@/lib/order-stock-check";
-import { hasSameDayBlockingAddons } from "@/lib/addons-data";
+import { getRequiredLeadDays } from "@/lib/order-lead-time";
 import type { FulfillmentType } from "@/lib/types";
 
 const EMPTY_DELIVERY_ADDRESS: DeliveryAddressValue = {
@@ -68,31 +65,13 @@ export function OrderForm() {
     notes: "",
   });
 
-  const [stock, setStock] = useState<StockRow[] | null>(null);
-
-  useEffect(() => {
-    nutrirApi
-      .listStock()
-      .then((r) => setStock(r.stock))
-      .catch(() => setStock([]));
-  }, []);
-
-  const unavailableItems = useMemo(
-    () => (stock ? findUnavailableCartItems(items, stock) : []),
-    [items, stock]
-  );
-  const hasStockIssue = unavailableItems.length > 0;
-  const hasBlockingAddons = useMemo(() => hasSameDayBlockingAddons(items), [items]);
-  const blocksToday = hasStockIssue || hasBlockingAddons;
-  const beforeCutoff = isBeforeTodayCutoff(new Date());
   const requiredLeadDays = useMemo(() => getRequiredLeadDays(items), [items]);
-  const allowTodayPickup = stock !== null && !blocksToday && beforeCutoff && requiredLeadDays === 0;
-  const allowTodayDelivery =
-    stock !== null &&
-    !blocksToday &&
-    beforeCutoff &&
-    requiredLeadDays === 0 &&
-    isSameDayDeliveryEligible(deliveryAddress.bairroId);
+  // "Hoje" não é mais self-service (sem estoque pra confirmar). O botão "Hoje"
+  // continua aparecendo desabilitado só pra indicar que dá pra pedir pronta
+  // entrega direto pelo WhatsApp.
+  const allowTodayPickup = false;
+  const allowTodayDelivery = false;
+  const todayUnavailableDelivery = isSameDayDeliveryEligible(deliveryAddress.bairroId);
 
   useEffect(() => {
     setForm((f) => ({
@@ -313,9 +292,7 @@ export function OrderForm() {
               Os dias e horários de entrega dependem do bairro.{" "}
               {requiredLeadDays > 0
                 ? "Combos grandes precisam de no mínimo 48 horas de antecedência."
-                : allowTodayDelivery
-                  ? "Sua sacola está disponível pra entrega ainda hoje, se preferir."
-                  : "Pedidos precisam de no mínimo 24 horas de antecedência."}
+                : "Pedidos precisam de no mínimo 24 horas de antecedência. Consulte disponibilidade de entrega hoje pelo WhatsApp."}
             </p>
           </div>
 
@@ -329,7 +306,7 @@ export function OrderForm() {
             value={deliverySelection}
             onChange={setDeliverySelection}
             allowToday={allowTodayDelivery}
-            todayBlockedByStock={blocksToday && isSameDayDeliveryEligible(deliveryAddress.bairroId)}
+            todayUnavailable={todayUnavailableDelivery}
             extraDays={requiredLeadDays}
           />
         </div>
@@ -344,9 +321,7 @@ export function OrderForm() {
               <br />
               {requiredLeadDays > 0
                 ? "Combos grandes precisam de no mínimo 48 horas de antecedência."
-                : allowTodayPickup
-                  ? "Sua sacola está disponível pra retirada ainda hoje, se preferir."
-                  : "Pedidos devem ser feitos com no mínimo 24 horas de antecedência (pedidos até as 19h retiram ainda hoje; depois disso, só a partir de amanhã)."}
+                : "Pedidos devem ser feitos com no mínimo 24 horas de antecedência. Consulte disponibilidade de retirada hoje pelo WhatsApp."}
             </p>
           </div>
 
@@ -354,7 +329,7 @@ export function OrderForm() {
             value={pickupUnified}
             onChange={setPickupUnified}
             allowToday={allowTodayPickup}
-            todayBlockedByStock={blocksToday}
+            todayUnavailable
             extraDays={requiredLeadDays}
           />
         </div>

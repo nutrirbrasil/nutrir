@@ -103,6 +103,4 @@ export interface Order extends CreateOrderPayload {
   delivery_fee_cents?: number;
   /** Preenchido pelo servidor quando coupon_code pertence a um parceiro. */
   partner_id?: string;
-  /** Pedido feito pela sacola de pronta entrega (/estoque), não pelo checkout agendado normal. */
-  is_stock_order?: boolean;
 }

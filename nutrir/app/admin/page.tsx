@@ -30,11 +30,6 @@ const ADMIN_PAGES = [
     label: "Calculadora de produção",
     description: "Some as marmitas do dia e veja o total de cada ingrediente pra preparar, cru e pronto.",
   },
-  {
-    href: "/admin/estoque",
-    label: "Estoque",
-    description: "Quantidade de marmitas prontas pra retirada/entrega imediata, exibida em /estoque.",
-  },
 ];
 
 export default function AdminPage() {

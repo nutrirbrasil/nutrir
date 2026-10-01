@@ -1,8 +1,6 @@
 import type { CreateOrderPayload, CustomerAddress, CustomerAddressInput, Order } from "./types";
 import type { Food, FoodInput, Recipe } from "./marmita-nutrition";
 import type { MarmitaSize } from "./menu-data";
-import type { StockRow } from "./stock-db";
-import type { StockSize } from "./stock-catalog";
 
 export interface RecipeIngredientPayload {
   food_id: string;
@@ -123,13 +121,6 @@ export const nutrirApi = {
     api<{ recipe: Recipe }>(`/nutrir/recipes/${itemId}/${size}`, {
       method: "PATCH",
       body: JSON.stringify(body),
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-  listStock: () => api<{ stock: StockRow[] }>("/nutrir/stock"),
-  updateStock: (itemId: string, size: StockSize, quantity: number, token: string) =>
-    api<{ ok: boolean }>(`/nutrir/stock/${itemId}/${size}`, {
-      method: "PATCH",
-      body: JSON.stringify({ quantity }),
       headers: { Authorization: `Bearer ${token}` },
     }),
   addEmail: (email: string, token: string) =>

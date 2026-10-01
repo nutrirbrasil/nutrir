@@ -17,10 +17,10 @@ interface Props {
   value: PickupSelection | null;
   onChange: (value: PickupSelection | null) => void;
   now?: Date;
-  /** true quando a sacola inteira está no estoque de hoje (e ainda dentro do horário) — libera "hoje" como opção normal. */
+  /** Reservado pra um futuro "hoje" self-service; hoje em dia sempre false, pronta entrega é só por WhatsApp. */
   allowToday?: boolean;
-  /** Mostra um "Hoje" desabilitado (cinza) explicando que algum item da sacola não está disponível pra retirada imediata. */
-  todayBlockedByStock?: boolean;
+  /** Mostra um "Hoje" desabilitado (cinza) indicando que dá pra consultar retirada hoje pelo WhatsApp. */
+  todayUnavailable?: boolean;
   /** Dias extras de antecedência exigidos (combos grandes = 1, ou seja 48h em vez de 24h). */
   extraDays?: number;
 }
@@ -31,7 +31,7 @@ export function PickupScheduler({
   onChange,
   now = new Date(),
   allowToday = false,
-  todayBlockedByStock = false,
+  todayUnavailable = false,
   extraDays = 0,
 }: Props) {
   const dates = useMemo(
@@ -58,7 +58,7 @@ export function PickupScheduler({
     onChange({ date: value.date, slot });
   }
 
-  const showDisabledToday = todayBlockedByStock && !allowToday;
+  const showDisabledToday = todayUnavailable && !allowToday;
 
   if (dates.length === 0 && !showDisabledToday) {
     return (
@@ -83,7 +83,7 @@ export function PickupScheduler({
           {showDisabledToday && (
             <div
               className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-canvas-alt/10 px-1 py-3 text-center text-nutrir-ink/40"
-              title="Um ou mais itens da sacola não estão disponíveis para retirada hoje"
+              title="Consulte disponibilidade de retirada hoje pelo WhatsApp"
             >
               <span className="block text-xl font-bold">Hoje</span>
               <span className="block text-[10px]">Indisponível</span>
