@@ -171,20 +171,25 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
 
     const sessionEmail = session?.user.email?.trim().toLowerCase();
-    if (!sessionEmail) return;
+    const sessionPhone = session?.user.phone?.trim();
+    if (!sessionEmail && !sessionPhone) return;
 
     let cancelled = false;
 
     (async () => {
-      const remote = await fetchCustomerByEmail(sessionEmail);
-      if (cancelled) return;
-
-      if (remote) {
-        setProfile((p) => mergeRemoteProfile(p, remote, sessionEmail));
-        return;
+      if (sessionEmail) {
+        const remote = await fetchCustomerByEmail(sessionEmail);
+        if (cancelled) return;
+        if (remote) {
+          setProfile((p) => mergeRemoteProfile(p, remote, sessionEmail));
+          return;
+        }
       }
 
-      const phone = loadProfile().phone;
+      // Conta só-telefone (sem e-mail), ou e-mail sem cadastro de cliente ainda:
+      // busca pelo telefone da própria sessão (verificado), com o cache local
+      // como último recurso.
+      const phone = sessionPhone || loadProfile().phone;
       if (!phone) return;
 
       const byPhone = await fetchCustomerByPhone(phone);
@@ -195,7 +200,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [hydrated, session?.user.email]);
+  }, [hydrated, session?.user.email, session?.user.phone]);
 
   const login = useCallback(async (credential: AuthCredential, password: string) => {
     if (!authConfigured) throw new Error("Autenticação não configurada.");
