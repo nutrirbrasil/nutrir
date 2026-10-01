@@ -6,15 +6,6 @@ export const COMBO_MEAL_MAX = 60;
 /** O desconto progressivo por marmita só cresce até esse tanto de marmitas no combo, marmitas além disso não aumentam mais o desconto. */
 export const COMBO_DISCOUNT_PROGRESSIVE_MAX = 28;
 
-/**
- * Códigos liberados manualmente (via WhatsApp) pra desbloquear marmitas
- * personalizadas no combo: em vez de P/G, só aparece uma opção "Personalizado",
- * com sobretaxa fixa por marmita além do preço que seria de tamanho G.
- */
-export const COMBO_CUSTOM_CODES: Record<string, { surchargeCents: number }> = {
-  "140": { surchargeCents: 120 },
-};
-
 export interface ComboMarmitaOption {
   id: string;
   item_id: string;
@@ -124,24 +115,19 @@ export function getComboSectionsWithOptions() {
 
 export function calculateComboBuild(
   quantities: Record<string, number>,
-  targetTotal: number,
-  customSurchargeCents = 0
+  targetTotal: number
 ): ComboBuildResult {
   const options = getComboMarmitaOptions();
   const errors: string[] = [];
   const lines: ComboLine[] = [];
   const discount_per_meal_cents = getComboDiscountPerMealCents(targetTotal);
-  const isCustom = customSurchargeCents > 0;
 
   for (const option of options) {
     const quantity = Math.max(0, Math.floor(quantities[option.id] ?? 0));
     if (quantity === 0) continue;
-    const unit = getDiscountedUnitPriceCents(option, targetTotal) + customSurchargeCents;
-    // No modo personalizado a linha some como "G" na sacola, então troca o
-    // rótulo pra deixar claro que é a versão personalizada (com a sobretaxa).
-    const lineOption = isCustom ? { ...option, displayName: `${option.name} (Personalizado)` } : option;
+    const unit = getDiscountedUnitPriceCents(option, targetTotal);
     lines.push({
-      option: lineOption,
+      option,
       quantity,
       line_cents: unit * quantity,
     });

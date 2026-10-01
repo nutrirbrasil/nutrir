@@ -3,9 +3,7 @@
 import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
-import { whatsappContactUrl } from "@/lib/legal";
 import {
-  COMBO_CUSTOM_CODES,
   COMBO_MEAL_MAX,
   COMBO_MEAL_MIN,
   calculateComboBuild,
@@ -71,15 +69,11 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
   const [targetTotal, setTargetTotal] = useState<number>(14);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [step, setStep] = useState<"total" | "pick">("total");
-  const [customCode, setCustomCode] = useState("");
-  const [showCustomCode, setShowCustomCode] = useState(false);
-
-  const customConfig = COMBO_CUSTOM_CODES[customCode.trim()];
 
   const sections = useMemo(() => getComboSectionsWithOptions(), []);
   const build = useMemo(
-    () => calculateComboBuild(quantities, targetTotal, customConfig?.surchargeCents ?? 0),
-    [quantities, targetTotal, customConfig]
+    () => calculateComboBuild(quantities, targetTotal),
+    [quantities, targetTotal]
   );
   const cardTotalCents = getComboCardTotalCents(build.total_cents);
 
@@ -117,13 +111,6 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
     setStep("pick");
   }
 
-  function handleCustomCodeChange(value: string) {
-    setCustomCode(value);
-    // Trocar de código muda a regra de preço/tamanho, então reseta o que já
-    // tinha sido escolhido pra não deixar quantidades num modo que não existe mais.
-    setQuantities({});
-  }
-
   function handleChangeTotal() {
     setStep("total");
   }
@@ -145,7 +132,6 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
       },
     });
     setQuantities({});
-    setCustomCode("");
     setStep("total");
   }
 
@@ -200,56 +186,6 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
           <button type="button" onClick={handleConfirmTotal} className="btn-primary w-full sm:w-auto sm:px-12">
             Escolher marmitas
           </button>
-
-          <div className="mx-auto max-w-md text-center">
-            <button
-              type="button"
-              onClick={() => setShowCustomCode((v) => !v)}
-              className="text-xs font-semibold text-nutrir-ink/60 underline underline-offset-2 hover:text-nutrir-burgundy"
-            >
-              Marmitas Personalizadas? Clique aqui
-            </button>
-
-            {showCustomCode && (
-              <div className="mt-2 space-y-2">
-                <p className="text-xs leading-relaxed text-nutrir-ink/60">
-                  Envie as alterações que deseja fazer em nosso{" "}
-                  <a
-                    href={whatsappContactUrl(
-                      "Gostaria de fazer um pedido de combo personalizado e preciso do código. O pedido seria o seguinte:"
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-nutrir-burgundy underline underline-offset-2"
-                  >
-                    Whatsapp
-                  </a>{" "}
-                  e cole o código recebido para você mesmo montar e ter o orçamento do seu combo
-                  personalizado.
-                </p>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={customCode}
-                  onChange={(e) => handleCustomCodeChange(e.target.value)}
-                  placeholder="000"
-                  maxLength={3}
-                  className="input-field mx-auto w-20 px-2 text-center"
-                />
-                {customCode.trim() && (
-                  <p
-                    className={`text-xs font-semibold ${
-                      customConfig ? "text-nutrir-burgundy" : "text-nutrir-ink/50"
-                    }`}
-                  >
-                    {customConfig
-                      ? 'Código válido, clique no botão "Escolher marmitas" acima.'
-                      : "Código não encontrado."}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
         </div>
       ) : (
         <>
@@ -312,35 +248,22 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
                           <p className="min-w-0 font-semibold text-nutrir-ink">{item.name}</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-4 sm:justify-end">
-                          {customConfig ? (
-                            <SizeQtyControl
-                              label="Personalizado"
-                              option={item.bySize.G}
-                              qty={qtyG}
-                              atLimit={atLimit}
-                              onDec={() => setQty(item.bySize.G.id, qtyG - 1)}
-                              onInc={() => addOne(item.bySize.G.id)}
-                            />
-                          ) : (
-                            <>
-                              <SizeQtyControl
-                                label="P"
-                                option={item.bySize.P}
-                                qty={qtyP}
-                                atLimit={atLimit}
-                                onDec={() => setQty(item.bySize.P.id, qtyP - 1)}
-                                onInc={() => addOne(item.bySize.P.id)}
-                              />
-                              <SizeQtyControl
-                                label="G"
-                                option={item.bySize.G}
-                                qty={qtyG}
-                                atLimit={atLimit}
-                                onDec={() => setQty(item.bySize.G.id, qtyG - 1)}
-                                onInc={() => addOne(item.bySize.G.id)}
-                              />
-                            </>
-                          )}
+                          <SizeQtyControl
+                            label="P"
+                            option={item.bySize.P}
+                            qty={qtyP}
+                            atLimit={atLimit}
+                            onDec={() => setQty(item.bySize.P.id, qtyP - 1)}
+                            onInc={() => addOne(item.bySize.P.id)}
+                          />
+                          <SizeQtyControl
+                            label="G"
+                            option={item.bySize.G}
+                            qty={qtyG}
+                            atLimit={atLimit}
+                            onDec={() => setQty(item.bySize.G.id, qtyG - 1)}
+                            onInc={() => addOne(item.bySize.G.id)}
+                          />
                         </div>
                       </div>
                     );
