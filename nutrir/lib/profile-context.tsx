@@ -138,6 +138,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (data.session?.user.email) {
         setProfile((p) => ({ ...p, email: data.session!.user.email! }));
       }
+      if (data.session?.user.phone) {
+        setProfile((p) => ({ ...p, phone: p.phone || formatPhoneDisplay(data.session!.user.phone!) }));
+      }
       setAuthLoading(false);
     });
 
@@ -153,6 +156,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setSession(nextSession);
       if (nextSession?.user.email) {
         setProfile((p) => ({ ...p, email: nextSession.user.email! }));
+      }
+      if (nextSession?.user.phone) {
+        setProfile((p) => ({ ...p, phone: p.phone || formatPhoneDisplay(nextSession.user.phone!) }));
       }
       if (!nextSession) {
         setProfile((p) => ({ ...p, email: "" }));
