@@ -6,7 +6,7 @@ const COM_FUNDO = "/marmitas/V3";
 const SEM_FUNDO = "/marmitas/Sem fundo";
 
 /** Incremente ao trocar as fotos em public/marmitas para forçar atualização no navegador. */
-export const MARMITA_IMAGES_VERSION = "6";
+export const MARMITA_IMAGES_VERSION = "7";
 
 function imagePath(name: string): string {
   return `${encodeURI(`${COM_FUNDO}/${name}.png`)}?v=${MARMITA_IMAGES_VERSION}`;
@@ -21,9 +21,11 @@ export const MARMITA_IMAGES: Record<string, string> = {
   "frg-batata": imagePath("Escondidinho de Frango"),
   "frg-arroz": imagePath("Frango da Casa"),
   "frg-massa": imagePath("Frango ao Sugo"),
+  "frg-estrogonofe": imagePath("Strogonoff de Frango"),
   "car-batata": imagePath("Escondidinho de Carne"),
   "car-arroz": imagePath("Carne da Casa"),
   "car-massa": imagePath("Ragu à Bolonhesa"),
+  "car-estrogonofe": imagePath("Strogonoff de Carne"),
   "veg-ervilha": imagePath("Mix de Ervilha"),
   "veg-grao": imagePath("Mix de Grão de Bico"),
   "veg-cogumelo": imagePath("Escondidinho de Cogumelos"),
@@ -33,9 +35,11 @@ const MARMITA_IMAGES_TOP: Record<string, string> = {
   "frg-batata": imagePath("Escondidinho de Frango"),
   "frg-arroz": imagePath("Frango da Casa"),
   "frg-massa": imagePath("Frango ao Sugo"),
+  "frg-estrogonofe": imagePath("Strogonoff de Frango"),
   "car-batata": imagePath("Escondidinho de Carne"),
   "car-arroz": imagePath("Carne da Casa"),
   "car-massa": imagePath("Ragu à Bolonhesa"),
+  "car-estrogonofe": imagePath("Strogonoff de Carne"),
   "veg-ervilha": imagePath("Mix de Ervilha"),
   "veg-grao": imagePath("Mix de Grão de Bico"),
   "veg-cogumelo": imagePath("Escondidinho de Cogumelos"),
@@ -62,6 +66,8 @@ function itemKeyFromLabel(label: string): string | undefined {
     return "car-batata";
   if (lower.includes("ragu") || lower.includes("bolonhesa")) return "car-massa";
   if (lower.includes("sugo")) return "frg-massa";
+  if (lower.includes("frango") && lower.includes("strogonoff")) return "frg-estrogonofe";
+  if (lower.includes("carne") && lower.includes("strogonoff")) return "car-estrogonofe";
   if (lower.includes("carne") && lower.includes("casa")) return "car-arroz";
   if (lower.includes("frango") && lower.includes("casa")) return "frg-arroz";
   if (lower.includes("ervilha")) return "veg-ervilha";

@@ -31,8 +31,8 @@ export const SIZE_INFO: Record<MarmitaSize, SizeInfo> = {
 /** Peso real de cada marmita pronta (etiqueta na foto do card, "Total" nos kits). */
 export const MARMITA_WEIGHT_G: Record<MarmitaSize, number> = { P: 220, G: 380 };
 
-/** Escondidinhos têm um P mais robusto (240g em vez do padrão 220g). */
-const HEAVIER_P_ITEM_IDS = new Set(["frg-batata", "car-batata", "veg-cogumelo"]);
+/** Escondidinhos e Strogonoffs têm um P mais robusto (240g em vez do padrão 220g). */
+const HEAVIER_P_ITEM_IDS = new Set(["frg-batata", "car-batata", "veg-cogumelo", "frg-estrogonofe", "car-estrogonofe"]);
 
 /** Peso exibido pro card avulso — considera a exceção dos escondidinhos no P. */
 export function getMarmitaWeightG(itemId: string, size: MarmitaSize): number {
@@ -386,6 +386,14 @@ export const MENU_SECTIONS: MenuSection[] = [
         prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
         glutenFree: true,
       },
+      {
+        id: "frg-estrogonofe",
+        name: "Strogonoff de Frango",
+        description:
+          "Frango em cubos ao molho cremoso de champignon, com creme de leite leve, acompanhado de arroz branco.",
+        prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
+        glutenFree: true,
+      },
     ],
   },
   {
@@ -412,6 +420,14 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "car-batata",
         name: "Escondidinho de Carne",
         description: "Carne moída ao molho da casa, coberta por purê de batata e finalizada com queijo.",
+        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+        glutenFree: true,
+      },
+      {
+        id: "car-estrogonofe",
+        name: "Strogonoff de Carne",
+        description:
+          "Patinho em cubos ao molho cremoso de champignon, com creme de leite leve, acompanhado de arroz branco.",
         prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
         glutenFree: true,
       },
@@ -475,12 +491,34 @@ export const MENU_SECTIONS: MenuSection[] = [
         prices: { P: PRICES.cogumeloEscondidinho.P, G: PRICES.cogumeloEscondidinho.G },
         glutenFree: true,
       },
+      {
+        id: "frg-estrogonofe",
+        name: "Strogonoff de Frango",
+        description:
+          "Frango em cubos ao molho cremoso de champignon, com creme de leite leve, acompanhado de arroz branco.",
+        prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
+        glutenFree: true,
+      },
+      {
+        id: "car-estrogonofe",
+        name: "Strogonoff de Carne",
+        description:
+          "Patinho em cubos ao molho cremoso de champignon, com creme de leite leve, acompanhado de arroz branco.",
+        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+        glutenFree: true,
+      },
     ],
   },
 ];
 
 /** Itens que também aparecem na Linha Premium, além da seção de origem. */
-export const PREMIUM_MARMITA_IDS = new Set(["frg-batata", "car-batata", "veg-cogumelo"]);
+export const PREMIUM_MARMITA_IDS = new Set([
+  "frg-batata",
+  "car-batata",
+  "veg-cogumelo",
+  "frg-estrogonofe",
+  "car-estrogonofe",
+]);
 
 export function isPremiumMarmita(itemId: string): boolean {
   return PREMIUM_MARMITA_IDS.has(itemId);

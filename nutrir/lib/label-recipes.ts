@@ -32,6 +32,15 @@ const TACO_FOODS: Record<string, TacoNutrientsPer100g> = {
   queijo: { kcal: 330, protein_g: 22.6, carbs_g: 3, fat_g: 25.2, fiber_g: 0, sodium_mg: 875, saturated_fat_g: 14.2 },
   molho_de_tomate: { kcal: 29, protein_g: 1.4, carbs_g: 5.8, fat_g: 0.3, fiber_g: 1.4, sodium_mg: 380 },
   sal: { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0, sodium_mg: 38700 },
+  creme_de_leite: {
+    kcal: 150,
+    protein_g: 2.5,
+    carbs_g: 4.0,
+    fat_g: 15,
+    fiber_g: 0,
+    sodium_mg: 40,
+    saturated_fat_g: 9.5,
+  },
 };
 
 type FoodId = keyof typeof TACO_FOODS;
@@ -155,6 +164,34 @@ const RECIPES: Record<string, RecipeBuilder> = {
       { food: "molho_de_tomate", grams: 10 },
       { food: "batata", grams: 250 },
       { food: "queijo", grams: 10 },
+    ],
+  },
+  "frg-estrogonofe": {
+    P: [
+      { food: "frango", grams: 80 },
+      { food: "arroz", grams: 100 },
+      { food: "creme_de_leite", grams: 30 },
+      { food: "cogumelo", grams: 30 },
+    ],
+    G: [
+      { food: "frango", grams: 110 },
+      { food: "arroz", grams: 190 },
+      { food: "creme_de_leite", grams: 40 },
+      { food: "cogumelo", grams: 40 },
+    ],
+  },
+  "car-estrogonofe": {
+    P: [
+      { food: "patinho", grams: 80 },
+      { food: "arroz", grams: 100 },
+      { food: "creme_de_leite", grams: 30 },
+      { food: "cogumelo", grams: 30 },
+    ],
+    G: [
+      { food: "patinho", grams: 110 },
+      { food: "arroz", grams: 190 },
+      { food: "creme_de_leite", grams: 40 },
+      { food: "cogumelo", grams: 40 },
     ],
   },
   "veg-cogumelo": {
