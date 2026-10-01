@@ -296,22 +296,6 @@ export function formatAddonSelectionLine(addonId: string, portions: number): str
   return `${addon.name} (${formatAddonPortions(addon, portions)})`;
 }
 
-export function selectionMapTotalCents(selection: AddonSelectionMap): number {
-  return Object.entries(selection).reduce((sum, [id, portions]) => {
-    const addon = getAddonById(id);
-    if (!addon || portions <= 0) return sum;
-    return sum + getAddonUnitPriceCents(addon) * portions;
-  }, 0);
-}
-
-export function formatSelectionMap(selection: AddonSelectionMap): string {
-  return Object.entries(selection)
-    .filter(([, portions]) => portions > 0)
-    .map(([id, portions]) => formatAddonSelectionLine(id, portions))
-    .filter(Boolean)
-    .join(", ");
-}
-
 /**
  * Preço do modo "mesmo em todas": adicionais normais valem para todas as marmitas do
  * combo, mas substituições (forStarch) valem só nas marmitas com um dos acompanhamentos
@@ -334,74 +318,37 @@ export function computeSameModeAddonsCents(
   }, 0);
 }
 
-export function computeMealAddonsCents(
-  mode: "same" | "custom" | "single",
-  mealLabels: string[],
-  same?: AddonSelectionMap,
-  perMeal?: AddonSelectionMap[]
-): number {
-  if (mode === "single" || mode === "same") {
-    return computeSameModeAddonsCents(mealLabels, same ?? {});
-  }
-
-  return (perMeal ?? []).reduce((sum, meal) => sum + selectionMapTotalCents(meal), 0);
-}
-
+/**
+ * Texto do adicional/substituição escolhido, salvo no pedido. Em marmita avulsa
+ * (1 marmita) mostra só o nome; em combo/kit mostra também quantas marmitas da
+ * sacola receberam a substituição (nem todas podem ter o acompanhamento certo).
+ */
 export function buildAddonsNote(
-  mode: "same" | "custom" | "single",
   mealLabels: string[],
-  same?: AddonSelectionMap,
-  perMeal?: AddonSelectionMap[]
+  selection: AddonSelectionMap
 ): string | undefined {
-  if (mode === "single" || mode === "same") {
-    const entries = Object.entries(same ?? {}).filter(([, portions]) => portions > 0);
-    const parts = entries
-      .map(([id, portions]) => {
-        const addon = getAddonById(id);
-        if (!addon) return null;
-        if (mode === "same" && addon.forStarch) {
-          const count = countMealsForAnyStarch(mealLabels, addon.forStarch);
-          return `${addon.name} (${count} marmita${count === 1 ? "" : "s"})`;
-        }
-        return formatAddonSelectionLine(id, portions);
-      })
-      .filter((line): line is string => Boolean(line));
-    if (parts.length === 0) return undefined;
-    const sameText = parts.join(", ");
-    if (mode === "single") return `Adicionais: ${sameText}`;
-    return `Adicionais (todas as ${mealLabels.length} marmitas): ${sameText}`;
-  }
-
-  const lines = (perMeal ?? [])
-    .map((meal, index) => {
-      const text = formatSelectionMap(meal);
-      if (!text) return null;
-      const label = mealLabels[index] ?? `Marmita ${index + 1}`;
-      return `${label}: ${text}`;
+  const entries = Object.entries(selection).filter(([, portions]) => portions > 0);
+  const isMultiMeal = mealLabels.length > 1;
+  const parts = entries
+    .map(([id, portions]) => {
+      const addon = getAddonById(id);
+      if (!addon) return null;
+      if (isMultiMeal && addon.forStarch) {
+        const count = countMealsForAnyStarch(mealLabels, addon.forStarch);
+        return `${addon.name} (${count} marmita${count === 1 ? "" : "s"})`;
+      }
+      return formatAddonSelectionLine(id, portions);
     })
-    .filter(Boolean);
-
-  if (lines.length === 0) return undefined;
-  return `Adicionais por marmita:\n${lines.join("\n")}`;
+    .filter((line): line is string => Boolean(line));
+  if (parts.length === 0) return undefined;
+  const text = parts.join(", ");
+  if (!isMultiMeal) return `Adicionais: ${text}`;
+  return `Adicionais (todas as ${mealLabels.length} marmitas): ${text}`;
 }
 
-/** Ids de todos os adicionais (não substituição) escolhidos, usado pra decidir se o item bloqueia pronta entrega. */
-export function collectAddonIds(
-  mode: "same" | "custom" | "single",
-  same?: AddonSelectionMap,
-  perMeal?: AddonSelectionMap[]
-): string[] {
-  if (mode === "single" || mode === "same") {
-    return Object.entries(same ?? {})
-      .filter(([, portions]) => portions > 0)
-      .map(([id]) => id);
-  }
-
-  const ids = new Set<string>();
-  for (const meal of perMeal ?? []) {
-    for (const [id, portions] of Object.entries(meal)) {
-      if (portions > 0) ids.add(id);
-    }
-  }
-  return Array.from(ids);
+/** Ids de todos os adicionais/substituições escolhidos. */
+export function collectAddonIds(selection: AddonSelectionMap): string[] {
+  return Object.entries(selection)
+    .filter(([, portions]) => portions > 0)
+    .map(([id]) => id);
 }

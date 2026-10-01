@@ -5,34 +5,24 @@ import { formatPrice } from "@/lib/api";
 import {
   computeSameModeAddonsCents,
   getAddonUnitPriceCents,
-  getAddonsForMealHint,
   getAddonsForSameSelection,
   MAX_ADDON_PORTIONS,
   type MealAddon,
-  selectionMapTotalCents,
   type AddonSelectionMap,
 } from "@/lib/addons-data";
 import type { PendingCartAdd } from "@/lib/addons-flow-context";
-import { getMarmitaImageFromLabel, shortMealLabel } from "@/lib/marmita-images";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
-type ModalStep = "pick_same" | "pick_custom";
+type ModalStep = "substitution" | "addon";
 
 interface Props {
   pending: PendingCartAdd;
   step: ModalStep;
   isMultiMeal: boolean;
-  sameSelection: AddonSelectionMap;
-  perMealSelection: AddonSelectionMap[];
-  activeMealIndex: number;
+  selection: AddonSelectionMap;
   onClose: () => void;
-  onChooseSameMode: () => void;
-  onSameSelectionChange: (next: AddonSelectionMap) => void;
-  onPerMealSelectionChange: (next: AddonSelectionMap[]) => void;
-  onActiveMealIndexChange: (index: number) => void;
-  onConfirmSame: () => void;
-  onConfirmCustom: () => void;
-  onBack: () => void;
+  onSelectionChange: (next: AddonSelectionMap) => void;
+  onContinue: () => void;
 }
 
 function QtyStepper({
@@ -92,12 +82,7 @@ function SubstitutionToggle({ selected, onToggle }: { selected: boolean; onToggl
 function AddonThumb({ addon }: { addon: MealAddon }) {
   if (!addon.imageSrc) return null;
   return (
-    <MarmitaPhoto
-      src={addon.imageSrc}
-      alt=""
-      className="h-10 w-10 shrink-0"
-      sizes="40px"
-    />
+    <MarmitaPhoto src={addon.imageSrc} alt="" className="h-10 w-10 shrink-0" sizes="40px" />
   );
 }
 
@@ -158,22 +143,28 @@ function SubstitutionCard({
   );
 }
 
-function AddonPicker({
-  addons,
+export function AddonsModal({
+  pending,
+  step,
+  isMultiMeal,
   selection,
-  onChange,
-  columns,
-}: {
-  addons: MealAddon[];
-  selection: AddonSelectionMap;
-  onChange: (next: AddonSelectionMap) => void;
-  columns: 2 | 3;
-}) {
+  onClose,
+  onSelectionChange,
+  onContinue,
+}: Props) {
+  const allAddons = getAddonsForSameSelection(pending.mealLabels, pending.baseItem.item_id);
+  const substitutionAddons = allAddons.filter((a) => a.forStarch);
+  const regularAddons = allAddons.filter((a) => !a.forStarch);
+  const stepAddons = step === "substitution" ? substitutionAddons : regularAddons;
+
+  const previewTotal = computeSameModeAddonsCents(pending.mealLabels, selection);
+  const hasSelectionInStep = stepAddons.some((addon) => (selection[addon.id] ?? 0) > 0);
+
   function setPortions(id: string, portions: number) {
     const next = { ...selection };
     if (portions <= 0) delete next[id];
     else next[id] = portions;
-    onChange(next);
+    onSelectionChange(next);
   }
 
   function toggleSubstitution(addon: MealAddon) {
@@ -183,7 +174,7 @@ function AddonPicker({
       delete next[addon.id];
     } else {
       if (addon.exclusiveGroup) {
-        for (const other of addons) {
+        for (const other of substitutionAddons) {
           if (other.id !== addon.id && other.exclusiveGroup === addon.exclusiveGroup) {
             delete next[other.id];
           }
@@ -191,147 +182,18 @@ function AddonPicker({
       }
       next[addon.id] = 1;
     }
-    onChange(next);
+    onSelectionChange(next);
   }
 
-  const regularAddons = addons.filter((a) => !a.forStarch);
-  const substitutionAddons = addons.filter((a) => a.forStarch);
-  const gridClass = columns === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2";
-
-  return (
-    <div className="space-y-4">
-      {substitutionAddons.length > 0 && (
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-ink/55">
-            Substituições
-          </p>
-          <div className="space-y-2">
-            {substitutionAddons.map((addon) => {
-              const selected = (selection[addon.id] ?? 0) > 0;
-              return (
-                <SubstitutionCard
-                  key={addon.id}
-                  addon={addon}
-                  selected={selected}
-                  onToggle={() => toggleSubstitution(addon)}
-                />
-              );
-            })}
-          </div>
-        </div>
-      )}
-      {regularAddons.length > 0 && (
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-nutrir-ink/55">
-            Adicionais
-          </p>
-          <div className={`grid gap-2 ${gridClass}`}>
-            {regularAddons.map((addon) => (
-              <AddonCard
-                key={addon.id}
-                addon={addon}
-                qty={selection[addon.id] ?? 0}
-                onDec={() => setPortions(addon.id, (selection[addon.id] ?? 0) - 1)}
-                onInc={() => setPortions(addon.id, (selection[addon.id] ?? 0) + 1)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MealSidebar({
-  labels,
-  activeIndex,
-  onSelect,
-}: {
-  labels: string[];
-  activeIndex: number;
-  onSelect: (index: number) => void;
-}) {
-  return (
-    <aside className="flex w-[7.5rem] shrink-0 flex-col gap-1 overflow-y-auto border-r border-nutrir-nude-dark/40 bg-nutrir-canvas/70 p-2 sm:w-36">
-      {labels.map((label, index) => {
-        const thumbSrc = getMarmitaImageFromLabel(label, true);
-        const active = activeIndex === index;
-
-        return (
-          <button
-            key={`${label}-${index}`}
-            type="button"
-            onClick={() => onSelect(index)}
-            className={`flex w-full flex-col items-center gap-1 rounded-lg border px-1.5 py-2 text-center transition ${
-              active
-                ? "border-nutrir-burgundy bg-nutrir-burgundy/10"
-                : "border-transparent hover:bg-nutrir-emerald/5"
-            }`}
-          >
-            <div className="relative h-11 w-11 overflow-hidden rounded-md border border-nutrir-nude-dark/40">
-              {thumbSrc && (
-                <MarmitaPhoto
-                  src={thumbSrc}
-                  alt={shortMealLabel(label)}
-                  className="h-full w-full"
-                  sizes="44px"
-                />
-              )}
-            </div>
-            <span
-              className={`line-clamp-2 text-[10px] font-semibold leading-tight ${
-                active ? "text-nutrir-burgundy" : "text-nutrir-ink"
-              }`}
-            >
-              {shortMealLabel(label)}
-            </span>
-          </button>
-        );
-      })}
-    </aside>
-  );
-}
-
-export function AddonsModal({
-  pending,
-  step,
-  isMultiMeal,
-  sameSelection,
-  perMealSelection,
-  activeMealIndex,
-  onClose,
-  onChooseSameMode,
-  onSameSelectionChange,
-  onPerMealSelectionChange,
-  onActiveMealIndexChange,
-  onConfirmSame,
-  onConfirmCustom,
-  onBack,
-}: Props) {
-  const perMealTotal = selectionMapTotalCents(perMealSelection[activeMealIndex] ?? {});
-  const previewSameTotal = computeSameModeAddonsCents(pending.mealLabels, sameSelection);
-  const previewCustomTotal = perMealSelection.reduce(
-    (sum, meal) => sum + selectionMapTotalCents(meal),
-    0
-  );
-
-  const sameModeAddons = getAddonsForSameSelection(
-    pending.mealLabels,
-    pending.baseItem.item_id
-  );
-  const customModeAddons = getAddonsForMealHint(
-    pending.mealLabels[activeMealIndex] ?? ""
-  );
-
-  const isCustomStep = step === "pick_custom";
-  const reachedSameViaLink = step === "pick_same" && isMultiMeal;
-
   const title =
-    step === "pick_same"
+    step === "substitution"
       ? isMultiMeal
-        ? "Adicionais em todas as marmitas"
-        : "Escolha os adicionais"
-      : "Adicionais e Substituições por marmita";
+        ? "Substituições em todas as marmitas"
+        : "Substituições"
+      : "Adicionais";
+
+  const skipLabel = step === "substitution" ? "Não desejo Substituição" : "Não desejo Adicional";
+  const continueLabel = hasSelectionInStep ? "Continuar" : skipLabel;
 
   return (
     <>
@@ -344,23 +206,12 @@ export function AddonsModal({
       <div
         role="dialog"
         aria-modal="true"
-        className={`fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl ${
-          isCustomStep ? "w-[min(96vw,760px)]" : "w-[min(92vw,480px)]"
-        }`}
+        className="fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] w-[min(92vw,480px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl"
       >
         <header className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 px-5 py-4">
           <div>
             <h2 className="font-display text-xl font-bold text-nutrir-ink">{title}</h2>
             <p className="mt-1 text-sm text-nutrir-ink/65">{pending.baseItem.name}</p>
-            {isCustomStep && (
-              <button
-                type="button"
-                onClick={onChooseSameMode}
-                className="mt-1.5 text-xs font-semibold text-nutrir-burgundy underline underline-offset-2 hover:text-nutrir-ink"
-              >
-                Adicionar mesmo adicional em todas
-              </button>
-            )}
           </div>
           <button
             type="button"
@@ -371,89 +222,48 @@ export function AddonsModal({
           </button>
         </header>
 
-        <div
-          className={`flex min-h-0 flex-1 ${isCustomStep ? "flex-row overflow-hidden" : "overflow-y-auto px-5 py-4"}`}
-        >
-          {isCustomStep && (
-            <MealSidebar
-              labels={pending.mealLabels}
-              activeIndex={activeMealIndex}
-              onSelect={onActiveMealIndexChange}
-            />
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+          {step === "substitution" ? (
+            <div className="space-y-2">
+              {substitutionAddons.map((addon) => {
+                const selected = (selection[addon.id] ?? 0) > 0;
+                return (
+                  <SubstitutionCard
+                    key={addon.id}
+                    addon={addon}
+                    selected={selected}
+                    onToggle={() => toggleSubstitution(addon)}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {regularAddons.map((addon) => (
+                <AddonCard
+                  key={addon.id}
+                  addon={addon}
+                  qty={selection[addon.id] ?? 0}
+                  onDec={() => setPortions(addon.id, (selection[addon.id] ?? 0) - 1)}
+                  onInc={() => setPortions(addon.id, (selection[addon.id] ?? 0) + 1)}
+                />
+              ))}
+            </div>
           )}
 
-          <div className={`min-w-0 flex-1 overflow-y-auto ${isCustomStep ? "px-4 py-3" : ""}`}>
-            {!isCustomStep && (
-              <>
-                <AddonPicker
-                  columns={2}
-                  addons={sameModeAddons}
-                  selection={sameSelection}
-                  onChange={onSameSelectionChange}
-                />
-                {previewSameTotal > 0 && (
-                  <p className="mt-4 text-center text-sm text-nutrir-ink/70">
-                    Total adicionais:{" "}
-                    <strong className="text-nutrir-burgundy">
-                      {formatPrice(previewSameTotal)}
-                    </strong>
-                  </p>
-                )}
-              </>
-            )}
-
-            {isCustomStep && (
-              <>
-                <p className="mb-2 text-sm font-semibold text-nutrir-ink">
-                  {shortMealLabel(pending.mealLabels[activeMealIndex] ?? "")}
-                </p>
-                <AddonPicker
-                  columns={3}
-                  addons={customModeAddons}
-                  selection={perMealSelection[activeMealIndex] ?? {}}
-                  onChange={(next) => {
-                    const copy = [...perMealSelection];
-                    copy[activeMealIndex] = next;
-                    onPerMealSelectionChange(copy);
-                  }}
-                />
-                {previewCustomTotal > 0 && (
-                  <p className="mt-3 text-center text-sm text-nutrir-ink/70">
-                    Total adicionais:{" "}
-                    <strong className="text-nutrir-burgundy">
-                      {formatPrice(previewCustomTotal)}
-                    </strong>
-                  </p>
-                )}
-                {perMealTotal > 0 && (
-                  <p className="mt-1 text-center text-xs text-nutrir-ink/55">
-                    Esta marmita: {formatPrice(perMealTotal)}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  onClick={onConfirmCustom}
-                  className="btn-primary mt-4 w-full py-2.5"
-                >
-                  Adicionar à sacola
-                </button>
-              </>
-            )}
-          </div>
+          {previewTotal > 0 && (
+            <p className="mt-4 text-center text-sm text-nutrir-ink/70">
+              Total adicionais:{" "}
+              <strong className="text-nutrir-burgundy">{formatPrice(previewTotal)}</strong>
+            </p>
+          )}
         </div>
 
-        {!isCustomStep && (
-          <footer className="flex flex-wrap gap-2 border-t border-nutrir-nude-dark/40 px-5 py-4">
-            {reachedSameViaLink && (
-              <button type="button" onClick={onBack} className="btn-secondary flex-1 py-2.5">
-                Voltar
-              </button>
-            )}
-            <button type="button" onClick={onConfirmSame} className="btn-primary flex-1 py-2.5">
-              Adicionar à sacola
-            </button>
-          </footer>
-        )}
+        <footer className="border-t border-nutrir-nude-dark/40 px-5 py-4">
+          <button type="button" onClick={onContinue} className="btn-primary w-full py-2.5">
+            {continueLabel}
+          </button>
+        </footer>
       </div>
     </>
   );

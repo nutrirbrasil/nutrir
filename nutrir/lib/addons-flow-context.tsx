@@ -11,7 +11,7 @@ import {
 import {
   buildAddonsNote,
   collectAddonIds,
-  computeMealAddonsCents,
+  computeSameModeAddonsCents,
   type AddonSelectionMap,
 } from "@/lib/addons-data";
 import { useCart } from "@/lib/cart-context";
@@ -33,68 +33,61 @@ interface AddonsFlowContextValue {
 
 const AddonsFlowContext = createContext<AddonsFlowContextValue | null>(null);
 
-type ModalStep = "closed" | "pick_same" | "pick_custom";
-
-function emptyPerMeal(count: number): AddonSelectionMap[] {
-  return Array.from({ length: count }, () => ({}));
-}
+/**
+ * Fluxo de 2 passos (marmita avulsa) ou 1 passo (combo/kit, sem adicionais,
+ * só substituição igual em todas as marmitas que aceitam).
+ */
+type ModalStep = "closed" | "substitution" | "addon";
 
 export function AddonsFlowProvider({ children }: { children: ReactNode }) {
   const { addItem } = useCart();
   const [pending, setPending] = useState<PendingCartAdd | null>(null);
   const [step, setStep] = useState<ModalStep>("closed");
-  const [sameSelection, setSameSelection] = useState<AddonSelectionMap>({});
-  const [perMealSelection, setPerMealSelection] = useState<AddonSelectionMap[]>([]);
-  const [activeMealIndex, setActiveMealIndex] = useState(0);
+  const [selection, setSelection] = useState<AddonSelectionMap>({});
 
   const close = useCallback(() => {
     setPending(null);
     setStep("closed");
-    setSameSelection({});
-    setPerMealSelection([]);
-    setActiveMealIndex(0);
+    setSelection({});
   }, []);
 
-  const finalizeAdd = useCallback(
-    (
-      mode: "same" | "custom" | "single",
-      same?: AddonSelectionMap,
-      perMeal?: AddonSelectionMap[]
-    ) => {
-      if (!pending) return;
+  const finalizeAdd = useCallback(() => {
+    if (!pending) return;
 
-      const addons_cents = computeMealAddonsCents(mode, pending.mealLabels, same, perMeal);
-      const addons_note = buildAddonsNote(mode, pending.mealLabels, same, perMeal);
-      const addon_ids = collectAddonIds(mode, same, perMeal);
+    const addons_cents = computeSameModeAddonsCents(pending.mealLabels, selection);
+    const addons_note = buildAddonsNote(pending.mealLabels, selection);
+    const addon_ids = collectAddonIds(selection);
 
-      const menuSuffix =
-        addons_cents > 0
-          ? `-addons-${mode}-${JSON.stringify(same ?? perMeal ?? {})}`
-          : "";
+    const menuSuffix = addons_cents > 0 ? `-addons-${JSON.stringify(selection)}` : "";
 
-      addItem({
-        ...pending.baseItem,
-        menu_id: `${pending.baseItem.menu_id ?? pending.baseItem.name}${menuSuffix}`,
-        addons_cents: addons_cents > 0 ? addons_cents : undefined,
-        addons_note,
-        addon_ids: addon_ids.length > 0 ? addon_ids : undefined,
-      });
-      close();
-    },
-    [addItem, close, pending]
-  );
+    addItem({
+      ...pending.baseItem,
+      menu_id: `${pending.baseItem.menu_id ?? pending.baseItem.name}${menuSuffix}`,
+      addons_cents: addons_cents > 0 ? addons_cents : undefined,
+      addons_note,
+      addon_ids: addon_ids.length > 0 ? addon_ids : undefined,
+    });
+    close();
+  }, [addItem, close, pending, selection]);
 
   const requestAdd = useCallback((next: PendingCartAdd) => {
     setPending(next);
-    setSameSelection({});
-    setPerMealSelection(emptyPerMeal(next.mealCount));
-    setActiveMealIndex(0);
-    setStep(next.mealCount > 1 ? "pick_custom" : "pick_same");
+    setSelection({});
+    setStep("substitution");
   }, []);
 
-  const value = useMemo(() => ({ requestAdd }), [requestAdd]);
-
   const isMultiMeal = (pending?.mealCount ?? 0) > 1;
+
+  // Combo/kit não tem passo de adicionais, confirma direto depois das substituições.
+  const handleContinue = useCallback(() => {
+    if (step === "substitution" && !isMultiMeal) {
+      setStep("addon");
+    } else {
+      finalizeAdd();
+    }
+  }, [step, isMultiMeal, finalizeAdd]);
+
+  const value = useMemo(() => ({ requestAdd }), [requestAdd]);
 
   return (
     <AddonsFlowContext.Provider value={value}>
@@ -104,19 +97,10 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
           pending={pending}
           step={step}
           isMultiMeal={isMultiMeal}
-          sameSelection={sameSelection}
-          perMealSelection={perMealSelection}
-          activeMealIndex={activeMealIndex}
+          selection={selection}
           onClose={close}
-          onChooseSameMode={() => setStep("pick_same")}
-          onSameSelectionChange={setSameSelection}
-          onPerMealSelectionChange={setPerMealSelection}
-          onActiveMealIndexChange={setActiveMealIndex}
-          onConfirmSame={() => finalizeAdd(isMultiMeal ? "same" : "single", sameSelection)}
-          onConfirmCustom={() => finalizeAdd("custom", undefined, perMealSelection)}
-          onBack={() => {
-            if (step === "pick_same" && isMultiMeal) setStep("pick_custom");
-          }}
+          onSelectionChange={setSelection}
+          onContinue={handleContinue}
         />
       )}
     </AddonsFlowContext.Provider>
