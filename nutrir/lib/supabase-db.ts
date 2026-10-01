@@ -81,6 +81,54 @@ export async function hasUsedCouponByEmail(email: string, couponCode: string): P
   return (data ?? []).length > 0;
 }
 
+/**
+ * Mesma restrição de "primeira compra", mas pelo telefone autenticado da sessão
+ * (contas criadas só com telefone, sem e-mail). Ao contrário do telefone solto
+ * do formulário, esse vem do login verificado, então é confiável do mesmo jeito.
+ */
+export async function hasPriorOrdersByPhone(phone: string): Promise<boolean> {
+  const db = getSupabaseAdmin();
+  if (!db) return false;
+
+  const normalized = normalizePhoneStorage(phone);
+  if (!normalized) return false;
+
+  const { data, error } = await db
+    .from("nutrir_orders")
+    .select("order_nsu")
+    .eq("customer_phone", normalized)
+    .limit(1);
+
+  if (error) {
+    console.error("[Supabase] hasPriorOrdersByPhone:", error.message);
+    return false;
+  }
+
+  return (data ?? []).length > 0;
+}
+
+export async function hasUsedCouponByPhone(phone: string, couponCode: string): Promise<boolean> {
+  const db = getSupabaseAdmin();
+  if (!db) return false;
+
+  const normalized = normalizePhoneStorage(phone);
+  if (!normalized) return false;
+
+  const { data, error } = await db
+    .from("nutrir_orders")
+    .select("order_nsu")
+    .eq("customer_phone", normalized)
+    .eq("coupon_code", couponCode.trim().toUpperCase())
+    .limit(1);
+
+  if (error) {
+    console.error("[Supabase] hasUsedCouponByPhone:", error.message);
+    return false;
+  }
+
+  return (data ?? []).length > 0;
+}
+
 export async function findPacienteByCpf(cpf: string): Promise<PacienteRecord | null> {
   const db = getSupabaseAdmin();
   if (!db) return null;

@@ -1,4 +1,4 @@
-import { isValidCpf, isValidPhoneBR } from "./br-fields";
+import { isValidPhoneBR } from "./br-fields";
 import type { DeliverySelection } from "./delivery-schedule";
 import type { PickupSelection } from "./pickup-schedule";
 import type { FulfillmentType, OrderItem, PaymentMethod } from "./types";
@@ -64,5 +64,5 @@ export function clearCheckoutDraft(): void {
 }
 
 export function hasFiscalData(draft: CheckoutDraft): boolean {
-  return isValidCpf(draft.customer_cpf ?? "") && isValidPhoneBR(draft.customer_phone ?? "");
+  return !!draft.customer_name?.trim() && isValidPhoneBR(draft.customer_phone ?? "");
 }

@@ -42,10 +42,12 @@ export function FiscalDataStep() {
       return;
     }
 
-    const cpfErr = cpfValidationMessage(cpfFormatted);
-    if (cpfErr) {
-      setError(cpfErr);
-      return;
+    if (cpfFormatted.trim()) {
+      const cpfErr = cpfValidationMessage(cpfFormatted);
+      if (cpfErr) {
+        setError(cpfErr);
+        return;
+      }
     }
 
     const phoneErr = phoneValidationMessage(phoneFormatted);
@@ -90,9 +92,8 @@ export function FiscalDataStep() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">CPF</label>
+          <label className="mb-1 block text-sm font-medium">CPF (opcional)</label>
           <input
-            required
             type="tel"
             inputMode="numeric"
             autoComplete="off"
@@ -103,7 +104,7 @@ export function FiscalDataStep() {
             placeholder="000.000.000-00"
           />
           <p className="mt-1 text-xs text-nutrir-ink/60">
-            Precisamos do seu CPF para emitir a nota fiscal do seu pedido.
+            Só precisa se quiser nota fiscal ou for paciente com desconto.
           </p>
         </div>
         <div>

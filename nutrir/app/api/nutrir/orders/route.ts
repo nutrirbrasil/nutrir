@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCoupon, validateCouponRestrictions } from "@/lib/coupons";
 import { findPartnerByCouponCode, findPartnerByEmail, redeemPartnerPoints, PARTNER_COUPON_PERCENT } from "@/lib/partners";
-import { verifyUserEmail } from "@/lib/session-auth";
+import { verifyUser } from "@/lib/session-auth";
 import { createInfinitePayLink, isInfinitePayConfigured } from "@/lib/infinitepay";
 import { isValidPhoneBR } from "@/lib/br-fields";
 import {
@@ -28,7 +28,13 @@ import {
 import { isPixConfigured } from "@/lib/pix-brcode";
 import { generateUniqueOrderId } from "@/lib/order-id";
 import { saveOrder } from "@/lib/order-store";
-import { findPacienteByCpf, hasPriorOrdersByEmail, hasUsedCouponByEmail } from "@/lib/supabase-db";
+import {
+  findPacienteByCpf,
+  hasPriorOrdersByEmail,
+  hasPriorOrdersByPhone,
+  hasUsedCouponByEmail,
+  hasUsedCouponByPhone,
+} from "@/lib/supabase-db";
 import { sendOrderTelegramNotification } from "@/lib/order-telegram";
 import type { CreateOrderPayload, FulfillmentType, Order } from "@/lib/types";
 
@@ -117,16 +123,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Corpo da requisição inválido." }, { status: 400 });
   }
 
-  // E-mail autenticado (do token de sessão), não o campo livre do formulário.
+  // Identidade autenticada (do token de sessão), não o campo livre do formulário.
   // O checkout exige login (useRequireLogin/useCheckoutGuard nas telas), mas
   // isso é só UX — aqui é a barreira de verdade: sem sessão válida, sem pedido.
-  const authEmail = await verifyUserEmail(request);
-  if (!authEmail) {
+  // Conta pode ter sido criada só com telefone (sem e-mail), então aceita os dois.
+  const authUser = await verifyUser(request);
+  if (!authUser) {
     return NextResponse.json(
       { error: "É necessário estar logado para finalizar o pedido." },
       { status: 401 }
     );
   }
+  const authEmail = authUser.email;
+  const authPhone = authUser.phone;
 
   const fulfillment_type: FulfillmentType = body.fulfillment_type === "delivery" ? "delivery" : "pickup";
 
@@ -185,17 +194,23 @@ export async function POST(request: Request) {
       if (!coupon) {
         return NextResponse.json({ error: "Cupom inválido." }, { status: 400 });
       }
-      // Restrição de "1ª compra"/"uma vez por conta" é só por e-mail autenticado
-      // (telefone é fácil de trocar pra reusar o cupom).
-      const [paciente, emailHasPriorOrders, usedByEmail] = await Promise.all([
+      // Restrição de "1ª compra"/"uma vez por conta" é só pela identidade autenticada
+      // (e-mail ou telefone da sessão, nunca o campo livre do formulário, fácil de trocar).
+      const [paciente, hasPriorOrders, usedCoupon] = await Promise.all([
         body.customer_cpf ? findPacienteByCpf(body.customer_cpf) : Promise.resolve(null),
-        hasPriorOrdersByEmail(authEmail),
-        coupon.oncePerCustomer ? hasUsedCouponByEmail(authEmail, body.coupon_code) : Promise.resolve(false),
+        authEmail ? hasPriorOrdersByEmail(authEmail) : authPhone ? hasPriorOrdersByPhone(authPhone) : Promise.resolve(false),
+        !coupon.oncePerCustomer
+          ? Promise.resolve(false)
+          : authEmail
+            ? hasUsedCouponByEmail(authEmail, body.coupon_code)
+            : authPhone
+              ? hasUsedCouponByPhone(authPhone, body.coupon_code)
+              : Promise.resolve(false),
       ]);
       const restrictionError = validateCouponRestrictions(coupon, {
         isPatient: !!paciente,
-        isFirstPurchase: !emailHasPriorOrders,
-        alreadyUsedByCustomer: usedByEmail,
+        isFirstPurchase: !hasPriorOrders,
+        alreadyUsedByCustomer: usedCoupon,
       });
       if (restrictionError) {
         return NextResponse.json({ error: restrictionError }, { status: 400 });
@@ -211,8 +226,7 @@ export async function POST(request: Request) {
   let pointsToRedeemCents = 0;
 
   if (body.points_redeemed_cents && body.points_redeemed_cents > 0) {
-    const email = await verifyUserEmail(request);
-    const redeemingPartner = email ? await findPartnerByEmail(email) : null;
+    const redeemingPartner = authEmail ? await findPartnerByEmail(authEmail) : null;
     if (redeemingPartner) {
       redeemingPartnerId = redeemingPartner.id;
       pointsToRedeemCents = Math.max(
@@ -274,8 +288,8 @@ export async function POST(request: Request) {
     ...body,
     // E-mail autenticado sempre vence o campo livre do formulário — evita que
     // alguém digite outro e-mail só pra burlar a checagem de "1ª compra"/"uma
-    // vez por conta" numa próxima tentativa.
-    customer_email: authEmail,
+    // vez por conta" numa próxima tentativa. Conta só-telefone não tem e-mail.
+    customer_email: authEmail ?? undefined,
     items: chargedItems,
     id: orderId,
     status: "pending",

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FiAlertTriangle } from "react-icons/fi";
 import { formatPrice, nutrirApi } from "@/lib/api";
 import { formatPhoneBR, phoneValidationMessage } from "@/lib/br-fields";
 import { useCart } from "@/lib/cart-context";
@@ -235,23 +234,6 @@ export function OrderForm() {
     router.push("/checkout/pagamento");
   }
 
-  // Pra entrega, o aviso só faz sentido em bairros que teriam entrega imediata caso houvesse estoque
-  // (Balneário Piçarras e Centro de Penha) — nos demais bairros a entrega nunca é no mesmo dia, então
-  // "não disponível pra entrega imediata" não se aplica e o aviso não deve aparecer.
-  const showStockWarning =
-    blocksToday &&
-    (fulfillmentType === "pickup" || isSameDayDeliveryEligible(deliveryAddress.bairroId));
-
-  const stockWarning = showStockWarning && (
-    <p className="flex items-start gap-1.5 text-xs font-medium text-nutrir-burgundy">
-      <FiAlertTriangle className="mt-0.5 shrink-0" aria-hidden />
-      <span>
-        Um ou mais itens em sua sacola não estão disponíveis para entrega imediata, agende seu
-        pedido ou consulte nosso estoque.
-      </span>
-    </p>
-  );
-
   return (
     <form onSubmit={handleContinue} className="space-y-6">
       {items.length > 0 && (
@@ -334,8 +316,6 @@ export function OrderForm() {
             onChange={(patch) => setDeliveryAddress((prev) => ({ ...prev, ...patch }))}
           />
 
-          {stockWarning}
-
           <DeliveryScheduler
             bairroId={deliveryAddress.bairroId}
             value={deliverySelection}
@@ -361,8 +341,6 @@ export function OrderForm() {
                   : "Pedidos devem ser feitos com no mínimo 24 horas de antecedência (pedidos até as 19h retiram ainda hoje; depois disso, só a partir de amanhã)."}
             </p>
           </div>
-
-          {stockWarning}
 
           <PickupScheduler
             value={pickupUnified}

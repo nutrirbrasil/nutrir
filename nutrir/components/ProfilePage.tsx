@@ -1043,18 +1043,6 @@ export function ProfilePage() {
         Continuar com Google
       </button>
 
-      <p className="mt-3 text-center text-xs leading-relaxed text-nutrir-ink/60">
-        Ao continuar com Google, você declara estar de acordo com os{" "}
-        <Link href="/termos-de-uso" className="font-medium text-nutrir-burgundy hover:underline">
-          Termos de Uso
-        </Link>{" "}
-        e a{" "}
-        <Link href="/politica-de-privacidade" className="font-medium text-nutrir-burgundy hover:underline">
-          Política de Privacidade
-        </Link>
-        .
-      </p>
-
       {!authConfigured && (
         <p className="mt-2 text-center text-xs text-nutrir-ink/50">
           Configure Supabase e o provedor Google para ativar este botão.
