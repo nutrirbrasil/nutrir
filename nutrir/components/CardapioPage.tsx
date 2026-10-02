@@ -13,10 +13,6 @@ import { Reveal } from "./Reveal";
 
 type CardapioTab = "combos" | "montar";
 
-const TABS: { id: CardapioTab; label: string }[] = [
-  { id: "combos", label: "Combos" },
-  { id: "montar", label: "Monte seu Combo" },
-];
 
 function scrollToComboSection(sectionId: string) {
   const el = document.getElementById(sectionId);
@@ -116,40 +112,11 @@ export function CardapioPage() {
         </p>
 
         <p
-          className="animate-fade-up mx-auto mt-2 max-w-xl font-display text-xs font-bold uppercase tracking-wide text-nutrir-nude/70 sm:text-sm"
-          style={{ animationDelay: "300ms" }}
-        >
-          Comida de verdade, feita por quem entende
-        </p>
-
-        <p
-          className="animate-fade-up mx-auto mt-3 max-w-xl text-[0.85rem] leading-relaxed text-nutrir-nude/85"
+          className="animate-fade-up mx-auto mt-3 max-w-xl text-[0.95rem] leading-relaxed text-nutrir-nude/90"
           style={{ animationDelay: "320ms" }}
         >
-          Combos pensados e montados por nutricionistas,
-          <br />
-          para facilitar sua rotina semanal e mensal.
+          Organização e praticidade para sua semana
         </p>
-
-        <div
-          className="animate-fade-up mt-5 flex flex-wrap justify-center gap-3"
-          style={{ animationDelay: "400ms" }}
-        >
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => selectTab(t.id)}
-              className={`rounded-full px-8 py-3 text-sm font-bold tracking-wide transition-all duration-200 ${
-                tab === t.id
-                  ? "bg-nutrir-burgundy text-nutrir-nude shadow-[0_2px_6px_rgb(92_34_44/0.3),0_10px_24px_rgb(92_34_44/0.28)]"
-                  : "border border-nutrir-nude/25 text-nutrir-nude/90 hover:border-nutrir-nude/45 hover:bg-nutrir-canvas/10"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
       </section>
 
       <div className="mx-auto max-w-6xl space-y-16 px-4 py-12">
@@ -157,25 +124,21 @@ export function CardapioPage() {
           <section id="combos" className="scroll-mt-28 space-y-8">
             <div id={COMBO_SECTION_IDS.frango} className="scroll-mt-28">
               <Reveal>
-                <CombosShowcase />
+                <CombosShowcase onBuild={() => selectTab("montar")} />
               </Reveal>
             </div>
-
-            <Reveal className="pt-4 text-center">
-              <p className="text-nutrir-ink/70">Não encontrou o que procurava?</p>
-              <button
-                type="button"
-                onClick={() => selectTab("montar")}
-                className="mt-2 font-display text-xl font-bold italic text-nutrir-burgundy underline-offset-4 transition hover:underline"
-              >
-                Monte seu próprio combo!
-              </button>
-            </Reveal>
           </section>
         )}
 
         {tab === "montar" && (
           <div id={COMBO_SECTION_IDS.montar} className="scroll-mt-28 py-4">
+            <button
+              type="button"
+              onClick={() => selectTab("combos")}
+              className="mx-auto mb-6 block text-sm font-semibold text-nutrir-burgundy underline-offset-4 hover:underline"
+            >
+              ← Ver combos prontos
+            </button>
             <ComboBuilder embedded />
           </div>
         )}

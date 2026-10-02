@@ -229,12 +229,12 @@ function ConfiguratorModal({ meals, onClose }: { meals: number; onClose: () => v
   );
 }
 
-export function CombosShowcase() {
+export function CombosShowcase({ onBuild }: { onBuild: () => void }) {
   const [openMeals, setOpenMeals] = useState<number | null>(null);
 
   return (
     <>
-      <div className="grid gap-5 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
         {PLANS.map((plan) => {
           const from = getTier("frango", plan.meals).prices.P;
           return (
@@ -245,7 +245,7 @@ export function CombosShowcase() {
                 track("combo_tier_selected", { meals: plan.meals });
                 setOpenMeals(plan.meals);
               }}
-              className="card-dark card-lift group relative isolate flex flex-col items-center overflow-hidden px-6 py-9 text-center transition duration-300 hover:-translate-y-1"
+              className="card-dark card-lift group relative isolate flex flex-col items-center overflow-hidden !px-3 !py-6 text-center transition duration-300 hover:-translate-y-1 sm:!px-6 sm:!py-9"
             >
               <div
                 aria-hidden
@@ -257,7 +257,7 @@ export function CombosShowcase() {
                 }}
               />
               <p className="eyebrow text-[10px] text-nutrir-nude/60">Combo</p>
-              <h3 className="mt-1 font-display text-3xl font-bold tracking-tight text-nutrir-nude">
+              <h3 className="mt-1 font-display text-2xl font-bold tracking-tight text-nutrir-nude sm:text-3xl">
                 {plan.name}
               </h3>
               <div aria-hidden className="mt-3 flex items-center gap-3">
@@ -265,33 +265,85 @@ export function CombosShowcase() {
                 <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-nude/45" />
                 <span className="h-px w-8 bg-nutrir-nude/25" />
               </div>
-              <p className="mt-5 font-display text-7xl font-black leading-none text-nutrir-nude">
+              <p className="mt-4 font-display text-5xl font-black leading-none text-nutrir-nude sm:mt-5 sm:text-7xl">
                 {plan.meals}
               </p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.22em] text-nutrir-nude/70">
                 marmitas
               </p>
-              <p className="mt-4 min-h-[2.5rem] max-w-[14rem] text-sm leading-snug text-nutrir-nude/75">
+              <p className="mt-3 min-h-[2.5rem] max-w-[14rem] text-xs leading-snug text-nutrir-nude/75 sm:mt-4 sm:text-sm">
                 {plan.tagline}
               </p>
-              <p className="mt-6 text-xs uppercase tracking-wider text-nutrir-nude/65">A partir de</p>
-              <p className="font-display text-3xl font-bold text-nutrir-nude">
+              <p className="mt-5 text-[10px] uppercase tracking-wider text-nutrir-nude/65 sm:mt-6 sm:text-xs">A partir de</p>
+              <p className="font-display text-2xl font-bold leading-tight text-nutrir-nude sm:text-3xl">
                 {formatPrice(from.cash_per_meal_cents)}
-                <span className="ml-1.5 text-sm font-medium text-nutrir-nude/70">por marmita</span>
+                <span className="block text-xs font-medium text-nutrir-nude/70 sm:ml-1.5 sm:inline sm:text-sm">
+                  por marmita
+                </span>
               </p>
-              <p className="mt-1 text-sm text-nutrir-nude/75">
+              <p className="mt-1 text-[11px] text-nutrir-nude/75 sm:text-sm">
                 <span className="line-through opacity-70">{formatPrice(from.card_total_cents)}</span>{" "}
                 <strong className="font-bold text-nutrir-nude">
                   {formatPrice(from.cash_total_cents)}
                 </strong>{" "}
                 no pix
               </p>
-              <span className="mt-6 inline-flex items-center rounded-full border border-nutrir-nude/40 px-6 py-2 text-sm font-bold text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark">
+              <span className="mt-5 sm:mt-6" />
+              <span className="mt-auto inline-flex items-center rounded-full border border-nutrir-nude/40 px-4 py-2 text-xs font-bold sm:px-6 sm:text-sm text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark">
                 Escolher combo
               </span>
             </button>
           );
         })}
+
+        <button
+          type="button"
+          onClick={() => {
+            track("combo_builder_card_clicked");
+            onBuild();
+          }}
+          className="card-dark card-lift group relative isolate flex flex-col items-center overflow-hidden !px-3 !py-6 text-center ring-1 ring-inset ring-nutrir-nude/25 transition duration-300 hover:-translate-y-1 sm:!px-6 sm:!py-9"
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-0 -z-10 h-56 w-72 -translate-x-1/2 opacity-80 transition-opacity duration-500 group-hover:opacity-100"
+            style={{
+              background:
+                "radial-gradient(50% 50% at 50% 40%, rgb(243 232 220 / 0.18), transparent 70%)",
+            }}
+          />
+          <p className="eyebrow text-[10px] text-nutrir-nude/60">Combo</p>
+          <h3 className="mt-1 font-display text-2xl font-bold leading-tight tracking-tight text-nutrir-nude sm:text-3xl">
+            Monte seu Combo
+          </h3>
+          <div aria-hidden className="mt-3 flex items-center gap-3">
+            <span className="h-px w-8 bg-nutrir-nude/25" />
+            <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-nude/45" />
+            <span className="h-px w-8 bg-nutrir-nude/25" />
+          </div>
+          <p className="mt-4 font-display text-4xl font-black leading-none text-nutrir-nude sm:mt-5 sm:text-6xl">
+            5-60
+          </p>
+          <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-nutrir-nude/70 sm:text-xs">
+            marmitas
+          </p>
+          <p className="mt-3 min-h-[2.5rem] max-w-[14rem] text-xs leading-snug text-nutrir-nude/75 sm:mt-4 sm:text-sm">
+            Personalize seu combo
+          </p>
+          <p className="mt-5 text-[10px] uppercase tracking-wider text-nutrir-nude/65 sm:mt-6 sm:text-xs">
+            Valor variável
+          </p>
+          <p className="mt-1 text-[11px] leading-snug text-nutrir-nude/75 sm:text-sm">
+            Depende de quantidade e sabor
+          </p>
+          <p className="mt-2 rounded-full bg-nutrir-nude/12 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-nutrir-nude sm:text-xs">
+            Desconto progressivo
+          </p>
+          <span className="mt-5 sm:mt-6" />
+          <span className="mt-auto inline-flex items-center rounded-full border border-nutrir-nude/40 px-4 py-2 text-xs font-bold text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark sm:px-6 sm:text-sm">
+            Montar meu combo
+          </span>
+        </button>
       </div>
 
       {openMeals !== null && (
