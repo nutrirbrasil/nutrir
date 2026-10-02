@@ -161,7 +161,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setProfile((p) => ({ ...p, phone: p.phone || formatPhoneDisplay(nextSession.user.phone!) }));
       }
       if (!nextSession) {
-        setProfile((p) => ({ ...p, email: "" }));
+        // Limpa tudo, não só o e-mail — telefone/CPF/nome ficados do localStorage
+        // vazariam pra próxima conta criada/logada nesse mesmo navegador.
+        setProfile(emptyProfile);
       }
     });
 
@@ -357,6 +359,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
     setSession(null);
     setPasswordRecovery(false);
+    // Não espera o evento SIGNED_OUT do Supabase pra limpar — mesma razão:
+    // telefone/CPF/nome não podem sobreviver no localStorage pra próxima conta.
+    setProfile(emptyProfile);
   }, [authConfigured]);
 
   const updateProfile = useCallback((data: Partial<UserProfile>) => {
