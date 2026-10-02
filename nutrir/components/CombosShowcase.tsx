@@ -171,9 +171,6 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-nutrir-ink/55">
-                  Você paga as {meals} marmitas de uma vez e recebe {option.perWeek} por semana.
-                </p>
               </div>
             )}
 
@@ -269,9 +266,6 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-[11px] leading-snug text-nutrir-ink/50">
-                Substituições (arroz integral, leite vegetal e outras) você escolhe no próximo passo.
-              </p>
             </div>
 
             <div className="mt-4 text-center md:mt-auto md:pt-4">

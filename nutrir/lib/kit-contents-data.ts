@@ -14,14 +14,16 @@ export interface KitContentOptions {
 const PREMIUM_LINES: Record<number, KitContentLine[]> = {
   7: [
     { label: "Escondidinho de Frango", count: 2 },
-    { label: "Escondidinho de Carne", count: 2 },
+    { label: "Escondidinho de Carne", count: 1 },
+    { label: "Escondidinho de Cogu", count: 1 },
     { label: "Strogonoff de Frango", count: 2 },
     { label: "Strogonoff de Carne", count: 1 },
   ],
   14: [
-    { label: "Escondidinho de Frango", count: 4 },
+    { label: "Escondidinho de Frango", count: 3 },
     { label: "Escondidinho de Carne", count: 3 },
-    { label: "Strogonoff de Frango", count: 4 },
+    { label: "Escondidinho de Cogu", count: 2 },
+    { label: "Strogonoff de Frango", count: 3 },
     { label: "Strogonoff de Carne", count: 3 },
   ],
   28: [
@@ -36,8 +38,8 @@ const FRANGO_LINES: Record<number, KitContentLine[]> = {
   7: [
     { label: "Frango da Casa", count: 2 },
     { label: "Frango ao Sugo", count: 2 },
-    { label: "Escondidinho de Frango", count: 2 },
-    { label: "Strogonoff de Frango", count: 1 },
+    { label: "Escondidinho de Frango", count: 1 },
+    { label: "Strogonoff de Frango", count: 2 },
   ],
   14: [
     { label: "Frango da Casa", count: 4 },
@@ -76,8 +78,8 @@ const CARNE_LINES: Record<number, KitContentLine[]> = {
 
 const VEG_LINES: Record<number, KitContentLine[]> = {
   7: [
-    { label: "Mix de Ervilha", count: 3 },
-    { label: "Mix de Grão de Bico", count: 2 },
+    { label: "Mix de Ervilha", count: 2 },
+    { label: "Mix de Grão de Bico", count: 3 },
     { label: "Escondidinho de Cogu", count: 2 },
   ],
   14: [
@@ -93,27 +95,25 @@ const VEG_LINES: Record<number, KitContentLine[]> = {
 };
 
 const MISTO_LINES: Record<number, KitContentLine[]> = {
-  // No tier de 7 marmitas não cabem as 8 opções (4 de frango + 4 de carne) com
-  // pelo menos 1 cada, então o Escondidinho de Carne fica de fora só nesse
-  // tier (ainda disponível avulso, no Kit Carne e no Monte seu Combo).
+  // No tier de 7 o Carne da Casa fica de fora (8 opções não cabem em 7 marmitas).
   7: [
     { label: "Frango da Casa", count: 1 },
     { label: "Frango ao Sugo", count: 1 },
     { label: "Escondidinho de Frango", count: 1 },
     { label: "Strogonoff de Frango", count: 1 },
-    { label: "Carne da Casa", count: 1 },
     { label: "Ragu à Bolonhesa", count: 1 },
+    { label: "Escondidinho de Carne", count: 1 },
     { label: "Strogonoff de Carne", count: 1 },
   ],
   14: [
     { label: "Frango da Casa", count: 2 },
     { label: "Frango ao Sugo", count: 2 },
-    { label: "Escondidinho de Frango", count: 2 },
-    { label: "Strogonoff de Frango", count: 1 },
+    { label: "Escondidinho de Frango", count: 1 },
+    { label: "Strogonoff de Frango", count: 2 },
     { label: "Carne da Casa", count: 2 },
     { label: "Ragu à Bolonhesa", count: 2 },
-    { label: "Escondidinho de Carne", count: 2 },
-    { label: "Strogonoff de Carne", count: 1 },
+    { label: "Escondidinho de Carne", count: 1 },
+    { label: "Strogonoff de Carne", count: 2 },
   ],
   28: [
     { label: "Frango da Casa", count: 4 },
