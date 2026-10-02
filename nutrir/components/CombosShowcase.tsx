@@ -86,7 +86,10 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
   const kit = getKit(kitId);
   const tier = getTier(kitId, meals);
   const pricing = tier.prices[size];
-  const lines = useMemo(() => getKitContentLines(kitId, meals), [kitId, meals]);
+  const lines = useMemo(
+    () => [...getKitContentLines(kitId, meals)].sort((a, b) => b.count - a.count),
+    [kitId, meals]
+  );
 
   function handleAdd() {
     requestAdd({
@@ -119,7 +122,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
         role="dialog"
         aria-modal="true"
         aria-label={`${plan.eyebrow} ${plan.name}`}
-        className="fixed inset-x-0 bottom-0 z-[90] flex max-h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:max-h-[min(88vh,760px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
+        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,720px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
       >
         <header className="card-dark relative flex items-center justify-between gap-4 rounded-none px-6 py-5">
           <div>

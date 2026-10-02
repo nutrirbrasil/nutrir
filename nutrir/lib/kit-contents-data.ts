@@ -59,8 +59,8 @@ const CARNE_LINES: Record<number, KitContentLine[]> = {
   7: [
     { label: "Carne da Casa", count: 2 },
     { label: "Ragu à Bolonhesa", count: 2 },
-    { label: "Escondidinho de Carne", count: 2 },
-    { label: "Strogonoff de Carne", count: 1 },
+    { label: "Escondidinho de Carne", count: 1 },
+    { label: "Strogonoff de Carne", count: 2 },
   ],
   14: [
     { label: "Carne da Casa", count: 4 },
