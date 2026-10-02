@@ -138,14 +138,12 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
 
   const priceBlock = (
     <div className="text-center">
-      <p className="font-display text-2xl leading-tight text-nutrir-ink">
-        {showSavings && (
-          <span className="mr-2 font-normal text-nutrir-ink/50 line-through">
-            {formatPrice(avulsoTotalCents)}
-          </span>
-        )}
-        <span className="font-bold">{formatPrice(pricing.cash_total_cents)}</span>
-        <span className="ml-1.5 font-sans text-sm font-normal text-nutrir-ink/60">no pix</span>
+      <p className="text-xl text-nutrir-ink">
+        Apenas{" "}
+        <strong className="font-display text-3xl font-bold">
+          {formatPrice(pricing.cash_per_meal_cents)}
+        </strong>{" "}
+        por marmita
       </p>
       <div className="mt-4 flex items-center gap-2.5">
         <button
@@ -200,12 +198,16 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
             </h2>
           </div>
           <div className="flex shrink-0 items-center gap-3 md:gap-4">
-            <p className="text-right text-xs leading-tight text-nutrir-nude/80 md:text-sm">
-              Apenas{" "}
-              <strong className="font-display text-lg font-bold text-nutrir-nude md:text-2xl">
-                {formatPrice(pricing.cash_per_meal_cents)}
-              </strong>
-              <span className="block">por marmita</span>
+            <p className="text-right font-display leading-tight text-nutrir-nude">
+              {showSavings && (
+                <span className="block text-xs font-normal text-nutrir-nude/60 line-through md:text-sm">
+                  {formatPrice(avulsoTotalCents)}
+                </span>
+              )}
+              <span className="text-lg font-bold md:text-2xl">{formatPrice(pricing.cash_total_cents)}</span>
+              <span className="ml-1 font-sans text-[10px] font-normal text-nutrir-nude/75 md:text-xs">
+                no pix
+              </span>
             </p>
             <button
               type="button"
