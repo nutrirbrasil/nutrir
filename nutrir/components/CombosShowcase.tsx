@@ -49,12 +49,11 @@ const PLANS: Plan[] = [
   },
 ];
 
-const KIT_TYPES: { id: KitId; label: string; hint: string }[] = [
-  { id: "premium", label: "Premium", hint: "Escondidinhos e Strogonoffs" },
-  { id: "frango", label: "Frango", hint: "Leveza e praticidade" },
-  { id: "carne", label: "Carne", hint: "Patinho, sabor e textura" },
-  { id: "misto", label: "Misto", hint: "Frango e carne" },
-  { id: "veg", label: "Vegetariano", hint: "Proteína vegetal" },
+const KIT_TYPES: { id: KitId; label: string }[] = [
+  { id: "premium", label: "Premium" },
+  { id: "frango", label: "Frango" },
+  { id: "misto", label: "Misto" },
+  { id: "carne", label: "Carne" },
 ];
 
 function getKit(id: KitId): KitProduct {
@@ -110,6 +109,24 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
     onClose();
   }
 
+  const priceBlock = (
+            <div className="text-center">
+              <p className="text-sm text-nutrir-ink/60">
+                <span className="line-through">{formatPrice(pricing.card_total_cents)}</span>
+              </p>
+              <p className="font-display text-4xl font-bold leading-tight text-nutrir-ink">
+                {formatPrice(pricing.cash_total_cents)}
+                <span className="ml-1.5 text-sm font-medium text-nutrir-ink/60">no pix</span>
+              </p>
+              <p className="mt-0.5 text-sm text-nutrir-ink/70">
+                {formatPrice(pricing.cash_per_meal_cents)} por marmita
+              </p>
+              <button type="button" onClick={handleAdd} className="btn-primary mt-4 w-full py-3.5 text-base">
+                Adicionar à sacola
+              </button>
+            </div>
+  );
+
   return createPortal(
     <>
       <button
@@ -122,7 +139,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
         role="dialog"
         aria-modal="true"
         aria-label={`${plan.eyebrow} ${plan.name}`}
-        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,720px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
+        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,540px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
       >
         <header className="card-dark relative flex items-center justify-between gap-4 rounded-none px-6 py-5">
           <div>
@@ -204,7 +221,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-nutrir-ink/55">
                 Tipo de combo
               </p>
-              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="mt-2 grid grid-cols-2 gap-2">
                 {KIT_TYPES.map((type) => {
                   const selected = kitId === type.id;
                   return (
@@ -234,9 +251,6 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
                         <span className="block font-display text-base font-bold text-nutrir-ink">
                           {type.label}
                         </span>
-                        <span className="block text-[11px] leading-tight text-nutrir-ink/60">
-                          {type.hint}
-                        </span>
                       </span>
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
@@ -252,6 +266,8 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
                 })}
               </div>
             </div>
+
+            <div className="hidden pt-2 md:block">{priceBlock}</div>
           </div>
 
           <div className="flex flex-col">
@@ -271,21 +287,6 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
               </ul>
             </div>
 
-            <div className="mt-4 text-center md:mt-auto md:pt-4">
-              <p className="text-sm text-nutrir-ink/60">
-                <span className="line-through">{formatPrice(pricing.card_total_cents)}</span>
-              </p>
-              <p className="font-display text-4xl font-bold leading-tight text-nutrir-ink">
-                {formatPrice(pricing.cash_total_cents)}
-                <span className="ml-1.5 text-sm font-medium text-nutrir-ink/60">no pix</span>
-              </p>
-              <p className="mt-0.5 text-sm text-nutrir-ink/70">
-                {formatPrice(pricing.cash_per_meal_cents)} por marmita
-              </p>
-              <button type="button" onClick={handleAdd} className="btn-primary mt-4 w-full py-3.5 text-base">
-                Adicionar à sacola
-              </button>
-            </div>
           </div>
         </div>
       </div>
