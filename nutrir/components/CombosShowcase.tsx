@@ -276,7 +276,15 @@ export function CombosShowcase() {
               </p>
               <p className="mt-6 text-xs uppercase tracking-wider text-nutrir-nude/65">A partir de</p>
               <p className="font-display text-3xl font-bold text-nutrir-nude">
-                {formatPrice(from.cash_total_cents)}
+                {formatPrice(from.cash_per_meal_cents)}
+                <span className="ml-1.5 text-sm font-medium text-nutrir-nude/70">por marmita</span>
+              </p>
+              <p className="mt-1 text-sm text-nutrir-nude/75">
+                <span className="line-through opacity-70">{formatPrice(from.card_total_cents)}</span>{" "}
+                <strong className="font-bold text-nutrir-nude">
+                  {formatPrice(from.cash_total_cents)}
+                </strong>{" "}
+                no pix
               </p>
               <span className="mt-6 inline-flex items-center rounded-full border border-nutrir-nude/40 px-6 py-2 text-sm font-bold text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark">
                 Escolher combo
