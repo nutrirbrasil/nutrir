@@ -27,10 +27,11 @@ const PREMIUM_LINES: Record<number, KitContentLine[]> = {
     { label: "Strogonoff de Carne", count: 3 },
   ],
   28: [
-    { label: "Escondidinho de Frango", count: 7 },
-    { label: "Escondidinho de Carne", count: 7 },
-    { label: "Strogonoff de Frango", count: 7 },
-    { label: "Strogonoff de Carne", count: 7 },
+    { label: "Escondidinho de Frango", count: 6 },
+    { label: "Escondidinho de Carne", count: 6 },
+    { label: "Escondidinho de Cogu", count: 4 },
+    { label: "Strogonoff de Frango", count: 6 },
+    { label: "Strogonoff de Carne", count: 6 },
   ],
 };
 

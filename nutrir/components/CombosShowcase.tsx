@@ -100,6 +100,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
   }, [onClose]);
 
   const kit = getKit(kitId);
+  const weightG = kitId === "premium" && size === "P" ? 240 : MARMITA_WEIGHT_G[size];
   const tier = getTier(kitId, meals);
   const pricing = tier.prices[size];
   const lines = useMemo(
@@ -138,12 +139,8 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
 
   const priceBlock = (
     <div className="text-center">
-      <p className="text-xl text-nutrir-ink">
-        Apenas{" "}
-        <strong className="font-display text-3xl font-bold">
-          {formatPrice(pricing.cash_per_meal_cents)}
-        </strong>{" "}
-        por marmita
+      <p className="font-display text-base font-bold text-nutrir-ink">
+        Apenas <span className="text-xl">{formatPrice(pricing.cash_per_meal_cents)}</span> por marmita
       </p>
       <div className="mt-4 flex items-center gap-2.5">
         <button
@@ -181,7 +178,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
         role="dialog"
         aria-modal="true"
         aria-label={`${plan.eyebrow} ${plan.name}`}
-        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,520px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
+        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,600px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
       >
         <header className="card-dark relative flex items-center justify-between gap-4 rounded-none px-6 py-5">
           <div>
@@ -200,7 +197,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
           <div className="flex shrink-0 items-center gap-3 md:gap-4">
             <p className="text-right font-display leading-tight text-nutrir-nude">
               {showSavings && (
-                <span className="block text-xs font-normal text-nutrir-nude/60 line-through md:text-sm">
+                <span className="block text-lg font-normal text-nutrir-nude/60 line-through md:text-2xl">
                   {formatPrice(avulsoTotalCents)}
                 </span>
               )}
@@ -269,7 +266,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
                   </button>
                 ))}
               </div>
-              <span className="ml-3 text-xs text-nutrir-ink/50">Total: {MARMITA_WEIGHT_G[size]}g</span>
+              <span className="ml-3 text-xs text-nutrir-ink/50">Total: {weightG}g</span>
             </div>
 
             <div>
