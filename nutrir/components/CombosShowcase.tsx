@@ -2,13 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { FiCheck, FiX } from "react-icons/fi";
+import { FiCheck, FiShoppingBag, FiX } from "react-icons/fi";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
 import { track } from "@/lib/analytics";
 import { getKitContentLines, getKitMealLabels } from "@/lib/kit-contents-data";
 import { KIT_IMAGES } from "@/lib/marmita-images";
-import { KIT_PRODUCTS, MARMITA_WEIGHT_G, type KitProduct, type MarmitaSize } from "@/lib/menu-data";
+import {
+  KIT_PRODUCTS,
+  MARMITA_WEIGHT_G,
+  MENU_SECTIONS,
+  type KitProduct,
+  type MarmitaSize,
+} from "@/lib/menu-data";
 import { MarmitaPhoto } from "./MarmitaPhoto";
 
 type KitId = KitProduct["id"];
@@ -56,6 +62,17 @@ const KIT_TYPES: { id: KitId; label: string }[] = [
   { id: "carne", label: "Carne" },
 ];
 
+/** Preço avulso (pix) de cada marmita pelo nome, pra comparar com o combo. */
+const AVULSO_BY_NAME = (() => {
+  const map = new Map<string, Record<MarmitaSize, number>>();
+  for (const section of MENU_SECTIONS) {
+    for (const item of section.items) {
+      if (!map.has(item.name)) map.set(item.name, item.prices);
+    }
+  }
+  return map;
+})();
+
 function getKit(id: KitId): KitProduct {
   return KIT_PRODUCTS.find((k) => k.id === id)!;
 }
@@ -90,11 +107,21 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
     [kitId, meals]
   );
 
-  function handleAdd() {
+  const avulsoTotalCents = useMemo(
+    () =>
+      lines.reduce((sum, line) => sum + (AVULSO_BY_NAME.get(line.label)?.[size] ?? 0) * line.count, 0),
+    [lines, size]
+  );
+  const avulsoPerMealCents = Math.round(avulsoTotalCents / meals);
+  const showSavings = avulsoTotalCents > pricing.cash_total_cents;
+
+  function addToBag(buyNow: boolean) {
+    track(buyNow ? "combo_buy_now" : "combo_add_to_bag", { kit_id: kitId, meals, size });
     requestAdd({
       kind: "kit",
       mealCount: meals,
       mealLabels: getKitMealLabels(kitId, meals),
+      redirectTo: buyNow ? "/agendar" : undefined,
       baseItem: {
         menu_id: `kit-${kitId}-${meals}-${size}`,
         item_id: `kit-${kitId}-${meals}`,
@@ -110,21 +137,40 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
   }
 
   const priceBlock = (
-            <div className="text-center">
-              <p className="text-sm text-nutrir-ink/60">
-                <span className="line-through">{formatPrice(pricing.card_total_cents)}</span>
-              </p>
-              <p className="font-display text-4xl font-bold leading-tight text-nutrir-ink">
-                {formatPrice(pricing.cash_total_cents)}
-                <span className="ml-1.5 text-sm font-medium text-nutrir-ink/60">no pix</span>
-              </p>
-              <p className="mt-0.5 text-sm text-nutrir-ink/70">
-                {formatPrice(pricing.cash_per_meal_cents)} por marmita
-              </p>
-              <button type="button" onClick={handleAdd} className="btn-primary mt-4 w-full py-3.5 text-base">
-                Adicionar à sacola
-              </button>
-            </div>
+    <div className="text-center">
+      {showSavings && (
+        <p className="text-sm text-nutrir-ink/60">
+          <span className="line-through">{formatPrice(avulsoTotalCents)}</span>
+        </p>
+      )}
+      <p className="font-display text-4xl font-bold leading-tight text-nutrir-ink">
+        {formatPrice(pricing.cash_total_cents)}
+        <span className="ml-1.5 text-sm font-medium text-nutrir-ink/60">no pix</span>
+      </p>
+      <p className="mt-0.5 text-sm text-nutrir-ink/70">
+        {formatPrice(pricing.cash_per_meal_cents)} por marmita
+      </p>
+      <div className="mt-4 flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={() => addToBag(false)}
+          aria-label="Adicionar à sacola"
+          title="Adicionar à sacola"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-nutrir-burgundy text-nutrir-burgundy transition hover:bg-nutrir-burgundy hover:text-nutrir-nude dark:text-nutrir-nude dark:border-nutrir-nude/60 dark:hover:bg-nutrir-nude/10"
+        >
+          <FiShoppingBag className="text-xl" />
+        </button>
+        <button type="button" onClick={() => addToBag(true)} className="btn-primary flex-1 py-3.5 text-base">
+          Comprar Agora
+        </button>
+      </div>
+      {showSavings && (
+        <p className="mt-2 text-[10px] leading-snug text-nutrir-ink/55">
+          Você está economizando muito! O valor médio por marmita fora do combo seria{" "}
+          {formatPrice(avulsoPerMealCents)}
+        </p>
+      )}
+    </div>
   );
 
   return createPortal(
@@ -139,7 +185,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
         role="dialog"
         aria-modal="true"
         aria-label={`${plan.eyebrow} ${plan.name}`}
-        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,540px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
+        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,600px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
       >
         <header className="card-dark relative flex items-center justify-between gap-4 rounded-none px-6 py-5">
           <div>
@@ -277,11 +323,11 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
               </p>
               <ul className="mt-3 divide-y divide-nutrir-nude-dark/50">
                 {lines.map((line) => (
-                  <li key={line.label} className="flex items-center justify-between py-2 text-sm">
-                    <span className="text-nutrir-ink">{line.label}</span>
-                    <span className="font-display text-lg font-bold text-nutrir-burgundy">
+                  <li key={line.label} className="flex items-baseline gap-2 py-2 text-sm">
+                    <span className="min-w-[1.75rem] font-display text-lg font-bold text-nutrir-burgundy">
                       {line.count}×
                     </span>
+                    <span className="text-nutrir-ink">{line.label}</span>
                   </li>
                 ))}
               </ul>

@@ -16,6 +16,7 @@ import {
 } from "@/lib/addons-data";
 import { useCart } from "@/lib/cart-context";
 import type { OrderItem } from "@/lib/types";
+import { useRouter } from "next/navigation";
 import { AddonsModal } from "@/components/AddonsModal";
 import { track } from "@/lib/analytics";
 
@@ -26,6 +27,8 @@ export interface PendingCartAdd {
   baseItem: OrderItem;
   mealCount: number;
   mealLabels: string[];
+  /** Se definido, depois de adicionar à sacola vai direto pra essa rota (ex.: "Comprar agora"). */
+  redirectTo?: string;
 }
 
 interface AddonsFlowContextValue {
@@ -41,7 +44,8 @@ const AddonsFlowContext = createContext<AddonsFlowContextValue | null>(null);
 type ModalStep = "closed" | "substitution" | "addon";
 
 export function AddonsFlowProvider({ children }: { children: ReactNode }) {
-  const { addItem } = useCart();
+  const router = useRouter();
+  const { addItem, closeCart } = useCart();
   const [pending, setPending] = useState<PendingCartAdd | null>(null);
   const [step, setStep] = useState<ModalStep>("closed");
   const [selection, setSelection] = useState<AddonSelectionMap>({});
@@ -80,8 +84,12 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
       addons_note,
       addon_ids: addon_ids.length > 0 ? addon_ids : undefined,
     });
+    if (pending.redirectTo) {
+      closeCart();
+      router.push(pending.redirectTo);
+    }
     close();
-  }, [addItem, close, pending, selection]);
+  }, [addItem, closeCart, close, pending, router, selection]);
 
   const requestAdd = useCallback((next: PendingCartAdd) => {
     track("add_to_cart_started", {
