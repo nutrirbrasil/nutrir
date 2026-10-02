@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { formatCpf, formatInstagramDisplay, normalizeInstagramHandle } from "@/lib/br-fields";
 import { useProfile } from "@/lib/profile-context";
+import { track } from "@/lib/analytics";
 
 export function PartnerApplicationForm() {
   const { profile, partner, updateProfile } = useProfile();
@@ -94,6 +95,8 @@ export function PartnerApplicationForm() {
         setError(data.error ?? "Não foi possível enviar sua inscrição. Tente novamente.");
         return;
       }
+
+      track("partner_application_submitted");
 
       // Melhor esforço: preenche o que faltar no perfil, não bloqueia o envio se falhar
       // (ex.: visitante sem telefone salvo, exigido pelo cadastro de cliente).

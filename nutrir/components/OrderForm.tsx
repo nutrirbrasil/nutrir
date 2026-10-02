@@ -35,6 +35,7 @@ import { getItemCashTotalCents } from "@/lib/order-pricing";
 import { resolvePickupAddress } from "@/lib/store-info";
 import { getRequiredLeadDays } from "@/lib/order-lead-time";
 import type { FulfillmentType } from "@/lib/types";
+import { track } from "@/lib/analytics";
 
 const EMPTY_DELIVERY_ADDRESS: DeliveryAddressValue = {
   municipio: "",
@@ -218,6 +219,13 @@ export function OrderForm() {
       delivery_fee_cents: isDelivery ? getDeliveryFeeCents(deliveryAddress.bairroId) ?? 0 : 0,
     });
 
+    track("checkout_schedule_completed", {
+      fulfillment_type: fulfillmentType,
+      delivery_date: getPrimaryDeliveryDate(),
+      bairro_id: isDelivery ? deliveryAddress.bairroId : undefined,
+      has_notes: !!form.notes.trim(),
+      item_count: items.length,
+    });
     router.push("/checkout/pagamento");
   }
 
@@ -259,7 +267,10 @@ export function OrderForm() {
         <div className="grid gap-2 sm:grid-cols-2">
           <button
             type="button"
-            onClick={() => setFulfillmentType("pickup")}
+            onClick={() => {
+              track("fulfillment_selected", { fulfillment_type: "pickup" });
+              setFulfillmentType("pickup");
+            }}
             className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
               fulfillmentType === "pickup"
                 ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"
@@ -270,7 +281,10 @@ export function OrderForm() {
           </button>
           <button
             type="button"
-            onClick={() => setFulfillmentType("delivery")}
+            onClick={() => {
+              track("fulfillment_selected", { fulfillment_type: "delivery" });
+              setFulfillmentType("delivery");
+            }}
             className={`rounded-xl border-2 px-4 py-3 text-sm font-bold transition ${
               fulfillmentType === "delivery"
                 ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"

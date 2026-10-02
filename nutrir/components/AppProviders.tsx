@@ -7,6 +7,7 @@ import { AddonsFlowProvider } from "@/lib/addons-flow-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { CartSidebar } from "@/components/CartSidebar";
 import { AuthHashRedirect } from "@/components/AuthHashRedirect";
+import { AnalyticsEvents } from "@/components/AnalyticsEvents";
 import { PostHogProvider } from "@/components/PostHogProvider";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
@@ -18,6 +19,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
           <CartProvider>
             <AddonsFlowProvider>
               <AuthHashRedirect />
+              <AnalyticsEvents />
               {children}
               <CartSidebar />
             </AddonsFlowProvider>

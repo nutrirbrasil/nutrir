@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/api";
 import { useAddonsFlow } from "@/lib/addons-flow-context";
+import { track } from "@/lib/analytics";
 import {
   COMBO_MEAL_MAX,
   COMBO_MEAL_MIN,
@@ -107,6 +108,7 @@ export function ComboBuilder({ embedded = false }: { embedded?: boolean }) {
   }
 
   function handleConfirmTotal() {
+    track("combo_builder_size_chosen", { meal_count: targetTotal });
     setQuantities({});
     setStep("pick");
   }

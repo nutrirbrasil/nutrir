@@ -16,6 +16,7 @@ import { isLocalPayment, normalizePaymentMethod } from "@/lib/payment-utils";
 import { useProfile } from "@/lib/profile-context";
 import { usePatientStatus } from "@/lib/use-patient-status";
 import type { PaymentMethod } from "@/lib/types";
+import { track } from "@/lib/analytics";
 
 interface PaymentOption {
   id: PaymentMethod;
@@ -79,6 +80,7 @@ export function PaymentMethodStep() {
 
   function handleContinue() {
     const next = { ...draft!, payment_method: method };
+    track("checkout_payment_selected", { payment_method: method, is_patient: isPatient });
     patchDraft({ payment_method: method, order_id: undefined });
 
     if (!hasFiscalData(next)) {

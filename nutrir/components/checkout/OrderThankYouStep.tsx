@@ -17,6 +17,7 @@ import {
 import { usePatientStatus } from "@/lib/use-patient-status";
 import type { Order } from "@/lib/types";
 import type { PaymentMethod } from "@/lib/types";
+import { track } from "@/lib/analytics";
 
 const PAULI_SITE_URL = "https://pauli.nutrirpicarras.com.br";
 
@@ -149,6 +150,22 @@ export function OrderThankYouStep() {
         if (cancelled) return;
 
         setOrder(latest);
+        try {
+          const key = `ph-order-${latest.id}-${latest.payment_status}`;
+          if (!sessionStorage.getItem(key)) {
+            sessionStorage.setItem(key, "1");
+            track(latest.payment_status === "confirmed" ? "purchase_confirmed" : "order_thank_you_viewed", {
+              order_id: latest.id,
+              total_cents: latest.total_cents,
+              payment_method: latest.payment_method,
+              payment_status: latest.payment_status,
+              fulfillment_type: latest.fulfillment_type,
+              coupon_code: latest.coupon_code,
+            });
+          }
+        } catch {
+          // ignore
+        }
         cart.clearCart();
         resetCheckout();
 

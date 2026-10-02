@@ -32,6 +32,7 @@ import {
 } from "@/lib/auth-next";
 import { getWhatsAppUrl } from "@/lib/payment-utils";
 import { resolveAuthIdentifier } from "@/lib/auth-identifier";
+import { track } from "@/lib/analytics";
 import { PAYMENT_METHOD_SHORT_LABELS } from "@/lib/payment-labels";
 import type { PaymentMethod } from "@/lib/types";
 import { OrderDetailsModal } from "@/components/OrderDetailsModal";
@@ -159,6 +160,7 @@ export function ProfilePage() {
     try {
       if (mode === "login") {
         await login(resolved.credential, password);
+        track("login", { method: resolved.credential.type });
         setPassword("");
         goToPendingNext();
         return;
@@ -169,6 +171,7 @@ export function ProfilePage() {
         // contas separadas no Supabase Auth, não dá pra ligar automaticamente).
         const existing = await fetchCustomerByPhone(resolved.credential.phone);
         if (existing?.email) {
+          track("sign_up_blocked_duplicate", { method: "phone" });
           setError(
             `Esse telefone já tem conta com o e-mail ${existing.email}. Entre com esse e-mail em vez de criar uma conta nova.`
           );
@@ -178,6 +181,7 @@ export function ProfilePage() {
       }
 
       const { needsVerification } = await register(resolved.credential, password);
+      track("sign_up", { method: resolved.credential.type, needs_verification: needsVerification });
       if (resolved.credential.type === "email") setEmail(resolved.credential.email);
 
       if (needsVerification && resolved.credential.type === "phone") {
@@ -196,7 +200,9 @@ export function ProfilePage() {
         setVerifyCode("");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível concluir. Tente novamente.");
+      const message = err instanceof Error ? err.message : "Não foi possível concluir. Tente novamente.";
+      track("auth_error", { mode, method: resolved.credential.type, message });
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -205,6 +211,7 @@ export function ProfilePage() {
   async function handleGoogleLogin() {
     setError("");
     setInfo("");
+    track("login_google_clicked", { mode });
     setLoading(true);
     try {
       await loginWithGoogle();

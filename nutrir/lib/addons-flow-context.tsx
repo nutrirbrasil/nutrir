@@ -17,6 +17,7 @@ import {
 import { useCart } from "@/lib/cart-context";
 import type { OrderItem } from "@/lib/types";
 import { AddonsModal } from "@/components/AddonsModal";
+import { track } from "@/lib/analytics";
 
 export type AddonsFlowKind = "marmita" | "kit" | "combo";
 
@@ -60,6 +61,18 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
 
     const menuSuffix = addons_cents > 0 ? `-addons-${JSON.stringify(selection)}` : "";
 
+    track("add_to_cart", {
+      kind: pending.kind,
+      item_name: pending.baseItem.name,
+      item_id: pending.baseItem.item_id,
+      section_id: pending.baseItem.section_id,
+      size: pending.baseItem.size,
+      meal_count: pending.mealCount,
+      price_cents: pending.baseItem.price_cents,
+      addons_cents,
+      addon_ids,
+      has_addons: addon_ids.length > 0,
+    });
     addItem({
       ...pending.baseItem,
       menu_id: `${pending.baseItem.menu_id ?? pending.baseItem.name}${menuSuffix}`,
@@ -71,6 +84,11 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
   }, [addItem, close, pending, selection]);
 
   const requestAdd = useCallback((next: PendingCartAdd) => {
+    track("add_to_cart_started", {
+      kind: next.kind,
+      item_name: next.baseItem.name,
+      meal_count: next.mealCount,
+    });
     setPending(next);
     setSelection({});
     setStep("substitution");
@@ -80,12 +98,17 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
 
   // Combo/kit não tem passo de adicionais, confirma direto depois das substituições.
   const handleContinue = useCallback(() => {
+    track("addons_step_completed", {
+      step,
+      has_selection: Object.keys(selection).length > 0,
+      item_name: pending?.baseItem.name,
+    });
     if (step === "substitution" && !isMultiMeal) {
       setStep("addon");
     } else {
       finalizeAdd();
     }
-  }, [step, isMultiMeal, finalizeAdd]);
+  }, [step, isMultiMeal, finalizeAdd, selection, pending]);
 
   const value = useMemo(() => ({ requestAdd }), [requestAdd]);
 
@@ -98,7 +121,10 @@ export function AddonsFlowProvider({ children }: { children: ReactNode }) {
           step={step}
           isMultiMeal={isMultiMeal}
           selection={selection}
-          onClose={close}
+          onClose={() => {
+            track("addons_modal_dismissed", { step, item_name: pending.baseItem.name });
+            close();
+          }}
           onSelectionChange={setSelection}
           onContinue={handleContinue}
         />

@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { mapAuthError } from "./auth-errors";
+import { resetAnalytics, track } from "./analytics";
 import { formatCpfDisplay, formatInstagramDisplay, formatPhoneDisplay } from "./br-fields";
 import { usePatientStatus } from "./use-patient-status";
 import { usePartnerStatus, type PartnerStatus } from "./use-partner-status";
@@ -362,6 +363,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     // Não espera o evento SIGNED_OUT do Supabase pra limpar — mesma razão:
     // telefone/CPF/nome não podem sobreviver no localStorage pra próxima conta.
     setProfile(emptyProfile);
+    track("logout");
+    resetAnalytics();
   }, [authConfigured]);
 
   const updateProfile = useCallback((data: Partial<UserProfile>) => {

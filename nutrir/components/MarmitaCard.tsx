@@ -11,6 +11,7 @@ import { getMarmitaCardPriceCents } from "@/lib/order-pricing";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 import { NutritionModal } from "@/components/NutritionModal";
 import { GlutenFreeBadge, LactoseFreeBadge } from "@/components/DietaryBadges";
+import { track } from "@/lib/analytics";
 
 interface Props {
   item: MarmitaOption;
@@ -138,7 +139,10 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
           {nutrition && (
             <button
               type="button"
-              onClick={() => setShowNutrition(true)}
+              onClick={() => {
+                track("nutrition_table_opened", { item_name: item.name });
+                setShowNutrition(true);
+              }}
               className="w-full text-center text-[10px] font-semibold text-nutrir-ink underline underline-offset-2 decoration-nutrir-emerald/30 hover:decoration-nutrir-burgundy sm:text-xs"
             >
               Tabela nutricional

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { normalizeCouponCode } from "@/lib/coupons";
+import { track } from "@/lib/analytics";
 
 export interface AppliedCoupon {
   code: string;
@@ -57,10 +58,12 @@ export function CouponField({ applied, onApply, onRemove, cpf, token }: Props) {
       };
 
       if (!data.valid || data.percent === undefined) {
+        track("coupon_rejected", { code, reason: data.error || "invalid" });
         setError(data.error || "Cupom inválido.");
         return;
       }
 
+      track("coupon_applied", { code, percent: data.percent });
       onApply({
         code,
         percent: data.percent,

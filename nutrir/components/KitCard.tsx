@@ -9,6 +9,7 @@ import { getKitMealLabels } from "@/lib/kit-contents-data";
 import { KIT_IMAGES } from "@/lib/marmita-images";
 import { KitContentModal } from "./KitContentModal";
 import { MarmitaPhoto } from "./MarmitaPhoto";
+import { track } from "@/lib/analytics";
 
 interface Props {
   kit: KitProduct;
@@ -163,7 +164,10 @@ export function KitCard({ kit }: Props) {
               </p>
               <button
                 type="button"
-                onClick={() => setShowContent(true)}
+                onClick={() => {
+                  track("kit_content_opened", { kit_id: kit.id });
+                  setShowContent(true);
+                }}
                 className="mt-2 text-xs font-semibold text-nutrir-nude underline underline-offset-4 decoration-nutrir-nude/90 hover:decoration-nutrir-nude md:mt-4 md:text-sm"
               >
                 Ver conteúdo do combo

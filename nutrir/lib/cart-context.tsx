@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { OrderItem } from "./types";
 import { getItemCashTotalCents } from "./order-pricing";
+import { track } from "./analytics";
 
 const STORAGE_KEY = "nutrir-cart";
 
@@ -90,7 +91,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeItem = useCallback((index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+    setItems((prev) => {
+      const removed = prev[index];
+      if (removed) {
+        track("remove_from_cart", {
+          item_name: removed.name,
+          item_id: removed.item_id,
+          quantity: removed.quantity,
+          price_cents: removed.price_cents,
+        });
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   }, []);
 
   const clearCart = useCallback(() => setItems([]), []);
@@ -121,7 +133,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeItem,
       clearCart,
       replaceItems,
-      openCart: () => setIsOpen(true),
+      openCart: () => {
+        track("cart_opened", { item_count: itemCount, total_cents: totalCents });
+        setIsOpen(true);
+      },
       closeCart: () => setIsOpen(false),
     }),
     [

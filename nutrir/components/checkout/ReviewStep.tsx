@@ -28,6 +28,7 @@ import { NUTRIR_STORE_ADDRESS, resolvePickupAddress } from "@/lib/store-info";
 import { useCart } from "@/lib/cart-context";
 import { useProfile } from "@/lib/profile-context";
 import type { CreateOrderPayload, Order, PaymentMethod } from "@/lib/types";
+import { track } from "@/lib/analytics";
 
 function canReusePendingOrder(
   existing: Order,
@@ -187,6 +188,16 @@ export function ReviewStep() {
       // servidor usa o e-mail autenticado pra checar restrição de "1ª compra"
       // e "uma vez por conta" sem depender de campo livre do formulário.
       const { order, checkout_url } = await nutrirApi.createOrder(payload, session?.access_token);
+      track("order_created", {
+        order_id: order.id,
+        total_cents: order.total_cents,
+        payment_method: method,
+        fulfillment_type: order.fulfillment_type,
+        item_count: order.items.length,
+        coupon_code: order.coupon_code,
+        coupon_discount_cents: order.coupon_discount_cents,
+        delivery_fee_cents: order.delivery_fee_cents,
+      });
 
       if (isLocalPayment(method)) {
         cart.clearCart();
@@ -206,7 +217,9 @@ export function ReviewStep() {
 
       redirectToCardCheckout(checkout_url, order.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao finalizar pedido.");
+      const message = err instanceof Error ? err.message : "Erro ao finalizar pedido.";
+      track("order_failed", { payment_method: method, message });
+      setError(message);
     } finally {
       setLoading(false);
     }
