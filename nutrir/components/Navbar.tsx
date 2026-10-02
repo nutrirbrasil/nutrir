@@ -31,7 +31,7 @@ export function Navbar() {
     const active = pathname === href;
     return `rounded-full px-4 py-2 text-sm font-medium transition ${
       active
-        ? "bg-nutrir-canvas text-nutrir-burgundy"
+        ? "bg-nutrir-canvas text-nutrir-burgundy dark:text-nutrir-nude"
         : "text-nutrir-nude/85 hover:bg-nutrir-canvas/10 hover:text-nutrir-nude"
     }`;
   }
@@ -78,7 +78,7 @@ export function Navbar() {
               aria-label="Perfil"
               className={`hidden h-10 w-10 items-center justify-center rounded-full transition md:flex ${
                 pathname.startsWith("/perfil")
-                  ? "bg-nutrir-canvas text-nutrir-burgundy"
+                  ? "bg-nutrir-canvas text-nutrir-burgundy dark:text-nutrir-nude"
                   : "text-nutrir-nude hover:bg-nutrir-canvas/10"
               }`}
             >
@@ -88,7 +88,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={openCart}
-              className="flex items-center gap-2 rounded-full bg-nutrir-canvas px-2.5 py-2 text-nutrir-burgundy shadow-md transition hover:bg-nutrir-canvas-alt sm:px-4"
+              className="flex items-center gap-2 rounded-full bg-nutrir-canvas px-2.5 py-2 text-nutrir-burgundy shadow-md dark:text-nutrir-nude transition hover:bg-nutrir-canvas-alt sm:px-4"
             >
               <FiShoppingBag className="shrink-0 text-lg" />
               {itemCount > 0 ? (

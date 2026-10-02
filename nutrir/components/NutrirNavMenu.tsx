@@ -35,7 +35,7 @@ export function NutrirNavMenu({ variant = "desktop" }: { variant?: "desktop" | "
                 href={item.href}
                 role="menuitem"
                 className={`${baseClass}${
-                  isActive(item.href) ? " bg-nutrir-canvas text-nutrir-burgundy" : ""
+                  isActive(item.href) ? " bg-nutrir-canvas text-nutrir-burgundy dark:text-nutrir-nude" : ""
                 }`}
               >
                 {item.label}

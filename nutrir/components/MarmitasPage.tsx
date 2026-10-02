@@ -1,6 +1,7 @@
 import { FiTruck } from "react-icons/fi";
 import { MenuSection } from "./MenuSection";
 import { PageHero } from "./PageHero";
+import { MarmitasQuickNav } from "./MarmitasQuickNav";
 import { Reveal } from "./Reveal";
 import { MENU_SECTIONS } from "@/lib/menu-data";
 
@@ -17,15 +18,13 @@ export function MarmitasPage() {
         title="Marmitas individuais"
         tagline="Sabor para nutrir de verdade"
         subtitle={
-          <>
-            Marmitas completas desenvolvidas por nutricionistas,
-            <br />
-            pra diminuir todo o estresse de um dia corrido.
-          </>
+          "Organize seu dia e ganhe mais praticidade no seu dia a dia."
         }
       />
 
-      <div className="mx-auto max-w-6xl space-y-16 px-4 py-12">
+      <MarmitasQuickNav />
+
+      <div className="mx-auto max-w-6xl space-y-16 px-4 py-8">
         {MENU_SECTIONS.map((section, index) => (
           <Reveal key={section.id} delay={index * 60}>
             <MenuSection section={section} />

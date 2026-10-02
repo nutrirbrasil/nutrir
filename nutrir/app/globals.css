@@ -181,6 +181,15 @@
     letter-spacing: -0.015em;
   }
 
+  .dark .section-title {
+    color: var(--nutrir-nude);
+  }
+
+  .dark .section-subtitle {
+    color: var(--nutrir-nude);
+    opacity: 0.8;
+  }
+
   .section-subtitle {
     @apply mt-1 font-display text-lg italic;
     color: var(--nutrir-burgundy);
