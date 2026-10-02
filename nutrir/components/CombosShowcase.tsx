@@ -217,7 +217,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
           </div>
         </header>
 
-        <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto px-5 py-5 md:grid-cols-[1.1fr_1fr] md:gap-8 md:px-7 md:py-6">
+        <div className="grid min-h-0 flex-1 content-start gap-6 overflow-y-auto px-5 py-5 md:grid-cols-[1.1fr_1fr] md:gap-8 md:px-7 md:py-6">
           <div className="space-y-5">
             {plan.options.length > 1 && (
               <div>
@@ -338,9 +338,12 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
                 ))}
               </ul>
             </div>
-
           </div>
         </div>
+
+        <footer className="shrink-0 border-t border-nutrir-nude-dark/50 bg-nutrir-canvas px-5 py-3 md:hidden">
+          {priceBlock}
+        </footer>
       </div>
     </>,
     document.body
