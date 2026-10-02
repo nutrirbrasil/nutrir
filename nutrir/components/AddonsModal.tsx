@@ -193,9 +193,7 @@ export function AddonsModal({
 
   const title =
     step === "substitution"
-      ? isMultiMeal
-        ? "Deseja alguma substituição em todas as marmitas?"
-        : "Deseja alguma substituição?"
+      ? "Deseja alguma substituição?"
       : "Deseja algum adicional?";
 
   const skipLabel = step === "substitution" ? "Não desejo substituições" : "Não desejo adicionais";

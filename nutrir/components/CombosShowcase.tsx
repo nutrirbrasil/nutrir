@@ -138,16 +138,14 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
 
   const priceBlock = (
     <div className="text-center">
-      {showSavings && (
-        <p className="text-sm text-nutrir-ink/60">
-          <span className="line-through">{formatPrice(avulsoTotalCents)}</span>
-        </p>
-      )}
-      <p className="font-display text-4xl font-bold leading-tight text-nutrir-ink">
+      <p className="font-display text-2xl font-normal leading-tight text-nutrir-ink">
+        {showSavings && (
+          <span className="mr-2 text-nutrir-ink/50 line-through">{formatPrice(avulsoTotalCents)}</span>
+        )}
         {formatPrice(pricing.cash_total_cents)}
-        <span className="ml-1.5 text-sm font-medium text-nutrir-ink/60">no pix</span>
+        <span className="ml-1.5 font-sans text-sm text-nutrir-ink/60">no pix</span>
       </p>
-      <p className="mt-0.5 text-sm text-nutrir-ink/70">
+      <p className="mt-1 text-lg font-bold text-nutrir-ink">
         {formatPrice(pricing.cash_per_meal_cents)} por marmita
       </p>
       <div className="mt-4 flex items-center gap-2.5">
