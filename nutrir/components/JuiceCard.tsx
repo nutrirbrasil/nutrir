@@ -71,15 +71,11 @@ export function JuiceCard({ item }: Props) {
 
         <div className="mt-2 flex flex-col gap-1.5 border-t border-nutrir-nude-dark/50 pt-2 sm:mt-3 sm:gap-2 sm:pt-3">
           <div className="text-[10px] text-nutrir-ink/70 sm:text-sm">
-            <p>
-              De{" "}
+            <p className="leading-snug">
               <span className="line-through text-nutrir-ink/60">
                 {formatPrice(pricing.card_cents)}
-              </span>
-            </p>
-            <p className="leading-snug">
-              Por <strong className="text-nutrir-ink">{formatPrice(pricing.cash_cents)}</strong>{" "}
-              (dinheiro ou pix)
+              </span>{" "}
+              <strong className="text-nutrir-ink">{formatPrice(pricing.cash_cents)}</strong> no pix
             </p>
           </div>
           <button

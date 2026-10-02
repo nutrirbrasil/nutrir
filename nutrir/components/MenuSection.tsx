@@ -33,8 +33,6 @@ function PremiumInstagramCard() {
 }
 
 export function MenuSection({ section }: Props) {
-  const isPremium = section.id === "premium";
-
   return (
     <section id={section.id} className="scroll-mt-24">
       <div className="mb-6 border-l-4 border-nutrir-burgundy pl-4">
@@ -48,7 +46,6 @@ export function MenuSection({ section }: Props) {
           {section.items.map((item) => (
             <MarmitaCard key={`${section.id}-${item.id}`} item={item} premiumBadge={isPremiumMarmita(item.id)} />
           ))}
-          {isPremium && <PremiumInstagramCard />}
         </div>
       )}
     </section>

@@ -118,13 +118,9 @@ export function MarmitaCard({ item, premiumBadge }: Props) {
             <p className="text-[10px] font-bold text-nutrir-ink sm:text-sm">Em breve</p>
           ) : (
             <div className="text-[10px] text-nutrir-ink/70 sm:text-sm">
-              <p>
-                De{" "}
-                <span className="line-through text-nutrir-ink/60">{formatPrice(cardPrice)}</span>
-              </p>
               <p className="leading-snug">
-                Por <strong className="text-nutrir-ink">{formatPrice(price)}</strong> (dinheiro ou
-                pix)
+                <span className="line-through text-nutrir-ink/60">{formatPrice(cardPrice)}</span>{" "}
+                <strong className="text-nutrir-ink">{formatPrice(price)}</strong> no pix
               </p>
             </div>
           )}

@@ -339,7 +339,7 @@ export function getMarmitaCartSectionId(
   return "vegetariano";
 }
 
-/** Todas as marmitas avulsas (sem duplicar a seção "premium", que repete itens das outras). */
+/** Todas as marmitas avulsas (sem duplicar a seção "mais pedidos", que repete itens das outras). */
 export function getAllMarmitaOptions(): MarmitaOption[] {
   const seen = new Set<string>();
   const options: MarmitaOption[] = [];
@@ -359,6 +359,38 @@ export function findMarmitaOptionById(itemId: string): MarmitaOption | undefined
 }
 
 export const MENU_SECTIONS: MenuSection[] = [
+  {
+    id: "premium",
+    title: "Mais pedidos",
+    subtitle: "Os mais pedidos e elogiados",
+    items: [
+      {
+        id: "car-batata",
+        name: "Escondidinho de Carne",
+        description: "Carne moída ao molho da casa, coberta por purê de batata e finalizada com queijo.",
+        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+        glutenFree: true,
+      },
+      {
+        id: "car-estrogonofe",
+        name: "Strogonoff de Carne",
+        description:
+          "Patinho em cubos ao molho especial com champignon, reduzido em gordura, zero lactose e acompanhado de arroz branco.",
+        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+        glutenFree: true,
+        lactoseFree: true,
+      },
+      {
+        id: "frg-estrogonofe",
+        name: "Strogonoff de Frango",
+        description:
+          "Frango ao molho especial com champignon, reduzido em gordura, zero lactose e acompanhado de arroz branco.",
+        prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
+        glutenFree: true,
+        lactoseFree: true,
+      },
+    ],
+  },
   {
     id: "frango",
     title: "Linha Frango",
@@ -390,7 +422,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "frg-estrogonofe",
         name: "Strogonoff de Frango",
         description:
-          "Frango em cubos ao molho especial cremoso com champignon, feito com creme de leite leve (reduzido em gordura e zero lactose), acompanhado de arroz branco.",
+          "Frango ao molho especial com champignon, reduzido em gordura, zero lactose e acompanhado de arroz branco.",
         prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
         glutenFree: true,
         lactoseFree: true,
@@ -428,7 +460,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "car-estrogonofe",
         name: "Strogonoff de Carne",
         description:
-          "Carne magra (patinho) em cubos ao molho especial cremoso com champignon, feito com creme de leite leve (reduzido em gordura e zero lactose), acompanhado de arroz branco.",
+          "Patinho em cubos ao molho especial com champignon, reduzido em gordura, zero lactose e acompanhado de arroz branco.",
         prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
         glutenFree: true,
         lactoseFree: true,
@@ -468,60 +500,11 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
     ],
   },
-  {
-    id: "premium",
-    title: "Linha Premium",
-    subtitle: "Para fugir do básico...",
-    items: [
-      {
-        id: "frg-batata",
-        name: "Escondidinho de Frango",
-        description: "Frango desfiado ao molho da casa, coberto por purê de batata e finalizado com queijo.",
-        prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
-        glutenFree: true,
-      },
-      {
-        id: "car-batata",
-        name: "Escondidinho de Carne",
-        description: "Carne moída ao molho da casa, coberta por purê de batata e finalizada com queijo.",
-        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
-        glutenFree: true,
-      },
-      {
-        id: "veg-cogumelo",
-        name: "Escondidinho de Cogu",
-        description: "Mix de cogumelos e brócolis salteados no molho shoyu, coberto por purê de batatas e finalizado com mix de sementes.",
-        prices: { P: PRICES.cogumeloEscondidinho.P, G: PRICES.cogumeloEscondidinho.G },
-        glutenFree: true,
-        lactoseFree: true,
-      },
-      {
-        id: "frg-estrogonofe",
-        name: "Strogonoff de Frango",
-        description:
-          "Frango em cubos ao molho especial cremoso com champignon, feito com creme de leite leve (reduzido em gordura e zero lactose), acompanhado de arroz branco.",
-        prices: { P: PRICES.frangoEscondidinho.P, G: PRICES.frangoEscondidinho.G },
-        glutenFree: true,
-        lactoseFree: true,
-      },
-      {
-        id: "car-estrogonofe",
-        name: "Strogonoff de Carne",
-        description:
-          "Carne magra (patinho) em cubos ao molho especial cremoso com champignon, feito com creme de leite leve (reduzido em gordura e zero lactose), acompanhado de arroz branco.",
-        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
-        glutenFree: true,
-        lactoseFree: true,
-      },
-    ],
-  },
 ];
 
-/** Itens que também aparecem na Linha Premium, além da seção de origem. */
+/** Itens da seção "Mais pedidos", que também aparecem na seção de origem (ganham a estrela). */
 export const PREMIUM_MARMITA_IDS = new Set([
-  "frg-batata",
   "car-batata",
-  "veg-cogumelo",
   "frg-estrogonofe",
   "car-estrogonofe",
 ]);

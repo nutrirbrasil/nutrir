@@ -62,15 +62,11 @@ function TierRow({
 
         <div className="min-w-0 flex-1 text-center">
           <p className="text-xs text-nutrir-ink/70">
-            De{" "}
             <span className="line-through text-nutrir-ink/60">
               {formatPrice(pricing.card_total_cents)}
-            </span>
-          </p>
-          <p className="text-[11px] text-nutrir-ink/70">
-            Por{" "}
+            </span>{" "}
             <strong className="text-nutrir-ink">{formatPrice(pricing.cash_total_cents)}</strong>{" "}
-            <span className="text-[10px]">no dinheiro ou pix</span>
+            <span className="text-[10px]">no pix</span>
           </p>
         </div>
 
@@ -100,15 +96,11 @@ function TierRow({
           </div>
           <div className="text-left">
             <p className="text-sm text-nutrir-ink/70">
-              De{" "}
               <span className="line-through text-nutrir-ink/60">
                 {formatPrice(pricing.card_total_cents)}
-              </span>
-            </p>
-            <p className="text-sm text-nutrir-ink/70">
-              Por{" "}
+              </span>{" "}
               <strong className="text-nutrir-ink">{formatPrice(pricing.cash_total_cents)}</strong>{" "}
-              no dinheiro ou pix
+              no pix
             </p>
           </div>
         </div>
