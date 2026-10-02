@@ -13,11 +13,41 @@ import { MarmitaPhoto } from "./MarmitaPhoto";
 
 type KitId = KitProduct["id"];
 
-const PLANS = [
-  { meals: 7, name: "Semanal", tagline: "Uma semana resolvida" },
-  { meals: 14, name: "Duplo", tagline: "Duas semanas sem pensar em comida" },
-  { meals: 28, name: "Mensal", tagline: "O mês inteiro organizado" },
-] as const;
+interface Plan {
+  id: string;
+  eyebrow: string;
+  name: string;
+  tagline: string;
+  /** Opções de total de marmitas; o mensal tem 30 (7 por semana) ou 60 (14 por semana). */
+  options: { meals: number; perWeek?: number }[];
+}
+
+const PLANS: Plan[] = [
+  {
+    id: "semanal",
+    eyebrow: "Combo",
+    name: "Semanal",
+    tagline: "Inicie a organização da sua semana!",
+    options: [{ meals: 7 }],
+  },
+  {
+    id: "duo",
+    eyebrow: "Combo",
+    name: "Duo",
+    tagline: "Semana resolvida: almoço e janta garantidos!",
+    options: [{ meals: 14 }],
+  },
+  {
+    id: "mensal",
+    eyebrow: "Recorrente",
+    name: "Mensal",
+    tagline: "Pague uma vez, receba toda semana!",
+    options: [
+      { meals: 30, perWeek: 7 },
+      { meals: 60, perWeek: 14 },
+    ],
+  },
+];
 
 const KIT_TYPES: { id: KitId; label: string; hint: string }[] = [
   { id: "premium", label: "Premium", hint: "Escondidinhos e Strogonoffs" },
@@ -35,9 +65,10 @@ function getTier(id: KitId, meals: number) {
   return getKit(id).tiers.find((t) => t.meals === meals)!;
 }
 
-function ConfiguratorModal({ meals, onClose }: { meals: number; onClose: () => void }) {
+function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void }) {
   const { requestAdd } = useAddonsFlow();
-  const plan = PLANS.find((p) => p.meals === meals)!;
+  const [option, setOption] = useState(plan.options[0]);
+  const meals = option.meals;
   const [size, setSize] = useState<MarmitaSize>("P");
   const [kitId, setKitId] = useState<KitId>("premium");
 
@@ -67,7 +98,7 @@ function ConfiguratorModal({ meals, onClose }: { meals: number; onClose: () => v
         item_id: `kit-${kitId}-${meals}`,
         section_id: "kit",
         size,
-        name: `${kit.name} ${size} (${meals} unid.)`,
+        name: `${kit.name} ${size} (${meals} unid.)${option.perWeek ? ` - ${option.perWeek} por semana` : ""}`,
         quantity: 1,
         price_cents: pricing.cash_total_cents,
         meal_count: meals,
@@ -87,14 +118,21 @@ function ConfiguratorModal({ meals, onClose }: { meals: number; onClose: () => v
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={`Combo ${plan.name}`}
+        aria-label={`${plan.eyebrow} ${plan.name}`}
         className="fixed inset-x-0 bottom-0 z-[90] flex max-h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:max-h-[min(88vh,760px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
       >
         <header className="card-dark relative flex items-center justify-between gap-4 rounded-none px-6 py-5">
           <div>
-            <p className="eyebrow text-[10px] text-nutrir-nude/60">Combo {plan.name}</p>
+            <p className="eyebrow text-[10px] text-nutrir-nude/60">
+              {plan.eyebrow} {plan.name}
+            </p>
             <h2 className="mt-1 font-display text-2xl font-bold leading-none text-nutrir-nude md:text-3xl">
               {meals} marmitas
+              {option.perWeek && (
+                <span className="ml-2 text-base font-medium text-nutrir-nude/75 md:text-lg">
+                  · {option.perWeek} por semana
+                </span>
+              )}
             </h2>
           </div>
           <button
@@ -109,6 +147,36 @@ function ConfiguratorModal({ meals, onClose }: { meals: number; onClose: () => v
 
         <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto px-5 py-5 md:grid-cols-[1.1fr_1fr] md:gap-8 md:px-7 md:py-6">
           <div className="space-y-5">
+            {plan.options.length > 1 && (
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-nutrir-ink/55">
+                  Entrega por semana
+                </p>
+                <div className="mt-2 inline-flex rounded-full border border-nutrir-nude-dark/70 bg-nutrir-canvas-alt p-1">
+                  {plan.options.map((o) => (
+                    <button
+                      key={o.meals}
+                      type="button"
+                      onClick={() => {
+                        setOption(o);
+                        track("combo_monthly_option_selected", { meals: o.meals });
+                      }}
+                      className={`rounded-full px-4 py-1.5 text-sm font-bold transition ${
+                        option.meals === o.meals
+                          ? "bg-nutrir-emerald text-nutrir-nude shadow-md"
+                          : "text-nutrir-ink/70 hover:text-nutrir-ink"
+                      }`}
+                    >
+                      {o.perWeek} por semana
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-nutrir-ink/55">
+                  Você paga as {meals} marmitas de uma vez e recebe {option.perWeek} por semana.
+                </p>
+              </div>
+            )}
+
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-nutrir-ink/55">
                 Tamanho
@@ -229,126 +297,77 @@ function ConfiguratorModal({ meals, onClose }: { meals: number; onClose: () => v
   );
 }
 
-export function CombosShowcase({ onBuild }: { onBuild: () => void }) {
-  const [openMeals, setOpenMeals] = useState<number | null>(null);
+export function CombosShowcase() {
+  const [openPlan, setOpenPlan] = useState<Plan | null>(null);
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
         {PLANS.map((plan) => {
-          const from = getTier("frango", plan.meals).prices.P;
+          const fromPerMeal = Math.min(
+            ...plan.options.map((o) => getTier("frango", o.meals).prices.P.cash_per_meal_cents)
+          );
           return (
             <button
-              key={plan.meals}
+              key={plan.id}
               type="button"
               onClick={() => {
-                track("combo_tier_selected", { meals: plan.meals });
-                setOpenMeals(plan.meals);
+                track("combo_tier_selected", { plan: plan.id });
+                setOpenPlan(plan);
               }}
-              className="card-dark card-lift group relative isolate flex flex-col items-center overflow-hidden !px-3 !py-6 text-center transition duration-300 hover:-translate-y-1 sm:!px-6 sm:!py-9"
+              className="card-dark card-lift group relative isolate flex flex-col items-center overflow-hidden !px-2 !py-5 text-center transition duration-300 hover:-translate-y-1 sm:!px-6 sm:!py-9"
             >
               <div
                 aria-hidden
-                className="pointer-events-none absolute left-1/2 top-0 -z-10 h-56 w-72 -translate-x-1/2 transition-opacity duration-500 group-hover:opacity-100"
+                className="pointer-events-none absolute left-1/2 top-0 -z-10 h-56 w-72 -translate-x-1/2 opacity-80 transition-opacity duration-500 group-hover:opacity-100"
                 style={{
-                  opacity: 0.8,
                   background:
                     "radial-gradient(50% 50% at 50% 40%, rgb(243 232 220 / 0.18), transparent 70%)",
                 }}
               />
-              <p className="eyebrow text-[10px] text-nutrir-nude/60">Combo</p>
-              <h3 className="mt-1 font-display text-2xl font-bold tracking-tight text-nutrir-nude sm:text-3xl">
+              <p className="eyebrow text-[8px] text-nutrir-nude/60 sm:text-[10px]">{plan.eyebrow}</p>
+              <h3 className="mt-1 font-display text-lg font-bold tracking-tight text-nutrir-nude sm:text-3xl">
                 {plan.name}
               </h3>
-              <div aria-hidden className="mt-3 flex items-center gap-3">
-                <span className="h-px w-8 bg-nutrir-nude/25" />
-                <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-nude/45" />
-                <span className="h-px w-8 bg-nutrir-nude/25" />
+              <div aria-hidden className="mt-2 flex items-center gap-1.5 sm:mt-3 sm:gap-3">
+                <span className="h-px w-4 bg-nutrir-nude/25 sm:w-8" />
+                <span className="h-1 w-1 rotate-45 bg-nutrir-nude/45 sm:h-1.5 sm:w-1.5" />
+                <span className="h-px w-4 bg-nutrir-nude/25 sm:w-8" />
               </div>
-              <p className="mt-4 font-display text-5xl font-black leading-none text-nutrir-nude sm:mt-5 sm:text-7xl">
-                {plan.meals}
+              <p className="mt-3 font-display text-3xl font-black leading-none text-nutrir-nude sm:mt-5 sm:text-6xl lg:text-7xl">
+                {plan.options.map((o, i) => (
+                  <span key={o.meals}>
+                    {i > 0 && (
+                      <span className="mx-0.5 font-sans text-xs font-semibold sm:mx-1.5 sm:text-xl">
+                        ou
+                      </span>
+                    )}
+                    {o.perWeek ?? o.meals}
+                  </span>
+                ))}
               </p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.22em] text-nutrir-nude/70">
-                marmitas
+              <p className="mt-1 flex min-h-[1.5rem] items-start text-center text-[8px] font-semibold uppercase tracking-[0.14em] text-nutrir-nude/70 sm:min-h-0 sm:text-xs sm:tracking-[0.22em]">
+                {plan.options[0].perWeek ? "marmitas por semana" : "marmitas"}
               </p>
-              <p className="mt-3 min-h-[2.5rem] max-w-[14rem] text-xs leading-snug text-nutrir-nude/75 sm:mt-4 sm:text-sm">
+              <p className="mt-3 min-h-[4.5rem] text-[10px] leading-snug text-nutrir-nude/80 sm:mt-4 sm:min-h-[3rem] sm:max-w-[15rem] sm:text-sm">
                 {plan.tagline}
               </p>
-              <p className="mt-5 text-[10px] uppercase tracking-wider text-nutrir-nude/65 sm:mt-6 sm:text-xs">A partir de</p>
-              <p className="font-display text-2xl font-bold leading-tight text-nutrir-nude sm:text-3xl">
-                {formatPrice(from.cash_per_meal_cents)}
-                <span className="block text-xs font-medium text-nutrir-nude/70 sm:ml-1.5 sm:inline sm:text-sm">
-                  por marmita
-                </span>
+              <p className="mt-3 text-[8px] uppercase tracking-wider text-nutrir-nude/65 sm:mt-5 sm:text-xs">
+                A partir de
               </p>
-              <p className="mt-1 text-[11px] text-nutrir-nude/75 sm:text-sm">
-                <span className="line-through opacity-70">{formatPrice(from.card_total_cents)}</span>{" "}
-                <strong className="font-bold text-nutrir-nude">
-                  {formatPrice(from.cash_total_cents)}
-                </strong>{" "}
-                no pix
+              <p className="font-display text-lg font-bold leading-tight text-nutrir-nude sm:text-3xl">
+                {formatPrice(fromPerMeal)}
               </p>
-              <span className="mt-5 sm:mt-6" />
-              <span className="mt-auto inline-flex items-center rounded-full border border-nutrir-nude/40 px-4 py-2 text-xs font-bold sm:px-6 sm:text-sm text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark">
-                Escolher combo
+              <p className="text-[9px] font-medium text-nutrir-nude/70 sm:text-sm">por marmita</p>
+              <span className="mt-4 inline-flex items-center rounded-full border border-nutrir-nude/40 px-3 py-1.5 text-[10px] font-bold text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark sm:mt-6 sm:px-6 sm:py-2 sm:text-sm">
+                Escolher
               </span>
             </button>
           );
         })}
-
-        <button
-          type="button"
-          onClick={() => {
-            track("combo_builder_card_clicked");
-            onBuild();
-          }}
-          className="card-dark card-lift group relative isolate flex flex-col items-center overflow-hidden !px-3 !py-6 text-center ring-1 ring-inset ring-nutrir-nude/25 transition duration-300 hover:-translate-y-1 sm:!px-6 sm:!py-9"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-0 -z-10 h-56 w-72 -translate-x-1/2 opacity-80 transition-opacity duration-500 group-hover:opacity-100"
-            style={{
-              background:
-                "radial-gradient(50% 50% at 50% 40%, rgb(243 232 220 / 0.18), transparent 70%)",
-            }}
-          />
-          <p className="eyebrow text-[10px] text-nutrir-nude/60">Combo</p>
-          <h3 className="mt-1 font-display text-2xl font-bold leading-tight tracking-tight text-nutrir-nude sm:text-3xl">
-            Monte seu Combo
-          </h3>
-          <div aria-hidden className="mt-3 flex items-center gap-3">
-            <span className="h-px w-8 bg-nutrir-nude/25" />
-            <span className="h-1.5 w-1.5 rotate-45 bg-nutrir-nude/45" />
-            <span className="h-px w-8 bg-nutrir-nude/25" />
-          </div>
-          <p className="mt-4 font-display text-4xl font-black leading-none text-nutrir-nude sm:mt-5 sm:text-6xl">
-            5-60
-          </p>
-          <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-nutrir-nude/70 sm:text-xs">
-            marmitas
-          </p>
-          <p className="mt-3 min-h-[2.5rem] max-w-[14rem] text-xs leading-snug text-nutrir-nude/75 sm:mt-4 sm:text-sm">
-            Personalize seu combo
-          </p>
-          <p className="mt-5 text-[10px] uppercase tracking-wider text-nutrir-nude/65 sm:mt-6 sm:text-xs">
-            Valor variável
-          </p>
-          <p className="mt-1 text-[11px] leading-snug text-nutrir-nude/75 sm:text-sm">
-            Depende de quantidade e sabor
-          </p>
-          <p className="mt-2 rounded-full bg-nutrir-nude/12 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-nutrir-nude sm:text-xs">
-            Desconto progressivo
-          </p>
-          <span className="mt-5 sm:mt-6" />
-          <span className="mt-auto inline-flex items-center rounded-full border border-nutrir-nude/40 px-4 py-2 text-xs font-bold text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark sm:px-6 sm:text-sm">
-            Montar meu combo
-          </span>
-        </button>
       </div>
 
-      {openMeals !== null && (
-        <ConfiguratorModal meals={openMeals} onClose={() => setOpenMeals(null)} />
-      )}
+      {openPlan && <ConfiguratorModal plan={openPlan} onClose={() => setOpenPlan(null)} />}
     </>
   );
 }

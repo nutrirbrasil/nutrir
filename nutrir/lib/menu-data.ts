@@ -61,7 +61,7 @@ export interface KitProduct {
 }
 
 /** Preços dos kits — coluna cartão = referência; dinheiro/pix = valor promocional */
-export const KIT_PRODUCTS: KitProduct[] = [
+const BASE_KIT_PRODUCTS: KitProduct[] = [
   {
     id: "premium",
     name: "Combo Premium",
@@ -357,6 +357,40 @@ export const KIT_PRODUCTS: KitProduct[] = [
     ],
   },
 ];
+
+/**
+ * Recorrente Mensal: o cliente paga 30 marmitas (recebe 7 por semana) ou 60
+ * (recebe 14 por semana). Preços derivados do tier de 28 de cada kit: o de 60
+ * mantém o mesmo valor por marmita do de 28 ("a partir de R$ 15,99") e o de 30
+ * fica um pouco mais caro por marmita (frango P = R$ 17,00).
+ */
+const MONTHLY_30_PER_MEAL_FACTOR = 1700 / 1599;
+
+function deriveMonthlyTier(base: KitTier, meals: number, factor: number): KitTier {
+  const scale = (p: KitTierPricing): KitTierPricing => {
+    const card_per_meal_cents = Math.round(p.card_per_meal_cents * factor);
+    const cash_per_meal_cents = Math.round(p.cash_per_meal_cents * factor);
+    return {
+      card_per_meal_cents,
+      cash_per_meal_cents,
+      card_total_cents: card_per_meal_cents * meals,
+      cash_total_cents: cash_per_meal_cents * meals,
+    };
+  };
+  return { meals, prices: { P: scale(base.prices.P), G: scale(base.prices.G) } };
+}
+
+export const KIT_PRODUCTS: KitProduct[] = BASE_KIT_PRODUCTS.map((kit) => {
+  const base28 = kit.tiers.find((t) => t.meals === 28)!;
+  return {
+    ...kit,
+    tiers: [
+      ...kit.tiers.filter((t) => t.meals !== 28),
+      deriveMonthlyTier(base28, 30, MONTHLY_30_PER_MEAL_FACTOR),
+      deriveMonthlyTier(base28, 60, 1),
+    ],
+  };
+});
 export interface MarmitaOption {
   id: string;
   name: string;

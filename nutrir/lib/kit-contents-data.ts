@@ -168,16 +168,38 @@ const KIT_CONTENTS: Record<Exclude<KitId, "misto">, Record<number, KitContentLin
   veg: VEG_LINES,
 };
 
+/** Escala a composição de 28 marmitas pra outro total (maior resto), mantendo a proporção. */
+function scaleLines(base: KitContentLine[], total: number): KitContentLine[] {
+  const baseTotal = base.reduce((sum, l) => sum + l.count, 0);
+  const raw = base.map((l) => (l.count * total) / baseTotal);
+  const counts = raw.map((r) => Math.floor(r));
+  let remaining = total - counts.reduce((sum, c) => sum + c, 0);
+  const order = raw
+    .map((r, index) => ({ index, frac: r - Math.floor(r) }))
+    .sort((x, y) => y.frac - x.frac || x.index - y.index);
+  for (const { index } of order) {
+    if (remaining <= 0) break;
+    counts[index] += 1;
+    remaining -= 1;
+  }
+  return base.map((l, i) => ({ label: l.label, count: counts[i] }));
+}
+
+function linesFor(source: Record<number, KitContentLine[]>, meals: number): KitContentLine[] {
+  if (source[meals]) return source[meals];
+  if (source[28] && (meals === 30 || meals === 60)) return scaleLines(source[28], meals);
+  return [];
+}
+
 export function getKitContentLines(
   kitId: KitId,
   meals: number,
   options?: KitContentOptions
 ): KitContentLine[] {
   if (kitId === "misto") {
-    const source = options?.includeVeg ? MISTO_WITH_VEG_LINES : MISTO_LINES;
-    return source[meals] ?? [];
+    return linesFor(options?.includeVeg ? MISTO_WITH_VEG_LINES : MISTO_LINES, meals);
   }
-  return KIT_CONTENTS[kitId][meals] ?? [];
+  return linesFor(KIT_CONTENTS[kitId], meals);
 }
 
 /** Lista expandida de rótulos por marmita (para adicionais personalizados). */
