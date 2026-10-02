@@ -8,9 +8,8 @@ import {
   navigateToComboSection,
 } from "@/lib/combo-nav-links";
 import { ComboBuilder } from "./ComboBuilder";
-import { KitCard } from "./KitCard";
+import { CombosShowcase } from "./CombosShowcase";
 import { Reveal } from "./Reveal";
-import { KIT_PRODUCTS } from "@/lib/menu-data";
 
 type CardapioTab = "combos" | "montar";
 
@@ -18,13 +17,6 @@ const TABS: { id: CardapioTab; label: string }[] = [
   { id: "combos", label: "Combos" },
   { id: "montar", label: "Monte seu Combo" },
 ];
-
-const KIT_SECTION_ID: Record<string, string> = {
-  frango: COMBO_SECTION_IDS.frango,
-  carne: COMBO_SECTION_IDS.carne,
-  misto: COMBO_SECTION_IDS.misto,
-  veg: COMBO_SECTION_IDS.veg,
-};
 
 function scrollToComboSection(sectionId: string) {
   const el = document.getElementById(sectionId);
@@ -163,13 +155,11 @@ export function CardapioPage() {
       <div className="mx-auto max-w-6xl space-y-16 px-4 py-12">
         {tab === "combos" && (
           <section id="combos" className="scroll-mt-28 space-y-8">
-            {KIT_PRODUCTS.map((kit, index) => (
-              <div key={kit.id} id={KIT_SECTION_ID[kit.id]} className="scroll-mt-28">
-                <Reveal delay={index * 90}>
-                  <KitCard kit={kit} />
-                </Reveal>
-              </div>
-            ))}
+            <div id={COMBO_SECTION_IDS.frango} className="scroll-mt-28">
+              <Reveal>
+                <CombosShowcase />
+              </Reveal>
+            </div>
 
             <Reveal className="pt-4 text-center">
               <p className="text-nutrir-ink/70">Não encontrou o que procurava?</p>

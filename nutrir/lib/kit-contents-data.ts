@@ -11,6 +11,27 @@ export interface KitContentOptions {
   includeVeg?: boolean;
 }
 
+const PREMIUM_LINES: Record<number, KitContentLine[]> = {
+  7: [
+    { label: "Escondidinho de Frango", count: 2 },
+    { label: "Escondidinho de Carne", count: 2 },
+    { label: "Strogonoff de Frango", count: 2 },
+    { label: "Strogonoff de Carne", count: 1 },
+  ],
+  14: [
+    { label: "Escondidinho de Frango", count: 4 },
+    { label: "Escondidinho de Carne", count: 3 },
+    { label: "Strogonoff de Frango", count: 4 },
+    { label: "Strogonoff de Carne", count: 3 },
+  ],
+  28: [
+    { label: "Escondidinho de Frango", count: 7 },
+    { label: "Escondidinho de Carne", count: 7 },
+    { label: "Strogonoff de Frango", count: 7 },
+    { label: "Strogonoff de Carne", count: 7 },
+  ],
+};
+
 const FRANGO_LINES: Record<number, KitContentLine[]> = {
   7: [
     { label: "Frango da Casa", count: 2 },
@@ -141,6 +162,7 @@ const MISTO_WITH_VEG_LINES: Record<number, KitContentLine[]> = {
 };
 
 const KIT_CONTENTS: Record<Exclude<KitId, "misto">, Record<number, KitContentLine[]>> = {
+  premium: PREMIUM_LINES,
   frango: FRANGO_LINES,
   carne: CARNE_LINES,
   veg: VEG_LINES,

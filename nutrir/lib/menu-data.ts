@@ -54,7 +54,7 @@ export interface KitTier {
 }
 
 export interface KitProduct {
-  id: "frango" | "carne" | "misto" | "veg";
+  id: "premium" | "frango" | "carne" | "misto" | "veg";
   name: string;
   description: string;
   tiers: KitTier[];
@@ -62,6 +62,65 @@ export interface KitProduct {
 
 /** Preços dos kits — coluna cartão = referência; dinheiro/pix = valor promocional */
 export const KIT_PRODUCTS: KitProduct[] = [
+  {
+    id: "premium",
+    name: "Combo Premium",
+    description:
+      "Só os mais pedidos e elogiados: Escondidinhos e Strogonoffs de frango e de carne.",
+    tiers: [
+      {
+        meals: 7,
+        prices: {
+          P: {
+            card_total_cents: 19500,
+            cash_total_cents: 16990,
+            card_per_meal_cents: 2786,
+            cash_per_meal_cents: 2427,
+          },
+          G: {
+            card_total_cents: 21000,
+            cash_total_cents: 18390,
+            card_per_meal_cents: 3000,
+            cash_per_meal_cents: 2627,
+          },
+        },
+      },
+      {
+        meals: 14,
+        prices: {
+          P: {
+            card_total_cents: 36500,
+            cash_total_cents: 31990,
+            card_per_meal_cents: 2607,
+            cash_per_meal_cents: 2285,
+          },
+          G: {
+            card_total_cents: 39500,
+            cash_total_cents: 34490,
+            card_per_meal_cents: 2821,
+            cash_per_meal_cents: 2464,
+          },
+        },
+      },
+      {
+        meals: 28,
+        prices: {
+          P: {
+            card_total_cents: 69500,
+            cash_total_cents: 59990,
+            card_per_meal_cents: 2482,
+            cash_per_meal_cents: 2142,
+          },
+          G: {
+            card_total_cents: 75500,
+            cash_total_cents: 64990,
+            card_per_meal_cents: 2696,
+            cash_per_meal_cents: 2321,
+          },
+        },
+      },
+    ],
+  },
   {
     id: "frango",
     name: "Kit Frango",

@@ -34,10 +34,10 @@ function isSingleMarmitaItem(item: OrderItem): boolean {
 function parseKitMenuId(menuId: string | null | undefined) {
   if (!menuId) return null;
   const base = menuId.split("-addons-")[0] ?? menuId;
-  const match = base.match(/^kit-(frango|carne|misto|veg)-(\d+)-(P|G)(-veg)?$/);
+  const match = base.match(/^kit-(premium|frango|carne|misto|veg)-(\d+)-(P|G)(-veg)?$/);
   if (!match) return null;
   return {
-    kitId: match[1] as "frango" | "carne" | "misto" | "veg",
+    kitId: match[1] as "premium" | "frango" | "carne" | "misto" | "veg",
     meals: Number(match[2]),
     size: match[3] as MarmitaSize,
     includeVeg: !!match[4],

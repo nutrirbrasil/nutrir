@@ -46,6 +46,7 @@ const MARMITA_IMAGES_TOP: Record<string, string> = {
 };
 
 export const KIT_IMAGES: Record<KitProduct["id"], string> = {
+  premium: kitImagePath("Escondidinho de carne"),
   frango: kitImagePath("combo frango"),
   carne: kitImagePath("combo carne"),
   veg: kitImagePath("Combo Veg"),
