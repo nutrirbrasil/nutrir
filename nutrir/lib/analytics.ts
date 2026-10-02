@@ -3,7 +3,7 @@ import posthog from "posthog-js";
 /** Envia um evento pro PostHog. Vira no-op sem NEXT_PUBLIC_POSTHOG_TOKEN ou no servidor. */
 export function track(event: string, props?: Record<string, unknown>): void {
   if (typeof window === "undefined") return;
-  if (!process.env.NEXT_PUBLIC_POSTHOG_TOKEN) return;
+  if (!process.env.NEXT_PUBLIC_POSTHOG_TOKEN || !posthog.__loaded) return;
   try {
     posthog.capture(event, props);
   } catch {
@@ -13,7 +13,7 @@ export function track(event: string, props?: Record<string, unknown>): void {
 
 export function identifyUser(id: string, props?: Record<string, unknown>): void {
   if (typeof window === "undefined") return;
-  if (!process.env.NEXT_PUBLIC_POSTHOG_TOKEN) return;
+  if (!process.env.NEXT_PUBLIC_POSTHOG_TOKEN || !posthog.__loaded) return;
   try {
     posthog.identify(id, props);
   } catch {
@@ -23,7 +23,7 @@ export function identifyUser(id: string, props?: Record<string, unknown>): void 
 
 export function resetAnalytics(): void {
   if (typeof window === "undefined") return;
-  if (!process.env.NEXT_PUBLIC_POSTHOG_TOKEN) return;
+  if (!process.env.NEXT_PUBLIC_POSTHOG_TOKEN || !posthog.__loaded) return;
   try {
     posthog.reset();
   } catch {

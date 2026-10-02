@@ -15,11 +15,31 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       setReady(true);
       return;
     }
+    // Desenvolvimento local não entra nas métricas.
+    const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    if (isLocal) {
+      setReady(true);
+      return;
+    }
     posthog.init(key, {
       api_host: host,
       capture_pageview: false,
       capture_pageleave: true,
+      // Gravação de tela: nada digitado (CPF, telefone, senha, endereço) é gravado.
+      session_recording: {
+        maskAllInputs: true,
+        maskTextSelector: "[data-ph-mask]",
+      },
     });
+    // Abrir qualquer página com ?ignorar-metricas=1 desliga a coleta neste navegador
+    // (para equipe/dono); ?ignorar-metricas=0 volta a coletar.
+    try {
+      const ignore = new URLSearchParams(window.location.search).get("ignorar-metricas");
+      if (ignore === "1") posthog.opt_out_capturing();
+      else if (ignore === "0") posthog.opt_in_capturing();
+    } catch {
+      // ignore
+    }
     try {
       const url = new URL(window.location.href);
       const params = url.searchParams;
@@ -49,7 +69,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
   if (!ready) return <>{children}</>;
 
-  if (!process.env.NEXT_PUBLIC_POSTHOG_TOKEN) {
+  if (!process.env.NEXT_PUBLIC_POSTHOG_TOKEN || !posthog.__loaded) {
     return <>{children}</>;
   }
 
