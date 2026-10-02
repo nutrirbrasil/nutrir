@@ -138,15 +138,14 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
 
   const priceBlock = (
     <div className="text-center">
-      <p className="font-display text-2xl font-normal leading-tight text-nutrir-ink">
+      <p className="font-display text-2xl leading-tight text-nutrir-ink">
         {showSavings && (
-          <span className="mr-2 text-nutrir-ink/50 line-through">{formatPrice(avulsoTotalCents)}</span>
+          <span className="mr-2 font-normal text-nutrir-ink/50 line-through">
+            {formatPrice(avulsoTotalCents)}
+          </span>
         )}
-        {formatPrice(pricing.cash_total_cents)}
-        <span className="ml-1.5 font-sans text-sm text-nutrir-ink/60">no pix</span>
-      </p>
-      <p className="mt-1 text-lg font-bold text-nutrir-ink">
-        {formatPrice(pricing.cash_per_meal_cents)} por marmita
+        <span className="font-bold">{formatPrice(pricing.cash_total_cents)}</span>
+        <span className="ml-1.5 font-sans text-sm font-normal text-nutrir-ink/60">no pix</span>
       </p>
       <div className="mt-4 flex items-center gap-2.5">
         <button
@@ -164,8 +163,9 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
       </div>
       {showSavings && (
         <p className="mt-2 text-[10px] leading-snug text-nutrir-ink/55">
-          Você está economizando muito! O valor médio por marmita fora do combo seria{" "}
-          {formatPrice(avulsoPerMealCents)}
+          Você está economizando muito!
+          <br />
+          O valor médio por marmita fora do combo seria {formatPrice(avulsoPerMealCents + 20)}
         </p>
       )}
     </div>
@@ -183,7 +183,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
         role="dialog"
         aria-modal="true"
         aria-label={`${plan.eyebrow} ${plan.name}`}
-        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,600px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
+        className="fixed inset-x-0 bottom-0 z-[90] flex h-[92vh] flex-col overflow-hidden rounded-t-3xl bg-nutrir-canvas shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(88vh,520px)] md:w-[min(94vw,880px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
       >
         <header className="card-dark relative flex items-center justify-between gap-4 rounded-none px-6 py-5">
           <div>
@@ -199,14 +199,23 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
               )}
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fechar"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-nutrir-nude/25 text-nutrir-nude transition hover:bg-nutrir-nude/10"
-          >
-            <FiX />
-          </button>
+          <div className="flex shrink-0 items-center gap-3 md:gap-4">
+            <p className="text-right text-xs leading-tight text-nutrir-nude/80 md:text-sm">
+              Apenas{" "}
+              <strong className="font-display text-lg font-bold text-nutrir-nude md:text-2xl">
+                {formatPrice(pricing.cash_per_meal_cents)}
+              </strong>
+              <span className="block">por marmita</span>
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fechar"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-nutrir-nude/25 text-nutrir-nude transition hover:bg-nutrir-nude/10"
+            >
+              <FiX />
+            </button>
+          </div>
         </header>
 
         <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto px-5 py-5 md:grid-cols-[1.1fr_1fr] md:gap-8 md:px-7 md:py-6">
