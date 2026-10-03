@@ -33,7 +33,7 @@ const PLANS: Plan[] = [
   {
     id: "semanal",
     eyebrow: "Combo",
-    image: "/combos/combo-semanal.jpg",
+    image: "/combos/combo-duo.jpg",
     name: "Semanal",
     tagline: "Inicie a organização da sua semana!",
     options: [{ meals: 7 }],
@@ -41,7 +41,7 @@ const PLANS: Plan[] = [
   {
     id: "duo",
     eyebrow: "Combo",
-    image: "/combos/combo-duo.jpg",
+    image: "/combos/combo-semanal.jpg",
     name: "Duo",
     tagline: "Semana resolvida: almoço e janta garantidos!",
     options: [{ meals: 14 }],
@@ -49,7 +49,7 @@ const PLANS: Plan[] = [
   {
     id: "mensal",
     eyebrow: "Recorrente",
-    image: "/combos/combo-mensal.jpg",
+    image: "/combos/combo-mensal-v2.jpg",
     name: "Mensal",
     tagline: "Pague uma vez, receba toda semana!",
     options: [
