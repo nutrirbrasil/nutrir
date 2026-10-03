@@ -49,7 +49,7 @@ const PLANS: Plan[] = [
   {
     id: "mensal",
     eyebrow: "Recorrente",
-    image: "/combos/combo-mensal-v2.jpg",
+    image: "/combos/combo-mensal-v3.jpg",
     name: "Mensal",
     tagline: "Pague uma vez, receba toda semana!",
     options: [
