@@ -27,7 +27,7 @@ export function PageHero({ eyebrow, title, tagline, subtitle }: Props) {
 
       {eyebrow && (
         <p
-          className="eyebrow animate-fade-up inline-flex items-center gap-1.5 text-[10px] text-nutrir-nude/60"
+          className="eyebrow animate-fade-up block text-[10px] text-nutrir-nude/60"
           style={{ animationDelay: "40ms" }}
         >
           {eyebrow}

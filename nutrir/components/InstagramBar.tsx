@@ -49,10 +49,10 @@ export function InstagramBar() {
       {(() => {
         const { Icon, content } = MESSAGES[index];
         return (
-          <>
-            <Icon aria-hidden className="shrink-0 text-base" />
-            <span>{content}</span>
-          </>
+          <span>
+            <Icon aria-hidden className="mr-2 inline-block align-[-0.2em] text-base" />
+            {content}
+          </span>
         );
       })()}
     </a>

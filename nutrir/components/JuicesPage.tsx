@@ -10,7 +10,7 @@ export function JuicesPage() {
       <PageHero
         eyebrow={
           <>
-            <FiTruck aria-hidden />
+            <FiTruck aria-hidden className="mr-1.5 inline-block align-[-0.15em]" />
             Entregas em Piçarras, Penha, Barra Velha e Navegantes
           </>
         }

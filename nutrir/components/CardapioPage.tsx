@@ -84,10 +84,10 @@ export function CardapioPage() {
         />
 
         <p
-          className="eyebrow animate-fade-up inline-flex items-center gap-1.5 text-[10px] text-nutrir-nude/60"
+          className="eyebrow animate-fade-up block text-[10px] text-nutrir-nude/60"
           style={{ animationDelay: "40ms" }}
         >
-          <FiTruck aria-hidden />
+          <FiTruck aria-hidden className="mr-1.5 inline-block align-[-0.15em]" />
           Entregas em Piçarras, Penha, Barra Velha e Navegantes
         </p>
 
