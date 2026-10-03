@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Permite validar o build (NEXT_DIST_DIR=.next-check npm run build) sem mexer na
+  // pasta .next que o servidor de desenvolvimento esta usando.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   reactStrictMode: true,
   async redirects() {
     return [
