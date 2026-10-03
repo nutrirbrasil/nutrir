@@ -33,6 +33,13 @@ const PREMIUM_LINES: Record<number, KitContentLine[]> = {
     { label: "Strogonoff de Frango", count: 6 },
     { label: "Strogonoff de Carne", count: 6 },
   ],
+  30: [
+    { label: "Escondidinho de Frango", count: 6 },
+    { label: "Escondidinho de Carne", count: 6 },
+    { label: "Escondidinho de Cogu", count: 5 },
+    { label: "Strogonoff de Frango", count: 7 },
+    { label: "Strogonoff de Carne", count: 6 },
+  ],
 };
 
 const FRANGO_LINES: Record<number, KitContentLine[]> = {
@@ -54,6 +61,12 @@ const FRANGO_LINES: Record<number, KitContentLine[]> = {
     { label: "Escondidinho de Frango", count: 7 },
     { label: "Strogonoff de Frango", count: 6 },
   ],
+  30: [
+    { label: "Frango da Casa", count: 8 },
+    { label: "Frango ao Sugo", count: 8 },
+    { label: "Escondidinho de Frango", count: 7 },
+    { label: "Strogonoff de Frango", count: 7 },
+  ],
 };
 
 const CARNE_LINES: Record<number, KitContentLine[]> = {
@@ -74,6 +87,12 @@ const CARNE_LINES: Record<number, KitContentLine[]> = {
     { label: "Ragu à Bolonhesa", count: 7 },
     { label: "Escondidinho de Carne", count: 7 },
     { label: "Strogonoff de Carne", count: 6 },
+  ],
+  30: [
+    { label: "Carne da Casa", count: 8 },
+    { label: "Ragu à Bolonhesa", count: 8 },
+    { label: "Escondidinho de Carne", count: 7 },
+    { label: "Strogonoff de Carne", count: 7 },
   ],
 };
 
@@ -109,18 +128,28 @@ const MISTO_LINES: Record<number, KitContentLine[]> = {
   14: [
     { label: "Frango da Casa", count: 2 },
     { label: "Frango ao Sugo", count: 2 },
-    { label: "Escondidinho de Frango", count: 1 },
+    { label: "Escondidinho de Frango", count: 2 },
     { label: "Strogonoff de Frango", count: 2 },
     { label: "Carne da Casa", count: 2 },
     { label: "Ragu à Bolonhesa", count: 2 },
     { label: "Escondidinho de Carne", count: 1 },
-    { label: "Strogonoff de Carne", count: 2 },
+    { label: "Strogonoff de Carne", count: 1 },
   ],
   28: [
     { label: "Frango da Casa", count: 4 },
     { label: "Frango ao Sugo", count: 4 },
     { label: "Escondidinho de Frango", count: 3 },
     { label: "Strogonoff de Frango", count: 3 },
+    { label: "Carne da Casa", count: 4 },
+    { label: "Ragu à Bolonhesa", count: 4 },
+    { label: "Escondidinho de Carne", count: 3 },
+    { label: "Strogonoff de Carne", count: 3 },
+  ],
+  30: [
+    { label: "Frango da Casa", count: 4 },
+    { label: "Frango ao Sugo", count: 4 },
+    { label: "Escondidinho de Frango", count: 4 },
+    { label: "Strogonoff de Frango", count: 4 },
     { label: "Carne da Casa", count: 4 },
     { label: "Ragu à Bolonhesa", count: 4 },
     { label: "Escondidinho de Carne", count: 3 },
