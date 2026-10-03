@@ -56,10 +56,10 @@ const PLANS: Plan[] = [
 ];
 
 const KIT_TYPES: { id: KitId; label: string }[] = [
-  { id: "premium", label: "Premium" },
   { id: "frango", label: "Frango" },
   { id: "misto", label: "Misto" },
   { id: "carne", label: "Carne" },
+  { id: "premium", label: "Premium" },
 ];
 
 /** Preço avulso (pix) de cada marmita pelo nome, pra comparar com o combo. */
