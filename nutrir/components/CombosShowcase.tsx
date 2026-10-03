@@ -86,7 +86,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
   const [option, setOption] = useState(plan.options[0]);
   const meals = option.meals;
   const [size, setSize] = useState<MarmitaSize>("P");
-  const [kitId, setKitId] = useState<KitId>("premium");
+  const [kitId, setKitId] = useState<KitId>("frango");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -291,7 +291,9 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
                           : "border-nutrir-nude-dark/60 bg-nutrir-canvas-alt hover:border-nutrir-emerald/40"
                       }`}
                     >
-                      <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-nutrir-emerald">
+                      <span className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-xl ${
+                          type.id === "premium" ? "bg-amber-300" : "bg-nutrir-emerald"
+                        }`}>
                         <MarmitaPhoto
                           src={KIT_IMAGES[type.id]}
                           alt=""
