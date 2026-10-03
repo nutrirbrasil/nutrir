@@ -22,6 +22,7 @@ type KitId = KitProduct["id"];
 interface Plan {
   id: string;
   eyebrow: string;
+  image: string;
   name: string;
   tagline: string;
   /** Opções de total de marmitas; o mensal tem 30 (7 por semana) ou 60 (14 por semana). */
@@ -32,6 +33,7 @@ const PLANS: Plan[] = [
   {
     id: "semanal",
     eyebrow: "Combo",
+    image: "/combos/combo-semanal.jpg",
     name: "Semanal",
     tagline: "Inicie a organização da sua semana!",
     options: [{ meals: 7 }],
@@ -39,6 +41,7 @@ const PLANS: Plan[] = [
   {
     id: "duo",
     eyebrow: "Combo",
+    image: "/combos/combo-duo.jpg",
     name: "Duo",
     tagline: "Semana resolvida: almoço e janta garantidos!",
     options: [{ meals: 14 }],
@@ -46,6 +49,7 @@ const PLANS: Plan[] = [
   {
     id: "mensal",
     eyebrow: "Recorrente",
+    image: "/combos/combo-mensal.jpg",
     name: "Mensal",
     tagline: "Pague uma vez, receba toda semana!",
     options: [
@@ -370,7 +374,7 @@ export function CombosShowcase() {
                 track("combo_tier_selected", { plan: plan.id });
                 setOpenPlan(plan);
               }}
-              className="card-dark card-lift group relative isolate flex flex-col items-center overflow-hidden !px-2 !py-5 text-center transition duration-300 hover:-translate-y-1 sm:!px-6 sm:!py-9"
+              className="card-dark card-lift group relative isolate flex flex-col items-center overflow-hidden !p-0 text-center transition duration-300 hover:-translate-y-1"
             >
               <div
                 aria-hidden
@@ -380,43 +384,58 @@ export function CombosShowcase() {
                     "radial-gradient(50% 50% at 50% 40%, rgb(243 232 220 / 0.18), transparent 70%)",
                 }}
               />
-              <p className="eyebrow text-[8px] text-nutrir-nude/60 sm:text-[10px]">{plan.eyebrow}</p>
-              <h3 className="mt-1 font-display text-lg font-bold tracking-tight text-nutrir-nude sm:text-3xl">
-                {plan.name}
-              </h3>
-              <div aria-hidden className="mt-2 flex items-center gap-1.5 sm:mt-3 sm:gap-3">
-                <span className="h-px w-4 bg-nutrir-nude/25 sm:w-8" />
-                <span className="h-1 w-1 rotate-45 bg-nutrir-nude/45 sm:h-1.5 sm:w-1.5" />
-                <span className="h-px w-4 bg-nutrir-nude/25 sm:w-8" />
+              <div className="relative aspect-square w-full overflow-hidden">
+                <MarmitaPhoto
+                  src={plan.image}
+                  alt={`${plan.eyebrow} ${plan.name}`}
+                  className="h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+                  sizes="(min-width: 1024px) 380px, 33vw"
+                  fit="cover"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-nutrir-emerald to-transparent"
+                />
               </div>
-              <p className="mt-3 font-display text-3xl font-black leading-none text-nutrir-nude sm:mt-5 sm:text-6xl lg:text-7xl">
-                {plan.options.map((o, i) => (
-                  <span key={o.meals}>
-                    {i > 0 && (
-                      <span className="mx-0.5 font-sans text-xs font-semibold sm:mx-1.5 sm:text-xl">
-                        ou
-                      </span>
-                    )}
-                    {o.perWeek ?? o.meals}
-                  </span>
-                ))}
-              </p>
-              <p className="mt-1 flex min-h-[1.5rem] items-start text-center text-[8px] font-semibold uppercase tracking-[0.14em] text-nutrir-nude/70 sm:min-h-0 sm:text-xs sm:tracking-[0.22em]">
-                {plan.options[0].perWeek ? "marmitas por semana" : "marmitas"}
-              </p>
-              <p className="mt-3 min-h-[4.5rem] text-[10px] leading-snug text-nutrir-nude/80 sm:mt-4 sm:min-h-[3rem] sm:max-w-[15rem] sm:text-sm">
-                {plan.tagline}
-              </p>
-              <p className="mt-3 text-[8px] uppercase tracking-wider text-nutrir-nude/65 sm:mt-5 sm:text-xs">
-                A partir de
-              </p>
-              <p className="font-display text-lg font-bold leading-tight text-nutrir-nude sm:text-3xl">
-                {formatPrice(fromPerMeal)}
-              </p>
-              <p className="text-[9px] font-medium text-nutrir-nude/70 sm:text-sm">por marmita</p>
-              <span className="mt-4 inline-flex items-center rounded-full border border-nutrir-nude/40 px-3 py-1.5 text-[10px] font-bold text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark sm:mt-6 sm:px-6 sm:py-2 sm:text-sm">
-                Escolher
-              </span>
+              <div className="flex w-full flex-1 flex-col items-center px-2 pb-5 pt-1 sm:px-6 sm:pb-9">
+              <p className="eyebrow text-[8px] text-nutrir-nude/60 sm:text-[10px]">{plan.eyebrow}</p>
+                <h3 className="mt-1 font-display text-lg font-bold tracking-tight text-nutrir-nude sm:text-3xl">
+                  {plan.name}
+                </h3>
+                <div aria-hidden className="mt-2 flex items-center gap-1.5 sm:mt-3 sm:gap-3">
+                  <span className="h-px w-4 bg-nutrir-nude/25 sm:w-8" />
+                  <span className="h-1 w-1 rotate-45 bg-nutrir-nude/45 sm:h-1.5 sm:w-1.5" />
+                  <span className="h-px w-4 bg-nutrir-nude/25 sm:w-8" />
+                </div>
+                <p className="mt-3 font-display text-3xl font-black leading-none text-nutrir-nude sm:mt-5 sm:text-6xl lg:text-7xl">
+                  {plan.options.map((o, i) => (
+                    <span key={o.meals}>
+                      {i > 0 && (
+                        <span className="mx-0.5 font-sans text-xs font-semibold sm:mx-1.5 sm:text-xl">
+                          ou
+                        </span>
+                      )}
+                      {o.perWeek ?? o.meals}
+                    </span>
+                  ))}
+                </p>
+                <p className="mt-1 flex min-h-[1.5rem] items-start text-center text-[8px] font-semibold uppercase tracking-[0.14em] text-nutrir-nude/70 sm:min-h-0 sm:text-xs sm:tracking-[0.22em]">
+                  {plan.options[0].perWeek ? "marmitas por semana" : "marmitas"}
+                </p>
+                <p className="mt-3 min-h-[4.5rem] text-[10px] leading-snug text-nutrir-nude/80 sm:mt-4 sm:min-h-[3rem] sm:max-w-[15rem] sm:text-sm">
+                  {plan.tagline}
+                </p>
+                <p className="mt-3 text-[8px] uppercase tracking-wider text-nutrir-nude/65 sm:mt-5 sm:text-xs">
+                  A partir de
+                </p>
+                <p className="font-display text-lg font-bold leading-tight text-nutrir-nude sm:text-3xl">
+                  {formatPrice(fromPerMeal)}
+                </p>
+                <p className="text-[9px] font-medium text-nutrir-nude/70 sm:text-sm">por marmita</p>
+                <span className="mt-4 inline-flex items-center rounded-full border border-nutrir-nude/40 px-3 py-1.5 text-[10px] font-bold text-nutrir-nude transition group-hover:bg-nutrir-nude group-hover:text-nutrir-emerald-dark sm:mt-6 sm:px-6 sm:py-2 sm:text-sm">
+                  Escolher
+                </span>
+              </div>
             </button>
           );
         })}
