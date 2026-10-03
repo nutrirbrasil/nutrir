@@ -25,7 +25,7 @@ interface Plan {
   image: string;
   name: string;
   tagline: string;
-  /** Opções de total de marmitas; o mensal tem 30 (7 por semana) ou 60 (14 por semana). */
+  /** Opções de total de marmitas; o mensal é 30 no total, recebendo 7 por semana. */
   options: { meals: number; perWeek?: number }[];
 }
 
@@ -52,10 +52,7 @@ const PLANS: Plan[] = [
     image: "/combos/combo-mensal-v3.jpg",
     name: "Mensal",
     tagline: "Pague uma vez, receba toda semana!",
-    options: [
-      { meals: 30, perWeek: 7 },
-      { meals: 60, perWeek: 14 },
-    ],
+    options: [{ meals: 30, perWeek: 7 }],
   },
 ];
 

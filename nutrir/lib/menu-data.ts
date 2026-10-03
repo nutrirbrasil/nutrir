@@ -359,13 +359,10 @@ const BASE_KIT_PRODUCTS: KitProduct[] = [
 ];
 
 /**
- * Recorrente Mensal: o cliente paga 30 marmitas (recebe 7 por semana) ou 60
- * (recebe 14 por semana). Preços derivados do tier de 28 de cada kit: o de 60
- * mantém o mesmo valor por marmita do de 28 ("a partir de R$ 15,99") e o de 30
- * fica um pouco mais caro por marmita (frango P = R$ 17,00).
+ * Recorrente Mensal: o cliente paga 30 marmitas de uma vez e recebe 7 por semana.
+ * Preço derivado do tier de 28 de cada kit: mesmo valor por marmita (frango P
+ * a partir de R$ 15,99).
  */
-const MONTHLY_30_PER_MEAL_FACTOR = 1700 / 1599;
-
 function deriveMonthlyTier(base: KitTier, meals: number, factor: number): KitTier {
   const scale = (p: KitTierPricing): KitTierPricing => {
     const card_per_meal_cents = Math.round(p.card_per_meal_cents * factor);
@@ -386,8 +383,7 @@ export const KIT_PRODUCTS: KitProduct[] = BASE_KIT_PRODUCTS.map((kit) => {
     ...kit,
     tiers: [
       ...kit.tiers.filter((t) => t.meals !== 28),
-      deriveMonthlyTier(base28, 30, MONTHLY_30_PER_MEAL_FACTOR),
-      deriveMonthlyTier(base28, 60, 1),
+      deriveMonthlyTier(base28, 30, 1),
     ],
   };
 });
