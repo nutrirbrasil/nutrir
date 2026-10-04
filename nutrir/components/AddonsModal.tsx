@@ -338,7 +338,7 @@ export function AddonsModal({
         <span className="absolute -top-3.5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-nutrir-burgundy px-3 py-1 text-xs font-bold text-nutrir-nude shadow-md">
           {stepNumber} de {totalSteps}
         </span>
-        <div className="flex max-h-[min(90vh,720px)] flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl">
+        <div className="flex max-h-[min(88dvh,720px)] flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl">
           <header className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 px-5 py-4">
             <h2 className="font-display text-xl font-bold text-nutrir-ink">{title}</h2>
             <button
