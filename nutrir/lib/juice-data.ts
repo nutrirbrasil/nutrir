@@ -82,10 +82,6 @@ const JUICE_BY_ID: Record<string, JuiceOption> = Object.fromEntries(
   JUICE_CATEGORIES.flatMap((c) => c.items).map((j) => [j.id, j])
 );
 
-export function getJuiceById(id: string): JuiceOption | undefined {
-  return JUICE_BY_ID[id];
-}
-
 export function getJuiceCatalogPricing(
   itemId: string | undefined,
   size: JuiceSize | undefined

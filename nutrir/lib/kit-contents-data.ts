@@ -7,10 +7,6 @@ export interface KitContentLine {
 
 type KitId = KitProduct["id"];
 
-export interface KitContentOptions {
-  includeVeg?: boolean;
-}
-
 const PREMIUM_LINES: Record<number, KitContentLine[]> = {
   7: [
     { label: "Escondidinho de Frango", count: 2 },
@@ -128,40 +124,6 @@ const MISTO_LINES: Record<number, KitContentLine[]> = {
   ],
 };
 
-const MISTO_WITH_VEG_LINES: Record<number, KitContentLine[]> = {
-  7: [
-    { label: "Frango da Casa", count: 1 },
-    { label: "Frango ao Sugo", count: 1 },
-    { label: "Escondidinho de Frango", count: 1 },
-    { label: "Carne da Casa", count: 1 },
-    { label: "Ragu à Bolonhesa", count: 1 },
-    { label: "Mix de Ervilha", count: 1 },
-    { label: "Mix de Grão de Bico", count: 1 },
-  ],
-  14: [
-    { label: "Frango da Casa", count: 2 },
-    { label: "Frango ao Sugo", count: 2 },
-    { label: "Escondidinho de Frango", count: 2 },
-    { label: "Carne da Casa", count: 2 },
-    { label: "Ragu à Bolonhesa", count: 2 },
-    { label: "Escondidinho de Carne", count: 1 },
-    { label: "Escondidinho de Cogu", count: 1 },
-    { label: "Mix de Ervilha", count: 1 },
-    { label: "Mix de Grão de Bico", count: 1 },
-  ],
-  28: [
-    { label: "Frango da Casa", count: 4 },
-    { label: "Frango ao Sugo", count: 4 },
-    { label: "Escondidinho de Frango", count: 3 },
-    { label: "Carne da Casa", count: 3 },
-    { label: "Ragu à Bolonhesa", count: 3 },
-    { label: "Escondidinho de Carne", count: 3 },
-    { label: "Escondidinho de Cogu", count: 2 },
-    { label: "Mix de Ervilha", count: 3 },
-    { label: "Mix de Grão de Bico", count: 3 },
-  ],
-};
-
 const KIT_CONTENTS: Record<Exclude<KitId, "misto">, Record<number, KitContentLine[]>> = {
   premium: PREMIUM_LINES,
   frango: FRANGO_LINES,
@@ -173,24 +135,14 @@ function linesFor(source: Record<number, KitContentLine[]>, meals: number): KitC
   return source[meals] ?? [];
 }
 
-export function getKitContentLines(
-  kitId: KitId,
-  meals: number,
-  options?: KitContentOptions
-): KitContentLine[] {
-  if (kitId === "misto") {
-    return linesFor(options?.includeVeg ? MISTO_WITH_VEG_LINES : MISTO_LINES, meals);
-  }
+export function getKitContentLines(kitId: KitId, meals: number): KitContentLine[] {
+  if (kitId === "misto") return linesFor(MISTO_LINES, meals);
   return linesFor(KIT_CONTENTS[kitId], meals);
 }
 
 /** Lista expandida de rótulos por marmita (para adicionais personalizados). */
-export function getKitMealLabels(
-  kitId: KitId,
-  meals: number,
-  options?: KitContentOptions
-): string[] {
-  const lines = getKitContentLines(kitId, meals, options);
+export function getKitMealLabels(kitId: KitId, meals: number): string[] {
+  const lines = getKitContentLines(kitId, meals);
   const labels: string[] = [];
   for (const line of lines) {
     for (let i = 0; i < line.count; i++) {

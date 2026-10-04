@@ -59,32 +59,9 @@ const SECTION_TO_KIT: Record<string, KitProduct["id"]> = {
   vegetariano: "veg",
 };
 
-function itemKeyFromLabel(label: string): string | undefined {
-  const lower = label.toLowerCase();
-  if (lower.includes("frango") && (lower.includes("batata") || lower.includes("escondidinho")))
-    return "frg-batata";
-  if (lower.includes("carne") && (lower.includes("batata") || lower.includes("escondidinho")))
-    return "car-batata";
-  if (lower.includes("ragu") || lower.includes("bolonhesa")) return "car-massa";
-  if (lower.includes("sugo")) return "frg-massa";
-  if (lower.includes("frango") && lower.includes("strogonoff")) return "frg-estrogonofe";
-  if (lower.includes("carne") && lower.includes("strogonoff")) return "car-estrogonofe";
-  if (lower.includes("carne") && lower.includes("casa")) return "car-arroz";
-  if (lower.includes("frango") && lower.includes("casa")) return "frg-arroz";
-  if (lower.includes("ervilha")) return "veg-ervilha";
-  if (lower.includes("grão") || lower.includes("grao")) return "veg-grao";
-  if (lower.includes("cogu")) return "veg-cogumelo";
-  return undefined;
-}
-
 export function getMarmitaImageSrc(itemId?: string, topView = false): string | undefined {
   if (!itemId) return undefined;
   return (topView ? MARMITA_IMAGES_TOP : MARMITA_IMAGES)[itemId];
-}
-
-export function getMarmitaImageFromLabel(label: string, topView = false): string | undefined {
-  const key = itemKeyFromLabel(label);
-  return key ? getMarmitaImageSrc(key, topView) : undefined;
 }
 
 export function getCartItemImageSrc(item: OrderItem): string | undefined {
@@ -97,8 +74,4 @@ export function getCartItemImageSrc(item: OrderItem): string | undefined {
   if (item.item_id && MARMITA_IMAGES[item.item_id]) return MARMITA_IMAGES[item.item_id];
   const kitId = item.section_id ? SECTION_TO_KIT[item.section_id] : undefined;
   return kitId ? KIT_IMAGES[kitId] : undefined;
-}
-
-export function shortMealLabel(label: string): string {
-  return label.replace(/\s*\(\d+\/\d+\)\s*$/, "").trim();
 }

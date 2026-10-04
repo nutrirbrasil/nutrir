@@ -34,13 +34,12 @@ function isSingleMarmitaItem(item: OrderItem): boolean {
 function parseKitMenuId(menuId: string | null | undefined) {
   if (!menuId) return null;
   const base = menuId.split("-addons-")[0] ?? menuId;
-  const match = base.match(/^kit-(premium|frango|carne|misto|veg)-(\d+)-(P|G)(-veg)?$/);
+  const match = base.match(/^kit-(premium|frango|carne|misto|veg)-(\d+)-(P|G)$/);
   if (!match) return null;
   return {
     kitId: match[1] as "premium" | "frango" | "carne" | "misto" | "veg",
     meals: Number(match[2]),
     size: match[3] as MarmitaSize,
-    includeVeg: !!match[4],
   };
 }
 
@@ -128,7 +127,7 @@ function getPratoDoDiaUnitPricesCents(
       const tier = product?.tiers.find((t) => t.meals === kit.meals);
       const pricing = tier?.prices[kit.size];
       if (!pricing) continue;
-      const unitsPerKit = getKitContentLines(kit.kitId, kit.meals, { includeVeg: kit.includeVeg })
+      const unitsPerKit = getKitContentLines(kit.kitId, kit.meals)
         .filter((line) => dishNames.has(line.label))
         .reduce((sum, line) => sum + line.count, 0);
       if (unitsPerKit <= 0) continue;

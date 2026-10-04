@@ -269,11 +269,6 @@ export function getAddonsForSameSelection(
   );
 }
 
-/** Quantas marmitas da lista têm o acompanhamento indicado. */
-export function countMealsForStarch(mealLabels: string[], starch: MealStarchType): number {
-  return mealLabels.filter((label) => getMealStarchType(label) === starch).length;
-}
-
 /** Quantas marmitas da lista têm QUALQUER UM dos acompanhamentos indicados (sem contar duas vezes). */
 function countMealsForAnyStarch(mealLabels: string[], starches: MealStarchType[]): number {
   return mealLabels.filter((label) => {

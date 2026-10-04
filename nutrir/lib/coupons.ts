@@ -45,10 +45,6 @@ export function getCoupon(code?: string | null): CouponDefinition | null {
   return COUPONS[normalizeCouponCode(code)] ?? null;
 }
 
-export function isValidCouponCode(code: string): boolean {
-  return getCoupon(code) !== null;
-}
-
 export function computeCouponDiscountCents(baseCents: number, coupon: CouponDefinition): number {
   if (baseCents <= 0 || coupon.percent <= 0) return 0;
   return Math.round((baseCents * coupon.percent) / 100);
