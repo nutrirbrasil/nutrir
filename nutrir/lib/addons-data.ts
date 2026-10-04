@@ -133,16 +133,6 @@ export const MEAL_ADDONS: MealAddon[] = [
     exclusiveGroup: "arroz-tipo",
   },
   {
-    id: "add-pure-mandioquinha",
-    name: "Purê de Mandioquinha",
-    baseCost: 0.5,
-    additionalPrice: 3.5,
-    portionLabel: "Desejo substituir purê de batata inglesa por Purê de Mandioquinha (Batata Salsa)",
-    portionUnit: "porção",
-    portionUnitPlural: "porções",
-    forStarch: ["batata", "batata-cogumelo"],
-  },
-  {
     id: "add-leite-vegetal",
     name: "Leite Vegetal",
     baseCost: 0.1,
@@ -311,6 +301,53 @@ export function computeSameModeAddonsCents(
       : mealLabels.length;
     return sum + getAddonUnitPriceCents(addon) * portions * multiplier;
   }, 0);
+}
+
+const CHANGED_GROUPS: { key: string; one: string; many: string }[] = [
+  { key: "escondidinho", one: "escondidinho", many: "escondidinhos" },
+  { key: "massa", one: "massa", many: "massas" },
+  { key: "casa", one: "da casa", many: "da casa" },
+  { key: "mix", one: "mix", many: "mix" },
+  { key: "strogonoff", one: "strogonoff", many: "strogonoffs" },
+];
+
+function changedGroupKey(label: string, starch: MealStarchType): string {
+  if (starch === "batata" || starch === "batata-cogumelo") return "escondidinho";
+  if (starch === "massa") return "massa";
+  if (starch === "cremoso") return "strogonoff";
+  return label.toLowerCase().includes("da casa") ? "casa" : "mix";
+}
+
+/**
+ * Resumo agrupado das marmitas alteradas pelas substituições escolhidas, ex.:
+ * "5 escondidinhos, 2 massas, 2 da casa e 3 strogonoffs". Vazio se nenhuma muda.
+ */
+export function describeChangedMeals(
+  mealLabels: string[],
+  selection: AddonSelectionMap
+): string {
+  const starches = new Set<MealStarchType>();
+  for (const [id, portions] of Object.entries(selection)) {
+    if (portions <= 0) continue;
+    getAddonById(id)?.forStarch?.forEach((st) => starches.add(st));
+  }
+  const counts = new Map<string, number>();
+  for (const label of mealLabels) {
+    const type = getMealStarchType(label);
+    if (!type || !starches.has(type)) continue;
+    const addonsForType = Object.entries(selection).some(
+      ([id, portions]) => portions > 0 && getAddonById(id)?.forStarch?.includes(type)
+    );
+    if (!addonsForType) continue;
+    const key = changedGroupKey(label, type);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const parts = CHANGED_GROUPS.filter((g) => counts.has(g.key)).map((g) => {
+    const n = counts.get(g.key)!;
+    return `${n} ${n === 1 ? g.one : g.many}`;
+  });
+  if (parts.length <= 1) return parts[0] ?? "";
+  return `${parts.slice(0, -1).join(", ")} e ${parts[parts.length - 1]}`;
 }
 
 /**

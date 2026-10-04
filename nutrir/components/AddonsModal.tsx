@@ -4,6 +4,7 @@ import { FiCheck, FiX } from "react-icons/fi";
 import { formatPrice } from "@/lib/api";
 import {
   computeSameModeAddonsCents,
+  describeChangedMeals,
   getAddonUnitPriceCents,
   getAddonsForSameSelection,
   MAX_ADDON_PORTIONS,
@@ -164,6 +165,7 @@ export function AddonsModal({
   const stepAddons = step === "substitution" ? substitutionAddons : regularAddons;
 
   const previewTotal = computeSameModeAddonsCents(pending.mealLabels, selection);
+  const changedSummary = isMultiMeal ? describeChangedMeals(pending.mealLabels, selection) : "";
   const hasSelectionInStep = stepAddons.some((addon) => (selection[addon.id] ?? 0) > 0);
 
   function setPortions(id: string, portions: number) {
@@ -252,8 +254,14 @@ export function AddonsModal({
             </div>
           )}
 
+          {changedSummary && (
+            <p className="mt-4 text-center text-xs text-nutrir-ink/60">
+              Itens alterados: {changedSummary}.
+            </p>
+          )}
+
           {previewTotal > 0 && (
-            <p className="mt-4 text-center text-sm text-nutrir-ink/70">
+            <p className="mt-2 first:mt-4 text-center text-sm text-nutrir-ink/70">
               Total adicionais:{" "}
               <strong className="text-nutrir-burgundy">{formatPrice(previewTotal)}</strong>
             </p>
