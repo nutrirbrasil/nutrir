@@ -34,8 +34,12 @@ export function PickupScheduler({
   todayUnavailable = false,
   extraDays = 0,
 }: Props) {
+  const showDisabledToday = todayUnavailable && !allowToday;
+
+  // Desktop: 6 cards na linha (Hoje + 5 datas, ou 6 datas). Celular: 5 (o último some).
+  const desktopCount = showDisabledToday ? 5 : 6;
   const dates = useMemo(
-    () => getNextAvailablePickupDates(now, 5, allowToday, extraDays),
+    () => getNextAvailablePickupDates(now, 6, allowToday, extraDays),
     [now, allowToday, extraDays]
   );
 
@@ -58,7 +62,6 @@ export function PickupScheduler({
     onChange({ date: value.date, slot });
   }
 
-  const showDisabledToday = todayUnavailable && !allowToday;
 
   if (dates.length === 0 && !showDisabledToday) {
     return (
@@ -79,7 +82,7 @@ export function PickupScheduler({
       <div>
         <p className="text-sm font-medium text-nutrir-ink">Selecione a data da retirada</p>
 
-        <div className="mt-3 grid grid-cols-5 gap-2">
+        <div className="mt-3 grid grid-cols-5 gap-2 md:grid-cols-6">
           {showDisabledToday && (
             <div
               className="rounded-xl border-2 border-nutrir-nude-dark/40 bg-nutrir-canvas-alt/10 px-1 py-3 text-center text-nutrir-ink/40"
@@ -89,7 +92,7 @@ export function PickupScheduler({
               <span className="block text-[10px]">Indisponível</span>
             </div>
           )}
-          {dates.map((d) => {
+          {dates.slice(0, desktopCount).map((d, index) => {
             const iso = toISODate(d);
             const { day, weekday } = formatPickupDayLabel(d);
             const selected = value?.date === iso;
@@ -98,7 +101,9 @@ export function PickupScheduler({
                 key={iso}
                 type="button"
                 onClick={() => selectDate(iso)}
-                className={`rounded-xl border-2 px-1 py-3 text-center transition ${
+                className={`${
+                    dates.length >= desktopCount && index === desktopCount - 1 ? "hidden md:block" : ""
+                  } rounded-xl border-2 px-1 py-3 text-center transition ${
                   selected
                     ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"
                     : "border-nutrir-burgundy/30 bg-nutrir-canvas text-nutrir-ink hover:border-nutrir-burgundy"
