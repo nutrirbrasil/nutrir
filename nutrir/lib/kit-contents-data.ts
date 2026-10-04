@@ -73,24 +73,6 @@ const CARNE_LINES: Record<number, KitContentLine[]> = {
   ],
 };
 
-const VEG_LINES: Record<number, KitContentLine[]> = {
-  7: [
-    { label: "Mix de Ervilha", count: 2 },
-    { label: "Mix de Grão de Bico", count: 3 },
-    { label: "Escondidinho de Cogu", count: 2 },
-  ],
-  14: [
-    { label: "Mix de Ervilha", count: 5 },
-    { label: "Mix de Grão de Bico", count: 5 },
-    { label: "Escondidinho de Cogu", count: 4 },
-  ],
-  28: [
-    { label: "Mix de Ervilha", count: 10 },
-    { label: "Mix de Grão de Bico", count: 10 },
-    { label: "Escondidinho de Cogu", count: 8 },
-  ],
-};
-
 const MISTO_LINES: Record<number, KitContentLine[]> = {
   // No tier de 7 o Carne da Casa fica de fora (8 opções não cabem em 7 marmitas).
   7: [
@@ -128,7 +110,6 @@ const KIT_CONTENTS: Record<Exclude<KitId, "misto">, Record<number, KitContentLin
   premium: PREMIUM_LINES,
   frango: FRANGO_LINES,
   carne: CARNE_LINES,
-  veg: VEG_LINES,
 };
 
 function linesFor(source: Record<number, KitContentLine[]>, meals: number): KitContentLine[] {

@@ -54,7 +54,7 @@ export interface KitTier {
 }
 
 export interface KitProduct {
-  id: "premium" | "frango" | "carne" | "misto" | "veg";
+  id: "premium" | "frango" | "carne" | "misto";
   name: string;
   description: string;
   tiers: KitTier[];
@@ -291,65 +291,6 @@ const BASE_KIT_PRODUCTS: KitProduct[] = [
             card_total_cents: 68782,
             cash_total_cents: 58772,
             card_per_meal_cents: 2456,
-            cash_per_meal_cents: 2099,
-          },
-        },
-      },
-    ],
-  },
-  {
-    id: "veg",
-    name: "Kit Veg",
-    description:
-      "Marmitas 100% vegetarianas. Ideal para quem busca praticidade com proteína vegetal no dia a dia.",
-    tiers: [
-      {
-        meals: 7,
-        prices: {
-          P: {
-            card_total_cents: 18000,
-            cash_total_cents: 15390,
-            card_per_meal_cents: 2599,
-            cash_per_meal_cents: 2199,
-          },
-          G: {
-            card_total_cents: 19500,
-            cash_total_cents: 16790,
-            card_per_meal_cents: 2799,
-            cash_per_meal_cents: 2399,
-          },
-        },
-      },
-      {
-        meals: 14,
-        prices: {
-          P: {
-            card_total_cents: 31500,
-            cash_total_cents: 28700,
-            card_per_meal_cents: 2299,
-            cash_per_meal_cents: 2050,
-          },
-          G: {
-            card_total_cents: 36500,
-            cash_total_cents: 31500,
-            card_per_meal_cents: 2699,
-            cash_per_meal_cents: 2250,
-          },
-        },
-      },
-      {
-        meals: 28,
-        prices: {
-          P: {
-            card_total_cents: 62500,
-            cash_total_cents: 53190,
-            card_per_meal_cents: 2299,
-            cash_per_meal_cents: 1899,
-          },
-          G: {
-            card_total_cents: 69000,
-            cash_total_cents: 58790,
-            card_per_meal_cents: 2499,
             cash_per_meal_cents: 2099,
           },
         },

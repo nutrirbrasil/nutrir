@@ -50,14 +50,14 @@ export const KIT_IMAGES: Record<KitProduct["id"], string> = {
   premium: kitImagePath("Escondidinho de carne"),
   frango: kitImagePath("combo frango"),
   carne: kitImagePath("combo carne"),
-  veg: kitImagePath("Combo Veg"),
   misto: kitImagePath("combo misto"),
 };
 
-const SECTION_TO_KIT: Record<string, KitProduct["id"]> = {
-  frango: "frango",
-  carne: "carne",
-  vegetariano: "veg",
+/** Imagem de capa por seção do cardápio (Monte seu Combo e fallback da sacola). */
+export const SECTION_IMAGES: Record<string, string> = {
+  frango: KIT_IMAGES.frango,
+  carne: KIT_IMAGES.carne,
+  vegetariano: kitImagePath("Combo Veg"),
 };
 
 export function getMarmitaImageSrc(itemId?: string, topView = false): string | undefined {
@@ -74,6 +74,5 @@ export function getCartItemImageSrc(item: OrderItem): string | undefined {
   if (item.section_id === "suco" && item.item_id) return getJuiceImageSrc(item.item_id);
   if (item.section_id === "bebida") return getBebidaById(item.item_id)?.imageSrc;
   if (item.item_id && MARMITA_IMAGES[item.item_id]) return MARMITA_IMAGES[item.item_id];
-  const kitId = item.section_id ? SECTION_TO_KIT[item.section_id] : undefined;
-  return kitId ? KIT_IMAGES[kitId] : undefined;
+  return item.section_id ? SECTION_IMAGES[item.section_id] : undefined;
 }
