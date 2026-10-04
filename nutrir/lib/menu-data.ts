@@ -131,10 +131,10 @@ const BASE_KIT_PRODUCTS: KitProduct[] = [
         meals: 7,
         prices: {
           P: {
-            card_total_cents: 17203,
-            cash_total_cents: 14693,
-            card_per_meal_cents: 2458,
-            cash_per_meal_cents: 2099,
+            card_total_cents: 16503,
+            cash_total_cents: 13993,
+            card_per_meal_cents: 2358,
+            cash_per_meal_cents: 1999,
           },
           G: {
             card_total_cents: 18703,
@@ -148,10 +148,10 @@ const BASE_KIT_PRODUCTS: KitProduct[] = [
         meals: 14,
         prices: {
           P: {
-            card_total_cents: 31900,
-            cash_total_cents: 27300,
-            card_per_meal_cents: 2279,
-            cash_per_meal_cents: 1950,
+            card_total_cents: 30500,
+            cash_total_cents: 25900,
+            card_per_meal_cents: 2179,
+            cash_per_meal_cents: 1850,
           },
           G: {
             card_total_cents: 34900,
