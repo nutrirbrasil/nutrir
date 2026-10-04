@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   formatDeliverySummary,
   getDeliveryWindow,
@@ -38,10 +38,10 @@ export function DeliveryScheduler({
 
   const showDisabledToday = todayUnavailable && !allowToday;
 
-  // Desktop: 6 cards na linha (Hoje + 5 datas, ou 6 datas). Celular: 5 (o último some).
-  const desktopCount = showDisabledToday ? 5 : 6;
+  const todayCells = showDisabledToday ? 1 : 0;
+  const [expanded, setExpanded] = useState(false);
   const dates = useMemo(
-    () => (group ? getNextAvailableDeliveryDates(group, now, 6, allowToday, extraDays) : []),
+    () => (group ? getNextAvailableDeliveryDates(group, now, 12, allowToday, extraDays) : []),
     [group, now, allowToday, extraDays]
   );
 
@@ -68,6 +68,7 @@ export function DeliveryScheduler({
             Nenhuma data disponível no momento. Tente novamente mais tarde.
           </p>
         ) : (
+          <>
           <div className="mt-3 grid grid-cols-5 gap-2 md:grid-cols-6">
             {showDisabledToday && (
               <div
@@ -78,7 +79,17 @@ export function DeliveryScheduler({
                 <span className="block text-[10px]">Indisponível</span>
               </div>
             )}
-            {dates.slice(0, desktopCount).map((d, index) => {
+            {dates.map((d, index) => {
+            const cell = index + todayCells;
+            // Celular: 5 por linha, desktop: 6. Fechado mostra 1 linha, aberto mostra 2.
+            const mobileVisible = cell < (expanded ? 10 : 5);
+            const desktopVisible = cell < (expanded ? 12 : 6);
+            if (!mobileVisible && !desktopVisible) return null;
+            const visibility = mobileVisible
+              ? desktopVisible
+                ? ""
+                : "md:hidden"
+              : "hidden md:block";
               const iso = toISODate(d);
               const { day, weekday } = formatPickupDayLabel(d);
               const selected = value?.date === iso;
@@ -87,9 +98,7 @@ export function DeliveryScheduler({
                   key={iso}
                   type="button"
                   onClick={() => selectDate(iso)}
-                  className={`${
-                    dates.length >= desktopCount && index === desktopCount - 1 ? "hidden md:block" : ""
-                  } rounded-xl border-2 px-1 py-3 text-center transition ${
+                  className={`${visibility} rounded-xl border-2 px-1 py-3 text-center transition ${
                     selected
                       ? "border-nutrir-emerald bg-nutrir-emerald/10 text-nutrir-ink"
                       : "border-nutrir-burgundy/30 bg-nutrir-canvas text-nutrir-ink hover:border-nutrir-burgundy"
@@ -101,6 +110,18 @@ export function DeliveryScheduler({
               );
             })}
           </div>
+          {!expanded && dates.length + todayCells > 5 && (
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className={`mt-3 text-sm font-semibold text-nutrir-burgundy underline underline-offset-2 hover:opacity-80 dark:text-nutrir-nude ${
+                dates.length + todayCells > 6 ? "" : "md:hidden"
+              }`}
+            >
+              Ver mais opções
+            </button>
+          )}
+          </>
         )}
       </div>
 
