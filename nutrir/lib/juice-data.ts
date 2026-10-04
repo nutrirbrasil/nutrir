@@ -28,12 +28,12 @@ export interface JuiceCategory {
 }
 
 const NATURAL_PRICES: Record<JuiceSize, JuiceSizePricing> = {
-  P: { cash_cents: 1000, card_cents: 1200, ml: 300 },
+  P: { cash_cents: 999, card_cents: 1200, ml: 300 },
   G: { cash_cents: 1199, card_cents: 1500, ml: 500 },
 };
 
 const ESPECIAL_PRICES: Record<JuiceSize, JuiceSizePricing> = {
-  P: { cash_cents: 1000, card_cents: 1300, ml: 300 },
+  P: { cash_cents: 999, card_cents: 1300, ml: 300 },
   G: { cash_cents: 1199, card_cents: 1600, ml: 500 },
 };
 
