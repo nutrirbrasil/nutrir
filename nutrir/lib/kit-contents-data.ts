@@ -33,13 +33,6 @@ const PREMIUM_LINES: Record<number, KitContentLine[]> = {
     { label: "Strogonoff de Frango", count: 6 },
     { label: "Strogonoff de Carne", count: 6 },
   ],
-  30: [
-    { label: "Escondidinho de Frango", count: 6 },
-    { label: "Escondidinho de Carne", count: 6 },
-    { label: "Escondidinho de Cogu", count: 5 },
-    { label: "Strogonoff de Frango", count: 7 },
-    { label: "Strogonoff de Carne", count: 6 },
-  ],
 };
 
 const FRANGO_LINES: Record<number, KitContentLine[]> = {
@@ -61,12 +54,6 @@ const FRANGO_LINES: Record<number, KitContentLine[]> = {
     { label: "Escondidinho de Frango", count: 7 },
     { label: "Strogonoff de Frango", count: 6 },
   ],
-  30: [
-    { label: "Frango da Casa", count: 8 },
-    { label: "Frango ao Sugo", count: 8 },
-    { label: "Escondidinho de Frango", count: 7 },
-    { label: "Strogonoff de Frango", count: 7 },
-  ],
 };
 
 const CARNE_LINES: Record<number, KitContentLine[]> = {
@@ -87,12 +74,6 @@ const CARNE_LINES: Record<number, KitContentLine[]> = {
     { label: "Ragu à Bolonhesa", count: 7 },
     { label: "Escondidinho de Carne", count: 7 },
     { label: "Strogonoff de Carne", count: 6 },
-  ],
-  30: [
-    { label: "Carne da Casa", count: 8 },
-    { label: "Ragu à Bolonhesa", count: 8 },
-    { label: "Escondidinho de Carne", count: 7 },
-    { label: "Strogonoff de Carne", count: 7 },
   ],
 };
 
@@ -145,16 +126,6 @@ const MISTO_LINES: Record<number, KitContentLine[]> = {
     { label: "Escondidinho de Carne", count: 3 },
     { label: "Strogonoff de Carne", count: 3 },
   ],
-  30: [
-    { label: "Frango da Casa", count: 4 },
-    { label: "Frango ao Sugo", count: 4 },
-    { label: "Escondidinho de Frango", count: 4 },
-    { label: "Strogonoff de Frango", count: 4 },
-    { label: "Carne da Casa", count: 4 },
-    { label: "Ragu à Bolonhesa", count: 4 },
-    { label: "Escondidinho de Carne", count: 3 },
-    { label: "Strogonoff de Carne", count: 3 },
-  ],
 };
 
 const MISTO_WITH_VEG_LINES: Record<number, KitContentLine[]> = {
@@ -198,27 +169,8 @@ const KIT_CONTENTS: Record<Exclude<KitId, "misto">, Record<number, KitContentLin
   veg: VEG_LINES,
 };
 
-/** Escala a composição de 28 marmitas pra outro total (maior resto), mantendo a proporção. */
-function scaleLines(base: KitContentLine[], total: number): KitContentLine[] {
-  const baseTotal = base.reduce((sum, l) => sum + l.count, 0);
-  const raw = base.map((l) => (l.count * total) / baseTotal);
-  const counts = raw.map((r) => Math.floor(r));
-  let remaining = total - counts.reduce((sum, c) => sum + c, 0);
-  const order = raw
-    .map((r, index) => ({ index, frac: r - Math.floor(r) }))
-    .sort((x, y) => y.frac - x.frac || x.index - y.index);
-  for (const { index } of order) {
-    if (remaining <= 0) break;
-    counts[index] += 1;
-    remaining -= 1;
-  }
-  return base.map((l, i) => ({ label: l.label, count: counts[i] }));
-}
-
 function linesFor(source: Record<number, KitContentLine[]>, meals: number): KitContentLine[] {
-  if (source[meals]) return source[meals];
-  if (source[28] && (meals === 30 || meals === 60)) return scaleLines(source[28], meals);
-  return [];
+  return source[meals] ?? [];
 }
 
 export function getKitContentLines(
