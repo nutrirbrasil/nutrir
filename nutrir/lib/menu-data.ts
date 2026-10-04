@@ -385,8 +385,9 @@ export interface MenuSection {
 const PRICES = {
   frangoArrozMassa: { P: 2199, G: 2399 },
   frangoEscondidinho: { P: 2399, G: 2599 },
-  carneArrozMassa: { P: 2599, G: 2799 },
-  carneEscondidinho: { P: 2799, G: 2999 },
+  carneArrozMassa: { P: 2499, G: 2699 },
+  carneEscondidinho: { P: 2599, G: 2799 },
+  carneEstrogonofe: { P: 2699, G: 2899 },
   vegetariano: { P: 2199, G: 2399 },
   ervilha: { P: 2299, G: 2499 },
   cogumeloEscondidinho: { P: 2999, G: 3399 },
@@ -419,7 +420,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         name: "Strogonoff de Carne",
         description:
           "Patinho em cubos ao molho especial com champignon, reduzido em gordura, zero lactose e acompanhado de arroz branco.",
-        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+        prices: { P: PRICES.carneEstrogonofe.P, G: PRICES.carneEstrogonofe.G },
         glutenFree: true,
         lactoseFree: true,
       },
@@ -504,7 +505,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         name: "Strogonoff de Carne",
         description:
           "Patinho em cubos ao molho especial com champignon, reduzido em gordura, zero lactose e acompanhado de arroz branco.",
-        prices: { P: PRICES.carneEscondidinho.P, G: PRICES.carneEscondidinho.G },
+        prices: { P: PRICES.carneEstrogonofe.P, G: PRICES.carneEstrogonofe.G },
         glutenFree: true,
         lactoseFree: true,
       },
