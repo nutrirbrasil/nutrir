@@ -16,7 +16,13 @@ import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 function dominantSection(items: OrderItem[]): string | undefined {
   const counts: Record<string, number> = {};
   for (const item of items) {
-    if (item.section_id && item.section_id !== "kit" && item.section_id !== "combo") {
+    if (
+      item.section_id &&
+      item.section_id !== "kit" &&
+      item.section_id !== "combo" &&
+      item.section_id !== "suco" &&
+      item.section_id !== "bebida"
+    ) {
       counts[item.section_id] = (counts[item.section_id] ?? 0) + item.quantity;
     }
   }

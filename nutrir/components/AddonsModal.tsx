@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { FiCheck, FiX } from "react-icons/fi";
 import { formatPrice } from "@/lib/api";
 import {
@@ -11,20 +12,27 @@ import {
   type MealAddon,
   type AddonSelectionMap,
 } from "@/lib/addons-data";
-import type { PendingCartAdd } from "@/lib/addons-flow-context";
+import type { PendingCartAdd, DrinkSelectionMap } from "@/lib/addons-flow-context";
+import { BEBIDAS, drinkKey } from "@/lib/bebida-data";
+import { JUICE_CATEGORIES, type JuiceSize } from "@/lib/juice-data";
+import { getJuiceImageSrc } from "@/lib/juice-images";
 import { MarmitaPhoto } from "@/components/MarmitaPhoto";
 
-type ModalStep = "substitution" | "addon";
+type ModalStep = "substitution" | "addon" | "drink";
 
 interface Props {
   pending: PendingCartAdd;
   step: ModalStep;
   isMultiMeal: boolean;
   selection: AddonSelectionMap;
+  drinks: DrinkSelectionMap;
+  onDrinksChange: (next: DrinkSelectionMap) => void;
   onClose: () => void;
   onSelectionChange: (next: AddonSelectionMap) => void;
   onContinue: () => void;
 }
+
+const DRINK_JUICES = JUICE_CATEGORIES.flatMap((c) => c.items);
 
 function QtyStepper({
   qty,
@@ -150,11 +158,83 @@ function SubstitutionCard({
   );
 }
 
+type DrinkSize = JuiceSize | "UN";
+
+function DrinkRow({
+  name,
+  imageSrc,
+  sizes,
+  quantities,
+  onChange,
+}: {
+  name: string;
+  imageSrc?: string;
+  /** Tamanhos disponíveis com preço (água tem só "UN"). */
+  sizes: { size: DrinkSize; cents: number }[];
+  quantities: Record<string, number>;
+  onChange: (size: DrinkSize, qty: number) => void;
+}) {
+  const [size, setSize] = useState<DrinkSize>(sizes[0].size);
+  const current = sizes.find((s) => s.size === size) ?? sizes[0];
+  const qty = quantities[current.size] ?? 0;
+  const total = Object.values(quantities).reduce((sum, n) => sum + n, 0);
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-xl border px-2.5 py-2.5 transition ${
+        total > 0
+          ? "border-nutrir-burgundy bg-nutrir-burgundy/5"
+          : "border-nutrir-nude-dark/60 bg-nutrir-canvas-alt/50"
+      }`}
+    >
+      {imageSrc && (
+        <MarmitaPhoto
+          src={imageSrc}
+          alt=""
+          className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-nutrir-burgundy"
+          sizes="56px"
+          fit="cover"
+        />
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold leading-tight text-nutrir-ink">{name}</p>
+        {sizes.length > 1 && (
+          <div className="mt-1.5 inline-flex rounded-full border border-nutrir-nude-dark/70 p-0.5">
+            {sizes.map((s) => (
+              <button
+                key={s.size}
+                type="button"
+                onClick={() => setSize(s.size)}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition ${
+                  current.size === s.size
+                    ? "bg-nutrir-burgundy text-nutrir-nude"
+                    : "text-nutrir-ink/70"
+                }`}
+              >
+                {s.size}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        <span className="text-sm font-bold text-nutrir-burgundy">{formatPrice(current.cents)}</span>
+        <QtyStepper
+          qty={qty}
+          onDec={() => onChange(current.size, qty - 1)}
+          onInc={() => onChange(current.size, qty + 1)}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function AddonsModal({
   pending,
   step,
   isMultiMeal,
   selection,
+  drinks,
+  onDrinksChange,
   onClose,
   onSelectionChange,
   onContinue,
@@ -167,6 +247,35 @@ export function AddonsModal({
   const previewTotal = computeSameModeAddonsCents(pending.mealLabels, selection);
   const changedSummary = isMultiMeal ? describeChangedMeals(pending.mealLabels, selection) : "";
   const hasSelectionInStep = stepAddons.some((addon) => (selection[addon.id] ?? 0) > 0);
+
+  const totalSteps = isMultiMeal ? 2 : 3;
+  const stepNumber = step === "drink" ? totalSteps : step === "addon" ? 2 : 1;
+
+  const drinkCount = Object.values(drinks).reduce((sum, n) => sum + n, 0);
+  const drinksTotal = Object.entries(drinks).reduce((sum, [key, qty]) => {
+    const [id, size] = key.split("|");
+    const bebida = BEBIDAS.find((b) => b.id === id);
+    if (bebida) return sum + bebida.price_cents * qty;
+    const juice = DRINK_JUICES.find((j) => j.id === id);
+    return sum + (juice && (size === "P" || size === "G") ? juice.prices[size].cash_cents * qty : 0);
+  }, 0);
+
+  function setDrinkQty(id: string, size: DrinkSize, qty: number) {
+    const next = { ...drinks };
+    const key = drinkKey(id, size);
+    if (qty <= 0) delete next[key];
+    else next[key] = Math.min(qty, MAX_ADDON_PORTIONS);
+    onDrinksChange(next);
+  }
+
+  function quantitiesFor(id: string): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const [key, qty] of Object.entries(drinks)) {
+      const [keyId, size] = key.split("|");
+      if (keyId === id) out[size] = qty;
+    }
+    return out;
+  }
 
   function setPortions(id: string, portions: number) {
     const next = { ...selection };
@@ -196,10 +305,22 @@ export function AddonsModal({
   const title =
     step === "substitution"
       ? "Deseja alguma substituição?"
-      : "Deseja algum adicional?";
+      : step === "addon"
+        ? "Deseja algum adicional?"
+        : "Deseja alguma bebida?";
 
-  const skipLabel = step === "substitution" ? "Não desejo substituições" : "Não desejo adicionais";
-  const continueLabel = hasSelectionInStep ? "Continuar" : skipLabel;
+  const skipLabel =
+    step === "substitution"
+      ? "Não desejo substituições"
+      : step === "addon"
+        ? "Não desejo adicionais"
+        : "Não desejo bebida";
+  const hasSelection = step === "drink" ? drinkCount > 0 : hasSelectionInStep;
+  const continueLabel = hasSelection
+    ? step === "drink"
+      ? "Adicionar à sacola"
+      : "Continuar"
+    : skipLabel;
 
   return (
     <>
@@ -212,67 +333,105 @@ export function AddonsModal({
       <div
         role="dialog"
         aria-modal="true"
-        className="fixed left-1/2 top-1/2 z-[90] flex max-h-[min(90vh,720px)] w-[min(92vw,480px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl"
+        className="fixed left-1/2 top-1/2 z-[90] w-[min(92vw,480px)] -translate-x-1/2 -translate-y-1/2"
       >
-        <header className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 px-5 py-4">
-          <h2 className="font-display text-xl font-bold text-nutrir-ink">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-nutrir-emerald/20 text-nutrir-ink/70 hover:bg-nutrir-emerald/5"
-          >
-            <FiX />
-          </button>
-        </header>
+        <span className="absolute -top-3.5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-nutrir-burgundy px-3 py-1 text-xs font-bold text-nutrir-nude shadow-md">
+          {stepNumber} de {totalSteps}
+        </span>
+        <div className="flex max-h-[min(90vh,720px)] flex-col overflow-hidden rounded-2xl bg-nutrir-canvas-alt shadow-2xl">
+          <header className="flex items-start justify-between gap-3 border-b border-nutrir-nude-dark/40 px-5 py-4">
+            <h2 className="font-display text-xl font-bold text-nutrir-ink">{title}</h2>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-nutrir-emerald/20 text-nutrir-ink/70 hover:bg-nutrir-emerald/5"
+            >
+              <FiX />
+            </button>
+          </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-          {step === "substitution" ? (
-            <div className="space-y-2">
-              {substitutionAddons.map((addon) => {
-                const selected = (selection[addon.id] ?? 0) > 0;
-                return (
-                  <SubstitutionCard
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+            {step === "drink" ? (
+              <div className="space-y-2">
+                {DRINK_JUICES.map((juice) => (
+                  <DrinkRow
+                    key={juice.id}
+                    name={juice.name}
+                    imageSrc={getJuiceImageSrc(juice.id)}
+                    sizes={(["P", "G"] as JuiceSize[]).map((sz) => ({
+                      size: sz,
+                      cents: juice.prices[sz].cash_cents,
+                    }))}
+                    quantities={quantitiesFor(juice.id)}
+                    onChange={(sz, qty) => setDrinkQty(juice.id, sz, qty)}
+                  />
+                ))}
+                {BEBIDAS.map((bebida) => (
+                  <DrinkRow
+                    key={bebida.id}
+                    name={bebida.name}
+                    imageSrc={bebida.imageSrc}
+                    sizes={[{ size: "UN", cents: bebida.price_cents }]}
+                    quantities={quantitiesFor(bebida.id)}
+                    onChange={(sz, qty) => setDrinkQty(bebida.id, sz, qty)}
+                  />
+                ))}
+              </div>
+            ) : step === "substitution" ? (
+              <div className="space-y-2">
+                {substitutionAddons.map((addon) => {
+                  const selected = (selection[addon.id] ?? 0) > 0;
+                  return (
+                    <SubstitutionCard
+                      key={addon.id}
+                      addon={addon}
+                      selected={selected}
+                      onToggle={() => toggleSubstitution(addon)}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {regularAddons.map((addon) => (
+                  <AddonCard
                     key={addon.id}
                     addon={addon}
-                    selected={selected}
-                    onToggle={() => toggleSubstitution(addon)}
+                    qty={selection[addon.id] ?? 0}
+                    onDec={() => setPortions(addon.id, (selection[addon.id] ?? 0) - 1)}
+                    onInc={() => setPortions(addon.id, (selection[addon.id] ?? 0) + 1)}
                   />
-                );
-              })}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {regularAddons.map((addon) => (
-                <AddonCard
-                  key={addon.id}
-                  addon={addon}
-                  qty={selection[addon.id] ?? 0}
-                  onDec={() => setPortions(addon.id, (selection[addon.id] ?? 0) - 1)}
-                  onInc={() => setPortions(addon.id, (selection[addon.id] ?? 0) + 1)}
-                />
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          {changedSummary && (
-            <p className="mt-4 text-center text-xs text-nutrir-ink/60">
-              Itens alterados: {changedSummary}.
-            </p>
-          )}
+            {step === "drink" && drinksTotal > 0 && (
+              <p className="mt-4 text-center text-sm text-nutrir-ink/70">
+                Total em bebidas:{" "}
+                <strong className="text-nutrir-burgundy">{formatPrice(drinksTotal)}</strong>
+              </p>
+            )}
 
-          {previewTotal > 0 && (
-            <p className="mt-2 first:mt-4 text-center text-sm text-nutrir-ink/70">
-              Total adicionais:{" "}
-              <strong className="text-nutrir-burgundy">{formatPrice(previewTotal)}</strong>
-            </p>
-          )}
+            {step !== "drink" && changedSummary && (
+              <p className="mt-4 text-center text-xs text-nutrir-ink/60">
+                Itens alterados: {changedSummary}.
+              </p>
+            )}
+
+            {step !== "drink" && previewTotal > 0 && (
+              <p className="mt-2 first:mt-4 text-center text-sm text-nutrir-ink/70">
+                Total adicionais:{" "}
+                <strong className="text-nutrir-burgundy">{formatPrice(previewTotal)}</strong>
+              </p>
+            )}
+          </div>
+
+          <footer className="border-t border-nutrir-nude-dark/40 px-5 py-4">
+            <button type="button" onClick={onContinue} className="btn-primary w-full py-2.5">
+              {continueLabel}
+            </button>
+          </footer>
         </div>
-
-        <footer className="border-t border-nutrir-nude-dark/40 px-5 py-4">
-          <button type="button" onClick={onContinue} className="btn-primary w-full py-2.5">
-            {continueLabel}
-          </button>
-        </footer>
       </div>
     </>
   );

@@ -1,5 +1,6 @@
 import type { KitProduct } from "./menu-data";
 import type { OrderItem } from "./types";
+import { getBebidaById } from "./bebida-data";
 import { getJuiceImageSrc } from "./juice-images";
 
 const COM_FUNDO = "/marmitas/V3";
@@ -71,6 +72,7 @@ export function getCartItemImageSrc(item: OrderItem): string | undefined {
   }
   if (item.section_id === "combo") return KIT_IMAGES.misto;
   if (item.section_id === "suco" && item.item_id) return getJuiceImageSrc(item.item_id);
+  if (item.section_id === "bebida") return getBebidaById(item.item_id)?.imageSrc;
   if (item.item_id && MARMITA_IMAGES[item.item_id]) return MARMITA_IMAGES[item.item_id];
   const kitId = item.section_id ? SECTION_TO_KIT[item.section_id] : undefined;
   return kitId ? KIT_IMAGES[kitId] : undefined;
