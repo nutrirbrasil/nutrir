@@ -25,7 +25,7 @@ interface Plan {
   image: string;
   name: string;
   tagline: string;
-  /** Opções de total de marmitas; o mensal é 30 no total, recebendo 7 por semana. */
+  /** Opções de total de marmitas; o mensal é 28 no total (4 semanas), recebendo 7 por semana. */
   options: { meals: number; perWeek?: number }[];
 }
 
@@ -52,7 +52,7 @@ const PLANS: Plan[] = [
     image: "/combos/combo-mensal-v3.jpg",
     name: "Mensal",
     tagline: "Pague uma vez, receba toda semana!",
-    options: [{ meals: 30, perWeek: 7 }],
+    options: [{ meals: 28, perWeek: 7 }],
   },
 ];
 
@@ -104,15 +104,18 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
   const weightG = kitId === "premium" && size === "P" ? 240 : MARMITA_WEIGHT_G[size];
   const tier = getTier(kitId, meals);
   const pricing = tier.prices[size];
+  // No mensal mostramos o que vem em cada entrega semanal (igual ao combo de 7).
+  const contentMeals = option.perWeek ?? meals;
+  const repeats = meals / contentMeals;
   const lines = useMemo(
-    () => [...getKitContentLines(kitId, meals)].sort((a, b) => b.count - a.count),
-    [kitId, meals]
+    () => [...getKitContentLines(kitId, contentMeals)].sort((a, b) => b.count - a.count),
+    [kitId, contentMeals]
   );
 
   const avulsoTotalCents = useMemo(
     () =>
-      lines.reduce((sum, line) => sum + (AVULSO_BY_NAME.get(line.label)?.[size] ?? 0) * line.count, 0),
-    [lines, size]
+      lines.reduce((sum, line) => sum + (AVULSO_BY_NAME.get(line.label)?.[size] ?? 0) * line.count * repeats, 0),
+    [lines, size, repeats]
   );
   const avulsoPerMealCents = Math.round(avulsoTotalCents / meals);
   const showSavings = avulsoTotalCents > pricing.cash_total_cents;
@@ -122,7 +125,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
     requestAdd({
       kind: "kit",
       mealCount: meals,
-      mealLabels: getKitMealLabels(kitId, meals),
+      mealLabels: Array.from({ length: repeats }, () => getKitMealLabels(kitId, contentMeals)).flat(),
       redirectTo: buyNow ? "/agendar" : undefined,
       baseItem: {
         menu_id: `kit-${kitId}-${meals}-${size}`,
@@ -328,7 +331,7 @@ function ConfiguratorModal({ plan, onClose }: { plan: Plan; onClose: () => void 
           <div className="flex flex-col">
             <div className="rounded-2xl border border-nutrir-nude-dark/60 bg-nutrir-canvas-alt p-5">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-nutrir-ink/55">
-                O que vem no combo
+                {option.perWeek ? "O que vem por semana" : "O que vem no combo"}
               </p>
               <ul className="mt-3 divide-y divide-nutrir-nude-dark/50">
                 {lines.map((line) => (
