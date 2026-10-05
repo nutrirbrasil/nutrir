@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { OrderItem } from "./types";
-import { getItemCashTotalCents } from "./order-pricing";
+import { getCatalogBasePriceCents, getItemCashTotalCents } from "./order-pricing";
 import { track } from "./analytics";
 
 const STORAGE_KEY = "nutrir-cart";
@@ -37,11 +37,22 @@ function itemKey(item: OrderItem): string {
   return `${item.menu_id ?? `${item.name}-${item.price_cents}`}${addonsPart}`;
 }
 
+/** Sacola salva pode ter preços antigos: atualiza pro catálogo atual e descarta itens que não existem mais. */
+function syncWithCatalog(items: OrderItem[]): OrderItem[] {
+  const synced: OrderItem[] = [];
+  for (const item of items) {
+    const price = getCatalogBasePriceCents(item);
+    if (price === null) continue;
+    synced.push(price === undefined || price === item.price_cents ? item : { ...item, price_cents: price });
+  }
+  return synced;
+}
+
 function loadCart(): OrderItem[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as OrderItem[]) : [];
+    return raw ? syncWithCatalog(JSON.parse(raw) as OrderItem[]) : [];
   } catch {
     return [];
   }

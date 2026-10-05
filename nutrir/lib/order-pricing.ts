@@ -390,6 +390,10 @@ export function validateCatalogItemPrice(item: OrderItem): string | null {
     return null;
   }
 
+  if (item.section_id === "kit" || item.menu_id?.startsWith("kit-")) {
+    return `Kit inválido: ${item.menu_id}`;
+  }
+
   if (item.section_id === "suco" && item.item_id) {
     const juicePricing = getJuiceCatalogPricing(item.item_id, item.size as JuiceSize | undefined);
     if (!juicePricing) return `Suco inválido: ${item.item_id}`;
@@ -421,6 +425,33 @@ export function validateCatalogItemPrice(item: OrderItem): string | null {
   }
 
   return null;
+}
+
+/**
+ * Preço base atual do catálogo para o item (pix/dinheiro). `undefined` = item sem
+ * preço de catálogo (ex.: "monte seu combo"); `null` = item que não existe mais.
+ * Usado pra atualizar sacolas salvas no navegador depois de mudança de preços.
+ */
+export function getCatalogBasePriceCents(item: OrderItem): number | null | undefined {
+  const kit = parseKitMenuId(item.menu_id ?? undefined);
+  if (kit) {
+    const product = KIT_PRODUCTS.find((p) => p.id === kit.kitId);
+    const tier = product?.tiers.find((t) => t.meals === kit.meals);
+    return tier?.prices[kit.size]?.cash_total_cents ?? null;
+  }
+  if (item.section_id === "kit" || item.menu_id?.startsWith("kit-")) return null;
+  if (item.section_id === "suco" && item.item_id) {
+    return getJuiceCatalogPricing(item.item_id, item.size as JuiceSize | undefined)?.cash_cents ?? null;
+  }
+  if (item.section_id === "bebida") {
+    return getBebidaById(item.item_id)?.price_cents ?? null;
+  }
+  if (isSingleMarmitaItem(item) && item.item_id) {
+    return (
+      getMarmitaCatalogPriceCents(item.item_id, item.size === "UN" ? undefined : item.size) ?? null
+    );
+  }
+  return undefined;
 }
 
 export function getChargedItems(items: OrderItem[], method?: PaymentMethod): OrderItem[] {
