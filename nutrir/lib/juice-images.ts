@@ -10,7 +10,10 @@ export const JUICE_IMAGES: Record<string, string> = {
   "suco-abacaxi": imagePath("Abacaxi"),
   "suco-limao": imagePath("Limao"),
   "suco-laranja": imagePath("Laranja"),
+  "suco-maracuja": imagePath("Maracuja"),
+  "suco-manga": imagePath("Manga"),
   "suco-acerola": imagePath("Acerola"),
+  "suco-frutas-vermelhas": imagePath("Frutas-Vermelhas"),
   "suco-graviola": imagePath("Graviola"),
   "suco-acerola-laranja": imagePath("Acerola-Laranja"),
 };
