@@ -27,28 +27,41 @@ export interface JuiceCategory {
   items: JuiceOption[];
 }
 
-const NATURAL_PRICES: Record<JuiceSize, JuiceSizePricing> = {
-  P: { cash_cents: 999, card_cents: 1200, ml: 300 },
-  G: { cash_cents: 1199, card_cents: 1500, ml: 500 },
-};
+/** Faixas de preço (pix/dinheiro e cartão) por suco, P = 300ml e G = 500ml. */
+function tier(
+  pCash: number,
+  pCard: number,
+  gCash: number,
+  gCard: number
+): Record<JuiceSize, JuiceSizePricing> {
+  return {
+    P: { cash_cents: pCash, card_cents: pCard, ml: 300 },
+    G: { cash_cents: gCash, card_cents: gCard, ml: 500 },
+  };
+}
 
-const ESPECIAL_PRICES: Record<JuiceSize, JuiceSizePricing> = {
-  P: { cash_cents: 999, card_cents: 1300, ml: 300 },
-  G: { cash_cents: 1199, card_cents: 1600, ml: 500 },
-};
+const PRICES_BASIC = tier(999, 1099, 1199, 1399);
+const PRICES_NATURAL = tier(1099, 1299, 1299, 1599);
+const PRICES_ESPECIAL = tier(1299, 1499, 1599, 1799);
+const PRICES_PREMIUM = tier(1399, 1599, 1799, 1899);
 
 export const JUICE_CATEGORIES: JuiceCategory[] = [
   {
     id: "natural",
     title: "Sucos Naturais",
     items: [
-      { id: "suco-uva", name: "Uva", category: "natural", prices: NATURAL_PRICES },
-      { id: "suco-morango", name: "Morango", category: "natural", prices: NATURAL_PRICES },
-      { id: "suco-abacaxi", name: "Abacaxi", category: "natural", prices: NATURAL_PRICES },
-      { id: "suco-limao", name: "Limão", category: "natural", prices: NATURAL_PRICES },
-      { id: "suco-laranja", name: "Laranja", category: "natural", prices: NATURAL_PRICES },
-      { id: "suco-maracuja", name: "Maracujá", category: "natural", prices: NATURAL_PRICES },
-      { id: "suco-manga", name: "Manga", category: "natural", prices: NATURAL_PRICES },
+      { id: "suco-limao", name: "Limão", category: "natural", prices: PRICES_BASIC },
+      { id: "suco-laranja", name: "Laranja", category: "natural", prices: PRICES_BASIC },
+      { id: "suco-uva", name: "Uva", category: "natural", prices: PRICES_NATURAL },
+      { id: "suco-abacaxi", name: "Abacaxi", category: "natural", prices: PRICES_NATURAL },
+      { id: "suco-acerola", name: "Acerola", category: "natural", prices: PRICES_NATURAL },
+      {
+        id: "suco-abacaxi-hortela",
+        name: "Abacaxi com Hortelã",
+        category: "natural",
+        prices: PRICES_NATURAL,
+      },
+      { id: "suco-manga", name: "Manga", category: "natural", prices: PRICES_NATURAL },
     ],
   },
   {
@@ -56,20 +69,21 @@ export const JUICE_CATEGORIES: JuiceCategory[] = [
     title: "Sucos Especiais",
     note: "Mais opções em breve",
     items: [
-      { id: "suco-acerola", name: "Acerola", category: "especial", prices: ESPECIAL_PRICES },
-      { id: "suco-graviola", name: "Graviola", category: "especial", prices: ESPECIAL_PRICES },
-      {
-        id: "suco-frutas-vermelhas",
-        name: "Frutas Vermelhas",
-        category: "especial",
-        prices: ESPECIAL_PRICES,
-      },
+      { id: "suco-morango", name: "Morango", category: "especial", prices: PRICES_ESPECIAL },
       {
         id: "suco-acerola-laranja",
         name: "Acerola e Laranja",
         category: "especial",
-        prices: ESPECIAL_PRICES,
+        prices: PRICES_ESPECIAL,
       },
+      {
+        id: "suco-frutas-vermelhas",
+        name: "Frutas Vermelhas",
+        category: "especial",
+        prices: PRICES_ESPECIAL,
+      },
+      { id: "suco-graviola", name: "Graviola", category: "especial", prices: PRICES_PREMIUM },
+      { id: "suco-maracuja", name: "Maracujá", category: "especial", prices: PRICES_PREMIUM },
     ],
   },
   {

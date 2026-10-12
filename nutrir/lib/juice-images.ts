@@ -8,6 +8,8 @@ export const JUICE_IMAGES: Record<string, string> = {
   "suco-uva": imagePath("Uva"),
   "suco-morango": imagePath("Morango"),
   "suco-abacaxi": imagePath("Abacaxi"),
+  // Provisório: sem foto própria do Abacaxi com Hortelã ainda, usa a do Abacaxi.
+  "suco-abacaxi-hortela": imagePath("Abacaxi"),
   "suco-limao": imagePath("Limao"),
   "suco-laranja": imagePath("Laranja"),
   "suco-maracuja": imagePath("Maracuja"),
