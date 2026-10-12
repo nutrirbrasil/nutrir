@@ -54,7 +54,6 @@ export const JUICE_CATEGORIES: JuiceCategory[] = [
       { id: "suco-laranja", name: "Laranja", category: "natural", prices: PRICES_BASIC },
       { id: "suco-uva", name: "Uva", category: "natural", prices: PRICES_NATURAL },
       { id: "suco-abacaxi", name: "Abacaxi", category: "natural", prices: PRICES_NATURAL },
-      { id: "suco-acerola", name: "Acerola", category: "natural", prices: PRICES_NATURAL },
       {
         id: "suco-abacaxi-hortela",
         name: "Abacaxi com Hortelã",
@@ -70,6 +69,7 @@ export const JUICE_CATEGORIES: JuiceCategory[] = [
     note: "Mais opções em breve",
     items: [
       { id: "suco-morango", name: "Morango", category: "especial", prices: PRICES_ESPECIAL },
+      { id: "suco-acerola", name: "Acerola", category: "especial", prices: PRICES_ESPECIAL },
       {
         id: "suco-acerola-laranja",
         name: "Acerola e Laranja",
