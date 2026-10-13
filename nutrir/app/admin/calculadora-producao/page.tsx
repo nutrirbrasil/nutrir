@@ -29,6 +29,10 @@ interface ProductionLine {
 interface ChildIngredientTotal {
   food: Food;
   preparedGrams: number;
+  /** Só em grupos combinados: entra na soma do total do grupo. */
+  counted?: boolean;
+  /** Mostra como "(referência)" mesmo sendo um ingrediente normal (ex: molho dentro de "Massa com molho"). */
+  asReference?: boolean;
 }
 
 interface GroupedIngredientTotal {
@@ -49,6 +53,10 @@ function combinedGroupSpec(top: RecipeIngredient): { key: string; label: string 
     case "carne_patinho_grelhado":
     case "patinho_em_cubos":
       return { key: "grupo-carne", label: "Carne" };
+    case "batata_cozida":
+      return { key: "grupo-pure", label: "Purê" };
+    case "massa_cozida":
+      return { key: "grupo-massa-molho", label: "Massa com molho" };
     case "arroz_branco_cozido":
       return top.children.some((c) => c.food.id === "brocolis_cozido")
         ? { key: "grupo-arroz-brocolis", label: "Arroz de brócolis" }
@@ -163,18 +171,39 @@ export default function CalculadoraProducaoPage() {
             combined = { food: top.food, combined: true, label: spec.label, preparedGrams: 0, children: [] };
             groups.set(spec.key, combined);
           }
-          for (const item of [top, ...flattenIngredients(top.children)]) {
+          const items: { item: RecipeIngredient; counted: boolean; asReference?: boolean }[] = [];
+          if (spec.key === "grupo-massa-molho") {
+            // Massa com molho = massa + o molho que vai nela. O molho aparece só como referência:
+            // ele continua dentro do total de "Molho da casa" (não é descontado de lá).
+            items.push({ item: top, counted: true });
+            for (const c of flattenIngredients(top.children)) items.push({ item: c, counted: false });
+            const molhoDaMassa = recipe.ingredients.find(
+              (i) => i.food.id === "molho_de_tomate" && i.note?.toLowerCase().includes("massa")
+            );
+            if (molhoDaMassa) items.push({ item: molhoDaMassa, counted: true, asReference: true });
+          } else {
+            items.push({ item: top, counted: !top.food.is_reference_only });
+            for (const c of flattenIngredients(top.children)) {
+              items.push({ item: c, counted: !c.food.is_reference_only });
+            }
+          }
+          for (const { item, counted, asReference } of items) {
             const addGrams = item.grams * line.quantity;
             const existing = combined.children.find((c) => c.food.id === item.food.id);
             if (existing) existing.preparedGrams += addGrams;
-            else combined.children.push({ food: item.food, preparedGrams: addGrams });
+            else combined.children.push({ food: item.food, preparedGrams: addGrams, counted, asReference });
           }
           continue;
         }
 
         let group = groups.get(top.food.id);
         if (!group) {
-          group = { food: top.food, preparedGrams: 0, children: [] };
+          group = {
+            food: top.food,
+            label: top.food.id === "molho_de_tomate" ? "Molho da casa (total)" : undefined,
+            preparedGrams: 0,
+            children: [],
+          };
           groups.set(top.food.id, group);
         }
         group.preparedGrams += top.grams * line.quantity;
@@ -195,7 +224,7 @@ export default function CalculadoraProducaoPage() {
     for (const group of groupList) {
       group.children = sortByReferenceThenWeight(group.children);
       if (group.combined) {
-        const counted = group.children.filter((c) => !c.food.is_reference_only);
+        const counted = group.children.filter((c) => c.counted);
         group.preparedGrams = counted.reduce((s, c) => s + c.preparedGrams, 0);
         group.rawGrams = counted.reduce((s, c) => s + rawGramsForFood(c.food, c.preparedGrams), 0);
       }
@@ -314,7 +343,7 @@ export default function CalculadoraProducaoPage() {
                   </thead>
                   <tbody>
                     {totals.map((group) => (
-                      <Fragment key={group.combined ? group.label : group.food.id}>
+                      <Fragment key={group.label ?? group.food.id}>
                         <tr className="border-b border-nutrir-nude-dark/20 bg-nutrir-canvas-alt/10">
                           <td className="py-2 pr-2 font-bold uppercase text-nutrir-ink">
                             {group.label ?? group.food.display_name}
@@ -332,16 +361,16 @@ export default function CalculadoraProducaoPage() {
                         </tr>
                         {group.children.map((child) => (
                           <tr
-                            key={`${group.combined ? group.label : group.food.id}-${child.food.id}`}
+                            key={`${group.label ?? group.food.id}-${child.food.id}`}
                             className="border-b border-nutrir-nude-dark/20 last:border-0"
                           >
                             <td
                               className={`py-2 pr-2 pl-6 text-nutrir-ink ${
-                                child.food.is_reference_only ? "" : "font-bold"
+                                child.food.is_reference_only || child.asReference ? "" : "font-bold"
                               }`}
                             >
                               {sentenceCase(child.food.display_name)}
-                              {child.food.is_reference_only && (
+                              {(child.food.is_reference_only || child.asReference) && (
                                 <span className="ml-1 text-xs normal-case text-nutrir-ink/45">
                                   (referência)
                                 </span>
