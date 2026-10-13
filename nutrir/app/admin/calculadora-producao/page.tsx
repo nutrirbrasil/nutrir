@@ -49,7 +49,7 @@ interface GroupedIngredientTotal {
 function combinedGroupSpec(top: RecipeIngredient): { key: string; label: string } | null {
   switch (top.food.id) {
     case "frango_peito_cozido":
-      return { key: "grupo-frango", label: "Frango" };
+      return { key: "grupo-frango", label: "Frango (total)" };
     case "carne_patinho_grelhado":
       return { key: "grupo-carne-guisado", label: "Carne (guisado)" };
     case "patinho_em_cubos":
@@ -160,27 +160,42 @@ export default function CalculadoraProducaoPage() {
     if (!recipes) return [];
     const groups = new Map<string, GroupedIngredientTotal>();
 
+    function addToCombined(
+      key: string,
+      label: string,
+      food: Food,
+      items: { item: RecipeIngredient; counted: boolean; asReference?: boolean }[],
+      quantity: number
+    ) {
+      let combined = groups.get(key);
+      if (!combined) {
+        combined = { food, combined: true, label, preparedGrams: 0, children: [] };
+        groups.set(key, combined);
+      }
+      for (const { item, counted, asReference } of items) {
+        const addGrams = item.grams * quantity;
+        const existing = combined.children.find((c) => c.food.id === item.food.id);
+        if (existing) existing.preparedGrams += addGrams;
+        else combined.children.push({ food: item.food, preparedGrams: addGrams, counted, asReference });
+      }
+    }
+
     for (const line of lines) {
       const recipe = recipes.find((r) => r.item_id === line.itemId && r.size === line.size);
       if (!recipe) continue;
 
-      const isStrogonoffCarne = recipe.ingredients.some((i) => i.food.id === "patinho_em_cubos");
+      const isStrogonoff = recipe.ingredients.some((i) => i.food.id === "creme_de_leite_leve");
 
       for (const top of recipe.ingredients) {
-        // Creme de leite e champignon do strogonoff de carne entram dentro de "Carne (strogonoff)".
+        // Creme de leite e champignon do strogonoff entram dentro de "Carne (strogonoff)" / "Frango (strogonoff)".
         if (
-          isStrogonoffCarne &&
+          isStrogonoff &&
           (top.food.id === "creme_de_leite_leve" || top.food.id === "cogumelo_champignon")
         ) {
           continue;
         }
         const spec = combinedGroupSpec(top);
         if (spec) {
-          let combined = groups.get(spec.key);
-          if (!combined) {
-            combined = { food: top.food, combined: true, label: spec.label, preparedGrams: 0, children: [] };
-            groups.set(spec.key, combined);
-          }
           const items: { item: RecipeIngredient; counted: boolean; asReference?: boolean }[] = [];
           if (spec.key === "grupo-massa-molho") {
             // Massa com molho = massa + o molho que vai nela. O molho aparece só como referência:
@@ -211,11 +226,24 @@ export default function CalculadoraProducaoPage() {
               items.push({ item: c, counted: !c.food.is_reference_only });
             }
           }
-          for (const { item, counted, asReference } of items) {
-            const addGrams = item.grams * line.quantity;
-            const existing = combined.children.find((c) => c.food.id === item.food.id);
-            if (existing) existing.preparedGrams += addGrams;
-            else combined.children.push({ food: item.food, preparedGrams: addGrams, counted, asReference });
+          addToCombined(spec.key, spec.label, top.food, items, line.quantity);
+
+          if (spec.key === "grupo-frango" && isStrogonoff) {
+            // Frango (strogonoff): o frango aparece como referência (já está em "Frango (total)").
+            const strogItems: { item: RecipeIngredient; counted: boolean; asReference?: boolean }[] = [
+              { item: top, counted: true, asReference: true },
+            ];
+            for (const c of flattenIngredients(top.children)) {
+              strogItems.push({ item: c, counted: !c.food.is_reference_only });
+            }
+            for (const i of recipe.ingredients) {
+              if (i.food.id === "creme_de_leite_leve" || i.food.id === "cogumelo_champignon") {
+                strogItems.push({ item: i, counted: true });
+              } else if (i.food.id === "molho_de_tomate" && i.note?.toLowerCase().includes("strogonoff")) {
+                strogItems.push({ item: i, counted: true, asReference: true });
+              }
+            }
+            addToCombined("grupo-frango-strogonoff", "Frango (strogonoff)", top.food, strogItems, line.quantity);
           }
           continue;
         }
