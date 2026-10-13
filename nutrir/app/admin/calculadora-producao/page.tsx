@@ -5,7 +5,12 @@ import Link from "next/link";
 import { useRequireAdmin } from "@/lib/use-require-admin";
 import { useRecipesData } from "@/lib/use-recipes-data";
 import { MENU_SECTIONS, type MarmitaSize } from "@/lib/menu-data";
-import { flattenIngredients, rawGramsForFood, type Food } from "@/lib/marmita-nutrition";
+import {
+  flattenIngredients,
+  rawGramsForFood,
+  type Food,
+  type RecipeIngredient,
+} from "@/lib/marmita-nutrition";
 
 interface DishOption {
   itemId: string;
@@ -28,8 +33,35 @@ interface ChildIngredientTotal {
 
 interface GroupedIngredientTotal {
   food: Food;
+  /** Grupo que reúne vários ingredientes (Carne, Frango, Arroz de brócolis): o total é a soma dos secundários. */
+  combined?: boolean;
+  label?: string;
   preparedGrams: number;
+  rawGrams?: number;
   children: ChildIngredientTotal[];
+}
+
+/** Ingredientes principais que viram um grupo único (com o ingrediente em si como secundário), pra ver o total. */
+function combinedGroupSpec(top: RecipeIngredient): { key: string; label: string } | null {
+  switch (top.food.id) {
+    case "frango_peito_cozido":
+      return { key: "grupo-frango", label: "Frango" };
+    case "carne_patinho_grelhado":
+    case "patinho_em_cubos":
+      return { key: "grupo-carne", label: "Carne" };
+    case "arroz_branco_cozido":
+      return top.children.some((c) => c.food.id === "brocolis_cozido")
+        ? { key: "grupo-arroz-brocolis", label: "Arroz de brócolis" }
+        : { key: "grupo-arroz-branco", label: "Arroz branco" };
+    default:
+      return null;
+  }
+}
+
+/** "AZEITE/ÓLEO" ou "Molho da Casa" -> "Azeite/óleo", "Molho da casa" (só a inicial maiúscula). */
+function sentenceCase(name: string): string {
+  const lower = name.toLocaleLowerCase("pt-BR");
+  return lower.charAt(0).toLocaleUpperCase("pt-BR") + lower.slice(1);
 }
 
 function sortByReferenceThenWeight<T extends { food: Food; preparedGrams: number }>(items: T[]): T[] {
@@ -124,6 +156,22 @@ export default function CalculadoraProducaoPage() {
       if (!recipe) continue;
 
       for (const top of recipe.ingredients) {
+        const spec = combinedGroupSpec(top);
+        if (spec) {
+          let combined = groups.get(spec.key);
+          if (!combined) {
+            combined = { food: top.food, combined: true, label: spec.label, preparedGrams: 0, children: [] };
+            groups.set(spec.key, combined);
+          }
+          for (const item of [top, ...flattenIngredients(top.children)]) {
+            const addGrams = item.grams * line.quantity;
+            const existing = combined.children.find((c) => c.food.id === item.food.id);
+            if (existing) existing.preparedGrams += addGrams;
+            else combined.children.push({ food: item.food, preparedGrams: addGrams });
+          }
+          continue;
+        }
+
         let group = groups.get(top.food.id);
         if (!group) {
           group = { food: top.food, preparedGrams: 0, children: [] };
@@ -146,10 +194,15 @@ export default function CalculadoraProducaoPage() {
     const groupList = Array.from(groups.values());
     for (const group of groupList) {
       group.children = sortByReferenceThenWeight(group.children);
+      if (group.combined) {
+        const counted = group.children.filter((c) => !c.food.is_reference_only);
+        group.preparedGrams = counted.reduce((s, c) => s + c.preparedGrams, 0);
+        group.rawGrams = counted.reduce((s, c) => s + rawGramsForFood(c.food, c.preparedGrams), 0);
+      }
     }
     groupList.sort((a, b) => {
-      const totalA = a.preparedGrams + a.children.reduce((s, c) => s + c.preparedGrams, 0);
-      const totalB = b.preparedGrams + b.children.reduce((s, c) => s + c.preparedGrams, 0);
+      const totalA = a.combined ? a.preparedGrams : a.preparedGrams + a.children.reduce((s, c) => s + c.preparedGrams, 0);
+      const totalB = b.combined ? b.preparedGrams : b.preparedGrams + b.children.reduce((s, c) => s + c.preparedGrams, 0);
       return totalB - totalA;
     });
     return groupList;
@@ -261,29 +314,33 @@ export default function CalculadoraProducaoPage() {
                   </thead>
                   <tbody>
                     {totals.map((group) => (
-                      <Fragment key={group.food.id}>
+                      <Fragment key={group.combined ? group.label : group.food.id}>
                         <tr className="border-b border-nutrir-nude-dark/20 bg-nutrir-canvas-alt/10">
                           <td className="py-2 pr-2 font-bold uppercase text-nutrir-ink">
-                            {group.food.display_name}
+                            {group.label ?? group.food.display_name}
                           </td>
                           <td className="py-2 pr-2 text-right font-semibold text-nutrir-ink">
                             {fmtGrams(group.preparedGrams)}
                           </td>
                           <td className="py-2 text-right text-nutrir-burgundy">
-                            {fmtGrams(rawGramsForFood(group.food, group.preparedGrams))}
+                            {fmtGrams(
+                              group.combined
+                                ? group.rawGrams ?? 0
+                                : rawGramsForFood(group.food, group.preparedGrams)
+                            )}
                           </td>
                         </tr>
                         {group.children.map((child) => (
                           <tr
-                            key={`${group.food.id}-${child.food.id}`}
+                            key={`${group.combined ? group.label : group.food.id}-${child.food.id}`}
                             className="border-b border-nutrir-nude-dark/20 last:border-0"
                           >
                             <td
-                              className={`py-2 pr-2 pl-6 uppercase text-nutrir-ink ${
+                              className={`py-2 pr-2 pl-6 text-nutrir-ink ${
                                 child.food.is_reference_only ? "" : "font-bold"
                               }`}
                             >
-                              {child.food.display_name}
+                              {sentenceCase(child.food.display_name)}
                               {child.food.is_reference_only && (
                                 <span className="ml-1 text-xs normal-case text-nutrir-ink/45">
                                   (referência)
@@ -304,9 +361,9 @@ export default function CalculadoraProducaoPage() {
                 </table>
               </div>
               <p className="text-xs text-nutrir-ink/50">
-                Cada ingrediente principal (arroz, frango, massa...) vem com seus secundários logo
-                abaixo (ex: molho e sal), separados por prato, já que a quantidade muda de um pra
-                outro. "Cru" usa o fator de cocção de cada ingrediente (peso pronto ÷ fator). Itens
+                Cada ingrediente principal (carne, frango, arroz de brócolis, massa...) vem com seus
+                secundários logo abaixo (ex: patinho, brócolis, sal). Em carne, frango e arroz de
+                brócolis o total do grupo é a soma dos secundários. "Cru" usa o fator de cocção de cada ingrediente (peso pronto ÷ fator). Itens
                 marcados "referência" (água, sal, temperos) não entram no cálculo nutricional, mas
                 aparecem aqui porque ainda precisam ser preparados/comprados.
               </p>
