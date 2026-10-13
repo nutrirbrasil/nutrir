@@ -51,8 +51,9 @@ function combinedGroupSpec(top: RecipeIngredient): { key: string; label: string 
     case "frango_peito_cozido":
       return { key: "grupo-frango", label: "Frango" };
     case "carne_patinho_grelhado":
+      return { key: "grupo-carne-guisado", label: "Carne (guisado)" };
     case "patinho_em_cubos":
-      return { key: "grupo-carne", label: "Carne" };
+      return { key: "grupo-carne-strogonoff", label: "Carne (strogonoff)" };
     case "batata_cozida":
       return { key: "grupo-pure", label: "Purê" };
     case "massa_cozida":
@@ -163,7 +164,16 @@ export default function CalculadoraProducaoPage() {
       const recipe = recipes.find((r) => r.item_id === line.itemId && r.size === line.size);
       if (!recipe) continue;
 
+      const isStrogonoffCarne = recipe.ingredients.some((i) => i.food.id === "patinho_em_cubos");
+
       for (const top of recipe.ingredients) {
+        // Creme de leite e champignon do strogonoff de carne entram dentro de "Carne (strogonoff)".
+        if (
+          isStrogonoffCarne &&
+          (top.food.id === "creme_de_leite_leve" || top.food.id === "cogumelo_champignon")
+        ) {
+          continue;
+        }
         const spec = combinedGroupSpec(top);
         if (spec) {
           let combined = groups.get(spec.key);
@@ -181,6 +191,20 @@ export default function CalculadoraProducaoPage() {
               (i) => i.food.id === "molho_de_tomate" && i.note?.toLowerCase().includes("massa")
             );
             if (molhoDaMassa) items.push({ item: molhoDaMassa, counted: true, asReference: true });
+          } else if (spec.key === "grupo-carne-strogonoff") {
+            // Patinho em cubos + temperos + molho strogonoff (creme leve, molho da casa e champignon).
+            // O molho da casa aparece como referência: continua dentro do total de "Molho da casa".
+            items.push({ item: top, counted: true });
+            for (const c of flattenIngredients(top.children)) {
+              items.push({ item: c, counted: !c.food.is_reference_only });
+            }
+            for (const i of recipe.ingredients) {
+              if (i.food.id === "creme_de_leite_leve" || i.food.id === "cogumelo_champignon") {
+                items.push({ item: i, counted: true });
+              } else if (i.food.id === "molho_de_tomate" && i.note?.toLowerCase().includes("strogonoff")) {
+                items.push({ item: i, counted: true, asReference: true });
+              }
+            }
           } else {
             items.push({ item: top, counted: !top.food.is_reference_only });
             for (const c of flattenIngredients(top.children)) {
