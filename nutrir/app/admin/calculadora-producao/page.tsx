@@ -37,7 +37,7 @@ interface ChildIngredientTotal {
 
 interface GroupedIngredientTotal {
   food: Food;
-  /** Grupo que reúne vários ingredientes (Carne, Frango, Arroz de brócolis): o total é a soma dos secundários. */
+  /** Grupo que reúne vários ingredientes (Carne, Frango, Arroz): o total é a soma dos secundários. */
   combined?: boolean;
   label?: string;
   preparedGrams: number;
@@ -59,9 +59,7 @@ function combinedGroupSpec(top: RecipeIngredient): { key: string; label: string 
     case "massa_cozida":
       return { key: "grupo-massa-molho", label: "Massa com molho" };
     case "arroz_branco_cozido":
-      return top.children.some((c) => c.food.id === "brocolis_cozido")
-        ? { key: "grupo-arroz-brocolis", label: "Arroz de brócolis" }
-        : { key: "grupo-arroz-branco", label: "Arroz branco" };
+      return { key: "grupo-arroz", label: "Arroz (total)" };
     default:
       return null;
   }
@@ -442,9 +440,8 @@ export default function CalculadoraProducaoPage() {
                 </table>
               </div>
               <p className="text-xs text-nutrir-ink/50">
-                Cada ingrediente principal (carne, frango, arroz de brócolis, massa...) vem com seus
-                secundários logo abaixo (ex: patinho, brócolis, sal). Em carne, frango e arroz de
-                brócolis o total do grupo é a soma dos secundários. "Cru" usa o fator de cocção de cada ingrediente (peso pronto ÷ fator). Itens
+                Cada ingrediente principal (carne, frango, arroz, massa...) vem com seus
+                secundários logo abaixo (ex: patinho, brócolis, sal). Em carne, frango e arroz o total do grupo é a soma dos secundários. "Cru" usa o fator de cocção de cada ingrediente (peso pronto ÷ fator). Itens
                 marcados "referência" (água, sal, temperos) não entram no cálculo nutricional, mas
                 aparecem aqui porque ainda precisam ser preparados/comprados.
               </p>
