@@ -65,6 +65,18 @@ function combinedGroupSpec(top: RecipeIngredient): { key: string; label: string 
   }
 }
 
+/** Em qual preparo o molho da casa vai (pra mostrar separado: massa, frango, carne, cada strogonoff...). */
+function molhoPreparo(itemId: string, note: string | null): string {
+  const n = (note ?? "").toLowerCase();
+  if (n.includes("strogonoff")) return `strogonoff de ${itemId.startsWith("car-") ? "carne" : "frango"}`;
+  if (n.includes("massa")) return "massa";
+  if (n.includes("ervilha")) return "ervilha";
+  if (n.includes("grão") || n.includes("grao")) return "grão de bico";
+  if (n.includes("carne")) return "carne (guisado)";
+  if (n.includes("frango")) return "frango";
+  return note?.trim() || "outros";
+}
+
 /** "AZEITE/ÓLEO" ou "Molho da Casa" -> "Azeite/óleo", "Molho da casa" (só a inicial maiúscula). */
 function sentenceCase(name: string): string {
   const lower = name.toLocaleLowerCase("pt-BR");
@@ -246,15 +258,15 @@ export default function CalculadoraProducaoPage() {
           continue;
         }
 
-        let group = groups.get(top.food.id);
+        const molhoLabel =
+          top.food.id === "molho_de_tomate"
+            ? `Molho da casa (${molhoPreparo(recipe.item_id, top.note)})`
+            : undefined;
+        const groupKey = molhoLabel ?? top.food.id;
+        let group = groups.get(groupKey);
         if (!group) {
-          group = {
-            food: top.food,
-            label: top.food.id === "molho_de_tomate" ? "Molho da casa (total)" : undefined,
-            preparedGrams: 0,
-            children: [],
-          };
-          groups.set(top.food.id, group);
+          group = { food: top.food, label: molhoLabel, preparedGrams: 0, children: [] };
+          groups.set(groupKey, group);
         }
         group.preparedGrams += top.grams * line.quantity;
 
@@ -285,6 +297,23 @@ export default function CalculadoraProducaoPage() {
       return totalB - totalA;
     });
     return groupList;
+  }, [recipes, lines]);
+
+  /** Total de cada ingrediente somando todos os pratos e preparos (alimento por alimento). */
+  const flatTotals = useMemo(() => {
+    if (!recipes) return [];
+    const byFood = new Map<string, ChildIngredientTotal>();
+    for (const line of lines) {
+      const recipe = recipes.find((r) => r.item_id === line.itemId && r.size === line.size);
+      if (!recipe) continue;
+      for (const ing of flattenIngredients(recipe.ingredients)) {
+        const add = ing.grams * line.quantity;
+        const existing = byFood.get(ing.food.id);
+        if (existing) existing.preparedGrams += add;
+        else byFood.set(ing.food.id, { food: ing.food, preparedGrams: add });
+      }
+    }
+    return sortByReferenceThenWeight(Array.from(byFood.values()));
   }, [recipes, lines]);
 
   if (!ready) return null;
@@ -377,11 +406,59 @@ export default function CalculadoraProducaoPage() {
             </div>
           )}
 
+          {flatTotals.length > 0 && (
+            <div className="card mt-4 space-y-3">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-nutrir-ink/70">
+                Total
+              </h2>
+              <p className="text-xs text-nutrir-ink/50">
+                Quanto de cada ingrediente você precisa no dia, somando todos os preparos.
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-nutrir-nude-dark/40 text-left text-xs font-bold uppercase tracking-wide text-nutrir-ink/60">
+                      <th className="py-2 pr-2">Ingrediente</th>
+                      <th className="py-2 pr-2 text-right">Pronto/cozido</th>
+                      <th className="py-2 text-right">Cru</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {flatTotals.map((item) => (
+                      <tr key={item.food.id} className="border-b border-nutrir-nude-dark/20 last:border-0">
+                        <td
+                          className={`py-2 pr-2 text-nutrir-ink ${
+                            item.food.is_reference_only ? "" : "font-bold"
+                          }`}
+                        >
+                          {sentenceCase(item.food.display_name)}
+                          {item.food.is_reference_only && (
+                            <span className="ml-1 text-xs text-nutrir-ink/45">(referência)</span>
+                          )}
+                        </td>
+                        <td className="py-2 pr-2 text-right font-semibold text-nutrir-ink">
+                          {fmtGrams(item.preparedGrams)}
+                        </td>
+                        <td className="py-2 text-right text-nutrir-burgundy">
+                          {fmtGrams(rawGramsForFood(item.food, item.preparedGrams))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {totals.length > 0 && (
             <div className="card mt-4 space-y-3">
               <h2 className="text-xs font-bold uppercase tracking-widest text-nutrir-ink/70">
-                Total de ingredientes
+                Separado por preparo
               </h2>
+              <p className="text-xs text-nutrir-ink/50">
+                Quanto vai em cada preparo (molho da massa, do frango, da carne, de cada strogonoff,
+                champignon e creme de cada strogonoff...).
+              </p>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
