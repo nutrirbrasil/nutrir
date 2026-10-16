@@ -24,10 +24,20 @@ export interface TripCost {
   costReais: number;
 }
 
-/** Custo de combustível da viagem de entrega (ida e volta = distância x 2). */
-export function computeTripCost(oneWayKm: number, gasolinePrice: number): TripCost {
+/**
+ * Custo de combustível da viagem de entrega (ida e volta = distância x 2). Se o consumo
+ * real (km/l) for informado, ele vale no lugar do estimado pela distância.
+ */
+export function computeTripCost(
+  oneWayKm: number,
+  gasolinePrice: number,
+  kmPerLiterOverride?: number
+): TripCost {
   const roundTripKm = oneWayKm * 2;
-  const kmPerLiter = kmPerLiterForDistance(oneWayKm);
+  const kmPerLiter =
+    kmPerLiterOverride && kmPerLiterOverride > 0
+      ? kmPerLiterOverride
+      : kmPerLiterForDistance(oneWayKm);
   const liters = roundTripKm / kmPerLiter;
   return {
     oneWayKm,

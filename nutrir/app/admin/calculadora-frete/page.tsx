@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/api";
-import { computeTripCost, DEFAULT_GASOLINE_PRICE } from "@/lib/frete-cost";
+import { computeTripCost, DEFAULT_GASOLINE_PRICE, kmPerLiterForDistance } from "@/lib/frete-cost";
 import { useRequireAdmin } from "@/lib/use-require-admin";
 
 function fmtNumber(value: number, digits = 1): string {
@@ -15,13 +15,17 @@ export default function CalculadoraFretePage() {
   const [distance, setDistance] = useState("");
   const [gasoline, setGasoline] = useState(String(DEFAULT_GASOLINE_PRICE).replace(".", ","));
 
+  const [kmPerLiterInput, setKmPerLiterInput] = useState("");
+
   const oneWayKm = Number(distance.replace(",", "."));
+  const kmPerLiterOverride = Number(kmPerLiterInput.replace(",", "."));
+  const isCustomConsumption = kmPerLiterInput.trim() !== "" && kmPerLiterOverride > 0;
   const gasolinePrice = Number(gasoline.replace(",", "."));
 
   const cost = useMemo(() => {
     if (!(oneWayKm > 0) || !(gasolinePrice > 0)) return null;
-    return computeTripCost(oneWayKm, gasolinePrice);
-  }, [oneWayKm, gasolinePrice]);
+    return computeTripCost(oneWayKm, gasolinePrice, isCustomConsumption ? kmPerLiterOverride : undefined);
+  }, [oneWayKm, gasolinePrice, isCustomConsumption, kmPerLiterOverride]);
 
   if (!ready) return null;
 
@@ -49,6 +53,18 @@ export default function CalculadoraFretePage() {
           />
         </div>
         <div className="sm:w-44">
+          <label className="mb-1 block text-sm font-medium text-nutrir-ink">Consumo (km/l)</label>
+          <input
+            className="input-field"
+            inputMode="decimal"
+            placeholder={
+              oneWayKm > 0 ? `automático: ${fmtNumber(kmPerLiterForDistance(oneWayKm))}` : "automático"
+            }
+            value={kmPerLiterInput}
+            onChange={(e) => setKmPerLiterInput(e.target.value)}
+          />
+        </div>
+        <div className="sm:w-44">
           <label className="mb-1 block text-sm font-medium text-nutrir-ink">Gasolina (R$/L)</label>
           <input
             className="input-field"
@@ -70,7 +86,9 @@ export default function CalculadoraFretePage() {
             <dd className="text-right font-semibold text-nutrir-ink">{fmtNumber(cost.oneWayKm)} km</dd>
             <dt className="text-nutrir-ink/60">Ida e volta</dt>
             <dd className="text-right font-semibold text-nutrir-ink">{fmtNumber(cost.roundTripKm)} km</dd>
-            <dt className="text-nutrir-ink/60">Consumo aplicado</dt>
+            <dt className="text-nutrir-ink/60">
+              Consumo aplicado{isCustomConsumption ? " (informado)" : " (automático)"}
+            </dt>
             <dd className="text-right font-semibold text-nutrir-ink">{fmtNumber(cost.kmPerLiter)} km/l</dd>
             <dt className="text-nutrir-ink/60">Gasolina gasta</dt>
             <dd className="text-right font-semibold text-nutrir-ink">{fmtNumber(cost.liters, 2)} L</dd>
@@ -80,7 +98,8 @@ export default function CalculadoraFretePage() {
             </dd>
           </dl>
           <p className="text-xs text-nutrir-ink/50">
-            Consumo: 7 km/l até 2 km, mais 0,5 km/l a cada 2 km, até 12 km/l.
+            Consumo automático: 7 km/l até 2 km, mais 0,5 km/l a cada 2 km, até 12 km/l. Preencha o
+            campo de consumo se souber o km/l real da viagem.
           </p>
         </div>
       )}
