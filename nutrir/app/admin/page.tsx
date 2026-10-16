@@ -33,7 +33,7 @@ const ADMIN_PAGES = [
   {
     href: "/admin/calculadora-frete",
     label: "Calculadora de frete",
-    description: "Digite o endereço de entrega e veja a distância e o custo de combustível da viagem.",
+    description: "Digite a distância de ida (do Maps) e veja o custo de combustível da viagem de ida e volta.",
   },
 ];
 
