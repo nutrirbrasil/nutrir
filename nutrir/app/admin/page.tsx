@@ -30,6 +30,11 @@ const ADMIN_PAGES = [
     label: "Calculadora de produção",
     description: "Some as marmitas do dia e veja o total de cada ingrediente pra preparar, cru e pronto.",
   },
+  {
+    href: "/admin/calculadora-frete",
+    label: "Calculadora de frete",
+    description: "Digite o endereço de entrega e veja a distância e o custo de combustível da viagem.",
+  },
 ];
 
 export default function AdminPage() {

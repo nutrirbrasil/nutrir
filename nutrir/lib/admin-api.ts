@@ -2,6 +2,12 @@ import type { AdminOrderRow } from "./supabase-db";
 import type { PartnerRecord } from "./partners";
 import type { OrderStatus } from "./types";
 
+export interface FreteDistanceResult {
+  distanceKm: number;
+  destination: { label: string; lat: number; lon: number };
+  store: { label: string; lat: number; lon: number };
+}
+
 const API_PREFIX = "/api/nutrir/admin";
 
 async function adminApi<T>(path: string, token: string, options?: RequestInit): Promise<T> {
@@ -46,5 +52,7 @@ export const adminNutrirApi = {
     }),
   deleteOrder: (token: string, orderId: string) =>
     adminApi<{ ok: boolean }>(`/orders/${orderId}`, token, { method: "DELETE" }),
+  calculateFreteDistance: (token: string, address: string) =>
+    adminApi<FreteDistanceResult>(`/frete?address=${encodeURIComponent(address)}`, token),
   listPartners: (token: string) => adminApi<{ partners: PartnerRecord[] }>("/partners", token),
 };
