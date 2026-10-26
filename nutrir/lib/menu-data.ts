@@ -384,7 +384,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       {
         id: "frg-arroz",
         name: "Frango da Casa",
-        description: "Frango em cubos ao molho da casa, arroz de brócolis e cenoura salteada.",
+        description: "Frango em cubos ao molho da casa, arroz com brócolis e cenoura salteada.",
         prices: { P: PRICES.frangoArrozMassa.P, G: PRICES.frangoArrozMassa.G },
         glutenFree: true,
         lactoseFree: true,
@@ -422,7 +422,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       {
         id: "car-arroz",
         name: "Carne da Casa",
-        description: "Carne moída com cenoura ao molho da casa, arroz de brócolis e cenoura salteada.",
+        description: "Carne moída com cenoura ao molho da casa, arroz com brócolis e cenoura salteada.",
         prices: { P: PRICES.carneArrozMassa.P, G: PRICES.carneArrozMassa.G },
         glutenFree: true,
         lactoseFree: true,
@@ -461,7 +461,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "veg-grao",
         name: "Mix de Grão de Bico",
         description:
-          "Grão de bico cozido com seleta de legumes, arroz de brócolis e cenoura salteada.",
+          "Grão de bico cozido com seleta de legumes, arroz com brócolis e cenoura salteada.",
         prices: { P: PRICES.vegetariano.P, G: PRICES.vegetariano.G },
         glutenFree: true,
         lactoseFree: true,
@@ -470,7 +470,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: "veg-ervilha",
         name: "Mix de Ervilha",
         description:
-          "Ervilhas cozidas com seleta de legumes, arroz de brócolis e cenoura salteada.",
+          "Ervilhas cozidas com seleta de legumes, arroz com brócolis e cenoura salteada.",
         prices: { P: PRICES.ervilha.P, G: PRICES.ervilha.G },
         glutenFree: true,
         lactoseFree: true,
