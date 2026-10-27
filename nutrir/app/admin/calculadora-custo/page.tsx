@@ -12,7 +12,7 @@ import {
 import { MENU_SECTIONS } from "@/lib/menu-data";
 import { useRequireAdmin } from "@/lib/use-require-admin";
 
-const STORAGE_KEY = "nutrir-custo-ingredientes-v1";
+const STORAGE_KEY = "nutrir-custo-ingredientes-v2";
 
 const DEFAULT_COSTS: Record<string, number> = Object.fromEntries(
   COST_INGREDIENTS.map((i) => [i.id, i.defaultCostPerKg])
@@ -234,8 +234,8 @@ export default function CalculadoraCustoPage() {
           </button>
         </div>
         <p className="text-xs text-nutrir-ink/50">
-          Valores iniciais estimados a partir da sua planilha de custo (reproduzem os custos das marmitas
-          com diferença de centavos). Edite quando o preço de compra mudar, fica salvo neste navegador.
+          Preço líquido da sua planilha: R$ por kg do ingrediente já pronto (já com o fator de cocção).
+          Edite quando o preço de compra mudar, fica salvo neste navegador.
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
           {COST_INGREDIENTS.map((i) => (
