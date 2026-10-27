@@ -7,6 +7,7 @@ import {
   COST_DISHES,
   COST_INGREDIENTS,
   costOfLines,
+  summarizeQuantities,
   type CostLine,
 } from "@/lib/custo-marmitas";
 import { MENU_SECTIONS } from "@/lib/menu-data";
@@ -25,6 +26,10 @@ function toNumber(text: string): number {
 
 function brl(value: number): string {
   return formatPrice(Math.round(value * 100));
+}
+
+function fmtGrams(grams: number): string {
+  return `${(Math.round(grams * 10) / 10).toLocaleString("pt-BR")} g`;
 }
 
 function signedBrl(value: number): string {
@@ -99,10 +104,10 @@ export default function CalculadoraCustoPage() {
   );
   const customCost = useMemo(() => costOfLines(customLines, costs), [customLines, costs]);
   const basePrice = catalogPriceReais(base.itemId, base.size);
+  const customQty = useMemo(() => summarizeQuantities(customLines), [customLines]);
+  const baseQty = useMemo(() => summarizeQuantities(base.lines), [base]);
 
   const diffCost = customCost - baseCost;
-  const multiplier = basePrice != null && baseCost > 0 ? basePrice / baseCost : null;
-  const diffProportional = multiplier != null ? diffCost * multiplier : null;
 
   function updateRow(index: number, patch: Partial<EditableLine>) {
     setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
@@ -208,15 +213,39 @@ export default function CalculadoraCustoPage() {
         <div className="rounded-xl bg-nutrir-canvas-alt/60 p-3 text-sm text-nutrir-ink">
           <p className="font-semibold">Quanto cobrar a mais ou a menos</p>
           <p className="mt-1">
-            Só repassando o custo: <strong>{signedBrl(diffCost)}</strong>
+            Repassando o custo: <strong>{signedBrl(diffCost)}</strong>
+            {basePrice != null && (
+              <>
+                , ou seja, preço de <strong>{brl(basePrice + diffCost)}</strong> no pix
+              </>
+            )}
+            .
           </p>
-          {diffProportional != null && basePrice != null && (
-            <p className="mt-1">
-              Mantendo a mesma proporção custo/preço da base (x{multiplier!.toFixed(1).replace(".", ",")}):{" "}
-              <strong>{signedBrl(diffProportional)}</strong>, ou seja, preço de{" "}
-              <strong>{brl(basePrice + diffProportional)}</strong> no pix.
-            </p>
-          )}
+        </div>
+
+        <div className="rounded-xl bg-nutrir-canvas-alt/60 p-3 text-sm text-nutrir-ink">
+          <p className="font-semibold">Quantidades da sua marmita</p>
+          <dl className="mt-2 grid grid-cols-[1fr_auto_auto] gap-x-4 gap-y-1">
+            <dt />
+            <dd className="text-right text-xs text-nutrir-ink/50">Sua</dd>
+            <dd className="text-right text-xs text-nutrir-ink/50">Base</dd>
+            <dt className="text-nutrir-ink/70">Proteína (frango ou carne)</dt>
+            <dd className="text-right font-semibold">{fmtGrams(customQty.proteinGrams)}</dd>
+            <dd className="text-right text-nutrir-ink/50">{fmtGrams(baseQty.proteinGrams)}</dd>
+            <dt className="text-nutrir-ink/70">Molho</dt>
+            <dd className="text-right font-semibold">{fmtGrams(customQty.sauceGrams)}</dd>
+            <dd className="text-right text-nutrir-ink/50">{fmtGrams(baseQty.sauceGrams)}</dd>
+            <dt className="text-nutrir-ink/70">Proteína + molho</dt>
+            <dd className="text-right font-semibold">
+              {fmtGrams(customQty.proteinGrams + customQty.sauceGrams)}
+            </dd>
+            <dd className="text-right text-nutrir-ink/50">
+              {fmtGrams(baseQty.proteinGrams + baseQty.sauceGrams)}
+            </dd>
+            <dt className="font-semibold text-nutrir-ink">Peso total da marmita</dt>
+            <dd className="text-right font-bold text-nutrir-burgundy">{fmtGrams(customQty.totalGrams)}</dd>
+            <dd className="text-right text-nutrir-ink/50">{fmtGrams(baseQty.totalGrams)}</dd>
+          </dl>
         </div>
       </div>
 

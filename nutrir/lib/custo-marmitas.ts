@@ -132,6 +132,40 @@ export const COST_DISHES: CostDish[] = [
   dish("car-estrogonofe-G", "Strogonoff de Carne", "car-estrogonofe", "G", { carne: 75, arroz: 200, molho_strog: 75 }),
 ];
 
+/** Ingredientes que contam como proteína (frango ou carne) no resumo de quantidades. */
+export const PROTEIN_IDS = new Set([
+  "frango",
+  "frango_cubos",
+  "frango_acebolado",
+  "carne",
+  "carne_moida",
+  "carne_barata",
+  "carne_cubos",
+  "patinho",
+  "lagarto",
+]);
+
+/** Ingredientes que contam como molho no resumo de quantidades. */
+export const SAUCE_IDS = new Set(["molho", "molho_tomate", "tomate_molho", "molho_strog"]);
+
+export interface QuantitySummary {
+  proteinGrams: number;
+  sauceGrams: number;
+  totalGrams: number;
+}
+
+export function summarizeQuantities(lines: CostLine[]): QuantitySummary {
+  let proteinGrams = 0;
+  let sauceGrams = 0;
+  let totalGrams = 0;
+  for (const l of lines) {
+    totalGrams += l.grams;
+    if (PROTEIN_IDS.has(l.ingredientId)) proteinGrams += l.grams;
+    if (SAUCE_IDS.has(l.ingredientId)) sauceGrams += l.grams;
+  }
+  return { proteinGrams, sauceGrams, totalGrams };
+}
+
 export function costOfLines(
   lines: CostLine[],
   costPerKg: Record<string, number>
