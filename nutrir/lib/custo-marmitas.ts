@@ -111,7 +111,7 @@ export const COST_DISHES: CostDish[] = [
   dish("frg-arroz-P", "Frango da Casa", "frg-arroz", "P", { frango: 53, arroz_brocolis: 115, cenoura: 15, molho: 27 }),
   dish("frg-arroz-G", "Frango da Casa", "frg-arroz", "G", { frango: 80, arroz_brocolis: 215, cenoura: 14, molho: 41 }),
   dish("frg-massa-P", "Frango ao Sugo", "frg-massa", "P", { frango: 53, massa_molho: 115, brocolis: 15, molho: 27 }),
-  dish("frg-massa-G", "Frango ao Sugo", "frg-massa", "G", { frango: 80, massa_molho: 210, brocolis: 19, molho: 41 }),
+  dish("frg-massa-G", "Frango ao Sugo", "frg-massa", "G", { frango: 80, massa_molho: 230, molho: 41 }),
   dish("frg-batata-P", "Escondidinho de Frango", "frg-batata", "P", { frango: 66, pure: 125, queijo: 5, molho: 34 }),
   dish("frg-batata-G", "Escondidinho de Frango", "frg-batata", "G", { frango: 80, pure: 225, queijo: 5, molho: 41 }),
   dish("car-arroz-P", "Carne da Casa", "car-arroz", "P", { carne_moida: 50, arroz_brocolis: 115, cenoura: 15, molho: 30 }),
