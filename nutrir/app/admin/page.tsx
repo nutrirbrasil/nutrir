@@ -31,6 +31,11 @@ const ADMIN_PAGES = [
     description: "Some as marmitas do dia e veja o total de cada ingrediente pra preparar, cru e pronto.",
   },
   {
+    href: "/admin/calculadora-custo",
+    label: "Custo de marmita personalizada",
+    description: "Monte uma marmita com outras quantidades e veja o custo e quanto cobrar a mais ou a menos.",
+  },
+  {
     href: "/admin/calculadora-frete",
     label: "Calculadora de frete",
     description: "Digite a distância de ida (do Maps) e veja o custo de combustível da viagem de ida e volta.",
