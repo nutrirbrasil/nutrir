@@ -23,7 +23,7 @@ const WRONG_PLACE = [
 ];
 const WRONG_OPENER = [
   "Hmm, esse não é o resultado. Faz a conta com calma!",
-  "Quase! Lembra que o resultado é a sua idade.",
+  "Quase! Confere a conta com calma, passo a passo.",
 ];
 
 const balloons = [
@@ -160,7 +160,7 @@ export function Hunt() {
 
     const isOpener = progress.screen === "opener";
     const place = places[progress.index];
-    const expected = isOpener ? opener.answer : place.password;
+    const expected = isOpener ? opener.answer : (place.password ?? "");
 
     if (normalize(value) !== normalize(expected)) {
       const pool = isOpener ? WRONG_OPENER : WRONG_PLACE;
@@ -179,6 +179,11 @@ export function Hunt() {
 
     setBurst({ id: Date.now(), big: false });
     setStatus("right");
+  }
+
+  function finish() {
+    setBurst({ id: Date.now(), big: true });
+    go({ screen: "gift", index: progress.index });
   }
 
   function afterRight() {
@@ -227,7 +232,7 @@ export function Hunt() {
         <main className="relative z-10 mx-auto flex min-h-[100dvh] max-w-xl flex-col justify-center px-5 py-12">
           <div className="hunt-fade text-center">
             <FaCakeCandles className="mx-auto h-10 w-10 text-pauli-gold-light" aria-hidden="true" />
-            <p className="dark-accent-label mt-4">Para a Paula</p>
+            <p className="dark-accent-label mt-4">Para a Bilu</p>
             <h1 className="gold-text mt-2 font-display text-4xl font-bold leading-tight md:text-5xl">
               Parabéns, meu amor!
             </h1>
@@ -244,7 +249,7 @@ export function Hunt() {
               transformar tudo o que você toca em algo mais bonito.
             </p>
             <p>
-              Eu te amo muito, Paula. Amo o seu jeito, o seu sorriso, a sua força e a forma como você
+              Eu te amo muito, Bilu. Amo o seu jeito, o seu sorriso, a sua força e a forma como você
               faz a nossa casa virar lar. Cada ano ao seu lado é o meu presente favorito.
             </p>
             <p>
@@ -269,10 +274,6 @@ export function Hunt() {
               <li className="flex gap-3">
                 <LuLock className="mt-0.5 h-5 w-5 shrink-0 text-pauli-gold-light" aria-hidden="true" />
                 <span>Achou o papel? Digite a senha aqui para destrancar a próxima charada.</span>
-              </li>
-              <li className="flex gap-3">
-                <LuGift className="mt-0.5 h-5 w-5 shrink-0 text-pauli-gold-light" aria-hidden="true" />
-                <span>Nas charadas 16 e 32 tem presente esperando por você.</span>
               </li>
               <li className="flex gap-3">
                 <LuHeart className="mt-0.5 h-5 w-5 shrink-0 text-pauli-gold-light" aria-hidden="true" />
@@ -313,10 +314,24 @@ export function Hunt() {
               style={{ width: `${pct}%`, backgroundImage: GOLD_GRADIENT }}
             />
             <span
-              className="absolute -top-2 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border border-pauli-gold/60 bg-black"
+              className={`absolute -top-2 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border bg-black text-xs font-bold ${
+                pct >= 50
+                  ? "border-pauli-gold text-pauli-gold-light"
+                  : "border-pauli-gold/40 text-pauli-sand/60"
+              }`}
               aria-hidden="true"
             >
-              <LuGift className={`h-3 w-3 ${pct >= 50 ? "text-pauli-gold-light" : "text-pauli-sand/50"}`} />
+              ?
+            </span>
+            <span
+              className={`absolute -top-2 right-0 flex h-6 w-6 items-center justify-center rounded-full border bg-black ${
+                pct >= 100
+                  ? "border-pauli-gold text-pauli-gold-light"
+                  : "border-pauli-gold/40 text-pauli-sand/60"
+              }`}
+              aria-hidden="true"
+            >
+              <LuGift className="h-3 w-3" />
             </span>
           </div>
 
@@ -330,10 +345,9 @@ export function Hunt() {
                 )}
                 {progress.screen === "opener" ? "Aquecimento" : "Charada da casa"}
               </span>
-              {progress.screen === "level" && place.gift ? (
+              {progress.screen === "level" && place.last ? (
                 <span className="gold-badge inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
-                  <LuGift className="h-3 w-3" aria-hidden="true" />
-                  Tem presente
+                  A última
                 </span>
               ) : null}
             </div>
@@ -343,8 +357,13 @@ export function Hunt() {
             </p>
 
             {progress.screen === "opener" ? (
-              <p className="gold-text mt-5 text-center font-display text-4xl font-bold md:text-5xl">
+              <p className="gold-text mt-5 text-center font-display text-2xl font-bold sm:text-4xl md:text-5xl">
                 {opener.equation}
+              </p>
+            ) : place.last ? (
+              <p className="mt-4 text-sm text-pauli-sand/70">
+                Esta é a última charada e não tem senha. Quando encontrar o seu presente, é só tocar no botão
+                abaixo.
               </p>
             ) : (
               <p className="mt-4 text-sm text-pauli-sand/70">
@@ -352,7 +371,11 @@ export function Hunt() {
               </p>
             )}
 
-            {status === "right" ? (
+            {progress.screen === "level" && place.last ? (
+              <button type="button" onClick={finish} className="btn-primary mt-6 w-full">
+                Encontrei o meu presente
+              </button>
+            ) : status === "right" ? (
               <div className="hunt-fade mt-6 text-center">
                 <LuHeart className="mx-auto h-8 w-8 text-pauli-gold-light" aria-hidden="true" />
                 <p className="gold-text mt-3 font-display text-xl font-bold">

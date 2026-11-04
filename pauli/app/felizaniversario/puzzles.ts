@@ -1,12 +1,13 @@
 export type Place = {
   prompt: string;
-  password: string;
+  password?: string;
+  last?: boolean;
   gift?: { title: string; message: string; final?: boolean };
 };
 
 export const opener = {
-  prompt: "Para aquecer os motores, resolva esta continha. O resultado é a sua idade hoje.",
-  equation: "(6 × 5) + 2 = ?",
+  prompt: "Para aquecer os motores, resolva esta continha.",
+  equation: "(9 × 4 + 8) ÷ 2 + 10 = ?",
   answer: "32",
 };
 
@@ -175,11 +176,11 @@ export const places: Place[] = [
   {
     prompt:
       "A última charada, a mais importante! O seu segundo presente está onde guardamos as nossas lembranças mais bonitas, com fotos e sorrisos de nós dois. Procure com o coração.",
-    password: "TEAMO",
+    last: true,
     gift: {
       title: "Feliz aniversário, meu amor!",
       message:
-        "Você completou a caçada e provou que me conhece (e que me ama) mais do que qualquer charada consegue medir. 32 charadas para 32 anos, e uma vida inteira pela frente ao seu lado. Eu te amo, Paula. Feliz aniversário!",
+        "Você completou a caçada e provou que me conhece (e que me ama) mais do que qualquer charada consegue medir. 32 charadas para 32 anos, e uma vida inteira pela frente ao seu lado. Eu te amo, Bilu. Feliz aniversário!",
       final: true,
     },
   },
