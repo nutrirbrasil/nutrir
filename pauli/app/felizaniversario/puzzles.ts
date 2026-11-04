@@ -2,7 +2,6 @@ export type Place = {
   prompt: string;
   password?: string;
   last?: boolean;
-  gift?: { title: string; message: string; final?: boolean };
 };
 
 export const opener = {
@@ -90,13 +89,8 @@ export const places: Place[] = [
   },
   {
     prompt:
-      "Você chegou na metade da caçada! O seu primeiro presente está escondido no lugar onde você descansa a cabeça depois de um dia inteiro. Procure com carinho.",
-    password: "SURPRESA",
-    gift: {
-      title: "Presente número 1 encontrado!",
-      message:
-        "Metade do caminho percorrida e a primeira surpresa está nas suas mãos. Abra com carinho, você merece cada pedacinho. Mas calma, ainda tem mais 16 lugares (e um segundo presente) pela frente.",
-    },
+      "Sou o lugar mais macio da casa, onde os dias terminam e os sonhos começam. Procure por baixo do meu travesseiro.",
+    password: "SONECA",
   },
   {
     prompt:
@@ -175,13 +169,19 @@ export const places: Place[] = [
   },
   {
     prompt:
-      "A última charada, a mais importante! O seu segundo presente está onde guardamos as nossas lembranças mais bonitas, com fotos e sorrisos de nós dois. Procure com o coração.",
+      "A última charada, a mais importante! O seu presente está onde guardamos as nossas lembranças mais bonitas, com fotos e sorrisos de nós dois. Procure com o coração.",
     last: true,
-    gift: {
-      title: "Feliz aniversário, meu amor!",
-      message:
-        "Você completou a caçada e provou que me conhece (e que me ama) mais do que qualquer charada consegue medir. 32 charadas para 32 anos, e uma vida inteira pela frente ao seu lado. Eu te amo, Bilu. Feliz aniversário!",
-      final: true,
-    },
   },
 ];
+
+export const bonus = {
+  title: "Você achou o seu presente!",
+  hint: "Mas a caçada ainda não acabou: o seu segundo presente está escondido em outro lugar. Aqui vai uma dica extra: ele está no lugar onde a gente se reúne no fim do dia para conversar e rir juntos. Pense no cantinho favorito da casa e vá até lá.",
+  button: "Encontrei o segundo presente",
+};
+
+export const finale = {
+  title: "Feliz aniversário, meu amor!",
+  message:
+    "Você completou a caçada e provou que me conhece (e que me ama) mais do que qualquer charada consegue medir. 32 charadas para 32 anos, e uma vida inteira pela frente ao seu lado. Eu te amo, Bilu. Feliz aniversário!",
+};

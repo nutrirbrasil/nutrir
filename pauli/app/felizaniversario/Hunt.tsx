@@ -5,13 +5,13 @@ import type { FormEvent } from "react";
 import { FaCakeCandles } from "react-icons/fa6";
 import { LuGift, LuHeart, LuLock, LuPartyPopper, LuSearch } from "react-icons/lu";
 import { Confetti, type Burst } from "./Confetti";
-import { opener, places } from "./puzzles";
+import { bonus, finale, opener, places } from "./puzzles";
 
-const STORAGE_KEY = "pauli_felizaniversario_v2";
+const STORAGE_KEY = "pauli_felizaniversario_v3";
 const TOTAL = places.length;
 const GOLD_GRADIENT = "linear-gradient(135deg, #7a6240 0%, #c4a574 55%, #dcc9a3 100%)";
 
-type Screen = "intro" | "opener" | "level" | "gift";
+type Screen = "intro" | "opener" | "level" | "bonus" | "finale";
 type Progress = { screen: Screen; index: number };
 
 const INITIAL: Progress = { screen: "intro", index: 0 };
@@ -104,7 +104,7 @@ export function Hunt() {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw) as Progress;
-        const validScreen = ["intro", "opener", "level", "gift"].includes(saved.screen);
+        const validScreen = ["intro", "opener", "level", "bonus", "finale"].includes(saved.screen);
         if (validScreen && Number.isInteger(saved.index) && saved.index >= 0 && saved.index < TOTAL) {
           setProgress(saved);
         }
@@ -171,19 +171,18 @@ export function Hunt() {
       return;
     }
 
-    if (!isOpener && place.gift) {
-      setBurst({ id: Date.now(), big: true });
-      go({ screen: "gift", index: progress.index });
-      return;
-    }
-
     setBurst({ id: Date.now(), big: false });
     setStatus("right");
   }
 
-  function finish() {
+  function findGift() {
     setBurst({ id: Date.now(), big: true });
-    go({ screen: "gift", index: progress.index });
+    go({ screen: "bonus", index: progress.index });
+  }
+
+  function findSecondGift() {
+    setBurst({ id: Date.now(), big: true });
+    go({ screen: "finale", index: progress.index });
   }
 
   function afterRight() {
@@ -314,16 +313,6 @@ export function Hunt() {
               style={{ width: `${pct}%`, backgroundImage: GOLD_GRADIENT }}
             />
             <span
-              className={`absolute -top-2 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border bg-black text-xs font-bold ${
-                pct >= 50
-                  ? "border-pauli-gold text-pauli-gold-light"
-                  : "border-pauli-gold/40 text-pauli-sand/60"
-              }`}
-              aria-hidden="true"
-            >
-              ?
-            </span>
-            <span
               className={`absolute -top-2 right-0 flex h-6 w-6 items-center justify-center rounded-full border bg-black ${
                 pct >= 100
                   ? "border-pauli-gold text-pauli-gold-light"
@@ -372,7 +361,7 @@ export function Hunt() {
             )}
 
             {progress.screen === "level" && place.last ? (
-              <button type="button" onClick={finish} className="btn-primary mt-6 w-full">
+              <button type="button" onClick={findGift} className="btn-primary mt-6 w-full">
                 Encontrei o meu presente
               </button>
             ) : status === "right" ? (
@@ -423,26 +412,31 @@ export function Hunt() {
         </main>
       ) : null}
 
-      {progress.screen === "gift" && place.gift ? (
+      {progress.screen === "bonus" ? (
         <main className="relative z-10 mx-auto flex min-h-[100dvh] max-w-xl items-center px-5 py-12">
           <div className="hunt-fade surface-card w-full p-8 text-center md:p-10">
             <div className="gold-badge hunt-glow mx-auto flex h-20 w-20 items-center justify-center rounded-full">
-              {place.gift.final ? (
-                <FaCakeCandles className="h-9 w-9" aria-hidden="true" />
-              ) : (
-                <LuGift className="h-9 w-9" aria-hidden="true" />
-              )}
+              <LuGift className="h-9 w-9" aria-hidden="true" />
             </div>
-            <h2 className="gold-text mt-6 font-display text-3xl font-bold leading-tight">{place.gift.title}</h2>
-            <p className="dark-accent-body mt-4 text-lg leading-relaxed">{place.gift.message}</p>
-            <button
-              type="button"
-              onClick={() =>
-                place.gift?.final ? go(INITIAL) : go({ screen: "level", index: progress.index + 1 })
-              }
-              className="btn-primary mt-8 w-full"
-            >
-              {place.gift.final ? "Recomeçar do início" : "Continuar a caçada"}
+            <h2 className="gold-text mt-6 font-display text-3xl font-bold leading-tight">{bonus.title}</h2>
+            <p className="dark-accent-body mt-4 text-lg leading-relaxed">{bonus.hint}</p>
+            <button type="button" onClick={findSecondGift} className="btn-primary mt-8 w-full">
+              {bonus.button}
+            </button>
+          </div>
+        </main>
+      ) : null}
+
+      {progress.screen === "finale" ? (
+        <main className="relative z-10 mx-auto flex min-h-[100dvh] max-w-xl items-center px-5 py-12">
+          <div className="hunt-fade surface-card w-full p-8 text-center md:p-10">
+            <div className="gold-badge hunt-glow mx-auto flex h-20 w-20 items-center justify-center rounded-full">
+              <FaCakeCandles className="h-9 w-9" aria-hidden="true" />
+            </div>
+            <h2 className="gold-text mt-6 font-display text-3xl font-bold leading-tight">{finale.title}</h2>
+            <p className="dark-accent-body mt-4 text-lg leading-relaxed">{finale.message}</p>
+            <button type="button" onClick={() => go(INITIAL)} className="btn-primary mt-8 w-full">
+              Recomeçar do início
             </button>
           </div>
         </main>
