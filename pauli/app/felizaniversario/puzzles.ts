@@ -24,12 +24,12 @@ export const places: Place[] = [
   },
   {
     prompt:
-      "Falando em estar deitado nele, agora vamos precisar levantar para ir em busca do tesouro, e talvez fazer uma forcinha porque o terceiro está escondido, mas você também estava deitado nele...",
+      "Agora vamos precisar levantar para ir em busca do tesouro, lave o rosto para acordar e vamos a caça...",
     password: "MAMÃE",
   },
   {
     prompt:
-      "Essa fui eu (MOA) que escondi mãe, o pai e o mano não sabemos onde está...",
+      "Essa fui eu (MOA) que escondi mãe, o pai e o mano não sabem onde está...",
     password: "AMAR",
   },
   {
@@ -45,16 +45,21 @@ export const places: Place[] = [
   {
     prompt:
       "Uma pausa só para te lembrar que tem um monte de roupas ali no meu sofá, daqui a pouco vai surgir coisas ali...",
-    password: "TANTO",
+    password: "MUNDO",
   },
   {
     prompt:
       "O próximo passo talvez seja um pouco mais complexo, talvez você precise usar o computador",
-    password: "UM",
+    password: "TANTO",
   },
   {
     prompt:
-      "A senha estava errada. Eu falei que era complexo, e falei para usar o computador, não apenas abrir!.",
+      "Como eu disse, é complexo, tome um café antes de continuar...",
+     password: "UM",
+  },
+  {
+    prompt:
+      "Agora vamos continuar, a senha passada estava errada. Eu falei que era complexo, e falei para usar o computador, não apenas abrir! Volte lá, a resposta está no computador",
     password: "BUNDALÃO",
   },
   {
@@ -64,44 +69,39 @@ export const places: Place[] = [
   },
   {
     prompt:
-      "Ainda está errada, você olhou no email dele, que tal procurar no seu?",
-    password: "BOLO",
-  },
-  {
-    prompt:
-      "Agora sim! Finalmente, foi cansativo, que tal descansar um pouco, olhando a vista dessa janela... fico me perguntando o que Sheldon pensa quando está deitado na caminha dele, as vezes sinto que esconde coisas lá...",
-    password: "ANO",
-  },
-  {
-    prompt:
-      "Não é que ele esconde mesmo! Por essa eu e a Moa não esperavamos, se ele esconde na caixinha e na caminha, então imagina o que será que ele esconde na coisa que ele mais gosta (tirando você).",
+      "Ainda está errada, você olhou no meu email, que tal procurar no seu?",
     password: "JANEIRO",
   },
   {
     prompt:
-      "Por mim entra o sol de manhã e a lua de noite. Dizem que eu tenho vista para o futuro. Procure atrás da minha cortina.",
+      "Agora sim! Finalmente, foi cansativo, que tal descansar um pouco, olhando a vista dessa janela... fico me perguntando o que Sheldon pensa quando está deitado na caminha dele, as vezes sinto que esconde coisas lá...",
     password: "AMO",
   },
   {
     prompt:
-      "Sou o lugar mais macio da casa, onde os dias terminam e os sonhos começam. Procure por baixo do meu travesseiro.",
-    password: "SONECA",
+      "Não é que ele esconde mesmo! Por essa eu e a Moa não esperavamos, se ele esconde na caixinha e na caminha, então imagina o que será que ele esconde na coisa que ele mais gosta (tirando você).",
+    password: "EXTRAORDINARIA",
   },
   {
     prompt:
-      "A última charada, a mais importante! O seu presente está onde guardamos as nossas lembranças mais bonitas, com fotos e sorrisos de nós dois. Procure com o coração.",
+      "Eu vi que essa semana o Sheldon estava mexendo na casinha dele que ele nunca mais tinha mexido, comportamento estranho, não? Será que ele escondeu mais alguma coisa lá?.",
+    password: "PENSAR",
+  },
+  {
+    prompt:
+      "Essa noite eu escutei um barulho lá fora, alguém estava mexendo no carrudo, será que foi o Sheldon e a Moa? Acho que eles estavam escondendo alguma coisa lá dentro...",
     last: true,
   },
 ];
 
 export const bonus = {
-  title: "Você achou o seu presente!",
-  hint: "Mas a caçada ainda não acabou: a sua segunda caneca está escondido em outro lugar. Aqui vai uma dica extra: ela está em lugar que você já procurou, mas mais bem escondido",
+  title: "Você achou o nosso presente mamãe, mas ainda falta o do papai!",
+  hint: "A sua segunda caneca está em outro lugar. É um presente meu junto com o Patachu, Capivaruda e Hello Kitty",
   button: "Encontrei o segundo presente",
 };
 
 export const finale = {
   title: "Feliz aniversário, meu amor!",
   message:
-    "Você completou a caçada e provou que me conhece (e que me ama) mais do que qualquer charada consegue medir. 16 charadas, 32 anos de vida e uma vida inteira pela frente ao seu lado. Eu te amo, Bilu. Feliz aniversário!",
+    "Te amo mais do que tudo. Que venham mais muitos aniversários ao seu lado. Eu te amo, Bilu. Feliz aniversário!",
 };
