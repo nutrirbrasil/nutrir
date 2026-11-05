@@ -262,7 +262,7 @@ export function Hunt() {
             <ul className="mt-4 space-y-3 text-sm leading-relaxed text-pauli-sand/90">
               <li className="flex gap-3">
                 <LuPartyPopper className="mt-0.5 h-5 w-5 shrink-0 text-pauli-gold-light" aria-hidden="true" />
-                <span>São 32 charadas, uma para cada ano da sua vida.</span>
+                <span>São 16 charadas pela nossa casa.</span>
               </li>
               <li className="flex gap-3">
                 <LuSearch className="mt-0.5 h-5 w-5 shrink-0 text-pauli-gold-light" aria-hidden="true" />
